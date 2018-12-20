@@ -1,0 +1,8 @@
+numpy
+pyyaml
+nibabel
+itk
+vtk
+click
+pytest
+pydicom
