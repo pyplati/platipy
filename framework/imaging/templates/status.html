@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Status{% endblock %}
+{% block content %}
+<div class="container justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Status</h1>
+    <div class="table-responsive">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th colspan="2">Celery</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Celery Worker Active</td>
+                    <td>{{ status.celery }}</td>
+                </tr>
+            </tbody>
+            <thead>
+                <tr>
+                    <th colspan="2">Configured Imaging Algorithms</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for algorithm in status.algorithms %}
+                <tr>
+                    <td>{{algorithm}}</td>
+                    <td>{{status.algorithms[algorithm]}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

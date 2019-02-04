@@ -8,11 +8,12 @@ from impit.dicom.nifti_to_rtstruct.export_to_rtstruct import export_to_rtstruct
 from impit.dicom.nifti_to_rtstruct.gen_contours import gen_contours
 import pydicom
 from collections import OrderedDict
+from loguru import logger
 
 
 def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
 
-    print('Will convert the following Nifti masks to RTStruct:')
+    logger.info('Will convert the following Nifti masks to RTStruct:')
 
     masks = {} # Dict stores key value pairs for masks
     if type(mask) == dict:
@@ -25,9 +26,9 @@ def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
             masks[s[0]] = s[1]
 
     for m in masks:
-        print(' - {0}'.format(m))
+        logger.info(' - {0}'.format(m))
 
-    print('Will use the following Dicom file as reference: {0}'.format(dcm_file))
+    logger.info('Will use the following Dicom file as reference: {0}'.format(dcm_file))
 
     dd = {}
 
@@ -55,7 +56,6 @@ def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
             iCol = 250
 
         temp["Color"] = [iCol, 0, iCol]
-        print(masks[key])
         conts = gen_contours(masks[key])
         temp["ContourFile"] = key + ".yaml"
         if debug:
@@ -64,7 +64,7 @@ def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
         rois[key] = temp
 
     rt_struct = export_to_rtstruct(dd, dat_ct, debug=debug)
-    print('Writing RTStruct to: {0}'.format(out_rt_filename))
+    logger.info('Writing RTStruct to: {0}'.format(out_rt_filename))
     rt_struct.save_as(out_rt_filename)
 
     if debug:
@@ -73,7 +73,7 @@ def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
 
         open(out_param_name, "w").write(yaml.dump(dd))
 
-    print('Finished')
+    logger.info('Finished')
 
 @click.command()
 @click.option('--dcm_file', '-d', required=True, help="Reference DICOM file from which header tags will be copied")

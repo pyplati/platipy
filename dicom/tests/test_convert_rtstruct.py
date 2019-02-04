@@ -25,6 +25,7 @@ def test_convert_rtstruct():
     assert im.GetSize() == (512, 512, 88)
     assert im.GetSpacing() == (0.8263229727745056, 0.8263229727745056, 3.0)
     nda = sitk.GetArrayFromImage(im)
+    print(nda.sum())
     assert nda.sum() == 1541167227
 
     # Check a converted contour mask

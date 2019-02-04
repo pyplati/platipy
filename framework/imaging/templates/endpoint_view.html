@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Add Dicom Endpoint{% endblock %}
+{% block content %}
+<div class="container justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3" id="addEndpoint">
+    <h1 class="h2">{{ endpoint.endpointName }}</h1>
+    <div class="card text-center">
+        <div class="card-header">
+                {% if endpoint.endpointType == 'retriever' %}Retrieving Endpoint{% endif %}
+                {% if endpoint.endpointType == 'retriever' %}Listening Endpoint{% endif %}
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">{{ endpoint.endpointAlgorithm }}</h5>
+            {% if endpoint.endpointType == 'retriever' %}
+            <p class="card-text"><b>Fetch data from:</b><br>
+                Host: <b>{{endpoint.fromHost}}</b><br>
+                Port: <b>{{endpoint.fromPort}}</b><br>
+                AE Title: <b>{{endpoint.fromAETitle}}</b>
+            </p>
+            {% endif %}
+            {% if endpoint.endpointType == 'listener' %}
+            <p class="card-text"><b>Listen on:</b><br>
+                Port: <b>{{endpoint.fromPort}}</b>
+            </p>
+            {% endif %}
+            <p class="card-text"><b>Send results to:</b><br>
+                Host: <b>{{endpoint.toHost}}</b><br>
+                Port: <b>{{endpoint.toPort}}</b><br>
+                AE Title: <b>{{endpoint.toAETitle}}</b>
+            </p>
+            {% if endpoint.endpointType == 'retriever' %}
+            <div class="form-group">
+                <label for="txtSeriesUIDs">Series UIDs to fetch (one per line):</label>
+                <textarea v-model="seriesUIDs" v-bind:disabled="running" class="form-control" id="txtSeriesUIDs" name="seriesUIDs"
+                    rows="5"></textarea>
+            </div>
+            <button type="submit" v-bind:disabled="running" class="btn btn-primary" v-on:click="trigger">Run</button>
+            {% raw %}
+            <div v-if="running">
+                <div class="progress" style="margin-top: 10px">
+                    <div class="progress-bar" role="progressbar" v-bind:style="{width: progress + '%'}" aria-valuemin="0"
+                        aria-valuemax="100">{{ progress }}%</div>
+                </div>
+            </div>
+            <p>{{ statusText }}</p>
+            {% endraw %}
+            {% endif %}
+            {% if endpoint.endpointType == 'listener' %}
+            {% if endpoint.task_id %}
+            <h4>Listening</h4>
+            <button type="submit" class="btn btn-danger" v-on:click="trigger">Stop Listening</button>
+            {% else %}
+            <h4>Stopped</h4>
+            <button type="submit" class="btn btn-success" v-on:click="trigger">Start Listening</button>
+            {% endif %}
+            {% endif %}
+        </div>
+        <div class="card-footer text-muted">
+
+        </div>
+    </div>
+
+    <script>
+        var app3 = new Vue({
+            el: '#addEndpoint',
+            data: {
+                seriesUIDs: "",
+                timer: "",
+                statusURL: "/",
+                statusText: "",
+                progress: 0,
+                running: false
+            },
+            // define methods under the `methods` object
+            methods: {
+                trigger: function (event) {
+
+                    this.running = true;
+
+                    this.$http.post('/endpoint/trigger/{{ endpoint.id }}', { seriesUIDs: this.seriesUIDs }).then(response => {
+
+                        console.log(response);
+
+                        // get the Status URL
+                        this.statusURL = response.body.location;
+
+                        // If this is a retrieving endpoint then poll for the status
+                        if(response.body.type === 'retriever') {
+                            this.timer = setInterval(this.fetchStatus, 1000);
+                        } else {
+                            window.location.reload(false);
+                        }
+
+                    }, response => {
+                        this.running = false;
+                        // error callback
+                        alert(response.body.error);
+                    });
+                },
+                fetchStatus: function () {
+
+                    this.$http.get(this.statusURL).then(response => {
+
+                        console.log(response);
+                        this.statusText = response.body.status;
+                        this.progress = Math.round((response.body.current / response.body.total) * 100);
+                        if (response.body.state !== "PROGRESS") {
+                            this.cancelAutoUpdate();
+                        }
+
+                    }, response => {
+                        // error callback
+                        console.log('error');
+                        console.log(response);
+                        this.cancelAutoUpdate();
+                    }).bind(this);
+
+                },
+                cancelAutoUpdate: function () {
+                    clearInterval(this.timer);
+                    this.running = false;
+                }
+            },
+            beforeDestroy() {
+                clearInterval(this.timer)
+            }
+        })
+
+    </script>
+
+
+</div>
+{% endblock %}

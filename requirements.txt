@@ -1,8 +1,15 @@
 numpy
 pyyaml
 nibabel
-itk
+itk >= 5.0a1
 vtk
+SimpleITK
+scikit-image
 click
 pytest
 pydicom
+pynetdicom
+flask
+celery
+redis
+loguru
