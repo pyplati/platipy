@@ -15,18 +15,29 @@
         <div class="form-row">
             <div class="form-group col-md-4">
                 <label for="inputEndpointAlgorithm">Endpoint Algorithm</label>
-                <select name="endpointAlgorithm" id="inputEndpointAlgorithm" class="form-control">
+                <select v-model="endpointAlgorithm" name="endpointAlgorithm" id="inputEndpointAlgorithm" class="form-control">
                     {% for algorithm in algorithms %}
                     <option>{{algorithm}}</option>
                     {% endfor %}
                 </select>
             </div>
+            {% for a in algorithms %}
+            {% if algorithms[a].default_settings %}
+            <div class="form-group col-md-8" v-if="endpointAlgorithm === '{{a}}'">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Config</span>
+                    </div>
+                    <textarea name="settings" class="form-control" aria-label="With textarea" rows="{{ num_lines(algorithms[a].settings_to_json()) }}">{{ algorithms[a].settings_to_json() }}</textarea>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
         </div>
         <div class="form-row">
             <div class="form-group col-md-4">
                 <label for="inputEndpointType">Endpoint Type</label>
                 <select v-model="endpointType" name="endpointType" id="inputEndpointType" class="form-control" required>
-                    <option selected></option>
                     <option value="listener">Listening Endpoint</option>
                     <option value="retriever">Retrieving Endpoint</option>
                 </select>
@@ -106,6 +117,7 @@
         var app3 = new Vue({
             el: '#addEndpoint',
             data: {
+                endpointAlgorithm: "",
                 endpointType: ""
             }
         })
