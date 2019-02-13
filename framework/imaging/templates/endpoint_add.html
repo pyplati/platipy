@@ -3,36 +3,32 @@
 {% block content %}
 <div class="container justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
     id="addEndpoint">
-    <h1 class="h2">Add Dicom Endpoint</h1>
-    <form method="POST" class="needs-validation" novalidate>
+    <form id="app" @submit.prevent="add">
+        <h1 class="h2">Add Dicom Endpoint</h1>
         <div class="form-group">
             <label for="inputName">Endpoint Name</label>
-            <input type="text" class="form-control" id="inputName" placeholder="Name" name="endpointName" required>
+            <input type="text" class="form-control" v-model="endpointName" id="inputName" placeholder="Name" name="endpointName" required>
             <div class="invalid-feedback">
                 Please enter a name for this Dicom Endpoint
             </div>
         </div>
         <div class="form-row">
+            {% raw %}
             <div class="form-group col-md-4">
                 <label for="inputEndpointAlgorithm">Endpoint Algorithm</label>
-                <select v-model="endpointAlgorithm" name="endpointAlgorithm" id="inputEndpointAlgorithm" class="form-control">
-                    {% for algorithm in algorithms %}
-                    <option>{{algorithm}}</option>
-                    {% endfor %}
+                <select v-model="endpointAlgorithm" name="endpointAlgorithm" id="inputEndpointAlgorithm" class="form-control" required>
+                    <option v-for="a in algorithms" :value="a">{{a.name}}</option>
                 </select>
             </div>
-            {% for a in algorithms %}
-            {% if algorithms[a].default_settings %}
-            <div class="form-group col-md-8" v-if="endpointAlgorithm === '{{a}}'">
+            <div class="form-group col-md-8" v-if="endpointAlgorithm.settings">
                 <div class="input-group">
                     <div class="input-group-prepend">
                         <span class="input-group-text">Config</span>
                     </div>
-                    <textarea name="settings" class="form-control" aria-label="With textarea" rows="{{ num_lines(algorithms[a].settings_to_json()) }}">{{ algorithms[a].settings_to_json() }}</textarea>
+                    <textarea name="settings" v-model="endpointAlgorithm.settings" class="form-control" aria-label="With textarea" rows="10"></textarea>
                 </div>
             </div>
-            {% endif %}
-            {% endfor %}
+            {% endraw %}
         </div>
         <div class="form-row">
             <div class="form-group col-md-4">
@@ -94,35 +90,78 @@
         </div>
     </form>
 
-    <script>
-        // Example starter JavaScript for disabling form submissions if there are invalid fields
-        (function () {
-            'use strict';
-            window.addEventListener('load', function () {
-                // Fetch all the forms we want to apply custom Bootstrap validation styles to
-                var forms = document.getElementsByClassName('needs-validation');
-                // Loop over them and prevent submission
-                var validation = Array.prototype.filter.call(forms, function (form) {
-                    form.addEventListener('submit', function (event) {
-                        if (form.checkValidity() === false) {
-                            event.preventDefault();
-                            event.stopPropagation();
+        <script>
+            // Example starter JavaScript for disabling form submissions if there are invalid fields
+            // (function () {
+            //     'use strict';
+            //     window.addEventListener('load', function () {
+            //         // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            //         var forms = document.getElementsByClassName('needs-validation');
+            //         // Loop over them and prevent submission
+            //         var validation = Array.prototype.filter.call(forms, function (form) {
+            //             form.addEventListener('submit', function (event) {
+            //                 if (form.checkValidity() === false) {
+            //                     event.preventDefault();
+            //                     event.stopPropagation();
+            //                 }
+            //                 form.classList.add('was-validated');
+            //             }, false);
+            //         });
+            //     }, false);
+            // })();
+
+            var app = new Vue({
+                el: '#addEndpoint',
+                data: {
+                    algorithms: [],
+                    endpointName: "",
+                    endpointAlgorithm: "",
+                    endpointType: "",
+                    settings: "",
+                    fromHost: "",
+                    fromPort: "",
+                    fromAETitle: "",
+                    toHost: "",
+                    toPort: "",
+                    toAETitle: ""
+                },
+                // define methods under the `methods` object
+                methods: {
+                    add: function (event) {
+
+                        data = Object.assign(this._data);
+                        data.settings = data.endpointAlgorithm.settings;
+                        data.endpointAlgorithm = data.endpointAlgorithm.name;
+
+                        this.$http.post('/api/endpoint', data).then(response => {
+
+                            console.log(Object.keys(response.body)[0]);
+
+                            window.location.href = '/endpoint/' + Object.keys(response.body)[0]
+                        }, response => {
+                            alert(response.body.error);
+                        });
+                    }
+                },
+                beforeMount(){
+                    // Fetch the list of algorithms on page load
+                    this.$http.get('/api/algorithms').then(response => {
+                        this.algorithms = response.body;
+
+                        console.log(this.algorithms);
+
+                        for(var v in this.algorithms) {
+                            if(this.algorithms[v].settings) {
+                                this.algorithms[v].settings = JSON.stringify(this.algorithms[v].settings, null, '  ');
+                            }
                         }
-                        form.classList.add('was-validated');
-                    }, false);
-                });
-            }, false);
-        })();
+                    }, response => {
+                        console.log(response);
+                    });
+                },
+            })
 
-        var app3 = new Vue({
-            el: '#addEndpoint',
-            data: {
-                endpointAlgorithm: "",
-                endpointType: ""
-            }
-        })
-
-    </script>
+        </script>
 
 
 </div>

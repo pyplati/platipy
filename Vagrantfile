@@ -53,7 +53,7 @@ Vagrant.configure("2") do |config|
   #config.vm.synced_folder "N:\\", "/N"
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/impit"
-  config.vm.synced_folder "dicom_data", "/dicom"
+  #config.vm.synced_folder "dicom_data", "/dicom"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.

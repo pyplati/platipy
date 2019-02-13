@@ -1,4 +1,4 @@
-from impit.framework.imaging.app import web_app, celery
+from impit.framework.imaging.app import web_app
 from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
 
 from loguru import logger
@@ -20,7 +20,6 @@ body_settings_defaults = {
     },
     'vectorRadius': [1, 1, 1]
 }
-
 
 @web_app.register('Primitive Body Segmentation', default_settings=body_settings_defaults)
 def primitive_body_segmentation(dicom_input_path, settings):

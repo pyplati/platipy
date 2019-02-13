@@ -1,9 +1,12 @@
 from flask import Flask, request, render_template, session, flash, redirect, \
     url_for, jsonify
+from flask_restful import Resource, Api, reqparse
 from celery import Celery
+from celery import current_app    
 from celery.bin import worker
 from celery.task.control import revoke
 import multiprocessing
+from multiprocessing import Process
 from impit.dicom.communication import DicomConnector
 from loguru import logger
 import json
@@ -12,7 +15,6 @@ import time
 import shutil
 
 logger.add("logfile.log")
-
 
 class ImagingAlgorithm():
 
@@ -31,9 +33,10 @@ class FlaskApp(Flask):
     """
 
     working_dir = "./data"
-    file_data = "data.json"
+    file_data = "data.json" 
     data = {}
     algorithms = {}
+    celery_started = False
 
     def __init__(self, name):
 
@@ -82,13 +85,40 @@ class FlaskApp(Flask):
                 e.pop('task_id', None)
         self.save_data()
 
+    def run_celery(self):
+
+        if self.celery_started:
+            return
+
+        application = current_app._get_current_object()
+
+        celery_worker = worker.worker(app=application)
+
+        options = {
+            'broker': web_app.config['CELERY_BROKER_URL'],
+            'loglevel': 'INFO',
+            'traceback': True,
+        }
+
+        celery_worker.run(**options)
+
     def run(self, host=None, port=None, debug=None,
             load_dotenv=True, **options):
 
         self.init_app()
 
+        logger.info('Starting APP!')
+
+        p = Process(target=self.run_celery)
+        p.start()
+        self.celery_started = True
+
         super().run(host=host, port=port, debug=debug,
-                    load_dotenv=load_dotenv, **options)
+                    load_dotenv=load_dotenv, use_reloader=False, **options)
+
+        p.join()
+
+
 
     def test_client(self, use_cookies=True, **kwargs):
 
@@ -101,28 +131,11 @@ web_app = FlaskApp(__name__)
 web_app.config['SECRET_KEY'] = 'top-secret!'
 
 # Celery configuration
+# TODO Should be in a configuration file
 web_app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 web_app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
-
-# Initialize Celery
-celery = Celery(web_app.name, broker=web_app.config['CELERY_BROKER_URL'])
+celery = Celery(__name__, broker='redis://localhost:6379/0')
 celery.conf.update(web_app.config)
-
-def kill_task(task_id):
-    """Kills the celery task with the given ID, and removes the link to the endpoint if available"""
-
-    logger.info('Killing task: {0}'.format(task_id))
-
-    endpoint = None
-    for e in web_app.data['endpoints']:
-        if 'task_id' in e and e['task_id'] == task_id:
-            endpoint = e
-
-    celery.control.revoke(task_id, terminate=True)
-
-    if endpoint:
-        endpoint.pop('task_id', None)
-        web_app.save_data()
 
 @celery.task(bind=True)
 def retrieve_task(task, endpoint, seriesUIDs):
@@ -204,6 +217,8 @@ def listen_task(task, endpoint, task_id=None):
     Background task that listens at a specific port for incoming dicom series
     """
 
+    logger.info(celery.conf)
+
     try:
         dicom_connector = DicomConnector(port=int(endpoint['fromPort']))
 
@@ -245,19 +260,27 @@ def listen_task(task, endpoint, task_id=None):
     return {'status': 'Complete'}
 
 
-@web_app.route('/endpoint/add', methods=['GET', 'POST'])
-def add_endpoint():
+# Initialize API
+api = Api(web_app)
 
-    if request.method == 'POST':
+def kill_task(task_id):
+    """Kills the celery task with the given ID, and removes the link to the endpoint if available"""
 
-        endpoint = request.form.to_dict()
+    logger.info('Killing task: {0}'.format(task_id))
 
-        # Settings comes through as JSON so parse to dict
-        if 'settings' in endpoint:
-            endpoint['settings'] = json.loads(endpoint['settings'])
-        endpoint['id'] = len(web_app.data['endpoints'])
-        web_app.data['endpoints'].append(endpoint)
+    endpoint = None
+    for e in web_app.data['endpoints']:
+        if 'task_id' in e and e['task_id'] == task_id:
+            endpoint = e
+
+    celery.control.revoke(task_id, terminate=True)
+
+    if endpoint:
+        endpoint.pop('task_id', None)
         web_app.save_data()
+
+@web_app.route('/endpoint/add', methods=['GET'])
+def add_endpoint():
 
     return render_template('endpoint_add.html', data=web_app.data, algorithms=web_app.algorithms, num_lines=lambda x: len(x.splitlines()))
 
@@ -317,7 +340,9 @@ def tigger_endpoint(id):
             kill_task(endpoint['task_id'])
         else:
             # If no task ID exists, start a task to begin listening
+            logger.debug('Will Listen')
             task = listen_task.apply_async([endpoint])
+            logger.debug('Listening')
             endpoint['task_id'] = task.id
             web_app.save_data()
 
@@ -368,3 +393,65 @@ def status():
     status_context['algorithms'] = web_app.algorithms
 
     return render_template('status.html', data=web_app.data, status=status_context)
+
+
+# REST Framework Endpoints
+class DicomEndpoint(Resource):
+
+    parser = reqparse.RequestParser()
+    parser.add_argument('endpointName')
+    parser.add_argument('endpointAlgorithm')
+    parser.add_argument('endpointType')
+    parser.add_argument('settings')
+    parser.add_argument('fromHost')
+    parser.add_argument('fromPort')
+    parser.add_argument('fromAETitle')
+    parser.add_argument('toHost')
+    parser.add_argument('toPort')
+    parser.add_argument('toAETitle')
+
+    def get(self, endpoint_id):
+        endpoint = None
+        for e in web_app.data['endpoints']:
+            if e['id'] == int(endpoint_id):
+                endpoint = e
+
+        status = ''
+        # Check if the last is still running
+        if endpoint['endpointType'] == 'listener':
+            if 'task_id' in endpoint:
+                task = retrieve_task.AsyncResult(endpoint['task_id'])
+                status = task.info.get('status', '')
+                if 'Error' in status:
+                    kill_task(endpoint['task_id'])
+
+        return {endpoint_id: endpoint}
+
+    def post(self):
+
+        args = self.parser.parse_args()
+        
+        endpoint = args
+
+        # Settings comes through as JSON so parse to dict
+        if type(endpoint['settings']) == str:
+            endpoint['settings'] = json.loads(endpoint['settings'])
+        endpoint['id'] = len(web_app.data['endpoints'])
+        web_app.data['endpoints'].append(endpoint)
+        web_app.save_data()
+
+        return {endpoint['id']: endpoint}
+
+
+class Algorithm(Resource):
+
+    def get(self):
+
+        result = []
+        for a in web_app.algorithms:
+            result.append({'name': a, 'settings': web_app.algorithms[a].default_settings})
+        return result
+
+api.add_resource(DicomEndpoint, '/api/endpoint/<string:endpoint_id>', '/api/endpoint')
+api.add_resource(Algorithm, '/api/algorithms')
+
