@@ -1,5 +1,4 @@
-from flask import Flask, request, render_template, session, flash, redirect, \
-    url_for, jsonify
+from flask import Flask, request, render_template, send_from_directory
 from flask_restful import Resource, Api, reqparse
 from celery import Celery
 from celery import current_app    
@@ -73,8 +72,6 @@ class FlaskApp(Flask):
         with open(file_data_path) as json_file:
             self.data = json.load(json_file)
 
-        # Load algorithm specific settings
-
         # Clear endpoint tasks as after restart
         for e in self.data['endpoints']:
             if 'task_id' in e:
@@ -117,8 +114,6 @@ class FlaskApp(Flask):
                     load_dotenv=load_dotenv, use_reloader=False, **options)
 
         p.join()
-
-
 
     def test_client(self, use_cookies=True, **kwargs):
 
@@ -217,8 +212,6 @@ def listen_task(task, endpoint, task_id=None):
     Background task that listens at a specific port for incoming dicom series
     """
 
-    logger.info(celery.conf)
-
     try:
         dicom_connector = DicomConnector(port=int(endpoint['fromPort']))
 
@@ -282,7 +275,7 @@ def kill_task(task_id):
 @web_app.route('/endpoint/add', methods=['GET'])
 def add_endpoint():
 
-    return render_template('endpoint_add.html', data=web_app.data, algorithms=web_app.algorithms, num_lines=lambda x: len(x.splitlines()))
+    return render_template('endpoint_add.html')
 
 
 @web_app.route('/endpoint/<id>', methods=['GET', 'POST'])
@@ -304,87 +297,11 @@ def view_endpoint(id):
 
     return render_template('endpoint_view.html', data=web_app.data, endpoint=endpoint, status=status, format_settings=lambda x: json.dumps(x, indent=4))
 
-
-@web_app.route('/endpoint/trigger/<id>', methods=['GET', 'POST'])
-def tigger_endpoint(id):
-    """Fetch data for a retriever endpoint, or lsiten for a listener"""
-
-    # Get the endpoint with the given id
-    endpoint = None
-    for e in web_app.data['endpoints']:
-        if e['id'] == int(id):
-            endpoint = e
-
-    endpointType = endpoint['endpointType']
-    if endpointType == 'retriever':
-
-        # Get the SeriesUIDs to fetch from the request
-        request_data = json.loads(request.data)
-        seriesUIDs = request_data['seriesUIDs'].splitlines()
-        seriesUIDs = [s for s in seriesUIDs if len(s) > 0]
-
-        if len(seriesUIDs) == 0:
-            return jsonify({'error': 'Supply Series UIDs'}), 400
-
-        # Being the retrieving task for this endpoint
-        task = retrieve_task.apply_async([endpoint, seriesUIDs])
-
-        # Return JSON data detailing where to poll for updates on the task
-        return jsonify({'location': url_for('taskstatus', task_id=task.id), 'type': endpointType}), \
-            202, {'location': url_for(
-                'taskstatus', task_id=task.id), 'type': endpointType}
-    else:
-
-        if 'task_id' in endpoint:
-            # If a task ID exists, the endpoint is running so stop it
-            kill_task(endpoint['task_id'])
-        else:
-            # If no task ID exists, start a task to begin listening
-            logger.debug('Will Listen')
-            task = listen_task.apply_async([endpoint])
-            logger.debug('Listening')
-            endpoint['task_id'] = task.id
-            web_app.save_data()
-
-    return jsonify({'type': endpointType}), 202, {'type': endpointType}
-
-
-@web_app.route('/status/<task_id>')
-def taskstatus(task_id):
-    """Return the status of the task with the given ID"""
-    task = retrieve_task.AsyncResult(task_id)
-    if task.state == 'PENDING':
-        response = {
-            'state': task.state,
-            'current': 0,
-            'total': 1,
-            'status': 'Pending...'
-        }
-    elif task.state != 'FAILURE':
-        response = {
-            'state': task.state,
-            'current': task.info.get('current', 0),
-            'total': task.info.get('total', 1),
-            'status': task.info.get('status', '')
-        }
-        if 'result' in task.info:
-            response['result'] = task.info['result']
-    else:
-        # something went wrong in the background job
-        response = {
-            'state': task.state,
-            'current': 1,
-            'total': 1,
-            'status': str(task.info),  # this is the exception raised
-        }
-    return jsonify(response)
-
-
 @web_app.route('/')
 def status():
     """Homepage of the web app, supplying an overview of the status of the system"""
-    celery = Celery('vwadaptor',
-                    broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')
+    #celery = Celery('vwadaptor',
+    #                broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')
 
     celery_running = False
     if celery.control.inspect().active():
@@ -442,6 +359,89 @@ class DicomEndpoint(Resource):
 
         return {endpoint['id']: endpoint}
 
+class DicomEndpoints(Resource):
+
+    def get(self):
+        return web_app.data['endpoints']
+
+class TaskStatus(Resource):
+
+    def get(self, task_id):
+        """Get the status of a task given the ID"""
+        task = retrieve_task.AsyncResult(task_id)
+        if task.state == 'PENDING':
+            response = {
+                'state': task.state,
+                'current': 0,
+                'total': 1,
+                'status': 'Pending...'
+            }
+        elif task.state != 'FAILURE':
+            response = {
+                'state': task.state,
+                'current': task.info.get('current', 0),
+                'total': task.info.get('total', 1),
+                'status': task.info.get('status', '')
+            }
+            if 'result' in task.info:
+                response['result'] = task.info['result']
+        else:
+            # something went wrong in the background job
+            response = {
+                'state': task.state,
+                'current': 1,
+                'total': 1,
+                'status': str(task.info),  # this is the exception raised
+            }
+        return response
+
+
+class TriggerEndpoint(Resource):
+
+    parser = reqparse.RequestParser()
+    parser.add_argument('seriesUID', action='append')
+
+    def post(self, endpoint_id):
+        """Fetch data for a retriever endpoint, or listen for a listener"""
+
+        # Get the endpoint with the given id
+        endpoint = None
+        for e in web_app.data['endpoints']:
+            if e['id'] == int(endpoint_id):
+                endpoint = e
+
+        if not endpoint:
+            return {'error': 'Endpoint with ID {0} not found'.format(endpoint_id)}, 400
+
+        endpointType = endpoint['endpointType']
+        if endpointType == 'retriever':
+
+            args = self.parser.parse_args()
+            seriesUIDs = args['seriesUID']
+
+            if not seriesUIDs:
+                return {'error': 'Supply one or more seriesUID'}, 400
+
+            # Being the retrieving task for this endpoint
+            task = retrieve_task.apply_async([endpoint, seriesUIDs])
+
+            # Return JSON data detailing where to poll for updates on the task
+            return {'poll': api.url_for(TaskStatus, task_id=task.id), 'type': endpointType}
+        else:
+
+            if 'task_id' in endpoint:
+                # If a task ID exists, the endpoint is running so stop it
+                kill_task(endpoint['task_id'])
+            else:
+                # If no task ID exists, start a task to begin listening
+                logger.debug('Will Listen')
+                task = listen_task.apply_async([endpoint])
+                logger.debug('Listening')
+                endpoint['task_id'] = task.id
+                web_app.save_data()
+
+        return {'type': endpointType}
+
 
 class Algorithm(Resource):
 
@@ -452,6 +452,18 @@ class Algorithm(Resource):
             result.append({'name': a, 'settings': web_app.algorithms[a].default_settings})
         return result
 
+class RawData(Resource):
+
+    def get(self):
+        """Returns the raw data which has been previously generated"""
+        
+        return send_from_directory('/impit/framework/imaging/sample/data',
+                               'tmp.nii.gz', as_attachment=True)
+
 api.add_resource(DicomEndpoint, '/api/endpoint/<string:endpoint_id>', '/api/endpoint')
+api.add_resource(DicomEndpoints, '/api/endpoints')
+api.add_resource(TaskStatus, '/api/status/<string:task_id>')
+api.add_resource(TriggerEndpoint, '/api/trigger/<string:endpoint_id>')
 api.add_resource(Algorithm, '/api/algorithms')
+api.add_resource(RawData, '/api/raw')
 

@@ -48,42 +48,42 @@
             <div class="form-row">
                 <div class="form-group col-md-6" v-if="endpointType === 'retriever'">
                     <label for="inputFromHost">Host</label>
-                    <input type="text" class="form-control" id="inputFromHost" name="fromHost" required>
+                    <input type="text" class="form-control" id="inputFromHost" v-model="fromHost" required>
                     <div class="invalid-feedback">
                         Enter host of Dicom location to fetch from
                     </div>
                 </div>
                 <div class="form-group col-md-2">
                     <label for="inputFromPort">Port</label>
-                    <input type="text" class="form-control" id="inputFromPort" name="fromPort" required>
+                    <input type="text" class="form-control" id="inputFromPort" v-model="fromPort" required>
                     <div class="invalid-feedback">
                         Enter port of Dicom location to fetch from
                     </div>
                 </div>
                 <div class="form-group col-md-4" v-if="endpointType === 'retriever'">
                     <label for="inputFromAETitle">AE Title</label>
-                    <input type="text" class="form-control" id="inputFromAETitle" name="fromAETitle">
+                    <input type="text" class="form-control" id="inputFromAETitle" v-model="fromAETitle">
                 </div>
             </div>
             <h6>Send output to:</h6>
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label for="inputToHost">Host</label>
-                    <input type="text" class="form-control" id="inputToHost" name="toHost" required>
+                    <input type="text" class="form-control" id="inputToHost" v-model="toHost" required>
                     <div class="invalid-feedback">
                         Enter host of Dicom location to send to
                     </div>
                 </div>
                 <div class="form-group col-md-2">
                     <label for="inputToPort">Port</label>
-                    <input type="text" class="form-control" id="inputToPort" name="toPort" required>
+                    <input type="text" class="form-control" id="inputToPort" v-model="toPort" required>
                     <div class="invalid-feedback">
                         Enter port of Dicom location to send to
                     </div>
                 </div>
                 <div class="form-group col-md-4">
                     <label for="inputToAETitle">AE Title</label>
-                    <input type="text" class="form-control" id="inputToAETitle" name="toAETitle">
+                    <input type="text" class="form-control" id="inputToAETitle" v-model="toAETitle">
                 </div>
             </div>
             <button type="submit" class="btn btn-primary">Add Dicom Endpoint</button>
@@ -91,25 +91,6 @@
     </form>
 
         <script>
-            // Example starter JavaScript for disabling form submissions if there are invalid fields
-            // (function () {
-            //     'use strict';
-            //     window.addEventListener('load', function () {
-            //         // Fetch all the forms we want to apply custom Bootstrap validation styles to
-            //         var forms = document.getElementsByClassName('needs-validation');
-            //         // Loop over them and prevent submission
-            //         var validation = Array.prototype.filter.call(forms, function (form) {
-            //             form.addEventListener('submit', function (event) {
-            //                 if (form.checkValidity() === false) {
-            //                     event.preventDefault();
-            //                     event.stopPropagation();
-            //                 }
-            //                 form.classList.add('was-validated');
-            //             }, false);
-            //         });
-            //     }, false);
-            // })();
-
             var app = new Vue({
                 el: '#addEndpoint',
                 data: {
@@ -125,19 +106,17 @@
                     toPort: "",
                     toAETitle: ""
                 },
-                // define methods under the `methods` object
                 methods: {
+                    // Add the endpoint by POSTing to the API
                     add: function (event) {
 
-                        data = Object.assign(this._data);
+                        var data = Vue.util.extend({}, this._data);
                         data.settings = data.endpointAlgorithm.settings;
                         data.endpointAlgorithm = data.endpointAlgorithm.name;
 
                         this.$http.post('/api/endpoint', data).then(response => {
-
-                            console.log(Object.keys(response.body)[0]);
-
-                            window.location.href = '/endpoint/' + Object.keys(response.body)[0]
+                            // Redirect to view the endpoint added
+                            window.location.href = '/endpoint/' + Object.keys(response.body)[0];
                         }, response => {
                             alert(response.body.error);
                         });
