@@ -14,7 +14,7 @@ from loguru import logger
 def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
 
     logger.info('Will convert the following Nifti masks to RTStruct:')
-
+    
     masks = {} # Dict stores key value pairs for masks
     if type(mask) == dict:
         # Dict was already passed in
@@ -82,9 +82,7 @@ def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
 @click.option('--out_rt_filename', '-o', required=True, help="Name of RT struct output")
 def click_command(dcm_file, debug, mask, out_rt_filename):
     """
-    click_command serves to parse the command line arguments by click. Keep this 
-    separate from the main convert function so that we can run that one as normal
-    from code.
+    Convert Nifti masks to Dicom RTStruct
     """
 
     convert_nifti(dcm_file, mask, out_rt_filename, debug=debu)

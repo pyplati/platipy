@@ -1,4 +1,4 @@
-from impit.framework.imaging.app import web_app
+from impit.framework.imaging.app import web_app, DataObject
 from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
 
 from loguru import logger
@@ -8,69 +8,72 @@ import pydicom
 import random
 import time
 import os
+import numpy as numpy
 
 body_settings_defaults = {
     'outputContourName': 'primitive_body_contour',
-    'regionGrowingSetting': {
-        'seed': [0, 0, 0],
-        'numberOfIterations': 1,
-        'multiplier': 2.5,
-        'initialNeighborhoodRadius': 1,
-        'replaceValue': 1
-    },
-    'vectorRadius': [1, 1, 1]
+    'seed': [0, 0, 0],
+    'lowerThreshold': -5000,
+    'upperThreshold': -800,
+    'vectorRadius': [1, 1, 1],
 }
 
 @web_app.register('Primitive Body Segmentation', default_settings=body_settings_defaults)
-def primitive_body_segmentation(dicom_input_path, settings):
-    logger.info('Running Primitive Body Segmentation on image series in: {0}'.format(
-        dicom_input_path))
+def primitive_body_segmentation(data_objects, working_dir, settings):
+    logger.info('Running Primitive Body Segmentation')
 
     logger.info('Using settings: ' + str(settings))
 
-    # Read the image series
-    s_img_list = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(dicom_input_path)
-    img = sitk.ReadImage(s_img_list)
+    output_objects = []
+    for d in data_objects:
+        logger.info('Running on data object: ' + d.path)
 
-    # Basic region growing from the first voxel
-    region_growing_settings = settings['regionGrowingSetting']
-    seg_conf = sitk.ConfidenceConnected(img, seedList=[tuple(region_growing_settings['seed'])],
-                                        numberOfIterations=region_growing_settings['numberOfIterations'],
-                                        multiplier=region_growing_settings['multiplier'],
-                                        initialNeighborhoodRadius=region_growing_settings[
-                                            'initialNeighborhoodRadius'],
-                                        replaceValue=region_growing_settings['replaceValue'])
+        # Read the image series
+        load_path = d.path
+        if d.type == 'DICOM':
+            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(d.path)
 
-    # Clean up the segmentation
-    vectorRadius = tuple(settings['vectorRadius'])
-    kernel = sitk.sitkBall
-    seg_clean = sitk.BinaryMorphologicalClosing(seg_conf,
-                                                vectorRadius,
-                                                kernel)
+        img = sitk.ReadImage(load_path)
+        tmp_img=sitk.GetImageFromArray(sitk.GetArrayFromImage(img))
+        tmp_img.CopyInformation(img)
+        img = tmp_img
 
-    mask = sitk.BinaryNot(seg_clean)
+        seg_con = sitk.ConnectedThreshold(img,
+                                seedList=[tuple(settings['seed'])],
+                                lower=settings['lowerThreshold'],
+                                upper=settings['upperThreshold'])
 
-    # Write the mask
-    mask_file = os.path.join(web_app.working_dir, 'tmp.nii.gz')
-    sitk.WriteImage(mask, mask_file)
+        # Clean up the segmentation
+        vectorRadius = tuple(settings['vectorRadius'])
+        kernel = sitk.sitkBall
+        seg_clean = sitk.BinaryMorphologicalClosing(seg_con,
+                                                    vectorRadius,
+                                                    kernel)
+        mask = sitk.BinaryNot(seg_clean)
+        
+        # Write the mask
+        mask_file = os.path.join(working_dir, '{0}.nii.gz'.format(settings['outputContourName']))
+        sitk.WriteImage(mask, mask_file)
+        output_objects.append(DataObject(type='FILE', path=mask_file, parent=d))
 
-    # Find a dicom file to use for the conversion to RTStruct
-    dicom_file = s_img_list[0]
-    logger.info('Will write Dicom using file: {0}'.format(dicom_file))
-    masks = {settings['outputContourName']: mask_file}
+        logger.info(type(load_path))
+        if type(load_path) == tuple:
+            # load path contains tuple of Dicom objects, so we have a
+            # Dicom object to generate RTStruct from
+            dicom_file = load_path[0]
+            logger.info('Will write Dicom using file: {0}'.format(dicom_file))
+            masks = {settings['outputContourName']: mask_file}
 
-    suid = pydicom.dcmread(dicom_file).SeriesInstanceUID
+            suid = pydicom.dcmread(dicom_file).SeriesInstanceUID
 
-    output_file = './data/RS.{0}.dcm'.format(suid)
-    convert_nifti(dicom_file, masks, output_file)
+            output_file = os.path.join(working_dir, 'RS.{0}.dcm'.format(suid))
+            convert_nifti(dicom_file, masks, output_file)
 
-    return output_file
+            output_objects.append(DataObject(type='DICOM', path=output_file, parent=d))
 
+            logger.info('RTStruct generated')
 
-@web_app.register('Another Segmentation')
-def another_func(dicom_input_path):
-    print('The other one!')
-
+    return output_objects
 
 if __name__ == "__main__":
     web_app.run(debug=True, host="0.0.0.0", port=8000)

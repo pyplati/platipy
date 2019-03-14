@@ -81,7 +81,7 @@
 
                     this.running = true;
 
-                    this.$http.post('/endpoint/trigger/{{ endpoint.id }}', { seriesUIDs: this.seriesUIDs }).then(response => {
+                    this.$http.post('/api/trigger/{{ endpoint.id }}', { seriesUIDs: this.seriesUIDs }).then(response => {
 
                         console.log(response);
 

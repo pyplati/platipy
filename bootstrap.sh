@@ -19,6 +19,6 @@ source ~/environments/impit_env/bin/activate
 echo ". ~/environments/impit_env/bin/activate" > ~/.profile
 
 export PYTHONPATH="${PYTHONPATH}:/"
-echo 'export PYTHONPATH="${PYTHONPATH}:/"' >> ~/.bashrc
+echo 'export PYTHONPATH="${PYTHONPATH}:/"' >> ~/.profile
 
 pip install -r /impit/requirements.txt
