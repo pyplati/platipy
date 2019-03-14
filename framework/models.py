@@ -2,16 +2,20 @@ from .app import web_app
 from loguru import logger
 import datetime
 import json
+import os
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
 # TODO place this in the working directory
-web_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+web_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{0}/{1}.db'.format(os.getcwd(), os.path.basename(os.getcwd()))
 web_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(web_app)
 
+
+# This custom encoder takes care of converting our SQLAlchemy models to a JSON
+# encodable format.
 class AlchemyEncoder(json.JSONEncoder):
 
     def default(self, obj):
@@ -21,9 +25,10 @@ class AlchemyEncoder(json.JSONEncoder):
             fields = {}
             for field in [x for x in dir(obj) if not x.startswith('_') and x != 'metadata']:
                 data = obj.__getattribute__(field)
-                
+
                 try:
-                    json.dumps(data) # this will fail on non-encodable values, like other classes
+                    # this will fail on non-encodable values, like other classes
+                    json.dumps(data)
                     fields[field] = data
                 except TypeError:
                     if isinstance(data, datetime.datetime):
@@ -38,7 +43,8 @@ class AlchemyEncoder(json.JSONEncoder):
                         fields[field] = data.isoformat()
                     elif isinstance(data, datetime.time):
                         if is_aware(data):
-                            raise ValueError("JSON can't represent timezone-aware times.")
+                            raise ValueError(
+                                "JSON can't represent timezone-aware times.")
                         r = data.isoformat()
                         if data.microsecond:
                             r = r[:12]
@@ -50,12 +56,12 @@ class AlchemyEncoder(json.JSONEncoder):
                         for d in data:
                             o.append(self.default(d))
                         fields[field] = o
-                    else:
-                        fields[field] = None
+
             # a json-encodable dict
             return fields
 
         return json.JSONEncoder.default(self, obj)
+
 
 def default_timeout():
 
@@ -67,7 +73,7 @@ class APIKey(db.Model):
 
     key = db.Column(db.String(80), primary_key=True)
     name = db.Column(db.String(80))
-    
+
     def __repr__(self):
         return '{0}: {1}'.format(self.name, self.key)
 
@@ -100,25 +106,29 @@ class Dataset(db.Model):
     owner_key = db.Column(db.String(80), db.ForeignKey(
         'APIKey.key'), nullable=False)
 
-    input_data_objects = relationship('DataObject', primaryjoin="and_(DataObject.dataset_id == Dataset.id, DataObject.is_input == True)")
-    output_data_objects = relationship('DataObject', primaryjoin="and_(DataObject.dataset_id == Dataset.id, DataObject.is_input == False)")
+    input_data_objects = relationship(
+        'DataObject', primaryjoin="and_(DataObject.dataset_id == Dataset.id, DataObject.is_input == True)")
+    output_data_objects = relationship(
+        'DataObject', primaryjoin="and_(DataObject.dataset_id == Dataset.id, DataObject.is_input == False)")
 
     # The Dicom location from which to retrieve data
-    from_dicom_location_id = db.Column(db.Integer, db.ForeignKey('DicomLocation.id'))
-    from_dicom_location = relationship("DicomLocation", foreign_keys=[from_dicom_location_id])
-    
-    # The Dicom location to send data to
-    to_dicom_location_id = db.Column(db.Integer, db.ForeignKey('DicomLocation.id'))
-    to_dicom_location = relationship("DicomLocation", foreign_keys=[to_dicom_location_id])
+    from_dicom_location_id = db.Column(
+        db.Integer, db.ForeignKey('DicomLocation.id'))
+    from_dicom_location = relationship(
+        "DicomLocation", foreign_keys=[from_dicom_location_id])
 
-    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
+    # The Dicom location to send data to
+    to_dicom_location_id = db.Column(
+        db.Integer, db.ForeignKey('DicomLocation.id'))
+    to_dicom_location = relationship(
+        "DicomLocation", foreign_keys=[to_dicom_location_id])
+
+    timestamp = db.Column(db.DateTime, nullable=False,
+                          default=datetime.datetime.utcnow)
     timeout = db.Column(db.DateTime, nullable=False, default=default_timeout)
 
     def __repr__(self):
         return '{0}: {1}'.format(self.id, self.timestamp)
-
-    # def as_dict(self):
-    #     return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 class DataObject(db.Model):
@@ -140,14 +150,13 @@ class DataObject(db.Model):
 
     is_fetched = db.Column(db.Boolean, default=False)
     is_sent = db.Column(db.Boolean, default=False)
-    
-    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
 
-    parent_id = db.Column(db.Integer, db.ForeignKey('DataObject.id'), index=True)
+    timestamp = db.Column(db.DateTime, nullable=False,
+                          default=datetime.datetime.utcnow)
+
+    parent_id = db.Column(db.Integer, db.ForeignKey(
+        'DataObject.id'), index=True)
     parent = relationship("DataObject", remote_side=[id])
 
     def __repr__(self):
         return '{0} - {1}: {1}'.format(self.dataset_id, self.id, self.timestamp)
-
-    # def as_dict(self):
-    #     return {c.name: getattr(self, c.name) for c in self.__table__.columns}

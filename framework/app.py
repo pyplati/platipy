@@ -132,10 +132,10 @@ class FlaskApp(Flask):
 web_app = FlaskApp(__name__)
 web_app.config['SECRET_KEY'] = uuid.uuid4().hex
 
-import impit.framework.imaging.api
-import impit.framework.imaging.views
-import impit.framework.imaging.tasks
-import impit.framework.imaging.models
+import impit.framework.api
+import impit.framework.views
+import impit.framework.tasks
+import impit.framework.models
 
 # Import DataObject for easy import from algorithm
-from impit.framework.imaging.models import DataObject
+from impit.framework.models import DataObject

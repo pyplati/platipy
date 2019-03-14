@@ -9,7 +9,7 @@ from celery import current_app
 from celery.bin import worker
 from celery.task.control import revoke
 
-from impit.dicom.communication import DicomConnector
+from ..dicom.communication import DicomConnector
 
 from .models import db, Dataset, DataObject
 
@@ -41,109 +41,10 @@ def retrieve_task(task, data_object_id):
         return
 
     dicom_path = dicom_connector.download_series(do.series_instance_uid)
-    
+
     do.is_fetched = True
     do.path = dicom_path
     db.session.commit()
-
-
-@celery.task(bind=True)
-def retrieve_task2(task, endpoint, seriesUIDs):
-    """
-    Background task that fetches from the configured location and runs the
-    imaging algorithm
-    """
-
-    task_id = task.request.id
-
-    # For each series UID supplied, fetch the image series and run the algorithm
-    total = len(seriesUIDs)
-    count = 0
-
-    dicom_connector = DicomConnector(host=endpoint['fromHost'], port=int(
-        endpoint['fromPort']), ae_title=endpoint['fromAETitle'])
-
-    state_details = {'current': count, 'total': total,
-                     'status': 'Verifying dicom (from) location', 'series': {}}
-    task.update_state(state='PROGRESS', meta=state_details)
-
-    dicom_verify = dicom_connector.verify()
-
-    if dicom_verify == None:
-        return {'current': total, 'total': total, 'status': 'Unable to connect to dicom (from) location'}
-
-    dicom_target = DicomConnector(host=endpoint['toHost'], port=int(
-        endpoint['toPort']), ae_title=endpoint['toAETitle'])
-
-    state_details['status'] = 'Verifying dicom (to) location'
-    task.update_state(state='PROGRESS', meta=state_details)
-
-    dicom_verify = dicom_target.verify()
-
-    if dicom_verify == None:
-        return {'current': total, 'total': total, 'status': 'Unable to connect to dicom (to) location'}
-
-    image_dir = os.path.join(web_app.working_dir, "images")
-    if not os.path.exists(image_dir):
-        os.mkdir(image_dir)
-
-    for suid in seriesUIDs:
-
-        state_details['current'] = count
-        state_details['total'] = total
-        state_details['status'] = 'Fetching series for UID: {0}'.format(suid)
-        state_details['series'][suid] = {'state': 'PROCESSING'}
-        task.update_state(state='PROGRESS', meta=state_details)
-
-        dicom_path = dicom_connector.download_series(suid)
-
-        state_details['status'] = 'Running algorithm on image series: {0}'.format(
-            endpoint['endpointAlgorithm'])
-        task.update_state(state='PROGRESS', meta=state_details)
-
-        algorithm = web_app.algorithms[endpoint['endpointAlgorithm']]
-        result = None
-        if 'settings' in endpoint:
-            result = algorithm.function(
-                dicom_path, tempfile.mkdtemp(), endpoint['settings'])
-        else:
-            result = algorithm.function(dicom_path, tempfile.mkdtemp())
-
-        state_details['status'] = 'Processing Result'
-        task.update_state(state='PROGRESS', meta=state_details)
-
-        if type(result) == Result:
-
-            # If the result contains a dicom path, send the data to the
-            # target location
-            if result.dicom_path:
-                logger.info('Sending Dicom data to location')
-                send_status = dicom_target.send_dcm(result.dicom_path)
-                state_details['series'][suid]['dicom'] = 'SENT'
-                logger.info('Send got status: {0}'.format(send_status))
-
-            # If the result contains some raw files, make these available
-            # to download
-            if result.raw_files:
-                state_details['series'][suid]['files'] = result.raw_files
-                state_details['series'][suid]['download'] = [
-                    '/api/raw?file={0}'.format(p) for p in result.raw_files]
-
-        else:
-            logger.error('Incorrect result from algorithm: ' +
-                         endpoint['endpointAlgorithm'])
-
-            state_details['series'][suid] = {'state': 'ERROR'}
-
-        task.update_state(
-            task_id=task_id, state='PROGRESS', meta=state_details)
-
-        count += 1
-
-    state_details['current'] = count
-    state_details['total'] = total
-    state_details['status'] = 'Complete'
-    return state_details
 
 
 @celery.task(bind=True)
@@ -193,7 +94,8 @@ def listen_task(task, listen_port, listen_ae_title):
     task_id = task.request.id
 
     try:
-        dicom_connector = DicomConnector(port=listen_port, ae_title=listen_ae_title)
+        dicom_connector = DicomConnector(
+            port=listen_port, ae_title=listen_ae_title)
 
         def series_recieved(dicom_path):
             logger.info(
@@ -218,10 +120,12 @@ def listen_task(task, listen_port, listen_ae_title):
                 return
 
             # Find the data objects with the given series UID and update them
-            dos = DataObject.query.filter_by(series_instance_uid=series_uid).all()
-            
+            dos = DataObject.query.filter_by(
+                series_instance_uid=series_uid).all()
+
             if len(dos) == 0:
-                logger.error('No Data Object found with Series UID: {0} ... Stopping'.format(series_uid))
+                logger.error(
+                    'No Data Object found with Series UID: {0} ... Stopping'.format(series_uid))
                 return
 
             for do in dos:
@@ -252,24 +156,29 @@ def run_task(task, algorithm_name, config, dataset_id):
     # Commit to refresh session
     db.session.commit()
 
-    state_details = {'current': 0, 'total': 0,
-                     'status': 'Running Algorithm: {0}'.format(algorithm_name)}
-
-    task.update_state(state='RUNNING', meta=state_details)
-
     algorithm = web_app.algorithms[algorithm_name]
 
     if not config:
         config = algorithm.default_settings
 
     ds = Dataset.query.filter_by(id=dataset_id).first()
+    input_objects = ds.input_data_objects
+
+    state_details = {'current': 0, 'total': len(input_objects),
+                     'status': 'Running Algorithm: {0}'.format(algorithm_name)}
+
+    task.update_state(state='RUNNING', meta=state_details)
 
     if config == None:
         output_data_objects = algorithm.function(
-            ds.input_data_objects, tempfile.mkdtemp())
+            input_objects, tempfile.mkdtemp())
     else:
         output_data_objects = algorithm.function(
-            ds.input_data_objects, tempfile.mkdtemp(), config)
+            input_objects, tempfile.mkdtemp(), config)
+
+    if not output_data_objects:
+        logger.warning(
+            'Algorithm ({0}) did not return any output objects'.format(algorithm_name))
 
     # Save the data objects
     for do in output_data_objects:
@@ -279,16 +188,18 @@ def run_task(task, algorithm_name, config, dataset_id):
 
         if do.type == 'DICOM':
             if ds.to_dicom_location:
-                
+
                 logger.info('Sending to Dicom To Location')
                 dicom_connector = DicomConnector(host=do.dataset.to_dicom_location.host,
-                                                port=do.dataset.to_dicom_location.port,
-                                                ae_title=do.dataset.to_dicom_location.ae_title)
+                                                 port=do.dataset.to_dicom_location.port,
+                                                 ae_title=do.dataset.to_dicom_location.ae_title)
                 dicom_verify = dicom_connector.verify()
 
                 if not dicom_verify:
                     logger.error('Unable to connect to Dicom Location: {0} {1} {2}'.format(
-                        do.dataset.to_dicom_location.host, do.dataset.to_dicom_location.port, do.dataset.to_dicom_location.ae_title))
+                        do.dataset.to_dicom_location.host,
+                        do.dataset.to_dicom_location.port,
+                        do.dataset.to_dicom_location.ae_title))
                     continue
 
                 send_result = dicom_connector.send_dcm(do.path)
@@ -297,9 +208,13 @@ def run_task(task, algorithm_name, config, dataset_id):
                     do.is_sent = True
                     db.session.add(do)
                     db.session.commit()
-                
+
             else:
-                logger.warning('DICOM Data Object output but not Dicom To location defined in Dataset')
+                logger.warning(
+                    'DICOM Data Object output but not Dicom To location defined in Dataset')
+
+    state_details = {'current': len(input_objects), 'total': len(input_objects),
+                     'status': 'Running Algorithm Complete: {0}'.format(algorithm_name)}
 
     task.update_state(state='COMPLETE', meta=state_details)
 

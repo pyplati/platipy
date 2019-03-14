@@ -12,7 +12,7 @@ import os
 import tempfile
 import time
 from functools import wraps
-from impit.dicom.communication import DicomConnector
+from ..dicom.communication import DicomConnector
 from .models import db, AlchemyEncoder, APIKey, Dataset, DataObject, DicomLocation
 from .tasks import run_task, retrieve_task, listen_task
 
@@ -25,7 +25,7 @@ class CustomConfig(object):
 
 # Initialize API
 api = Api(web_app)
-web_app.config.from_object('impit.framework.imaging.api.CustomConfig')
+web_app.config.from_object('impit.framework.api.CustomConfig')
 
 
 def authenticate(func):
@@ -243,11 +243,13 @@ class DicomLocationEndpoint(Resource):
     parser.add_argument('port', type=int, required=True,
                         help="The port of the Dicom location")
     parser.add_argument('ae_title', help="AE Title of the Dicom location")
-    parser.add_argument('move_ae_title', help="The AE title with which to trigger MOVE command (If set will use Dicom MOVE operation to retrieve, GET if null)")
-    parser.add_argument('move_port', help="The Port to recieve MOVE command (Required when move_ae_title is set)")
-    
+    parser.add_argument(
+        'move_ae_title', help="The AE title with which to trigger MOVE command (If set will use Dicom MOVE operation to retrieve, GET if null)")
+    parser.add_argument(
+        'move_port', help="The Port to recieve MOVE command (Required when move_ae_title is set)")
+
     def get(self):
-     
+
         key = request.headers['API_KEY']
 
         dl = DicomLocation.query.filter_by(owner_key=key).all()
@@ -259,21 +261,22 @@ class DicomLocationEndpoint(Resource):
         args = self.parser.parse_args()
 
         key = request.headers['API_KEY']
-        dl = DicomLocation(owner_key=key, 
-            name=args['name'], 
-            host=args['host'], 
-            port=args['port'], 
-            ae_title=args['ae_title'], 
-            move_ae_title=args['move_ae_title'],
-            move_port=args['move_port'])
+        dl = DicomLocation(owner_key=key,
+                           name=args['name'],
+                           host=args['host'],
+                           port=args['port'],
+                           ae_title=args['ae_title'],
+                           move_ae_title=args['move_ae_title'],
+                           move_port=args['move_port'])
 
         db.session.add(dl)
         db.session.commit()
 
         return dl
 
+
 class DataObjectsEndpoint(Resource):
-    
+
     def get(self):
 
         key = request.headers['API_KEY']
@@ -282,6 +285,7 @@ class DataObjectsEndpoint(Resource):
             DataObject.dataset.has(owner_key=key)).all()
 
         return do
+
 
 class DataObjectEndpoint(Resource):
 
@@ -354,51 +358,53 @@ class DataObjectEndpoint(Resource):
             if not args['seriesUID']:
                 return {'message': {'seriesUID': "SeriesUID is required to be able to fetch DICOM objects"}}, 400
 
-
             if ds.from_dicom_location.move_ae_title:
 
                 # Fetch Dicom data using MOVE
                 # Check whether or not we are listening for for Dicom MOVE
                 listening_connector = DicomConnector(
-                    host='127.0.0.1', 
-                    port=ds.from_dicom_location.move_port, 
+                    host='127.0.0.1',
+                    port=ds.from_dicom_location.move_port,
                     ae_title=ds.from_dicom_location.move_ae_title)
 
                 if not listening_connector.verify():
-                    
+
                     # Not listening on the move_port, so start the listen task
                     listen_task.apply_async([
                         ds.from_dicom_location.move_port,
                         ds.from_dicom_location.move_ae_title
-                        ])
-                
+                    ])
 
                     # Verify Dicom Location is listening
                     timeout_seconds = 20
                     time_waited = 0
                     while not listening_connector.verify():
-                        logger.debug('Not listening for MOVE, sleeping for 1 second and will try again')
+                        logger.debug(
+                            'Not listening for MOVE, sleeping for 1 second and will try again')
                         time.sleep(1)
                         time_waited += 1
 
                         if time_waited >= timeout_seconds:
-                            msg = 'Listener for MOVE timeout on port: {0}'.format(ds.from_dicom_location.move_port)
+                            msg = 'Listener for MOVE timeout on port: {0}'.format(
+                                ds.from_dicom_location.move_port)
                             logger.error(msg)
                             return {'message': {'from_dicom_location': msg}}, 400
 
                     logger.info('Listening for MOVE OK')
 
                 # Then trigger MOVE
-                logger.info('Triggering MOVE for series UID: {0}'.format(do.series_instance_uid))
+                logger.info('Triggering MOVE for series UID: {0}'.format(
+                    do.series_instance_uid))
                 dicom_connector = DicomConnector(
-                    host=ds.from_dicom_location.host, 
-                    port=ds.from_dicom_location.port, 
+                    host=ds.from_dicom_location.host,
+                    port=ds.from_dicom_location.port,
                     ae_title=ds.from_dicom_location.ae_title)
 
                 dicom_verify = dicom_connector.verify()
 
                 if dicom_verify:
-                    dicom_connector.move_series(do.series_instance_uid, move_aet=ds.from_dicom_location.move_ae_title)
+                    dicom_connector.move_series(
+                        do.series_instance_uid, move_aet=ds.from_dicom_location.move_ae_title)
                 else:
                     msg = 'Unable to connect to Dicom Location: {0} {1} {2}'.format(
                         ds.from_dicom_location.host,
@@ -410,7 +416,6 @@ class DataObjectEndpoint(Resource):
             else:
                 # Fetch Dicom data using GET
                 task = retrieve_task.apply_async([do.id])
-            
 
         elif args['type'] == 'FILE':
 
@@ -444,6 +449,7 @@ class DataObjectEndpoint(Resource):
 
         return 200
 
+
 class DataObjectDownloadEndpoint(Resource):
 
     parser = reqparse.RequestParser()
@@ -472,8 +478,9 @@ class DataObjectDownloadEndpoint(Resource):
 
         return {'Error': 'Data Object not found'}, 404
 
+
 class DatasetsEndpoint(Resource):
-    
+
     def get(self):
 
         key = request.headers['API_KEY']
@@ -482,11 +489,14 @@ class DatasetsEndpoint(Resource):
 
         return ds
 
+
 class DatasetEndpoint(Resource):
 
     parser = reqparse.RequestParser()
-    parser.add_argument('from_dicom_location', help='ID of DicomLocation from which to retrieve DICOM data')
-    parser.add_argument('to_dicom_location', help='ID of DicomLocation the send output data to')
+    parser.add_argument('from_dicom_location',
+                        help='ID of DicomLocation from which to retrieve DICOM data')
+    parser.add_argument('to_dicom_location',
+                        help='ID of DicomLocation the send output data to')
     parser.add_argument('timeout', type=int, default=24)
 
     def get(self, dataset_id):
@@ -510,13 +520,15 @@ class DatasetEndpoint(Resource):
         ds = Dataset(owner_key=key, timeout=expiry)
 
         if args['from_dicom_location']:
-            from_dicom_location = DicomLocation.query.filter_by(owner_key=key, id=args['from_dicom_location']).first()
+            from_dicom_location = DicomLocation.query.filter_by(
+                owner_key=key, id=args['from_dicom_location']).first()
             if not from_dicom_location:
                 return {'Error': 'From Dicom Location not found'}, 404
             ds.from_dicom_location = from_dicom_location
 
         if args['to_dicom_location']:
-            to_dicom_location = DicomLocation.query.filter_by(owner_key=key, id=args['to_dicom_location']).first()
+            to_dicom_location = DicomLocation.query.filter_by(
+                owner_key=key, id=args['to_dicom_location']).first()
             if not to_dicom_location:
                 return {'Error': 'To Dicom Location not found'}, 404
             ds.to_dicom_location = to_dicom_location
@@ -525,6 +537,7 @@ class DatasetEndpoint(Resource):
         db.session.commit()
 
         return ds
+
 
 class DatasetReadyEndpoint(Resource):
 
@@ -547,6 +560,7 @@ class DatasetReadyEndpoint(Resource):
             return {'ready': True}, 200
 
         return {'Error': 'Dataset not found'}, 404
+
 
 class AlgorithmEndpoint(Resource):
 
@@ -604,6 +618,7 @@ class TriggerEndpoint(Resource):
         # Return JSON data detailing where to poll for updates on the task
         return {'poll': api.url_for(TaskStatus, task_id=task.id)}
 
+
 api.add_resource(
     DicomEndpoint, '/api/endpoint/<string:endpoint_id>', '/api/endpoint')
 api.add_resource(DicomEndpoints, '/api/endpoints')
@@ -613,8 +628,9 @@ api.add_resource(TriggerEndpoint, '/api/trigger')
 api.add_resource(DatasetsEndpoint, '/api/datasets')
 api.add_resource(DatasetEndpoint, '/api/dataset',
                  '/api/dataset/<string:dataset_id>')
-api.add_resource(DatasetReadyEndpoint, '/api/dataset/ready/<string:dataset_id>')
-                 
+api.add_resource(DatasetReadyEndpoint,
+                 '/api/dataset/ready/<string:dataset_id>')
+
 api.add_resource(DataObjectsEndpoint, '/api/dataobjects')
 api.add_resource(DataObjectEndpoint, '/api/dataobject',
                  '/api/dataobject/<string:dataobject_id>')

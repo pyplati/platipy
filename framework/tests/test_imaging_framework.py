@@ -2,7 +2,7 @@ import pytest
 import os
 import json
 import tempfile
-from impit.framework.imaging.app import web_app
+from impit.framework.app import web_app
 
 
 @pytest.fixture
