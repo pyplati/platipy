@@ -43,6 +43,8 @@ class FlaskApp(Flask):
     data = {}
     algorithms = {}
     celery_started = False
+    dicom_listener_port = 7777
+    dicom_listener_aetitle = "IMPIT_SERVICE"
 
     def __init__(self, name):
 
@@ -107,6 +109,8 @@ class FlaskApp(Flask):
         celery_worker.run(**options)
 
     def run(self, host=None, port=None, debug=None,
+            dicom_listener_port=7777,
+            dicom_listener_aetitle="IMPIT_SERVICE",
             load_dotenv=True, **options):
 
         self.init_app()
@@ -116,6 +120,17 @@ class FlaskApp(Flask):
         p = Process(target=self.run_celery)
         p.start()
         self.celery_started = True
+
+        self.dicom_listener_port = dicom_listener_port
+        self.dicom_listener_aetitle = dicom_listener_aetitle
+        logger.info('Starting Dicom Listener on port: {0} with AE Title: {1}',
+            dicom_listener_port,
+            dicom_listener_aetitle)
+        from .tasks import listen_task
+        listen_task.apply_async([
+            dicom_listener_port,
+            dicom_listener_aetitle
+        ])
 
         super().run(host=host, port=port, debug=debug,
                     load_dotenv=load_dotenv, use_reloader=False, **options)

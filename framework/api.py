@@ -45,73 +45,6 @@ def authenticate(func):
 class Resource(flask_restful.Resource):
     method_decorators = [authenticate]   # applies to all inherited resources
 
-# REST Framework Endpoints
-
-
-class DicomEndpoint(Resource):
-
-    parser = reqparse.RequestParser()
-    parser.add_argument('endpointName')
-    parser.add_argument('endpointAlgorithm')
-    parser.add_argument('endpointType')
-    parser.add_argument('settings')
-    parser.add_argument('fromHost')
-    parser.add_argument('fromPort')
-    parser.add_argument('fromAETitle')
-    parser.add_argument('toHost')
-    parser.add_argument('toPort')
-    parser.add_argument('toAETitle')
-
-    def get(self, endpoint_id):
-        endpoint = None
-        for e in web_app.data['endpoints']:
-            if e['id'] == int(endpoint_id):
-                endpoint = e
-
-        status = ''
-        # Check if the last is still running
-        if endpoint['endpointType'] == 'listener':
-            if 'task_id' in endpoint:
-                task = retrieve_task.AsyncResult(endpoint['task_id'])
-                status = task.info.get('status', '')
-                if 'Error' in status:
-                    kill_task(endpoint['task_id'])
-
-        return {endpoint_id: endpoint}
-
-    def post(self):
-
-        args = self.parser.parse_args()
-
-        endpoint = args
-
-        # Settings comes through as JSON so parse to dict
-        if type(endpoint['settings']) == str:
-            endpoint['settings'] = json.loads(endpoint['settings'])
-        endpoint['id'] = len(web_app.data['endpoints'])
-        web_app.data['endpoints'].append(endpoint)
-        web_app.save_data()
-
-        return {endpoint['id']: endpoint}
-
-
-class DicomEndpoints(Resource):
-
-    def get(self):
-        result = web_app.data['endpoints']
-
-        # Insert the status of the listening endpoints
-        for r in result:
-            if r['endpointType'] == 'listener':
-
-                if 'task_id' in r:
-                    r['status'] = 'LISTENING'
-                    r['poll'] = '/api/status/{0}'.format(r['task_id'])
-                else:
-                    r['status'] = 'STOPPED'
-
-        return web_app.data['endpoints']
-
 
 class TaskStatus(Resource):
 
@@ -152,87 +85,6 @@ class TaskStatus(Resource):
         return response
 
 
-# class TriggerEndpoint(Resource):
-
-#     parser = reqparse.RequestParser()
-#     parser.add_argument('seriesUID', action='append')
-#     parser.add_argument('peer_host')
-#     parser.add_argument('peer_port', type=int)
-#     parser.add_argument('peer_ae_title')
-
-#     def post(self, endpoint_id):
-#         """Fetch data for a retriever endpoint, or listen for a listener"""
-
-#         # Get the endpoint with the given id
-#         endpoint = None
-#         for e in web_app.data['endpoints']:
-#             if e['id'] == int(endpoint_id):
-#                 endpoint = e
-
-#         if not endpoint:
-#             return {'error': 'Endpoint with ID {0} not found'.format(endpoint_id)}, 400
-
-#         args = self.parser.parse_args()
-#         seriesUIDs = args['seriesUID']
-
-#         endpointType = endpoint['endpointType']
-#         if endpointType == 'retriever':
-
-#             if not seriesUIDs:
-#                 return {'error': 'Supply one or more seriesUID'}, 400
-
-#             # Being the retrieving task for this endpoint
-#             task = retrieve_task.apply_async([endpoint, seriesUIDs])
-
-#             # Return JSON data detailing where to poll for updates on the task
-#             return {'poll': api.url_for(TaskStatus, task_id=task.id), 'type': endpointType}
-#         else:
-
-#             peer_host = args['peer_host']
-#             peer_port = args['peer_port']
-#             peer_ae_title = args['peer_ae_title']
-
-#             if seriesUIDs or peer_host or peer_port or peer_ae_title:
-#                 # If any of these are specified, then move the series from this location
-#                 if not seriesUIDs:
-#                     return {'error': 'Missing seriesUID: Supply one or more seriesUID to MOVE'}, 400
-#                 if not peer_host:
-#                     return {'error': 'Missing peer_host: Supply the host of the Dicom location to MOVE from'}, 400
-#                 if not peer_port:
-#                     return {'error': 'Missing peer_port: Supply the port of the Dicom location to MOVE from'}, 400
-#                 if not peer_ae_title:
-#                     return {'error': 'Missing peer_ae_title: Supply the AE title of the Dicom host to MOVE from'}, 400
-
-#                 # Check that the listener is listening
-#                 if 'task_id' in endpoint:
-#                     task_id = endpoint['task_id']
-#                 else:
-#                     logger.error('Listener not running')
-#                     return {'error': 'Endpoint not listening'}, 400
-
-#                 # Being the move task
-#                 task = move_task.apply_async(
-#                     [endpoint, seriesUIDs, peer_host, peer_port, peer_ae_title])
-
-#                 # Return JSON data detailing where to poll for updates on the task
-#                 return {'poll': api.url_for(TaskStatus, task_id=task_id)}
-
-#             status = 'Stopping'
-#             if 'task_id' in endpoint:
-#                 # If a task ID exists, the endpoint is running so stop it
-#                 kill_task(endpoint['task_id'])
-#             else:
-#                 # If no task ID exists, start a task to begin listening
-#                 logger.debug('Will Listen')
-#                 task = listen_task.apply_async([endpoint])
-#                 logger.debug('Listening')
-#                 endpoint['task_id'] = task.id
-#                 web_app.save_data()
-#                 status = 'Starting'
-
-#         return {'poll': api.url_for(TaskStatus, task_id=task.id), 'type': endpointType, 'status': status}
-
-
 class DicomLocationEndpoint(Resource):
 
     parser = reqparse.RequestParser()
@@ -243,10 +95,6 @@ class DicomLocationEndpoint(Resource):
     parser.add_argument('port', type=int, required=True,
                         help="The port of the Dicom location")
     parser.add_argument('ae_title', help="AE Title of the Dicom location")
-    parser.add_argument(
-        'move_ae_title', help="The AE title with which to trigger MOVE command (If set will use Dicom MOVE operation to retrieve, GET if null)")
-    parser.add_argument(
-        'move_port', help="The Port to recieve MOVE command (Required when move_ae_title is set)")
 
     def get(self):
 
@@ -265,9 +113,7 @@ class DicomLocationEndpoint(Resource):
                            name=args['name'],
                            host=args['host'],
                            port=args['port'],
-                           ae_title=args['ae_title'],
-                           move_ae_title=args['move_ae_title'],
-                           move_port=args['move_port'])
+                           ae_title=args['ae_title'])
 
         db.session.add(dl)
         db.session.commit()
@@ -294,6 +140,8 @@ class DataObjectEndpoint(Resource):
                         help="Dataset ID to add Data Object to")
     parser.add_argument('type', choices=('DICOM', 'FILE'), required=True,
                         help="DICOM for Dicom objects to be fetched from the Dataset Dicom Location. FILE for file sent with request.")
+    parser.add_argument('dicom_retrieve', choices=('MOVE', 'GET', 'SEND'), required=True,
+                        help="Used for DICOM type. The Dicom objects will be retrieved using this method.")
     parser.add_argument('seriesUID')
     parser.add_argument('meta_data')
     parser.add_argument('file_name')
@@ -352,32 +200,33 @@ class DataObjectEndpoint(Resource):
 
         if args['type'] == 'DICOM':
 
-            if not ds.from_dicom_location:
-                return {'message': {'from_dicom_location': "Dataset From Dicom Location not set, so unable to add DICOM objects"}}, 400
+            dicom_fetch = args['dicom_retrieve']
+            if not dicom_fetch:
+                return {'message': {'dicom_retrieve': "Set GET, MOVE or SEND to be able to retrieve Dicom objects."}}, 400
 
             if not args['seriesUID']:
-                return {'message': {'seriesUID': "SeriesUID is required to be able to fetch DICOM objects"}}, 400
+                return {'message': {'seriesUID': "SeriesUID is required to be able to retrieve DICOM objects"}}, 400
 
-            if ds.from_dicom_location.move_ae_title:
+            if dicom_fetch == 'MOVE':
+
+                
+                if not ds.from_dicom_location:
+                    return {'message': {'from_dicom_location': "Dataset From Dicom Location not set, so unable to MOVE DICOM objects"}}, 400
 
                 # Fetch Dicom data using MOVE
                 # Check whether or not we are listening for for Dicom MOVE
                 listening_connector = DicomConnector(
                     host='127.0.0.1',
-                    port=ds.from_dicom_location.move_port,
-                    ae_title=ds.from_dicom_location.move_ae_title)
+                    port=web_app.dicom_listener_port,
+                    ae_title=web_app.dicom_listener_aetitle)
 
                 if not listening_connector.verify():
-
-                    # Not listening on the move_port, so start the listen task
-                    listen_task.apply_async([
-                        ds.from_dicom_location.move_port,
-                        ds.from_dicom_location.move_ae_title
-                    ])
 
                     # Verify Dicom Location is listening
                     timeout_seconds = 20
                     time_waited = 0
+
+                    # We are not listening, wait for 20 seconds and abort if still not listening
                     while not listening_connector.verify():
                         logger.debug(
                             'Not listening for MOVE, sleeping for 1 second and will try again')
@@ -392,9 +241,10 @@ class DataObjectEndpoint(Resource):
 
                     logger.info('Listening for MOVE OK')
 
-                # Then trigger MOVE
-                logger.info('Triggering MOVE for series UID: {0}'.format(
-                    do.series_instance_uid))
+                # Trigger MOVE
+                logger.info('Triggering MOVE at {0} for series UID: {1}',
+                    web_app.dicom_listener_aetitle,
+                    do.series_instance_uid)
                 dicom_connector = DicomConnector(
                     host=ds.from_dicom_location.host,
                     port=ds.from_dicom_location.port,
@@ -404,7 +254,7 @@ class DataObjectEndpoint(Resource):
 
                 if dicom_verify:
                     dicom_connector.move_series(
-                        do.series_instance_uid, move_aet=ds.from_dicom_location.move_ae_title)
+                        do.series_instance_uid, move_aet=web_app.dicom_listener_aetitle)
                 else:
                     msg = 'Unable to connect to Dicom Location: {0} {1} {2}'.format(
                         ds.from_dicom_location.host,
@@ -413,9 +263,16 @@ class DataObjectEndpoint(Resource):
                     logger.error(msg)
                     return {'message': {'from_dicom_location': msg}}, 400
 
-            else:
+            elif dicom_fetch == 'GET':
+                
+                if not ds.from_dicom_location:
+                    return {'message': {'from_dicom_location': "Dataset From Dicom Location not set, so unable to GET DICOM objects"}}, 400
+
                 # Fetch Dicom data using GET
                 task = retrieve_task.apply_async([do.id])
+
+            # If dicom_fetch is SEND we don't do anything here, just wait for the client
+            # to send to our Dicom Listener.
 
         elif args['type'] == 'FILE':
 
@@ -619,9 +476,6 @@ class TriggerEndpoint(Resource):
         return {'poll': api.url_for(TaskStatus, task_id=task.id)}
 
 
-api.add_resource(
-    DicomEndpoint, '/api/endpoint/<string:endpoint_id>', '/api/endpoint')
-api.add_resource(DicomEndpoints, '/api/endpoints')
 api.add_resource(TaskStatus, '/api/status/<string:task_id>')
 api.add_resource(TriggerEndpoint, '/api/trigger')
 

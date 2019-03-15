@@ -83,4 +83,9 @@ if __name__ == "__main__":
 
     # Run app by calling "python sample.py" from the command line
 
-    web_app.run(debug=True, host="0.0.0.0", port=8000)
+    dicom_listener_port=7777
+    dicom_listener_aetitle="SAMPLE_SERVICE"
+
+    web_app.run(debug=True, host="0.0.0.0", port=8000,
+        dicom_listener_port=dicom_listener_port,
+        dicom_listener_aetitle=dicom_listener_aetitle)

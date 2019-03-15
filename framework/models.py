@@ -89,9 +89,6 @@ class DicomLocation(db.Model):
     port = db.Column(db.Integer, nullable=False)
     ae_title = db.Column(db.String(128))
 
-    move_ae_title = db.Column(db.String(128))
-    move_port = db.Column(db.Integer)
-
     owner_key = db.Column(db.String(80), db.ForeignKey(
         'APIKey.key'), nullable=False)
 
@@ -147,6 +144,7 @@ class DataObject(db.Model):
     series_instance_uid = db.Column(db.String(256))
 
     meta_data = db.Column(db.JSON)
+    status = db.Column(db.JSON)
 
     is_fetched = db.Column(db.Boolean, default=False)
     is_sent = db.Column(db.Boolean, default=False)
