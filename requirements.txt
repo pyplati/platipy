@@ -10,6 +10,7 @@ pytest
 pydicom
 pynetdicom
 flask
+flask-restful
 celery
 redis
 loguru

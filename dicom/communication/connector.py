@@ -25,16 +25,16 @@ from loguru import logger
 
 class DicomConnector:
     
-    def __init__(self, host='127.0.0.1', port=0, ae_title = ''):
+    def __init__(self, host='127.0.0.1', port=0, ae_title = '', output_directory=tempfile.mkdtemp()):
         self.host = host
         self.port = port
-        self.ae_title = ae_title
+        self.ae_title = ae_title if ae_title else ''
         
         logger.info('DicomConnector with host: ' + self.host + 
             ' port: ' + str(self.port) + 
             ' AETitle: ' + self.ae_title)
 
-        self.output_directory = tempfile.mkdtemp()
+        self.output_directory = output_directory
             
     def verify(self):
         # Verify Connection
@@ -59,10 +59,10 @@ class DicomConnector:
             # Release the association
             assoc.release()
             
-        return result
+        return not result == None
     
     
-    def do_find(self, dataset):
+    def do_find(self, dataset, query_model='P'):
         
         ae = AE()
         
@@ -77,7 +77,7 @@ class DicomConnector:
         if assoc.is_established:
             logger.info('Association accepted by the peer')
 
-            responses = assoc.send_c_find(dataset, query_model='P')
+            responses = assoc.send_c_find(dataset, query_model=query_model)
 
             for resp,ds in responses:
                 results.append(ds)
@@ -112,7 +112,34 @@ class DicomConnector:
             
         return self.do_find(dataset)
 
-    def download_series(self, seriesInstanceUID, recieved_callback):
+    def move_series(self, seriesInstanceUID, move_aet="PYNETDICOM", query_model='P'):
+
+        ae = AE()
+        ae.requested_contexts = QueryRetrievePresentationContexts
+                  
+        if(len(self.ae_title) > 0):
+            assoc = ae.associate(self.host, self.port, ae_title=self.ae_title)
+        else:
+            assoc = ae.associate(self.host, self.port)
+
+        if assoc.is_established:
+            logger.info('Association accepted by the peer')
+
+            dataset = Dataset()
+            dataset.SeriesInstanceUID = seriesInstanceUID
+            dataset.QueryRetrieveLevel = "SERIES"
+
+            responses = assoc.send_c_move(dataset, move_aet, query_model=query_model)
+
+            for (a,b) in responses:
+                pass
+                
+            # Release the association
+            assoc.release()
+            
+        logger.info('Finished')
+
+    def download_series(self, seriesInstanceUID, recieved_callback=None, query_model='P'):
         
         self.recieved_callback = recieved_callback
         
@@ -148,7 +175,7 @@ class DicomConnector:
             dataset.SeriesInstanceUID = seriesInstanceUID
             dataset.QueryRetrieveLevel = "SERIES"
 
-            responses = assoc.send_c_get(dataset, query_model='P')
+            responses = assoc.send_c_get(dataset, query_model=query_model)
 
             for (a,b) in responses:
                 pass
@@ -305,12 +332,12 @@ class DicomConnector:
         if self.recieved_callback and self.current_dir:
             self.recieved_callback(self.current_dir)
 
-    def listen(self, recieved_callback):
+    def listen(self, recieved_callback, ae_title="PYNETDICOM"):
 
         self.recieved_callback = recieved_callback
 
         # Initialise the Application Entity and specify the listen port
-        ae = AE(port=self.port)
+        ae = AE(port=self.port, ae_title=ae_title)
 
         # Add the supported presentation context
         ae.add_supported_context(VerificationSOPClass)
@@ -319,6 +346,7 @@ class DicomConnector:
 
         ae.on_c_echo = self.on_c_echo
         ae.on_c_store = self.on_c_store
+        ae.on_c_move = self.on_c_store
         ae.on_association_accepted = self.on_association_accepted
         ae.on_association_released = self.on_association_released
 

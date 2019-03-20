@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Add Dicom Endpoint{% endblock %}
+{% block content %}
+<div class="container justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+    id="addEndpoint">
+    <form id="app" @submit.prevent="add">
+        <h1 class="h2">Add Dicom Endpoint</h1>
+        <div class="form-group">
+            <label for="inputName">Endpoint Name</label>
+            <input type="text" class="form-control" v-model="endpointName" id="inputName" placeholder="Name" name="endpointName" required>
+            <div class="invalid-feedback">
+                Please enter a name for this Dicom Endpoint
+            </div>
+        </div>
+        <div class="form-row">
+            {% raw %}
+            <div class="form-group col-md-4">
+                <label for="inputEndpointAlgorithm">Endpoint Algorithm</label>
+                <select v-model="endpointAlgorithm" name="endpointAlgorithm" id="inputEndpointAlgorithm" class="form-control" required>
+                    <option v-for="a in algorithms" :value="a">{{a.name}}</option>
+                </select>
+            </div>
+            <div class="form-group col-md-8" v-if="endpointAlgorithm.settings">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Config</span>
+                    </div>
+                    <textarea name="settings" v-model="endpointAlgorithm.settings" class="form-control" aria-label="With textarea" rows="10"></textarea>
+                </div>
+            </div>
+            {% endraw %}
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label for="inputEndpointType">Endpoint Type</label>
+                <select v-model="endpointType" name="endpointType" id="inputEndpointType" class="form-control" required>
+                    <option value="listener">Listening Endpoint</option>
+                    <option value="retriever">Retrieving Endpoint</option>
+                </select>
+                <div class="invalid-feedback">
+                    Please select the Endpoint type
+                </div>
+            </div>
+        </div>
+        <div v-if="endpointType">
+            <h6 v-if="endpointType === 'listener'">Listen at:</h6>
+            <h6 v-if="endpointType === 'retriever'">Fetch from:</h6>
+            <div class="form-row">
+                <div class="form-group col-md-6" v-if="endpointType === 'retriever'">
+                    <label for="inputFromHost">Host</label>
+                    <input type="text" class="form-control" id="inputFromHost" v-model="fromHost" required>
+                    <div class="invalid-feedback">
+                        Enter host of Dicom location to fetch from
+                    </div>
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="inputFromPort">Port</label>
+                    <input type="text" class="form-control" id="inputFromPort" v-model="fromPort" required>
+                    <div class="invalid-feedback">
+                        Enter port of Dicom location to fetch from
+                    </div>
+                </div>
+                <div class="form-group col-md-4" v-if="endpointType === 'retriever'">
+                    <label for="inputFromAETitle">AE Title</label>
+                    <input type="text" class="form-control" id="inputFromAETitle" v-model="fromAETitle">
+                </div>
+            </div>
+            <h6>Send output to:</h6>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="inputToHost">Host</label>
+                    <input type="text" class="form-control" id="inputToHost" v-model="toHost" required>
+                    <div class="invalid-feedback">
+                        Enter host of Dicom location to send to
+                    </div>
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="inputToPort">Port</label>
+                    <input type="text" class="form-control" id="inputToPort" v-model="toPort" required>
+                    <div class="invalid-feedback">
+                        Enter port of Dicom location to send to
+                    </div>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputToAETitle">AE Title</label>
+                    <input type="text" class="form-control" id="inputToAETitle" v-model="toAETitle">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Dicom Endpoint</button>
+        </div>
+    </form>
+
+        <script>
+            var app = new Vue({
+                el: '#addEndpoint',
+                data: {
+                    algorithms: [],
+                    endpointName: "",
+                    endpointAlgorithm: "",
+                    endpointType: "",
+                    settings: "",
+                    fromHost: "",
+                    fromPort: "",
+                    fromAETitle: "",
+                    toHost: "",
+                    toPort: "",
+                    toAETitle: ""
+                },
+                methods: {
+                    // Add the endpoint by POSTing to the API
+                    add: function (event) {
+
+                        var data = Vue.util.extend({}, this._data);
+                        data.settings = data.endpointAlgorithm.settings;
+                        data.endpointAlgorithm = data.endpointAlgorithm.name;
+
+                        this.$http.post('/api/endpoint', data).then(response => {
+                            // Redirect to view the endpoint added
+                            window.location.href = '/endpoint/' + Object.keys(response.body)[0];
+                        }, response => {
+                            alert(response.body.error);
+                        });
+                    }
+                },
+                beforeMount(){
+                    // Fetch the list of algorithms on page load
+                    this.$http.get('/api/algorithms').then(response => {
+                        this.algorithms = response.body;
+
+                        console.log(this.algorithms);
+
+                        for(var v in this.algorithms) {
+                            if(this.algorithms[v].settings) {
+                                this.algorithms[v].settings = JSON.stringify(this.algorithms[v].settings, null, '  ');
+                            }
+                        }
+                    }, response => {
+                        console.log(response);
+                    });
+                },
+            })
+
+        </script>
+
+
+</div>
+{% endblock %}

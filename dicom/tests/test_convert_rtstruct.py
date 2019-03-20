@@ -18,15 +18,16 @@ def test_convert_rtstruct():
 
     # Check some of the output files for sanity
     assert len(os.listdir(output_dir)) == 12
-
+    
     # Check the converted image series
-    im = sitk.ReadImage(os.path.join(output_dir, output_img))
+    im = sitk.ReadImage(os.path.join(output_dir, output_img), sitk.sitkInt64)
+    print(os.path.join(output_dir, output_img))
     assert im.GetOrigin() == (-211.12600708007812, -422.1260070800781, -974.5)
     assert im.GetSize() == (512, 512, 88)
     assert im.GetSpacing() == (0.8263229727745056, 0.8263229727745056, 3.0)
     nda = sitk.GetArrayFromImage(im)
     print(nda.sum())
-    assert nda.sum() == 1541167227
+    assert nda.sum() == -19933669253
 
     # Check a converted contour mask
     mask = sitk.ReadImage(os.path.join(output_dir, 'Test_BRAINSTEM_PRI.nii.gz'))

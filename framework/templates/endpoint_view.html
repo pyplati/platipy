@@ -5,11 +5,15 @@
     <h1 class="h2">{{ endpoint.endpointName }}</h1>
     <div class="card text-center">
         <div class="card-header">
-                {% if endpoint.endpointType == 'retriever' %}Retrieving Endpoint{% endif %}
-                {% if endpoint.endpointType == 'retriever' %}Listening Endpoint{% endif %}
+            {% if endpoint.endpointType == 'retriever' %}Retrieving Endpoint{% endif %}
+            {% if endpoint.endpointType == 'listener' %}Listening Endpoint{% endif %}
         </div>
         <div class="card-body">
             <h5 class="card-title">{{ endpoint.endpointAlgorithm }}</h5>
+            {% if endpoint.settings %}
+            <p class="card-text"><b>Settings: </b></p><br>
+            <pre style="text-align: left;">{{ format_settings(endpoint.settings) }}</pre>
+            {% endif %}
             {% if endpoint.endpointType == 'retriever' %}
             <p class="card-text"><b>Fetch data from:</b><br>
                 Host: <b>{{endpoint.fromHost}}</b><br>
@@ -53,6 +57,7 @@
             <button type="submit" class="btn btn-success" v-on:click="trigger">Start Listening</button>
             {% endif %}
             {% endif %}
+            <h6>{{ status }}</h6>
         </div>
         <div class="card-footer text-muted">
 
@@ -76,7 +81,7 @@
 
                     this.running = true;
 
-                    this.$http.post('/endpoint/trigger/{{ endpoint.id }}', { seriesUIDs: this.seriesUIDs }).then(response => {
+                    this.$http.post('/api/trigger/{{ endpoint.id }}', { seriesUIDs: this.seriesUIDs }).then(response => {
 
                         console.log(response);
 
@@ -84,7 +89,7 @@
                         this.statusURL = response.body.location;
 
                         // If this is a retrieving endpoint then poll for the status
-                        if(response.body.type === 'retriever') {
+                        if (response.body.type === 'retriever') {
                             this.timer = setInterval(this.fetchStatus, 1000);
                         } else {
                             window.location.reload(false);

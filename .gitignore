@@ -126,3 +126,9 @@ dmypy.json
 
 # Test output files
 test_output*
+
+# Vagrant
+
+.vagrant/
+dicom_data/
+
