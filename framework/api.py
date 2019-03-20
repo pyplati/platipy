@@ -26,6 +26,7 @@ class CustomConfig(object):
 # Initialize API
 api = Api(web_app)
 web_app.config.from_object('impit.framework.api.CustomConfig')
+web_app.api = api
 
 
 def authenticate(func):
@@ -140,7 +141,7 @@ class DataObjectEndpoint(Resource):
                         help="Dataset ID to add Data Object to")
     parser.add_argument('type', choices=('DICOM', 'FILE'), required=True,
                         help="DICOM for Dicom objects to be fetched from the Dataset Dicom Location. FILE for file sent with request.")
-    parser.add_argument('dicom_retrieve', choices=('MOVE', 'GET', 'SEND'), required=True,
+    parser.add_argument('dicom_retrieve', choices=('MOVE', 'GET', 'SEND'),
                         help="Used for DICOM type. The Dicom objects will be retrieved using this method.")
     parser.add_argument('seriesUID')
     parser.add_argument('meta_data')
@@ -277,10 +278,10 @@ class DataObjectEndpoint(Resource):
         elif args['type'] == 'FILE':
 
             if not args['file_name']:
-                return {'message': {'file': "Provide the file name"}}, 400
+                return {'message': {'file_name': "Provide the file name"}}, 400
 
             if not args['file_data']:
-                return {'message': {'file': "Provide the file data"}}, 400
+                return {'message': {'file_data': "Provide the file data"}}, 400
 
             # Save the file
             file_path = os.path.join(tempfile.mkdtemp(), args['file_name'])

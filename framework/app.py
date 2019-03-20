@@ -10,19 +10,8 @@ import uuid
 # TODO configure log file properly
 logger.add("logfile.log")
 
-class Result():
-    """Class used to return results to app from an algorithm"""
 
-    dicom_path = None
-    raw_files = None
-
-    def __init__(self, dicom_path=None, raw_files=None):
-
-        self.dicom_path = dicom_path
-        self.raw_files = raw_files
-
-
-class ImagingAlgorithm():
+class Algorithm():
 
     def __init__(self, name, function, default_settings):
         self.name = name
@@ -38,58 +27,25 @@ class FlaskApp(Flask):
     Custom Flask App
     """
 
-    working_dir = "./data"
-    file_data = "data.json"
-    data = {}
     algorithms = {}
     celery_started = False
     dicom_listener_port = 7777
     dicom_listener_aetitle = "IMPIT_SERVICE"
 
+    api = None # Holds reference to api for extensibility
+
     def __init__(self, name):
 
         super().__init__(name)
-
-    def save_data(self):
-
-        file_data_path = os.path.join(self.working_dir, self.file_data)
-
-        with open(file_data_path, 'w') as outfile:
-            json.dump(self.data, outfile, indent=4)
 
     def register(self, name, default_settings=None):
 
         def decorator(f):
             self.algorithms.update(
-                {name: ImagingAlgorithm(name, f, default_settings)})
+                {name: Algorithm(name, f, default_settings)})
             return f
 
         return decorator
-
-    def init_app(self):
-
-        # Working directory
-        # TODO put this in a config file
-        if not os.path.exists(self.working_dir):
-            os.mkdir(self.working_dir)
-
-        file_data_path = os.path.join(self.working_dir, self.file_data)
-        if not os.path.exists(file_data_path):
-            self.data['endpoints'] = []
-            self.save_data()
-
-        with open(file_data_path) as json_file:
-            self.data = json.load(json_file)
-
-        # Clear endpoint tasks as after restart
-        for e in self.data['endpoints']:
-            if 'task_id' in e:
-                # Revoke it incase it still exists
-                revoke(e['task_id'], terminate=True)
-
-                # And remove it from the dict
-                e.pop('task_id', None)
-        self.save_data()
 
     def run_celery(self):
 
@@ -112,8 +68,6 @@ class FlaskApp(Flask):
             dicom_listener_port=7777,
             dicom_listener_aetitle="IMPIT_SERVICE",
             load_dotenv=True, **options):
-
-        self.init_app()
 
         logger.info('Starting APP!')
 
