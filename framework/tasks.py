@@ -1,26 +1,78 @@
-from .app import web_app
+from impit.framework import celery, db, app
+from celery.schedules import crontab
+
 from loguru import logger
 import tempfile
 import pydicom
 import os
-
-from celery import Celery
-from celery import current_app
-from celery.bin import worker
-from celery.task.control import revoke
+import datetime
+import shutil
 
 from ..dicom.communication import DicomConnector
 
-from .models import db, Dataset, DataObject
+from .models import Dataset, DataObject
 
+# celery.conf.beat_schedule = {
+#     'add-every-30-seconds': {
+#         'task': 'impit.framework.tasks.clean_up_task',
+#         'schedule': 10.0,
+#         'args': ()
+#     },
+# }
+celery.conf.beat_schedule = {
+    # Executes every morning at 5am.
+    'clean-up-every-morning': {
+        'task': 'impit.framework.tasks.clean_up_task',
+        'schedule': crontab(hour=3, minute=30),
+        'args': (),
+    },
+}
 
-# Celery configuration
-# TODO Should be in a configuration file
-web_app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-web_app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
-celery = Celery(__name__, broker='redis://localhost:6379/0')
-celery.conf.update(web_app.config)
+celery.conf.timezone = 'UTC'
 
+@celery.task(bind=True)
+def clean_up_task(task):
+    """
+    Deletes DataObjects from expired Datasets
+    """
+
+    logger.info("Running Clean Up Task")
+
+    datasets = Dataset.query.all()
+
+    now = datetime.datetime.now()
+
+    num_data_objs_removed = 0
+
+    for ds in datasets:
+
+        if ds.timeout < now:
+
+            data_objects = ds.input_data_objects + ds.output_data_objects
+            
+            for do in data_objects:
+
+                try:
+                    if do.path:
+                        if os.path.isdir(do.path):
+                            logger.debug('Removing Directory: ', do.path)
+                            shutil.rmtree(do.path)
+                        elif os.path.isfile(do.path):
+                            logger.debug('Removing File: ', do.path)
+                            os.remove(do.path)
+                        else:
+                            logger.debug('Data missing, must have already been deleted: ', do.path)
+
+                        num_data_objs_removed += 1
+
+                        do.is_fetched = False
+                        do.path = None
+                        db.session.commit()
+
+                except Exception as e:
+                    logger.warning("Exception occured when removing DataObject: " + str(do))
+
+    logger.info("Clean Up Task Complete: Removed {0} DataObjects", num_data_objs_removed)
 
 @celery.task(bind=True)
 def retrieve_task(task, data_object_id):
@@ -90,6 +142,10 @@ def listen_task(task, listen_port, listen_ae_title):
     """
     Background task that listens at a specific port for incoming dicom series
     """
+    
+    logger.info('Starting Dicom Listener on port: {0} with AE Title: {1}',
+        listen_port,
+        listen_ae_title)
 
     task_id = task.request.id
 
@@ -156,7 +212,7 @@ def run_task(task, algorithm_name, config, dataset_id):
     # Commit to refresh session
     db.session.commit()
 
-    algorithm = web_app.algorithms[algorithm_name]
+    algorithm = app.algorithms[algorithm_name]
 
     if not config:
         config = algorithm.default_settings
@@ -217,20 +273,3 @@ def run_task(task, algorithm_name, config, dataset_id):
                      'status': 'Running Algorithm Complete: {0}'.format(algorithm_name)}
 
     task.update_state(state='COMPLETE', meta=state_details)
-
-
-def kill_task(task_id):
-    """Kills the celery task with the given ID, and removes the link to the endpoint if available"""
-
-    logger.info('Killing task: {0}'.format(task_id))
-
-    endpoint = None
-    for e in web_app.data['endpoints']:
-        if 'task_id' in e and e['task_id'] == task_id:
-            endpoint = e
-
-    celery.control.revoke(task_id, terminate=True)
-
-    if endpoint:
-        endpoint.pop('task_id', None)
-        web_app.save_data()

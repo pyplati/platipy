@@ -1,4 +1,4 @@
-from .app import web_app
+from impit.framework import app
 from loguru import logger
 
 import flask_restful
@@ -24,9 +24,9 @@ class CustomConfig(object):
 
 
 # Initialize API
-api = Api(web_app)
-web_app.config.from_object('impit.framework.api.CustomConfig')
-web_app.api = api
+api = Api(app)
+app.config.from_object('impit.framework.api.CustomConfig')
+app.api = api
 
 
 def authenticate(func):
@@ -218,8 +218,8 @@ class DataObjectEndpoint(Resource):
                 # Check whether or not we are listening for for Dicom MOVE
                 listening_connector = DicomConnector(
                     host='127.0.0.1',
-                    port=web_app.dicom_listener_port,
-                    ae_title=web_app.dicom_listener_aetitle)
+                    port=app.dicom_listener_port,
+                    ae_title=app.dicom_listener_aetitle)
 
                 if not listening_connector.verify():
 
@@ -244,7 +244,7 @@ class DataObjectEndpoint(Resource):
 
                 # Trigger MOVE
                 logger.info('Triggering MOVE at {0} for series UID: {1}',
-                    web_app.dicom_listener_aetitle,
+                    app.dicom_listener_aetitle,
                     do.series_instance_uid)
                 dicom_connector = DicomConnector(
                     host=ds.from_dicom_location.host,
@@ -255,7 +255,7 @@ class DataObjectEndpoint(Resource):
 
                 if dicom_verify:
                     dicom_connector.move_series(
-                        do.series_instance_uid, move_aet=web_app.dicom_listener_aetitle)
+                        do.series_instance_uid, move_aet=app.dicom_listener_aetitle)
                 else:
                     msg = 'Unable to connect to Dicom Location: {0} {1} {2}'.format(
                         ds.from_dicom_location.host,
@@ -425,9 +425,9 @@ class AlgorithmEndpoint(Resource):
     def get(self):
 
         result = []
-        for a in web_app.algorithms:
+        for a in app.algorithms:
             result.append(
-                {'name': a, 'default_settings': web_app.algorithms[a].default_settings})
+                {'name': a, 'default_settings': app.algorithms[a].default_settings})
         return result
 
 
@@ -445,10 +445,10 @@ class TriggerEndpoint(Resource):
 
         args = self.parser.parse_args()
 
-        if not args['algorithm'] in web_app.algorithms:
+        if not args['algorithm'] in app.algorithms:
             return {'Error': 'No algorithm found with name: {0}'.format(args['algorithm'])}, 404
 
-        algorithm = web_app.algorithms[args['algorithm']]
+        algorithm = app.algorithms[args['algorithm']]
 
         config = algorithm.default_settings
         if args['config']:
