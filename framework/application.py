@@ -1,6 +1,7 @@
 from flask import Flask
 from celery import current_app
 from celery.bin import worker
+from celery.bin import beat
 from multiprocessing import Process
 from loguru import logger
 import json
@@ -9,7 +10,6 @@ import uuid
 
 # TODO configure log file properly
 logger.add("logfile.log")
-
 
 class Algorithm():
 
@@ -29,6 +29,7 @@ class FlaskApp(Flask):
 
     algorithms = {}
     celery_started = False
+    beat_started = False
     dicom_listener_port = 7777
     dicom_listener_aetitle = "IMPIT_SERVICE"
 
@@ -57,13 +58,36 @@ class FlaskApp(Flask):
         celery_worker = worker.worker(app=application)
 
         options = {
-            'broker': web_app.config['CELERY_BROKER_URL'],
+            'broker': self.config['CELERY_BROKER_URL'],
             'loglevel': 'INFO',
             'traceback': True,
+            # 'beat': True,
+            # 'schedule': '/var/run/celery/beat-schedule',
+            # 'scheduler' : 'celery.beat:PersistentScheduler'
         }
 
         celery_worker.run(**options)
 
+
+    def run_beat(self):
+
+        if self.beat_started:
+            return
+
+        application = current_app._get_current_object()
+
+        celery_beat = beat.beat(app=application)
+
+        options = {
+            'broker': self.config['CELERY_BROKER_URL'],
+            'loglevel': 'INFO',
+            'traceback': True,
+            'beat': True,
+            'schedule': '/var/run/celery/beat-schedule'
+        }
+
+        celery_beat.run(**options)
+        
     def run(self, host=None, port=None, debug=None,
             dicom_listener_port=7777,
             dicom_listener_aetitle="IMPIT_SERVICE",
@@ -71,15 +95,17 @@ class FlaskApp(Flask):
 
         logger.info('Starting APP!')
 
-        p = Process(target=self.run_celery)
-        p.start()
+        pc = Process(target=self.run_celery)
+        pc.start()
         self.celery_started = True
+
+        pb = Process(target=self.run_beat)
+        pb.start()
+        self.beat_started = True
 
         self.dicom_listener_port = dicom_listener_port
         self.dicom_listener_aetitle = dicom_listener_aetitle
-        logger.info('Starting Dicom Listener on port: {0} with AE Title: {1}',
-            dicom_listener_port,
-            dicom_listener_aetitle)
+        
         from .tasks import listen_task
         listen_task.apply_async([
             dicom_listener_port,
@@ -89,22 +115,11 @@ class FlaskApp(Flask):
         super().run(host=host, port=port, debug=debug,
                     load_dotenv=load_dotenv, use_reloader=False, **options)
 
-        p.join()
+        pc.join()
+        pb.join()
 
     def test_client(self, use_cookies=True, **kwargs):
 
         self.init_app()
 
         return super().test_client(use_cookies=use_cookies, **kwargs)
-
-
-web_app = FlaskApp(__name__)
-web_app.config['SECRET_KEY'] = uuid.uuid4().hex
-
-import impit.framework.api
-import impit.framework.views
-import impit.framework.tasks
-import impit.framework.models
-
-# Import DataObject for easy import from algorithm
-from impit.framework.models import DataObject

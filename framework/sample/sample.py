@@ -1,4 +1,4 @@
-from impit.framework.app import web_app, DataObject
+from impit.framework import app, DataObject
 from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
 
 from loguru import logger
@@ -16,7 +16,7 @@ body_settings_defaults = {
 }
 
 
-@web_app.register('Primitive Body Segmentation', default_settings=body_settings_defaults)
+@app.register('Primitive Body Segmentation', default_settings=body_settings_defaults)
 def primitive_body_segmentation(data_objects, working_dir, settings):
 
     logger.info('Running Primitive Body Segmentation')
@@ -78,6 +78,33 @@ def primitive_body_segmentation(data_objects, working_dir, settings):
 
     return output_objects
 
+from impit.framework.sample.lung import GenLungMask, GenAirwayMask
+import uuid
+
+@app.register('Airway Segmentation')
+def another_func(data_objects, working_dir):
+    logger.info('Running Airway Segmentation')
+
+    output_objects = []
+    for d in data_objects:
+    
+        # Read the image series
+        load_path = d.path
+        if d.type == 'DICOM':
+            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(d.path)
+
+        out_dir = os.path.join(working_dir, uuid.uuid4().hex)
+        os.mkdir(out_dir)
+        lung_mask = GenLungMask(load_path, out_dir)
+        lung_mask_file = os.path.join(working_dir, 'Lungs.nii.gz')
+        sitk.WriteImage(lung_mask, lung_mask_file)
+        output_objects.append(DataObject(type='FILE', path=lung_mask_file, parent=d))
+
+        airway_mask_file = os.path.join(working_dir, 'Airways.nii.gz')
+        GenAirwayMask(out_dir, load_path, lung_mask_file, airway_mask_file)
+        output_objects.append(DataObject(type='FILE', path=airway_mask_file, parent=d))
+        
+    return output_objects
 
 if __name__ == "__main__":
 
@@ -86,6 +113,6 @@ if __name__ == "__main__":
     dicom_listener_port=7777
     dicom_listener_aetitle="SAMPLE_SERVICE"
 
-    web_app.run(debug=True, host="0.0.0.0", port=8000,
+    app.run(debug=True, host="0.0.0.0", port=8000,
         dicom_listener_port=dicom_listener_port,
         dicom_listener_aetitle=dicom_listener_aetitle)

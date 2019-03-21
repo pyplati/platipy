@@ -1,18 +1,11 @@
-from .app import web_app
+from impit.framework import db
 from loguru import logger
 import datetime
 import json
 import os
 
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import DeclarativeMeta
-
-# TODO place this in the working directory
-web_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{0}/{1}.db'.format(os.getcwd(), os.path.basename(os.getcwd()))
-web_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(web_app)
-
 
 # This custom encoder takes care of converting our SQLAlchemy models to a JSON
 # encodable format.
