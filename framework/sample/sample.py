@@ -78,34 +78,6 @@ def primitive_body_segmentation(data_objects, working_dir, settings):
 
     return output_objects
 
-from impit.framework.sample.lung import GenLungMask, GenAirwayMask
-import uuid
-
-@app.register('Airway Segmentation')
-def another_func(data_objects, working_dir):
-    logger.info('Running Airway Segmentation')
-
-    output_objects = []
-    for d in data_objects:
-    
-        # Read the image series
-        load_path = d.path
-        if d.type == 'DICOM':
-            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(d.path)
-
-        out_dir = os.path.join(working_dir, uuid.uuid4().hex)
-        os.mkdir(out_dir)
-        lung_mask = GenLungMask(load_path, out_dir)
-        lung_mask_file = os.path.join(working_dir, 'Lungs.nii.gz')
-        sitk.WriteImage(lung_mask, lung_mask_file)
-        output_objects.append(DataObject(type='FILE', path=lung_mask_file, parent=d))
-
-        airway_mask_file = os.path.join(working_dir, 'Airways.nii.gz')
-        GenAirwayMask(out_dir, load_path, lung_mask_file, airway_mask_file)
-        output_objects.append(DataObject(type='FILE', path=airway_mask_file, parent=d))
-        
-    return output_objects
-
 if __name__ == "__main__":
 
     # Run app by calling "python sample.py" from the command line

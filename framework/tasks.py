@@ -20,10 +20,10 @@ from .models import Dataset, DataObject
 #     },
 # }
 celery.conf.beat_schedule = {
-    # Executes every morning at 5am.
-    'clean-up-every-morning': {
+    # Executes every hour
+    'clean-up-every-hour': {
         'task': 'impit.framework.tasks.clean_up_task',
-        'schedule': crontab(hour=3, minute=30),
+        'schedule': crontab(minute=0),
         'args': (),
     },
 }

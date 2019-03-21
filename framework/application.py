@@ -7,6 +7,7 @@ from loguru import logger
 import json
 import os
 import uuid
+import tempfile
 
 # TODO configure log file properly
 logger.add("logfile.log")
@@ -60,10 +61,7 @@ class FlaskApp(Flask):
         options = {
             'broker': self.config['CELERY_BROKER_URL'],
             'loglevel': 'INFO',
-            'traceback': True,
-            # 'beat': True,
-            # 'schedule': '/var/run/celery/beat-schedule',
-            # 'scheduler' : 'celery.beat:PersistentScheduler'
+            'traceback': True
         }
 
         celery_worker.run(**options)
@@ -83,7 +81,7 @@ class FlaskApp(Flask):
             'loglevel': 'INFO',
             'traceback': True,
             'beat': True,
-            'schedule': '/var/run/celery/beat-schedule'
+            'schedule': os.path.join(str(tempfile.mkdtemp()),'celery-beat-schedule')
         }
 
         celery_beat.run(**options)
