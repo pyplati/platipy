@@ -2,13 +2,12 @@ import pytest
 import os
 import json
 import tempfile
-from impit.framework.app import web_app
+from impit.framework import app
 
 
 @pytest.fixture
 def client():
-    web_app.working_dir = tempfile.mkdtemp()
-    return web_app.test_client()
+    return app.test_client()
 
 
 def test_status(client):

@@ -1,4 +1,4 @@
-from impit.framework import app
+from impit.framework import app, api
 from loguru import logger
 
 import flask_restful
@@ -21,12 +21,6 @@ class CustomConfig(object):
     RESTFUL_JSON = {'separators': (', ', ': '),
                     'indent': 2,
                     'cls': AlchemyEncoder}
-
-
-# Initialize API
-api = Api(app)
-app.config.from_object('impit.framework.api.CustomConfig')
-app.api = api
 
 
 def authenticate(func):

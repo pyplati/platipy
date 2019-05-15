@@ -1,4 +1,4 @@
-from .app import web_app
+from . import app
 from .models import db, APIKey
 
 from sqlalchemy.exc import OperationalError

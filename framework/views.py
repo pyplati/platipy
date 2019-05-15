@@ -1,13 +1,29 @@
-from impit.framework import app
-from loguru import logger
+from impit.framework import app, celery
+from ..dicom.communication import DicomConnector
+from .models import db, APIKey
 
-from flask import Flask, request, render_template, send_from_directory
+from loguru import logger
+import psutil
+
+from flask import Flask, request, render_template, jsonify
 
 
 @app.route('/endpoint/add', methods=['GET'])
 def add_endpoint():
 
     return render_template('endpoint_add.html', data=app.data)
+
+
+@app.route('/log', methods=['GET'])
+def fetch_log():
+
+    log = ''
+    with open('logfile.log') as f:
+
+        log = f.read()
+
+    return jsonify({'log': log})
+
 
 @app.route('/endpoint/<id>', methods=['GET', 'POST'])
 def view_endpoint(id):
@@ -28,17 +44,44 @@ def view_endpoint(id):
 
     return render_template('endpoint_view.html', data=app.data, endpoint=endpoint, status=status, format_settings=lambda x: json.dumps(x, indent=4))
 
-@app.route('/')
-def status():
-    """Homepage of the web app, supplying an overview of the status of the system"""
-    # celery = Celery('vwadaptor',
-    #                broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')
+
+@app.route('/status', methods=['GET'])
+def fetch_status():
 
     celery_running = False
     if celery.control.inspect().active():
         celery_running = True
     status_context = {'celery': celery_running}
-    status_context['algorithms'] = app.algorithms
+    status_context['algorithms'] = []
+    for a in app.algorithms:
+        algorithm = app.algorithms[a]
+        status_context['algorithms'].append(
+            {'name': algorithm.name,
+             'default_settings': algorithm.default_settings})
 
-    return render_template('status.html', data=app.data, status=status_context)
+    dicom_connector = DicomConnector(
+        port=app.dicom_listener_port, ae_title=app.dicom_listener_aetitle)
+    dicom_listening = False
+    if dicom_connector.verify():
+        dicom_listening = True
+    status_context['dicom_listener'] = {'port': app.dicom_listener_port,
+                                        'aetitle': app.dicom_listener_aetitle,
+                                        'listening': dicom_listening}
 
+    status_context['ram_usage'] = psutil.virtual_memory()._asdict()
+    status_context['disk_usage'] = psutil.disk_usage('/')._asdict()
+    status_context['cpu_usage'] = psutil.cpu_percent()
+
+    status_context['applications'] = []
+    for ak in APIKey.query.all():
+        status_context['applications'].append({'name': ak.name, 'key': ak.key})
+        
+
+    return jsonify(status_context)
+
+
+@app.route('/')
+def status():
+    """Homepage of the web app, supplying an overview of the status of the system"""
+
+    return render_template('status.html', data={})

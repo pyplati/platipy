@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append("../../../")
+
 from impit.framework import app, DataObject
 from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
 

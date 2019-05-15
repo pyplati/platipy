@@ -9,9 +9,6 @@ import os
 import uuid
 import tempfile
 
-# TODO configure log file properly
-logger.add("logfile.log")
-
 class Algorithm():
 
     def __init__(self, name, function, default_settings):
@@ -35,10 +32,6 @@ class FlaskApp(Flask):
     dicom_listener_aetitle = "IMPIT_SERVICE"
 
     api = None # Holds reference to api for extensibility
-
-    def __init__(self, name):
-
-        super().__init__(name)
 
     def register(self, name, default_settings=None):
 
@@ -116,8 +109,8 @@ class FlaskApp(Flask):
         pc.join()
         pb.join()
 
-    def test_client(self, use_cookies=True, **kwargs):
+    # def test_client(self, use_cookies=True, **kwargs):
 
-        self.init_app()
+    #     self.init_app()
 
-        return super().test_client(use_cookies=use_cookies, **kwargs)
+    #     return super().test_client(use_cookies=use_cookies, **kwargs)

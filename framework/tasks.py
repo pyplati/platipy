@@ -12,13 +12,6 @@ from ..dicom.communication import DicomConnector
 
 from .models import Dataset, DataObject
 
-# celery.conf.beat_schedule = {
-#     'add-every-30-seconds': {
-#         'task': 'impit.framework.tasks.clean_up_task',
-#         'schedule': 10.0,
-#         'args': ()
-#     },
-# }
 celery.conf.beat_schedule = {
     # Executes every hour
     'clean-up-every-hour': {

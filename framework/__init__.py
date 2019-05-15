@@ -1,15 +1,21 @@
+import os
+import uuid
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-
+from flask_restful import Api
 from celery import Celery
-from celery import current_app
-from celery.bin import worker
-from celery.task.control import revoke
 
 from .application import FlaskApp
 
-import os
-import uuid
+from loguru import logger
+
+env_work = os.getcwd()
+if 'WORK' in os.environ:
+    env_work = os.environ['WORK']
+
+# Configure Log file location
+logger.add(os.path.join(env_work, "service.log"))
 
 # Create Flask app
 app = FlaskApp(__name__)
@@ -17,8 +23,8 @@ app.config['SECRET_KEY'] = uuid.uuid4().hex
 
 # Configure SQL Alchemy
 
-# # TODO place this in the working directory
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{0}/{1}.db'.format(os.getcwd(), os.path.basename(os.getcwd()))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{0}/{1}.db'.format(
+    env_work, os.path.basename(os.getcwd()))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -30,7 +36,11 @@ app.config['result_backend'] = 'redis://localhost:6379/0'
 celery = Celery(__name__, broker='redis://localhost:6379/0')
 celery.conf.update(app.config)
 
-import impit.framework.tasks
-import impit.framework.api
+# Configure API
+api = Api(app)
+app.config.from_object('impit.framework.api.CustomConfig')
+
 import impit.framework.views
+import impit.framework.api
+import impit.framework.tasks
 from impit.framework.models import DataObject

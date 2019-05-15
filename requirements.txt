@@ -8,9 +8,11 @@ scikit-image
 click
 pytest
 pydicom
-pynetdicom
+pynetdicom >= 1.3.0
 flask
 flask-restful
+flask-sqlalchemy
 celery
 redis
 loguru
+psutil

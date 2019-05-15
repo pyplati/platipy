@@ -12,6 +12,7 @@ from pydicom.uid import (
 
 from pynetdicom import (
     AE,
+    evt,
     VerificationPresentationContexts,
     StoragePresentationContexts,
     QueryRetrievePresentationContexts,
@@ -23,22 +24,23 @@ from pynetdicom.pdu_primitives import SCP_SCU_RoleSelectionNegotiation
 
 from loguru import logger
 
+
 class DicomConnector:
-    
-    def __init__(self, host='127.0.0.1', port=0, ae_title = '', output_directory=tempfile.mkdtemp()):
+
+    def __init__(self, host='127.0.0.1', port=0, ae_title='', output_directory=tempfile.mkdtemp()):
         self.host = host
         self.port = port
         self.ae_title = ae_title if ae_title else ''
-        
-        logger.info('DicomConnector with host: ' + self.host + 
-            ' port: ' + str(self.port) + 
-            ' AETitle: ' + self.ae_title)
+
+        logger.info('DicomConnector with host: ' + self.host +
+                    ' port: ' + str(self.port) +
+                    ' AETitle: ' + self.ae_title)
 
         self.output_directory = output_directory
-            
+
     def verify(self):
         # Verify Connection
-        
+
         ae = AE()
         ae.requested_contexts = VerificationPresentationContexts
 
@@ -47,7 +49,7 @@ class DicomConnector:
             assoc = ae.associate(self.host, self.port, ae_title=self.ae_title)
         else:
             assoc = ae.associate(self.host, self.port)
-        
+
         result = None
 
         if assoc.is_established:
@@ -58,14 +60,13 @@ class DicomConnector:
 
             # Release the association
             assoc.release()
-            
+
         return not result == None
-    
-    
+
     def do_find(self, dataset, query_model='P'):
-        
+
         ae = AE()
-        
+
         ae.requested_contexts = QueryRetrievePresentationContexts
 
         if(len(self.ae_title) > 0):
@@ -79,44 +80,43 @@ class DicomConnector:
 
             responses = assoc.send_c_find(dataset, query_model=query_model)
 
-            for resp,ds in responses:
+            for resp, ds in responses:
                 results.append(ds)
 
             # Release the association
             assoc.release()
-            
+
         logger.info('Got ' + str(len(results)) + ' results')
-            
+
         return results
-        
-    
+
     def get_studies_for_patient(self, patID):
-        
+
         dataset = Dataset()
-        dataset.StudyInstanceUID=''
-        dataset.StudyDescription=''
+        dataset.StudyInstanceUID = ''
+        dataset.StudyDescription = ''
         dataset.PatientID = patID
         dataset.PatientName = ''
         dataset.QueryRetrieveLevel = "STUDY"
-            
+
         return self.do_find(dataset)
-    
+
     def get_series_for_study(self, studyInstanceUID, modality):
-        
+
         dataset = Dataset()
         dataset.StudyInstanceUID = studyInstanceUID
         dataset.Modality = modality
         dataset.SeriesInstanceUID = ''
         dataset.SeriesDescription = ''
         dataset.QueryRetrieveLevel = 'SERIES'
-            
+
         return self.do_find(dataset)
 
     def move_series(self, seriesInstanceUID, move_aet="PYNETDICOM", query_model='P'):
 
         ae = AE()
         ae.requested_contexts = QueryRetrievePresentationContexts
-                  
+
         if(len(self.ae_title) > 0):
             assoc = ae.associate(self.host, self.port, ae_title=self.ae_title)
         else:
@@ -129,22 +129,23 @@ class DicomConnector:
             dataset.SeriesInstanceUID = seriesInstanceUID
             dataset.QueryRetrieveLevel = "SERIES"
 
-            responses = assoc.send_c_move(dataset, move_aet, query_model=query_model)
+            responses = assoc.send_c_move(
+                dataset, move_aet, query_model=query_model)
 
-            for (a,b) in responses:
+            for (a, b) in responses:
                 pass
-                
+
             # Release the association
             assoc.release()
-            
+
         logger.info('Finished')
 
     def download_series(self, seriesInstanceUID, recieved_callback=None, query_model='P'):
-        
+
         self.recieved_callback = recieved_callback
-        
+
         ae = AE()
-        
+
         # Specify which SOP Classes are supported as an SCU
         for context in QueryRetrievePresentationContexts:
             ae.add_requested_context(context.abstract_syntax)
@@ -161,12 +162,19 @@ class DicomConnector:
             role.scu_role = False
             ext_neg.append(role)
 
-        ae.on_c_store = self.on_c_store
-                             
+        handlers = [(evt.EVT_C_STORE, self.on_c_store)]
+
         if(len(self.ae_title) > 0):
-            assoc = ae.associate(self.host, self.port, ae_title=self.ae_title, ext_neg=ext_neg)
+            assoc = ae.associate(self.host,
+                                 self.port,
+                                 ae_title=self.ae_title,
+                                 ext_neg=ext_neg,
+                                 evt_handlers=handlers)
         else:
-            assoc = ae.associate(self.host, self.port, ext_neg=ext_neg)
+            assoc = ae.associate(self.host,
+                                 self.port,
+                                 ext_neg=ext_neg,
+                                 evt_handlers=handlers)
 
         if assoc.is_established:
             logger.info('Association accepted by the peer')
@@ -177,36 +185,38 @@ class DicomConnector:
 
             responses = assoc.send_c_get(dataset, query_model=query_model)
 
-            for (a,b) in responses:
+            for (a, b) in responses:
                 pass
-                
+
             # Release the association
             assoc.release()
-            
+
         logger.info('Finished')
 
         return self.current_dir
 
-    def on_c_store(self, dataset, context, info):
+    def on_c_store(self, event):
+
+        dataset = event.dataset
 
         mode_prefix = 'UN'
-        mode_prefixes = {'CT Image Storage' : 'CT',
-                         'Enhanced CT Image Storage' : 'CTE',
-                         'MR Image Storage' : 'MR',
-                         'Enhanced MR Image Storage' : 'MRE',
-                         'Positron Emission Tomography Image Storage' : 'PT',
-                         'Enhanced PET Image Storage' : 'PTE',
-                         'RT Image Storage' : 'RI',
-                         'RT Dose Storage' : 'RD',
-                         'RT Plan Storage' : 'RP',
-                         'RT Structure Set Storage' : 'RS',
-                         'Computed Radiography Image Storage' : 'CR',
-                         'Ultrasound Image Storage' : 'US',
-                         'Enhanced Ultrasound Image Storage' : 'USE',
-                         'X-Ray Angiographic Image Storage' : 'XA',
-                         'Enhanced XA Image Storage' : 'XAE',
-                         'Nuclear Medicine Image Storage' : 'NM',
-                         'Secondary Capture Image Storage' : 'SC'}
+        mode_prefixes = {'CT Image Storage': 'CT',
+                         'Enhanced CT Image Storage': 'CTE',
+                         'MR Image Storage': 'MR',
+                         'Enhanced MR Image Storage': 'MRE',
+                         'Positron Emission Tomography Image Storage': 'PT',
+                         'Enhanced PET Image Storage': 'PTE',
+                         'RT Image Storage': 'RI',
+                         'RT Dose Storage': 'RD',
+                         'RT Plan Storage': 'RP',
+                         'RT Structure Set Storage': 'RS',
+                         'Computed Radiography Image Storage': 'CR',
+                         'Ultrasound Image Storage': 'US',
+                         'Enhanced Ultrasound Image Storage': 'USE',
+                         'X-Ray Angiographic Image Storage': 'XA',
+                         'Enhanced XA Image Storage': 'XAE',
+                         'Nuclear Medicine Image Storage': 'NM',
+                         'Secondary Capture Image Storage': 'SC'}
 
         try:
             mode_prefix = mode_prefixes[dataset.SOPClassUID.name]
@@ -226,8 +236,9 @@ class DicomConnector:
         filename = os.path.join(series_dir, filename)
 
         if os.path.exists(filename):
-            logger.info('DICOM file already exists, overwriting')
+            logger.debug('DICOM file already exists, overwriting')
 
+        context = event.context
         meta = Dataset()
         meta.MediaStorageSOPClassUID = dataset.SOPClassUID
         meta.MediaStorageSOPInstanceUID = dataset.SOPInstanceUID
@@ -248,17 +259,17 @@ class DicomConnector:
             # We use `write_like_original=False` to ensure that a compliant
             #   File Meta Information Header is written
             ds.save_as(filename, write_like_original=False)
-            status_ds.Status = 0x0000 # Success
+            status_ds.Status = 0x0000  # Success
         except IOError:
-            logger.info('Could not write file to specified directory:')
-            logger.info("    {0!s}".format(os.path.dirname(filename)))
-            logger.info('Directory may not exist or you may not have write '
-                    'permission')
+            logger.warning('Could not write file to specified directory:')
+            logger.warning("    {0!s}".format(os.path.dirname(filename)))
+            logger.warning('Directory may not exist or you may not have write '
+                           'permission')
             # Failed - Out of Resources - IOError
             status_ds.Status = 0xA700
         except:
-            logger.info('Could not write file to specified directory:')
-            logger.info("    {0!s}".format(os.path.dirname(filename)))
+            logger.warning('Could not write file to specified directory:')
+            logger.warning("    {0!s}".format(os.path.dirname(filename)))
             # Failed - Out of Resources - Miscellaneous error
             status_ds.Status = 0xA701
 
@@ -279,7 +290,7 @@ class DicomConnector:
         transfer_syntax = [ImplicitVRLittleEndian]
 
         ae = AE()
-        
+
         for context in StoragePresentationContexts:
             ae.add_requested_context(context.abstract_syntax, transfer_syntax)
 
@@ -290,7 +301,7 @@ class DicomConnector:
 
         status = ''
         if assoc.is_established:
-            logger.info('Sending file: {0!s}'.format(dcm_file))
+            logger.debug('Sending file: {0!s}'.format(dcm_file))
 
             for f in dcm_files:
                 ds = pydicom.read_file(f)
@@ -298,10 +309,10 @@ class DicomConnector:
 
             # Release the association
             assoc.release()
-            
+
         return status
 
-    def on_c_echo(self, context, info):
+    def on_c_echo(self, event):
         """Respond to a C-ECHO service request.
 
         Parameters
@@ -322,13 +333,11 @@ class DicomConnector:
         logger.info('C-ECHO!')
         return 0x0000
 
-    def on_association_accepted(self, p):
-        logger.info('on_association_accepted')
+    def on_association_accepted(self, event):
         self.current_dir = None
 
-    def on_association_released(self):
-        logger.info('on_association_released')
-        
+    def on_association_released(self, event):
+
         if self.recieved_callback and self.current_dir:
             self.recieved_callback(self.current_dir)
 
@@ -337,18 +346,18 @@ class DicomConnector:
         self.recieved_callback = recieved_callback
 
         # Initialise the Application Entity and specify the listen port
-        ae = AE(port=self.port, ae_title=ae_title)
+        ae = AE(ae_title=ae_title)
 
         # Add the supported presentation context
         ae.add_supported_context(VerificationSOPClass)
         for context in StoragePresentationContexts:
             ae.add_supported_context(context.abstract_syntax)
 
-        ae.on_c_echo = self.on_c_echo
-        ae.on_c_store = self.on_c_store
-        ae.on_c_move = self.on_c_store
-        ae.on_association_accepted = self.on_association_accepted
-        ae.on_association_released = self.on_association_released
+        handlers = [(evt.EVT_C_MOVE, self.on_c_store),
+                    (evt.EVT_C_STORE, self.on_c_store),
+                    (evt.EVT_C_ECHO, self.on_c_echo),
+                    (evt.EVT_ACCEPTED, self.on_association_accepted),
+                    (evt.EVT_RELEASED, self.on_association_released)]
 
         # Start listening for incoming association requests
-        ae.start()
+        ae.start_server(('', self.port), evt_handlers=handlers)

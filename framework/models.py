@@ -57,8 +57,8 @@ class AlchemyEncoder(json.JSONEncoder):
 
 
 def default_timeout():
-
-    return datetime.datetime.utcnow() + timedelta(hours=24)
+    
+    return datetime.datetime.utcnow() + datetime.timedelta(hours=24)
 
 
 class APIKey(db.Model):
