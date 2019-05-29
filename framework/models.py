@@ -67,8 +67,10 @@ class APIKey(db.Model):
     key = db.Column(db.String(80), primary_key=True)
     name = db.Column(db.String(80))
 
+    is_admin = db.Column(db.Boolean, default=False)
+
     def __repr__(self):
-        return '{0}: {1}'.format(self.name, self.key)
+        return '{0}: {1} (Admin: {2})'.format(self.name, self.key, self.is_admin)
 
 
 class DicomLocation(db.Model):

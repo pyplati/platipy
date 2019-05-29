@@ -17,6 +17,7 @@
     
     <!-- Vue -->
     <script src="/static/js/vue.min.js"></script>
+    <script src="/static/js/vue-router.js"></script>
     <script src="/static/js/vue-resource.min.js"></script>
   </head>
 
@@ -30,22 +31,22 @@
       </ul>
     </nav>
 
-    <div class="container-fluid">
+    <div class="container-fluid" id="app">
       <div class="row">
         <nav class="col-md-2 d-none d-md-block bg-light sidebar">
           <div class="sidebar-sticky">
             <ul class="nav flex-column">
               <li class="nav-item">
-                <a class="nav-link {% if status %}active{% endif %}" href="/">
+                <router-link to="/foo" class="nav-link {% if status %}active{% endif %}">
                   <span data-feather="home"></span>
                   Status {% if status != None %}<span class="sr-only">(current)</span>{% endif %}
-                </a>
+                </router-link>
               </li>
               <li class="nav-item">
-                <a class="nav-link {% if settings %}active{% endif %}" href="/settings">
+                <router-link class="nav-link {% if settings %}active{% endif %}" to="/bar">
                   <span data-feather="settings"></span>
                   Settings
-                </a>
+                </router-link>
               </li>
               <li class="nav-item">
                 <a class="nav-link {% if log %}active{% endif %}" href="/logs">
@@ -75,28 +76,8 @@
         </nav>
 
         <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-          {% block content %}{% endblock %}
+          <router-view></router-view>
         </main>
-      </div>
-    </div>
-    
-    <div class="modal" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Modal title</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>Modal body text goes here.</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary">Save changes</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -110,6 +91,37 @@
     <script src="/static/feather/feather.min.js"></script>
     <script>
       feather.replace()
+
+      // 1. Define route components.
+      // These can be imported from other files
+      const Foo = { template: '<div>foo</div>' }
+      const Bar = { template: '<div>bar</div>' }
+
+      // 2. Define some routes
+      // Each route should map to a component. The "component" can
+      // either be an actual component constructor created via
+      // `Vue.extend()`, or just a component options object.
+      // We'll talk about nested routes later.
+      const routes = [
+        { path: '/foo', component: Foo },
+        { path: '/bar', component: Bar }
+      ]
+
+      // 3. Create the router instance and pass the `routes` option
+      // You can pass in additional options here, but let's
+      // keep it simple for now.
+      const router = new VueRouter({
+        routes // short for `routes: routes`
+      })
+
+      // 4. Create and mount the root instance.
+      // Make sure to inject the router with the router option to make the
+      // whole app router-aware.
+      const app = new Vue({
+        router
+      }).$mount('#app')
+
+      // Now the app has started!
     </script>
   </body>
 </html>

@@ -13,14 +13,14 @@ def create_db():
     db.create_all()
 
     
-def add_api_key(name):
+def add_api_key(name, is_admin):
     """
     Add a new API Key with the given name
 
     name: Name of the API Key
     """
 
-    ak = APIKey(key=str(uuid.uuid4()), name=name)
+    ak = APIKey(key=str(uuid.uuid4()), name=name, is_admin=is_admin)
     db.session.add(ak)
     db.session.commit()
 
@@ -37,7 +37,8 @@ def cli(ctx):
 @click.pass_context
 @click.option('--add', '-a', help="Name of api key to add")
 @click.option('--list', '-l', is_flag=True, help="List all API keys")
-def key(ctx, add, list):
+@click.option('--super', '-s', is_flag=True, help="API Key has super user priviledges (has access to other application's data)")
+def key(ctx, add, list, super):
 
     try:
         keys = APIKey.query.all()
@@ -47,7 +48,7 @@ def key(ctx, add, list):
             return
 
         if(add):
-            api_key = add_api_key(add)
+            api_key = add_api_key(add, super)
 
             click.echo('Key added: {0}'.format(api_key))
 

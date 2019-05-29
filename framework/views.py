@@ -81,7 +81,7 @@ def fetch_status():
 
 
 @app.route('/')
-def status():
-    """Homepage of the web app, supplying an overview of the status of the system"""
+def dashboard():
+    """Entry point to the dashboard of the application"""
 
-    return render_template('status.html', data={})
+    return render_template('dashboard.html', data={})
