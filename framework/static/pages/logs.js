@@ -1,12 +1,54 @@
 var Logs = Vue.component("Logs", {
     template: `
-    <div class="container justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" id="status">
+    <div class="container justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
 
         <h1 class="h2">Logs</h1>
-
-            <textarea v-bind:style="textareaStyle">{{ log }}</textarea>
+        <div class="row">
+            <div class="col-sm-3">
+                <input type="checkbox" id="chkError" v-model="logLevel.error">
+                <label for="chkError">Error</label>
+            </div>
+            <div class="col-sm-3">
+                <input type="checkbox" id="chkWarn" v-model="logLevel.warning">
+                <label for="chkWarn">Warning</label>
+            </div>
+            <div class="col-sm-3">
+                <input type="checkbox" id="chkInfo" v-model="logLevel.info">
+                <label for="chkInfo">Info</label>
+            </div>
+            <div class="col-sm-3">
+                <input type="checkbox" id="chkDebug" v-model="logLevel.debug">
+                <label for="chkDebug">Debug</label>
+            </div>
+        </div>
+        <textarea v-bind:style="textareaStyle">{{ log | level(logLevel) }}</textarea>
     </div>
   `,
+  filters: {
+      level: function (log, logLevel) {
+
+        var result = "";
+        for (var i = log.length-1; i >= 0; i--) {
+            var line = log[i];
+
+            if(!logLevel.error && line.includes("| ERROR")) {
+                continue;
+            }
+            if(!logLevel.warning && line.includes("| WARNING")) {
+                continue;
+            }
+            if(!logLevel.info && line.includes("| INFO")) {
+                continue;
+            }
+            if(!logLevel.debug && line.includes("| DEBUG")) {
+                continue;
+            }
+            result += line + "\n";
+        }
+
+        return result
+      }
+    },
     data: function () {
       return {
         textareaStyle: {
@@ -16,7 +58,13 @@ var Logs = Vue.component("Logs", {
           height: '500px',
         },
         log: "",
-        timer: ""
+        timer: "",
+        logLevel: {
+            error: true, 
+            warning: true,
+            info: true,
+            debug: false
+        }
       }
     },
     // define methods under the `methods` object
@@ -28,11 +76,7 @@ var Logs = Vue.component("Logs", {
                 console.log(response);
 
                 // get the Log
-                this.log = "";
-                for (var i = response.body.log.length-1; i >= 0; i--) {
-                    var line = response.body.log[i];
-                    this.log += line + "\n";
-                }
+                this.log = response.body.log;
 
             }, response => {
                 // error callback
