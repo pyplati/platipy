@@ -1,8 +1,6 @@
 from impit.framework import db
-from loguru import logger
 import datetime
 import json
-import os
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import DeclarativeMeta
@@ -154,4 +152,4 @@ class DataObject(db.Model):
         'DataObject', primaryjoin="and_(DataObject.parent_id == DataObject.id)")
 
     def __repr__(self):
-        return '{0} - {1}: {1}'.format(self.dataset_id, self.id, self.timestamp)
+        return '{0} - {1}: {2}'.format(self.dataset_id, self.id, self.timestamp)

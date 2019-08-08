@@ -15,7 +15,8 @@ if 'WORK' in os.environ:
     env_work = os.environ['WORK']
 
 # Configure Log file location
-logger.add(os.path.join(env_work, "service.log"))
+log_file_path = os.path.join(env_work, "service.log")
+logger.add(log_file_path, rotation="1 hour")
 
 # Create Flask app
 app = FlaskApp(__name__)

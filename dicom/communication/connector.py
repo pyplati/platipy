@@ -32,7 +32,7 @@ class DicomConnector:
         self.port = port
         self.ae_title = ae_title if ae_title else ''
 
-        logger.info('DicomConnector with host: ' + self.host +
+        logger.debug('DicomConnector with host: ' + self.host +
                     ' port: ' + str(self.port) +
                     ' AETitle: ' + self.ae_title)
 
@@ -330,7 +330,7 @@ class DicomConnector:
             either an ``int`` or a ``Dataset`` object containing (at a
             minimum) a (0000,0900) *Status* element.
         """
-        logger.info('C-ECHO!')
+        logger.debug('C-ECHO!')
         return 0x0000
 
     def on_association_accepted(self, event):
