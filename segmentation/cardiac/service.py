@@ -252,7 +252,7 @@ def cardiac_service(data_objects, working_dir, settings):
         templateIm = sitk.Cast((img * 0),sitk.sitkUInt8)
 
         for structureName in atlasStructures:
-            binaryStruct = processProbabilityImage(combinedLabelDict[atlasStructures], 0.5)
+            binaryStruct = processProbabilityImage(combinedLabelDict[structureName], 0.5)
             pasteImg = sitk.Paste(templateIm, binaryStruct, binaryStruct.GetSize(), (0,0,0), (sag0, cor0, ax0))
 
             # Write the mask to a file in the working_dir
@@ -260,12 +260,9 @@ def cardiac_service(data_objects, working_dir, settings):
                 working_dir, outputFormat.format(structureName))
             sitk.WriteImage(pasteImg, mask_file)
 
-
-
-
-        # Create the output Data Object and add it to the list of output_objects
-        do = DataObject(type='FILE', path=mask_file, parent=d)
-        output_objects.append(do)
+            # Create the output Data Object and add it to the list of output_objects
+            do = DataObject(type='FILE', path=mask_file, parent=d)
+            output_objects.append(do)
 
         # If the input was a DICOM, then we can use it to generate an output RTStruct
         # if d.type == 'DICOM':
