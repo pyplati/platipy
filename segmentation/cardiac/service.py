@@ -213,18 +213,18 @@ def cardiac_service(data_objects, working_dir, settings):
         outlierFactor       = settings['IARSettings']['outlierFactor']
         minBestAtlases      = settings['IARSettings']['minBestAtlases']
 
-        # atlasSet = IAR(atlasSet         = atlasSet,
-        #                structureName    = referenceStructure,
-        #                smoothMaps       = smoothDistanceMaps,
-        #                smoothSigma      = smoothSigma,
-        #                zScore           = zScoreStatistic,
-        #                outlierMethod    = outlierMethod,
-        #                minBestAtlases   = minBestAtlases,
-        #                N_factor         = outlierFactor,
-        #                logFile          = 'IAR_{0}.log'.format(datetime.datetime.now()),
-        #                debug            = False,
-        #                iteration        = 0,
-        #                singleStep       = False)
+        atlasSet = IAR(atlasSet         = atlasSet,
+                       structureName    = referenceStructure,
+                       smoothMaps       = smoothDistanceMaps,
+                       smoothSigma      = smoothSigma,
+                       zScore           = zScoreStatistic,
+                       outlierMethod    = outlierMethod,
+                       minBestAtlases   = minBestAtlases,
+                       N_factor         = outlierFactor,
+                       logFile          = 'IAR_{0}.log'.format(datetime.datetime.now()),
+                       debug            = False,
+                       iteration        = 0,
+                       singleStep       = False)
 
         """
         Step 4 - Vessel Splining
