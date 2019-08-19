@@ -31,8 +31,8 @@ cardiac_settings_defaults = {
 
                               },
     'deformableSettings'    : {
-                                'resolutionStaging':        [16,8,4,1],
-                                'iterationStaging':         [50,50,50,50],
+                                'resolutionStaging':        [8,4,2,1],
+                                'iterationStaging':         [75,50,50,25],
                                 'ncores':                   4
                               },
     'IARSettings'    : {
@@ -46,14 +46,14 @@ cardiac_settings_defaults = {
                               },
     'labelFusionSettings'   : {
                                 'voteType':                 'local',
-                                'optimalThreshold':         {'COR':0.33}
+                                'optimalThreshold':         {'COR':0.34}
                               },
     'vesselSpliningSettings': {
                                 'vesselNameList':           ['LAD'],
                                 'vesselRadius_mm':          {'LAD':2.2},
                                 'spliningDirection':        {'LAD':'z'},
-                                'stopCondition':            'count',
-                                'stopConditionValue':       1
+                                'stopCondition':            {'LAD':'count'},
+                                'stopConditionValue':       {'LAD':0}
                               }
 }
 
@@ -164,7 +164,7 @@ def cardiac_service(data_objects, working_dir, settings):
 
             for struct in atlasStructures:
                 inputStruct = atlasSet[atlasId]['Original'][struct]
-                atlasSet[atlasId]['RIR'][struct] = RigidPropagation(imgCrop, inputStruct, rigidTfm, structure=True)
+                atlasSet[atlasId]['RIR'][struct] = RigidPropagation(imgCrop, inputStruct, rigidTfm, structure=True, interpOrder=0)
 
 
         """
@@ -190,6 +190,8 @@ def cardiac_service(data_objects, working_dir, settings):
                 inputStruct = atlasSet[atlasId]['RIR'][struct]
                 atlasSet[atlasId]['DIR'][struct] = ApplyField(inputStruct, deformField, 1, 0)
 
+                sitk.WriteImage(atlasSet[atlasId]['DIR'][struct], f'{atlasId}.{struct}.nii.gz')
+
 
         """
         Step 4 - Iterative atlas removal
@@ -211,18 +213,18 @@ def cardiac_service(data_objects, working_dir, settings):
         outlierFactor       = settings['IARSettings']['outlierFactor']
         minBestAtlases      = settings['IARSettings']['minBestAtlases']
 
-        atlasSet = IAR(atlasSet         = atlasSet,
-                       structureName    = referenceStructure,
-                       smoothMaps       = smoothDistanceMaps,
-                       smoothSigma      = smoothSigma,
-                       zScore           = zScoreStatistic,
-                       outlierMethod    = outlierMethod,
-                       minBestAtlases   = minBestAtlases,
-                       N_factor         = outlierFactor,
-                       logFile          = 'IAR_{0}.log'.format(datetime.datetime.now()),
-                       debug            = False,
-                       iteration        = 0,
-                       singleStep       = False)
+        # atlasSet = IAR(atlasSet         = atlasSet,
+        #                structureName    = referenceStructure,
+        #                smoothMaps       = smoothDistanceMaps,
+        #                smoothSigma      = smoothSigma,
+        #                zScore           = zScoreStatistic,
+        #                outlierMethod    = outlierMethod,
+        #                minBestAtlases   = minBestAtlases,
+        #                N_factor         = outlierFactor,
+        #                logFile          = 'IAR_{0}.log'.format(datetime.datetime.now()),
+        #                debug            = False,
+        #                iteration        = 0,
+        #                singleStep       = False)
 
         """
         Step 4 - Vessel Splining
@@ -233,15 +235,16 @@ def cardiac_service(data_objects, working_dir, settings):
         vesselRadius_mm     = settings['vesselSpliningSettings']['vesselRadius_mm']
         spliningDirection   = settings['vesselSpliningSettings']['spliningDirection']
         stopCondition       = settings['vesselSpliningSettings']['stopCondition']
-        vesselNameList      = settings['vesselSpliningSettings']['vesselNameList']
         stopConditionValue  = settings['vesselSpliningSettings']['stopConditionValue']
 
+        segmentedVesselDict = vesselSplineGeneration(atlasSet, vesselNameList, vesselRadiusDict=vesselRadius_mm, stopConditionTypeDict=stopCondition, stopConditionValueDict=stopConditionValue, scanDirectionDict=spliningDirection)
 
 
         """
         Step 5 - Label Fusion
         """
         combinedLabelDict = combineLabels(atlasSet, atlasStructures)
+
 
         """
         Step 6 - Paste the cropped structure into the original image space
@@ -251,8 +254,24 @@ def cardiac_service(data_objects, working_dir, settings):
 
         templateIm = sitk.Cast((img * 0),sitk.sitkUInt8)
 
-        for structureName in atlasStructures:
+        voteStructures = settings['labelFusionSettings']['optimalThreshold'].keys()
+
+        for structureName in voteStructures:
+            optimalThreshold = settings['labelFusionSettings']['optimalThreshold'][structureName]
             binaryStruct = processProbabilityImage(combinedLabelDict[structureName], 0.5)
+            pasteImg = sitk.Paste(templateIm, binaryStruct, binaryStruct.GetSize(), (0,0,0), (sag0, cor0, ax0))
+
+            # Write the mask to a file in the working_dir
+            mask_file = os.path.join(
+                working_dir, outputFormat.format(structureName))
+            sitk.WriteImage(pasteImg, mask_file)
+
+            # Create the output Data Object and add it to the list of output_objects
+            do = DataObject(type='FILE', path=mask_file, parent=d)
+            output_objects.append(do)
+
+        for structureName in vesselNameList:
+            binaryStruct = segmentedVesselDict[structureName]
             pasteImg = sitk.Paste(templateIm, binaryStruct, binaryStruct.GetSize(), (0,0,0), (sag0, cor0, ax0))
 
             # Write the mask to a file in the working_dir

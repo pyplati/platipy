@@ -765,7 +765,7 @@ def combineLabelsSTAPLE(labelListDict, threshold=1e-4):
 
     return combinedLabelDict
 
-def combineLabels(atlasSet, structureName, threshold=1e-4):
+def combineLabels(atlasSet, structureName, threshold=1e-4, smoothSigma=1.0):
     """
     Combine labels using weight maps
     """
@@ -795,6 +795,9 @@ def combineLabels(atlasSet, structureName, threshold=1e-4):
 
         # Combine all the weighted labels
         combinedLabel = reduce(lambda x,y:x+y, weightedLabels) / weightSumImage
+
+        # Smooth combined label
+        combinedLabel = sitk.DiscreteGaussian(combinedLabel, smoothSigma*smoothSigma)
 
         # Normalise
         combinedLabel = sitk.RescaleIntensity(combinedLabel, 0, 1)
@@ -840,7 +843,7 @@ def processProbabilityImage(probabilityImage, threshold=0.5):
     return sitk.Cast(largestComponentImage, sitk.sitkUInt8)
 
 
-def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, scanDirection = 'z', returnVariation=False):
+def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, scanDirection = 'z'):
     """
     Input: list of SimpleITK images
            minimum total slice area required for the tube to be inserted at that slice
@@ -885,7 +888,7 @@ def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, sca
                 meanCOM = np.dstack((meanCOMZ, meanCOMY))[0]*np.array((np.sum(C, axis=0)>(conditionValue),)*2).T
             else:
                 print("Invalid condition type, please select from 'area' or 'count'.")
-                quit()
+                sys.exit()
 
         pointArray = []
         for index, COM in enumerate(meanCOM):
@@ -1003,31 +1006,45 @@ def writeVTKTubeToFile(tube, filename):
 
     return s
 
-def SimpleITKImageFromVTKTube(tube, VTKImageTemplateFilename, SITKReferenceImage, verbose = False):
+def SimpleITKImageFromVTKTube(tube, SITKReferenceImage, verbose = False):
     """
     Input: VTK tube, referenceImage (used for spacing, etc.)
     Output: SimpleITK image
     Note: Uses binary output (background 0, foreground 1)
     """
-    # The actual origin of the image
-    referenceOrigin = SITKReferenceImage.GetOrigin()
+    size     = list(SITKReferenceImage.GetSize())
+    origin   = list(SITKReferenceImage.GetOrigin())
+    spacing  = list(SITKReferenceImage.GetSpacing())
+    ncomp    = SITKReferenceImage.GetNumberOfComponentsPerPixel()
 
-    if verbose:
-        print("Creating output image")
-    reader = vtk.vtkNIFTIImageReader()
-    reader.SetFileName(VTKImageTemplateFilename)
-    reader.Update()
-    outputImage = reader.GetOutput()
-    outputImage.SetOrigin(referenceOrigin)
+    # convert the SimpleITK image to a numpy array
+    arr = sitk.GetArrayFromImage(SITKReferenceImage).transpose(2,1,0).flatten()
+
+    # send the numpy array to VTK with a vtkImageImport object
+    dataImporter = vtk.vtkImageImport()
+
+    dataImporter.CopyImportVoidPointer( arr, len(arr) )
+    dataImporter.SetDataScalarTypeToUnsignedChar()
+    dataImporter.SetNumberOfScalarComponents(ncomp)
+
+    # Set the new VTK image's parameters
+    dataImporter.SetDataExtent (0, size[0]-1, 0, size[1]-1, 0, size[2]-1)
+    dataImporter.SetWholeExtent(0, size[0]-1, 0, size[1]-1, 0, size[2]-1)
+    dataImporter.SetDataOrigin(origin)
+    dataImporter.SetDataSpacing(spacing)
+
+    dataImporter.Update()
+
+    VTKReferenceImage = dataImporter.GetOutput()
 
     # fill the image with foreground voxels:
     inval = 1
     outval = 0
-    count = outputImage.GetNumberOfPoints()
-    outputImage.GetPointData().GetScalars().Fill(inval)
+    count = VTKReferenceImage.GetNumberOfPoints()
+    VTKReferenceImage.GetPointData().GetScalars().Fill(inval)
 
     if verbose:
-        print("Generating volume using extrusion")
+        print("Generating volume using extrusion.")
     extruder = vtk.vtkLinearExtrusionFilter()
     extruder.SetInputData(tube.GetOutput())
 
@@ -1037,26 +1054,26 @@ def SimpleITKImageFromVTKTube(tube, VTKImageTemplateFilename, SITKReferenceImage
     extruder.Update()
 
     if verbose:
-        print("Using polydaya to generate stencil")
+        print("Using polydaya to generate stencil.")
     pol2stenc = vtk.vtkPolyDataToImageStencil()
     pol2stenc.SetTolerance(0) # important if extruder.SetVector(0, 0, 1) !!!
     pol2stenc.SetInputConnection(tube.GetOutputPort())
-    pol2stenc.SetOutputOrigin(outputImage.GetOrigin())
-    pol2stenc.SetOutputSpacing(outputImage.GetSpacing())
-    pol2stenc.SetOutputWholeExtent(outputImage.GetExtent())
+    pol2stenc.SetOutputOrigin(VTKReferenceImage.GetOrigin())
+    pol2stenc.SetOutputSpacing(VTKReferenceImage.GetSpacing())
+    pol2stenc.SetOutputWholeExtent(VTKReferenceImage.GetExtent())
     pol2stenc.Update()
 
     if verbose:
-        print("using stencil to generate image")
+        print("using stencil to generate image.")
     imgstenc = vtk.vtkImageStencil()
-    imgstenc.SetInputData(outputImage)
+    imgstenc.SetInputData(VTKReferenceImage)
     imgstenc.SetStencilConnection(pol2stenc.GetOutputPort())
     imgstenc.ReverseStencilOff()
     imgstenc.SetBackgroundValue(outval)
     imgstenc.Update()
 
     if verbose:
-        print("Saving image.")
+        print("Generating SimpleITK image.")
     finalImage = imgstenc.GetOutput()
     finalArray = finalImage.GetPointData().GetScalars()
     finalArray = vtk_to_numpy(finalArray).reshape(SITKReferenceImage.GetSize()[::-1])
@@ -1065,19 +1082,55 @@ def SimpleITKImageFromVTKTube(tube, VTKImageTemplateFilename, SITKReferenceImage
 
     return finalImageSITK
 
-
-def vesselSplineGeneration(atlasSet, vesselNameList, vesselRadiusDict, conditionType='counts', conditionValue=0, scanDirection='z'):
+def ConvertSimpleITKtoVTK(img):
     """
 
     """
+    size     = list(img.GetSize())
+    origin   = list(img.GetOrigin())
+    spacing  = list(img.GetSpacing())
+    ncomp    = img.GetNumberOfComponentsPerPixel()
+
+    # convert the SimpleITK image to a numpy array
+    arr = sitk.GetArrayFromImage(img).transpose(2,1,0).flatten()
+    arr_string = arr.tostring()
+
+    # send the numpy array to VTK with a vtkImageImport object
+    dataImporter = vtk.vtkImageImport()
+
+    dataImporter.CopyImportVoidPointer( arr_string, len(arr_string) )
+    dataImporter.SetDataScalarTypeToUnsignedChar()
+    dataImporter.SetNumberOfScalarComponents(ncomp)
+
+    # Set the new VTK image's parameters
+    dataImporter.SetDataExtent (0, size[0]-1, 0, size[1]-1, 0, size[2]-1)
+    dataImporter.SetWholeExtent(0, size[0]-1, 0, size[1]-1, 0, size[2]-1)
+    dataImporter.SetDataOrigin(origin)
+    dataImporter.SetDataSpacing(spacing)
+
+    dataImporter.Update()
+
+    vtk_image = dataImporter.GetOutput()
+    return vtk_image
+
+def vesselSplineGeneration(atlasSet, vesselNameList, vesselRadiusDict, stopConditionTypeDict, stopConditionValueDict, scanDirectionDict):
+    """
+
+    """
+    splinedVessels = {}
     for vesselName in vesselNameList:
 
-        vesselRadius = vesselRadiusDict[vesselName]
         imageList    = [atlasSet[i]['DIR'][vesselName] for i in atlasSet.keys()]
 
-        pointArray = COMFromImageList(imageList, conditionType=conditionType, conditionValue=conditionValue, scanDirection=scanDirection)
-        tube       = tubeFromCOMList(pointArray, vesselRadius=vesselRadius)
+        vesselRadius        = vesselRadiusDict[vesselName]
+        stopConditionType   = stopConditionTypeDict[vesselName]
+        stopConditionValue  = stopConditionValueDict[vesselName]
+        scanDirection       = scanDirectionDict[vesselName]
 
-        outputName = outputSplineBase.format(targetId, vName)
+        pointArray = COMFromImageList(imageList, conditionType=stopConditionType, conditionValue=stopConditionValue, scanDirection=scanDirection)
+        tube       = tubeFromCOMList(pointArray, radius=vesselRadius)
 
-        finalImage = SimpleITKImageFromVTKTube(tube, nameList[0], imageList[0], verbose = False)
+        SITKReferenceImage  = imageList[0]
+
+        splinedVessels[vesselName] = SimpleITKImageFromVTKTube(tube, SITKReferenceImage, verbose = False)
+    return splinedVessels
