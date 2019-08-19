@@ -16,7 +16,7 @@ cardiac_settings_defaults = {
     'atlasSettings'         : {
                                 'atlasIdList':               ['04D1','1FA5','7AAC','8505','5FBF'],
                                 'atlasStructures':           ['COR','LAD'],
-                                'atlasPath':                 '../../TempCardiacData'
+                                'atlasPath':                 os.environ['ATLAS_PATH']
                               },
     'lungMaskSettings'      : {
                                 'coronalExpansion':          15,
