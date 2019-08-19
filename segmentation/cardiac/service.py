@@ -14,7 +14,7 @@ from cardiac import *
 cardiac_settings_defaults = {
     'outputFormat'          : 'Auto_{0}.nii.gz',
     'atlasSettings'         : {
-                                'atlasIdList':               ['04D1','1FA5'],
+                                'atlasIdList':               ['04D1','1FA5','7AAC','8505','5FBF'],
                                 'atlasStructures':           ['COR','LAD'],
                                 'atlasPath':                 '../../TempCardiacData'
                               },
@@ -97,6 +97,7 @@ def cardiac_service(data_objects, working_dir, settings):
         """
         logger.info('')
         # Settings
+        atlasPath = settings['atlasSettings']['atlasPath']
         atlasIdList = settings['atlasSettings']['atlasIdList']
         atlasStructures = settings['atlasSettings']['atlasStructures']
 
