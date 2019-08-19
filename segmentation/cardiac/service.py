@@ -15,7 +15,8 @@ cardiac_settings_defaults = {
     'outputFormat'          : 'Auto_{0}.nii.gz',
     'atlasSettings'         : {
                                 'atlasIdList':               ['04D1','1FA5'],
-                                'atlasStructures':           ['COR','LAD']
+                                'atlasStructures':           ['COR','LAD'],
+                                'atlasPath':                 '../../TempCardiacData'
                               },
     'lungMaskSettings'      : {
                                 'coronalExpansion':          15,
@@ -104,10 +105,10 @@ def cardiac_service(data_objects, working_dir, settings):
             atlasSet[atlasId] = {}
             atlasSet[atlasId]['Original'] = {}
 
-            atlasSet[atlasId]['Original']['CT Image'] = sitk.ReadImage('../../TempCardiacData/Case_{0}/Images/Case_{0}.nii.gz'.format(atlasId))
+            atlasSet[atlasId]['Original']['CT Image'] = sitk.ReadImage('{0}/Case_{1}/Images/Case_{1}.nii.gz'.format(atlasPath, atlasId))
 
             for struct in atlasStructures:
-                atlasSet[atlasId]['Original'][struct] = sitk.ReadImage('../../TempCardiacData/Case_{0}/Structures/Case_{0}_{1}.nii.gz'.format(atlasId, struct))
+                atlasSet[atlasId]['Original'][struct] = sitk.ReadImage('{0}/Case_{1}/Structures/Case_{1}_{2}.nii.gz'.format(atlasPath, atlasId, struct))
 
         """
         Step 1 - Automatic cropping using the lung volume
