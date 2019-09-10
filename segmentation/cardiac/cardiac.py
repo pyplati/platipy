@@ -242,7 +242,7 @@ def AffineRegistration(fixedImage, movingImage, options=None, structure=False, t
     finalInterp  = options['finalInterp']
 
     # Select the rigid transform
-    transform = sitk.AffineTransform()
+    transform = sitk.AffineTransform(3)
 
     # Set up image registration method
     registration = sitk.ImageRegistrationMethod()
@@ -251,9 +251,9 @@ def AffineRegistration(fixedImage, movingImage, options=None, structure=False, t
     registration.SetSmoothingSigmasPerLevel(smoothSigmas)
 
     registration.SetOptimizerAsLBFGSB(gradientConvergenceTolerance=1e-5,
-                                      numberOfIterations=256,
+                                      numberOfIterations=512,
                                       maximumNumberOfCorrections=5,
-                                      maximumNumberOfFunctionEvaluations=512,
+                                      maximumNumberOfFunctionEvaluations=1024,
                                       costFunctionConvergenceFactor=1e+7,
                                       trace=trace)
 
@@ -272,7 +272,7 @@ def AffineRegistration(fixedImage, movingImage, options=None, structure=False, t
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(fixedImage)
     resampler.SetTransform(outputTransform)
-    resampler.SetInterpolator(sitk.sitkBSpline)
+    resampler.SetInterpolator(finalInterp)
     if structure:
         resampler.SetDefaultPixelValue(0)
     else:
@@ -317,7 +317,7 @@ def TranslationRegistration(fixedImage, movingImage, options=None, structure=Fal
     finalInterp  = options['finalInterp']
 
     # Select the rigid transform
-    transform = sitk.AffineTransform()
+    transform = sitk.AffineTransform(3)
 
     # Set up image registration method
     registration = sitk.ImageRegistrationMethod()
@@ -378,7 +378,7 @@ def TransformPropagation(fixedImage, movingImage, transform, structure=False, in
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(fixedImage)
     resampler.SetTransform(transform)
-    resampler.SetInterpolator(sitk.sitkNearestNeighbor)
+    resampler.SetInterpolator(interp)
     if structure:
         resampler.SetDefaultPixelValue(0)
     else:
@@ -386,7 +386,7 @@ def TransformPropagation(fixedImage, movingImage, transform, structure=False, in
 
     outputImage = resampler.Execute(movingImage)
 
-    if structure and interpOrder>1:
+    if structure and interp>1:
         print("Note:  Higher order interpolation on binary mask - using 32-bit floating point output.")
         outputIm = sitk.Cast(outputImage, sitk.sitkFloat32)
         # Safe way to remove dodgy values that can cause issues later
@@ -485,7 +485,7 @@ def command_iteration(filter) :
     """
     print("{0:3} = {1:10.5f}".format(filter.GetElapsedIterations(),filter.GetMetric()))
 
-def FastSymmetricForcesDemonsRegistration(fixed_image, moving_image, resolutionStaging=[8,4,1], iterationStaging=[10,10,10], smoothingSigmaFactor=1, ncores=1, structure=False, interpOrder=2):
+def FastSymmetricForcesDemonsRegistration(fixed_image, moving_image, resolutionStaging=[8,4,1], iterationStaging=[10,10,10], smoothingSigmaFactor=1, ncores=1, structure=False, interpOrder=2, trace=False):
     """
     Deformable image propagation using Fast Symmetric-Forces Demons
 
@@ -514,7 +514,8 @@ def FastSymmetricForcesDemonsRegistration(fixed_image, moving_image, resolutionS
         moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
 
     # Set up the appropriate image filter
-    registration_method = sitk.FastSymmetricForcesDemonsRegistrationFilter()
+    if trace:
+        registration_method = sitk.FastSymmetricForcesDemonsRegistrationFilter()
 
     # Multi-resolution framework
     registration_method.SetNumberOfThreads(ncores)
@@ -553,19 +554,19 @@ def FastSymmetricForcesDemonsRegistration(fixed_image, moving_image, resolutionS
 
     return registeredImage, outputTransform
 
-def ApplyField(inputImage, outputTransform, order, imType):
+def ApplyField(inputImage, outputTransform, structure=False, interp=sitk.sitkNearestNeighbor):
 
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(inputImage)
 
-    if imType==0:
+    if structure:
         resampler.SetDefaultPixelValue(0)
-    elif imType==1:
+    else:
         resampler.SetDefaultPixelValue(-1024)
 
     #transform = sitk.DisplacementFieldTransform(sitk.Cast(deformationField, sitk.sitkVectorFloat64))
     resampler.SetTransform(outputTransform)
-    resampler.SetInterpolator(order)
+    resampler.SetInterpolator(interp)
 
     registeredImage = resampler.Execute(sitk.Cast(inputImage, sitk.sitkFloat32))
 

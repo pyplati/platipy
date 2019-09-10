@@ -29,16 +29,18 @@ cardiac_settings_defaults = {
     'rigidSettings'         : {
                                 'initialReg':               'Affine',
                                 'options':                  {
-                                                                'shrinkFactors': [8,4,1],
-                                                                'smoothSigmas' : [4,2,0],
-                                                                'samplingRate' : 0.10,
+                                                                'shrinkFactors': [8,4,2,1],
+                                                                'smoothSigmas' : [8,4,1,0],
+                                                                'samplingRate' : 0.15,
                                                                 'finalInterp'  : sitk.sitkBSpline
-                                                            }
+                                                            },
+                                'trace':                    True
                               },
     'deformableSettings'    : {
-                                'resolutionStaging':        [4,1],
-                                'iterationStaging':         [25,10],
-                                'ncores':                   8
+                                'resolutionStaging':        [16,4,2,1],
+                                'iterationStaging':         [100,50,50,50],
+                                'ncores':                   8,
+                                'trace':                    True
                               },
     'IARSettings'    : {
                                 'referenceStructure':       'COR',
@@ -58,7 +60,7 @@ cardiac_settings_defaults = {
                                 'vesselRadius_mm':          {'LAD':2.2},
                                 'spliningDirection':        {'LAD':'z'},
                                 'stopCondition':            {'LAD':'count'},
-                                'stopConditionValue':       {'LAD':0}
+                                'stopConditionValue':       {'LAD':1}
                               }
 }
 
@@ -159,17 +161,18 @@ def cardiac_service(data_objects, working_dir, settings):
         """
         initialReg   = settings['rigidSettings']['initialReg']
         rigidOptions = settings['rigidSettings']['options']
+        trace        = settings['rigidSettings']['trace']
 
         for atlasId in atlasIdList:
             # Register the atlases
             atlasSet[atlasId]['RIR'] = {}
             atlasImage = atlasSet[atlasId]['Original']['CT Image']
             if initialReg=='Rigid':
-                rigidImage, initialTfm = RigidRegistration(imgCrop, atlasImage, options=rigidOptions)
+                rigidImage, initialTfm = RigidRegistration(imgCrop, atlasImage, options=rigidOptions, trace=trace)
             elif initialReg=='Affine':
-                rigidImage, initialTfm = AffineRegistration(imgCrop, atlasImage, options=rigidOptions)
+                rigidImage, initialTfm = AffineRegistration(imgCrop, atlasImage, options=rigidOptions, trace=trace)
             elif initialReg=='Translation':
-                rigidImage, initialTfm = TranslationRegistration(imgCrop, atlasImage, options=rigidOptions)
+                rigidImage, initialTfm = TranslationRegistration(imgCrop, atlasImage, options=rigidOptions, trace=trace)
             else:
                 print('ERROR: Initial registration must be "Translation", "Rigid", or "Affine" (not {0}).'.format(initialReg))
                 sys.exit()
@@ -178,9 +181,11 @@ def cardiac_service(data_objects, working_dir, settings):
             atlasSet[atlasId]['RIR']['CT Image']  = rigidImage
             atlasSet[atlasId]['RIR']['Transform'] = initialTfm
 
+            #sitk.WriteImage(rigidImage, f'./RR_{atlasId}.nii.gz')
+
             for struct in atlasStructures:
                 inputStruct = atlasSet[atlasId]['Original'][struct]
-                atlasSet[atlasId]['RIR'][struct] = TransformPropagation(imgCrop, inputStruct, initialTfm, structure=True, interpOrder=0)
+                atlasSet[atlasId]['RIR'][struct] = TransformPropagation(imgCrop, inputStruct, initialTfm, structure=True, interp=sitk.sitkLinear)
 
         """
         Step 3 - Deformable image registration
@@ -190,22 +195,23 @@ def cardiac_service(data_objects, working_dir, settings):
         resolutionStaging = settings['deformableSettings']['resolutionStaging']
         iterationStaging  = settings['deformableSettings']['iterationStaging']
         ncores            = settings['deformableSettings']['ncores']
+        trace             = settings['deformableSettings']['trace']
 
         for atlasId in atlasIdList:
             # Register the atlases
             atlasSet[atlasId]['DIR'] = {}
             atlasImage = atlasSet[atlasId]['RIR']['CT Image']
-            deformImage, deformField = FastSymmetricForcesDemonsRegistration(imgCrop, atlasImage, resolutionStaging=resolutionStaging, iterationStaging=iterationStaging, ncores=ncores)
+            deformImage, deformField = FastSymmetricForcesDemonsRegistration(imgCrop, atlasImage, resolutionStaging=resolutionStaging, iterationStaging=iterationStaging, ncores=ncores, trace=trace)
 
             # Save in the atlas dict
             atlasSet[atlasId]['DIR']['CT Image']  = deformImage
             atlasSet[atlasId]['DIR']['Transform'] = deformField
 
+            #sitk.WriteImage(deformImage, f'./DIR_{atlasId}.nii.gz')
+
             for struct in atlasStructures:
                 inputStruct = atlasSet[atlasId]['RIR'][struct]
-                atlasSet[atlasId]['DIR'][struct] = ApplyField(inputStruct, deformField, 1, 0)
-
-                sitk.WriteImage(atlasSet[atlasId]['DIR'][struct], f'{atlasId}.{struct}.nii.gz')
+                atlasSet[atlasId]['DIR'][struct] = ApplyField(inputStruct, deformField, structure=True, interp=sitk.sitkLinear)
 
         """
         Step 4 - Iterative atlas removal
@@ -253,12 +259,10 @@ def cardiac_service(data_objects, working_dir, settings):
 
         segmentedVesselDict = vesselSplineGeneration(atlasSet, vesselNameList, vesselRadiusDict=vesselRadius_mm, stopConditionTypeDict=stopCondition, stopConditionValueDict=stopConditionValue, scanDirectionDict=spliningDirection)
 
-
         """
         Step 5 - Label Fusion
         """
         combinedLabelDict = combineLabels(atlasSet, atlasStructures)
-
 
         """
         Step 6 - Paste the cropped structure into the original image space
