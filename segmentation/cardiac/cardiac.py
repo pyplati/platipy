@@ -126,13 +126,14 @@ def CropImage(image, cropBox):
     return imCrop
 
 
-def RigidRegistration(fixedImage, movingImage, parFile, structure=False):
+def RigidRegistration(fixedImage, movingImage, options=None, structure=False, trace=False):
     """
     Rigid image registration using Elastix
 
     Args
         fixedImage (sitk.Image) : the fixed image
         movingImage (sitk.Image): the moving image, transformed to match fixedImage
+        Options                 : registration options
         structure (bool)        : True if the image is a structure image
 
     Returns
@@ -141,94 +142,107 @@ def RigidRegistration(fixedImage, movingImage, parFile, structure=False):
 
     """
 
-    # Define the Elastix image filter
-    rigidElastix = sitk.ElastixImageFilter()
+    # Re-cast
+    fixedImage = sitk.Cast(fixedImage, sitk.sitkFloat32)
+    movingImage = sitk.Cast(movingImage, sitk.sitkFloat32)
 
-    # For structures we need to modify the data range
+    if not options:
+        options = { 'shrinkFactors': [8,4,2,1],
+                    'smoothSigmas' : [4,2,1,0],
+                    'samplingRate' : 0.1
+        }
+
+    # Get the options
+    shrinkFactors = options['shrinkFactors']
+    smoothSigmas  = options['smoothSigmas']
+
+    # Select the rigid transform
+    transform = sitk.VersorRigid3DTransform()
+
+    # Set up image registration method
+    registration = sitk.ImageRegistrationMethod()
+
+    registration.SetShrinkFactorsPerLevel(shrinkFactors)
+    registration.SetSmoothingSigmasPerLevel(smoothSigmas)
+
+    registration.SetOptimizerAsLBFGSB(gradientConvergenceTolerance=1e-5,
+                                      numberOfIterations=256,
+                                      maximumNumberOfCorrections=5,
+                                      maximumNumberOfFunctionEvaluations=512,
+                                      costFunctionConvergenceFactor=1e+7,
+                                      trace=trace)
+    """
+    registration.SetOptimizerAsGradientDescent(learningRate=0.05,
+                                                numberOfIterations=512,
+                                                convergenceMinimumValue=1e-6,
+                                                convergenceWindowSize=10,
+                                                estimateLearningRate=sitk.ImageRegistrationMethod.Once,
+                                                maximumStepSizeInPhysicalUnits=0.0)
+    """
+
+    registration.SetMetricAsMeanSquares()
+    registration.SetInterpolator(sitk.sitkLinear) # Perhaps a small gain in improvement
+    registration.SetMetricSamplingPercentage(0.10)
+    registration.SetMetricSamplingStrategy(sitk.ImageRegistrationMethod.REGULAR)
+
+    initializer = sitk.CenteredTransformInitializerFilter()
+    initializer.MomentsOn()
+    initialTransform = initializer.Execute(fixedImage, movingImage, transform)
+
+    registration.SetInitialTransform(initialTransform)
+    outputTransform = registration.Execute(fixed=fixedImage, moving=movingImage)
+
+    resampler = sitk.ResampleImageFilter()
+    resampler.SetReferenceImage(fixedImage)
+    resampler.SetTransform(outputTransform)
+    resampler.SetInterpolator(sitk.sitkBSpline)
     if structure:
-        print("Normalising images")
-        fMax = sitk.GetArrayFromImage(fixedImage).max()
-        mMax = sitk.GetArrayFromImage(movingImage).max()
-        fixedImage = sitk.Cast(fixedImage, sitk.sitkFloat32)/fMax
-        movingImage = sitk.Cast(movingImage, sitk.sitkFloat32)/mMax
+        resampler.SetDefaultPixelValue(0)
+    else:
+        resampler.SetDefaultPixelValue(-1024)
 
-    # Set the Elastix inputs
-    rigidElastix.SetFixedImage(fixedImage)
-    rigidElastix.SetMovingImage(movingImage)
+    registeredImage = resampler.Execute(movingImage)
 
-    # Now we read in the parameter file
-    try:
-        rigidParameterMap = sitk.ReadParameterFile(parFile)
-    except:
-        print('No transform parameter found in current directory, searching library...')
-        try:
-            rigidParameterMap = sitk.ReadParameterFile(parFile)
-        except:
-            print('No transform parameter in library, using default.')
-            parName = MABASDir+'RigidTransformParameters.txt'
-            rigidParameterMap = sitk.ReadParameterFile(parFile)
+    return registeredImage, outputTransform
 
-    rigidElastix.SetParameterMap(rigidParameterMap)
-    rigidElastix.LogToConsoleOff()
-    rigidElastix.LogToFileOff()
-
-    if structure:
-        rigidElastix.SetParameter(0, 'FinalBSplineInterpolationOrder','1')
-        rigidElastix.SetParameter(0, 'DefaultPixelValue','0')
-
-
-    rigidElastix.Execute()
-    registeredImage = rigidElastix.GetResultImage()
-    tfm = rigidElastix.GetTransformParameterMap()
-    transform = tfm[0]
-
-    registeredImage.CopyInformation(fixedImage)
-    registeredImage = sitk.Cast(registeredImage, movingImage.GetPixelID())
-
-    return registeredImage, transform
-
-def RigidPropagation(fixedImage, movingImage, parameterMap, structure=False, interpOrder=1):
+def RigidPropagation(fixedImage, movingImage, transform, structure=False, interpOrder=1):
     """
     Rigid image propagation using Elastix
 
     Args
-        fixedImage (sitk.Image) : the fixed image
-        movingImage (sitk.Image): the moving image, to be propagated
-        parameterMap            : the transformation parameter map
-        structure (bool)        : True if the image is a structure image
-        interp (int)            : the interpolation order
-                                    1 = Nearest neighbour
-                                    2 = Bi-linear splines
-                                    3 = B-Spline (cubic)
+        fixedImage (sitk.Image)     : the fixed image
+        movingImage (sitk.Image)    : the moving image, to be propagated
+        transform (sitk.transform)  : the transformation parameter map
+        structure (bool)            : True if the image is a structure image
+        interp (int)                : the interpolation order
+                                        1 = Nearest neighbour
+                                        2 = Bi-linear splines
+                                        3 = B-Spline (cubic)
 
     Returns
         registeredImage (sitk.Image)        : the rigidly registered moving image
 
     """
-    rigidTransformix = sitk.TransformixImageFilter()
-    rigidTransformParameterMap = parameterMap
-    rigidTransformix.SetTransformParameterMap(rigidTransformParameterMap)
-
+    resampler = sitk.ResampleImageFilter()
+    resampler.SetReferenceImage(fixedImage)
+    resampler.SetTransform(transform)
+    resampler.SetInterpolator(sitk.sitkNearestNeighbor)
     if structure:
-        rigidTransformix.SetTransformParameter('DefaultPixelValue','0')
-    rigidTransformix.SetTransformParameter("FinalBSplineInterpolationOrder", str(interpOrder))
+        resampler.SetDefaultPixelValue(0)
+    else:
+        resampler.SetDefaultPixelValue(-1024)
 
-    rigidTransformix.SetMovingImage(sitk.Cast(movingImage, sitk.sitkFloat32))
-    rigidTransformix.SetLogToFile(False)
-    rigidTransformix.Execute()
-
-    outputImage = rigidTransformix.GetResultImage()
-    outputImage.CopyInformation(fixedImage)
+    outputImage = resampler.Execute(movingImage)
 
     if structure and interpOrder>1:
-        print("Higher order interpolation on structure file - using 32-bit floating point output.")
-        outputIm = sitk.Cast(outputImage,sitk.sitkFloat32)
+        print("Note:  Higher order interpolation on binary mask - using 32-bit floating point output.")
+        outputIm = sitk.Cast(outputImage, sitk.sitkFloat32)
         # Safe way to remove dodgy values that can cause issues later
-        registeredImage = sitk.Threshold(outputIm, lower=1e-5, upper=100.0)
+        outputImage = sitk.Threshold(outputIm, lower=1e-5, upper=100.0)
     else:
-        registeredImage = sitk.Cast(outputImage,movingImage.GetPixelID())
+        outputImage = sitk.Cast(outputImage, movingImage.GetPixelID())
 
-    return registeredImage
+    return outputImage
 
 
 def smooth_and_resample(image, shrink_factor, smoothing_sigma):

@@ -1,5 +1,5 @@
 import sys
-sys.path.append('..')
+sys.path.append('../../..')
 
 from impit.framework import app, DataObject, celery
 from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
@@ -8,15 +8,20 @@ import SimpleITK as sitk
 import pydicom
 from loguru import logger
 import os
+os.system('export ATLAS_PATH=/home/robbie/Documents/University/PhD/Research/Software/impit/TempCardiacData')
 
 from cardiac import *
+
+# TO DO
+# 1. add options for rigid registration
+
 
 cardiac_settings_defaults = {
     'outputFormat'          : 'Auto_{0}.nii.gz',
     'atlasSettings'         : {
                                 'atlasIdList':               ['04D1','1FA5','7AAC','8505','5FBF'],
                                 'atlasStructures':           ['COR','LAD'],
-                                'atlasPath':                 os.environ['ATLAS_PATH']
+                                'atlasPath':                 '/home/robbie/Documents/University/PhD/Research/Software/impit/TempCardiacData'#os.environ['ATLAS_PATH']
                               },
     'lungMaskSettings'      : {
                                 'coronalExpansion':          15,
@@ -32,7 +37,7 @@ cardiac_settings_defaults = {
                               },
     'deformableSettings'    : {
                                 'resolutionStaging':        [8,4,2,1],
-                                'iterationStaging':         [75,50,50,25],
+                                'iterationStaging':         [25,10,10,5],
                                 'ncores':                   4
                               },
     'IARSettings'    : {
@@ -145,6 +150,7 @@ def cardiac_service(data_objects, working_dir, settings):
         imgCrop = CropImage(img, cropBox)
 
         # We should check here that the lung segmentation has worked, otherwise we need another option!
+        # For example, translation registration with a pre-cropped image
 
         """
         Step 2 - Rigid registration of target images
@@ -155,7 +161,7 @@ def cardiac_service(data_objects, working_dir, settings):
             # Register the atlases
             atlasSet[atlasId]['RIR'] = {}
             atlasImage = atlasSet[atlasId]['Original']['CT Image']
-            rigidImage, rigidTfm = RigidRegistration(imgCrop, atlasImage,'RigidTransformParameters.txt')
+            rigidImage, rigidTfm = RigidRegistration(imgCrop, atlasImage)
 
             # Save in the atlas dict
             atlasSet[atlasId]['RIR']['CT Image']  = rigidImage
