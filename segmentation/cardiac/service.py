@@ -8,13 +8,8 @@ import SimpleITK as sitk
 import pydicom
 from loguru import logger
 import os
-os.system('export ATLAS_PATH=/home/robbie/Documents/University/PhD/Research/Software/impit/TempCardiacData')
 
 from cardiac import *
-
-# TO DO
-# 1. add options for rigid registration
-
 
 cardiac_settings_defaults = {
     'outputFormat'          : 'Auto_{0}.nii.gz',
@@ -32,13 +27,18 @@ cardiac_settings_defaults = {
                                 'voxelCountThreshold':       5e4
                               },
     'rigidSettings'         : {
-
-
+                                'initialReg':               'Affine',
+                                'options':                  {
+                                                                'shrinkFactors': [8,4,1],
+                                                                'smoothSigmas' : [4,2,0],
+                                                                'samplingRate' : 0.10,
+                                                                'finalInterp'  : sitk.sitkBSpline
+                                                            }
                               },
     'deformableSettings'    : {
-                                'resolutionStaging':        [8,4,2,1],
-                                'iterationStaging':         [25,10,10,5],
-                                'ncores':                   4
+                                'resolutionStaging':        [4,1],
+                                'iterationStaging':         [25,10],
+                                'ncores':                   8
                               },
     'IARSettings'    : {
                                 'referenceStructure':       'COR',
@@ -157,21 +157,30 @@ def cardiac_service(data_objects, working_dir, settings):
         - Individual atlas images are registered to the target
         - The transformation is used to propagate the labels onto the target
         """
+        initialReg   = settings['rigidSettings']['initialReg']
+        rigidOptions = settings['rigidSettings']['options']
+
         for atlasId in atlasIdList:
             # Register the atlases
             atlasSet[atlasId]['RIR'] = {}
             atlasImage = atlasSet[atlasId]['Original']['CT Image']
-            rigidImage, rigidTfm = RigidRegistration(imgCrop, atlasImage)
+            if initialReg=='Rigid':
+                rigidImage, initialTfm = RigidRegistration(imgCrop, atlasImage, options=rigidOptions)
+            elif initialReg=='Affine':
+                rigidImage, initialTfm = AffineRegistration(imgCrop, atlasImage, options=rigidOptions)
+            elif initialReg=='Translation':
+                rigidImage, initialTfm = TranslationRegistration(imgCrop, atlasImage, options=rigidOptions)
+            else:
+                print('ERROR: Initial registration must be "Translation", "Rigid", or "Affine" (not {0}).'.format(initialReg))
+                sys.exit()
 
             # Save in the atlas dict
             atlasSet[atlasId]['RIR']['CT Image']  = rigidImage
-            atlasSet[atlasId]['RIR']['Transform'] = rigidTfm
-
+            atlasSet[atlasId]['RIR']['Transform'] = initialTfm
 
             for struct in atlasStructures:
                 inputStruct = atlasSet[atlasId]['Original'][struct]
-                atlasSet[atlasId]['RIR'][struct] = RigidPropagation(imgCrop, inputStruct, rigidTfm, structure=True, interpOrder=0)
-
+                atlasSet[atlasId]['RIR'][struct] = TransformPropagation(imgCrop, inputStruct, initialTfm, structure=True, interpOrder=0)
 
         """
         Step 3 - Deformable image registration
@@ -197,7 +206,6 @@ def cardiac_service(data_objects, working_dir, settings):
                 atlasSet[atlasId]['DIR'][struct] = ApplyField(inputStruct, deformField, 1, 0)
 
                 sitk.WriteImage(atlasSet[atlasId]['DIR'][struct], f'{atlasId}.{struct}.nii.gz')
-
 
         """
         Step 4 - Iterative atlas removal

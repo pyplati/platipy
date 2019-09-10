@@ -128,17 +128,17 @@ def CropImage(image, cropBox):
 
 def RigidRegistration(fixedImage, movingImage, options=None, structure=False, trace=False):
     """
-    Rigid image registration using Elastix
+    Rigid image registration using ITK
 
     Args
         fixedImage (sitk.Image) : the fixed image
         movingImage (sitk.Image): the moving image, transformed to match fixedImage
-        Options                 : registration options
+        options (dict)          : registration options
         structure (bool)        : True if the image is a structure image
 
     Returns
-        registeredImage (sitk.Image)        : the rigidly registered moving image
-        transform (transform parameter map) : the transform parameter map, to be used with sitk.TransformixImageFilter
+        registeredImage (sitk.Image): the rigidly registered moving image
+        transform (transform        : the transform, can be used directly with sitk.ResampleImageFilter
 
     """
 
@@ -147,14 +147,17 @@ def RigidRegistration(fixedImage, movingImage, options=None, structure=False, tr
     movingImage = sitk.Cast(movingImage, sitk.sitkFloat32)
 
     if not options:
-        options = { 'shrinkFactors': [8,4,2,1],
-                    'smoothSigmas' : [4,2,1,0],
-                    'samplingRate' : 0.1
+        options = { 'shrinkFactors': [8,2,1],
+                    'smoothSigmas' : [4,2,0],
+                    'samplingRate' : 0.1,
+                    'finalInterp'  : sitk.sitkBSpline
         }
 
     # Get the options
     shrinkFactors = options['shrinkFactors']
     smoothSigmas  = options['smoothSigmas']
+    samplingRate  = options['samplingRate']
+    finalInterp  = options['finalInterp']
 
     # Select the rigid transform
     transform = sitk.VersorRigid3DTransform()
@@ -182,7 +185,7 @@ def RigidRegistration(fixedImage, movingImage, options=None, structure=False, tr
 
     registration.SetMetricAsMeanSquares()
     registration.SetInterpolator(sitk.sitkLinear) # Perhaps a small gain in improvement
-    registration.SetMetricSamplingPercentage(0.10)
+    registration.SetMetricSamplingPercentage(samplingRate)
     registration.SetMetricSamplingStrategy(sitk.ImageRegistrationMethod.REGULAR)
 
     initializer = sitk.CenteredTransformInitializerFilter()
@@ -205,19 +208,168 @@ def RigidRegistration(fixedImage, movingImage, options=None, structure=False, tr
 
     return registeredImage, outputTransform
 
-def RigidPropagation(fixedImage, movingImage, transform, structure=False, interpOrder=1):
+def AffineRegistration(fixedImage, movingImage, options=None, structure=False, trace=False):
     """
-    Rigid image propagation using Elastix
+    Affine image registration using ITK
+
+    Args
+        fixedImage (sitk.Image) : the fixed image
+        movingImage (sitk.Image): the moving image, transformed to match fixedImage
+        options (dict)          : registration options
+        structure (bool)        : True if the image is a structure image
+
+    Returns
+        registeredImage (sitk.Image): the rigidly registered moving image
+        transform (transform        : the transform, can be used directly with sitk.ResampleImageFilter
+
+    """
+
+    # Re-cast
+    fixedImage = sitk.Cast(fixedImage, sitk.sitkFloat32)
+    movingImage = sitk.Cast(movingImage, sitk.sitkFloat32)
+
+    if not options:
+        options = { 'shrinkFactors': [8,2,1],
+                    'smoothSigmas' : [4,2,0],
+                    'samplingRate' : 0.1,
+                    'finalInterp'  : sitk.sitkBSpline
+        }
+
+    # Get the options
+    shrinkFactors = options['shrinkFactors']
+    smoothSigmas  = options['smoothSigmas']
+    samplingRate  = options['samplingRate']
+    finalInterp  = options['finalInterp']
+
+    # Select the rigid transform
+    transform = sitk.AffineTransform()
+
+    # Set up image registration method
+    registration = sitk.ImageRegistrationMethod()
+
+    registration.SetShrinkFactorsPerLevel(shrinkFactors)
+    registration.SetSmoothingSigmasPerLevel(smoothSigmas)
+
+    registration.SetOptimizerAsLBFGSB(gradientConvergenceTolerance=1e-5,
+                                      numberOfIterations=256,
+                                      maximumNumberOfCorrections=5,
+                                      maximumNumberOfFunctionEvaluations=512,
+                                      costFunctionConvergenceFactor=1e+7,
+                                      trace=trace)
+
+    registration.SetMetricAsMeanSquares()
+    registration.SetInterpolator(sitk.sitkLinear) # Perhaps a small gain in improvement
+    registration.SetMetricSamplingPercentage(samplingRate)
+    registration.SetMetricSamplingStrategy(sitk.ImageRegistrationMethod.REGULAR)
+
+    initializer = sitk.CenteredTransformInitializerFilter()
+    initializer.MomentsOn()
+    initialTransform = initializer.Execute(fixedImage, movingImage, transform)
+
+    registration.SetInitialTransform(initialTransform)
+    outputTransform = registration.Execute(fixed=fixedImage, moving=movingImage)
+
+    resampler = sitk.ResampleImageFilter()
+    resampler.SetReferenceImage(fixedImage)
+    resampler.SetTransform(outputTransform)
+    resampler.SetInterpolator(sitk.sitkBSpline)
+    if structure:
+        resampler.SetDefaultPixelValue(0)
+    else:
+        resampler.SetDefaultPixelValue(-1024)
+
+    registeredImage = resampler.Execute(movingImage)
+
+    return registeredImage, outputTransform
+
+
+def TranslationRegistration(fixedImage, movingImage, options=None, structure=False, trace=False):
+    """
+    Translation image registration using ITK
+
+    Args
+        fixedImage (sitk.Image) : the fixed image
+        movingImage (sitk.Image): the moving image, transformed to match fixedImage
+        options (dict)          : registration options
+        structure (bool)        : True if the image is a structure image
+
+    Returns
+        registeredImage (sitk.Image): the rigidly registered moving image
+        transform (transform        : the transform, can be used directly with sitk.ResampleImageFilter
+
+    """
+
+    # Re-cast
+    fixedImage = sitk.Cast(fixedImage, sitk.sitkFloat32)
+    movingImage = sitk.Cast(movingImage, sitk.sitkFloat32)
+
+    if not options:
+        options = { 'shrinkFactors': [8,2,1],
+                    'smoothSigmas' : [4,2,0],
+                    'samplingRate' : 0.1,
+                    'finalInterp'  : sitk.sitkBSpline
+        }
+
+    # Get the options
+    shrinkFactors = options['shrinkFactors']
+    smoothSigmas  = options['smoothSigmas']
+    samplingRate  = options['samplingRate']
+    finalInterp  = options['finalInterp']
+
+    # Select the rigid transform
+    transform = sitk.AffineTransform()
+
+    # Set up image registration method
+    registration = sitk.ImageRegistrationMethod()
+
+    registration.SetShrinkFactorsPerLevel(shrinkFactors)
+    registration.SetSmoothingSigmasPerLevel(smoothSigmas)
+
+    registration.SetOptimizerAsLBFGSB(gradientConvergenceTolerance=1e-5,
+                                      numberOfIterations=128,
+                                      maximumNumberOfCorrections=5,
+                                      maximumNumberOfFunctionEvaluations=256,
+                                      costFunctionConvergenceFactor=1e+7,
+                                      trace=trace)
+
+    registration.SetMetricAsMeanSquares()
+    registration.SetInterpolator(sitk.sitkLinear) # Perhaps a small gain in improvement
+    registration.SetMetricSamplingPercentage(samplingRate)
+    registration.SetMetricSamplingStrategy(sitk.ImageRegistrationMethod.REGULAR)
+
+    initializer = sitk.CenteredTransformInitializerFilter()
+    initializer.MomentsOn()
+    initialTransform = initializer.Execute(fixedImage, movingImage, transform)
+
+    registration.SetInitialTransform(initialTransform)
+    outputTransform = registration.Execute(fixed=fixedImage, moving=movingImage)
+
+    resampler = sitk.ResampleImageFilter()
+    resampler.SetReferenceImage(fixedImage)
+    resampler.SetTransform(outputTransform)
+    resampler.SetInterpolator(finalInterp)
+    if structure:
+        resampler.SetDefaultPixelValue(0)
+    else:
+        resampler.SetDefaultPixelValue(-1024)
+
+    registeredImage = resampler.Execute(movingImage)
+
+    return registeredImage, outputTransform
+
+def TransformPropagation(fixedImage, movingImage, transform, structure=False, interp=sitk.sitkNearestNeighbor):
+    """
+    Transform propagation using ITK
 
     Args
         fixedImage (sitk.Image)     : the fixed image
         movingImage (sitk.Image)    : the moving image, to be propagated
-        transform (sitk.transform)  : the transformation parameter map
+        transform (sitk.transform)  : the transformation; e.g. VersorRigid3DTransform, AffineTransform
         structure (bool)            : True if the image is a structure image
-        interp (int)                : the interpolation order
-                                        1 = Nearest neighbour
-                                        2 = Bi-linear splines
-                                        3 = B-Spline (cubic)
+        interp (int)                : the interpolation
+                                        sitk.sitkNearestNeighbor
+                                        sitk.sitkLinear
+                                        sitk.sitkBSpline
 
     Returns
         registeredImage (sitk.Image)        : the rigidly registered moving image
