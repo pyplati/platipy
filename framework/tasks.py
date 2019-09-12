@@ -7,6 +7,7 @@ import pydicom
 import os
 import datetime
 import shutil
+import time
 
 from ..dicom.communication import DicomConnector
 
@@ -202,6 +203,8 @@ def run_task(task, algorithm_name, config, dataset_id):
 
     task_id = task.request.id
 
+    start = time.time()
+
     # Commit to refresh session
     db.session.commit()
 
@@ -213,12 +216,16 @@ def run_task(task, algorithm_name, config, dataset_id):
     ds = Dataset.query.filter_by(id=dataset_id).first()
     input_objects = ds.input_data_objects
 
+    logger.info('Will run algorithm: ' + algorithm_name)
+    logger.info('Using settings: ' + str(config))
+    logger.info('Number of data objects in dataset: ' + str(len(input_objects)))
+
     state_details = {'current': 0, 'total': len(input_objects),
                      'status': 'Running Algorithm: {0}'.format(algorithm_name)}
 
     task.update_state(state='RUNNING', meta=state_details)
 
-    if config == None:
+    if config is None:
         output_data_objects = algorithm.function(
             input_objects, tempfile.mkdtemp())
     else:
@@ -261,6 +268,11 @@ def run_task(task, algorithm_name, config, dataset_id):
             else:
                 logger.warning(
                     'DICOM Data Object output but not Dicom To location defined in Dataset')
+
+    end = time.time()
+    time_taken = end - start
+    logger.info('Dataset processing complete, took: ' + str(time_taken))
+    logger.info('Number of data objects generated: ' + str(len(output_data_objects)))
 
     state_details = {'current': len(input_objects), 'total': len(input_objects),
                      'status': 'Running Algorithm Complete: {0}'.format(algorithm_name)}
