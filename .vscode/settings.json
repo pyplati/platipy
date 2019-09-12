@@ -1,0 +1,17 @@
+{
+    "python.pythonPath": "/usr/bin/python3",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [
+        "--max-line-length=99",
+        "--disable=C0330"
+    ],
+    "python.formatting.blackArgs": [
+        "--line-length",
+        "99"
+    ],
+    "python.formatting.provider": "black",
+    "editor.rulers": [
+        99
+    ],
+}
