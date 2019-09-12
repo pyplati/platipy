@@ -1,13 +1,14 @@
 FROM ubuntu:18.04
 
+RUN apt-get update; apt-get install -y python3.6-dev python3-pip redis-server libgl1-mesa-glx libsm6 libxext6 libxrender-dev git
+
 WORKDIR /home/service
 
 COPY requirements.txt requirements.txt
-
-RUN apt-get update; apt-get install -y python3.6-dev python3-pip redis-server libgl1-mesa-glx libsm6 libxext6 libxrender-dev
-
 RUN pip3 install -r requirements.txt
-RUN pip3 install gunicorn
+
+COPY requirements-dev.txt requirements-dev.txt
+RUN pip3 install -r requirements-dev.txt
 
 COPY . impit
 
