@@ -3,9 +3,9 @@ var Status = Vue.component("Home", {
     <div class="container justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" id="status">
 
         <h1 class="h2">Status</h1>
-        <span v-if="!status.celery">Loading</span>
+        <span v-if="!status">Loading</span>
 
-        <div class="row" v-if="status.celery">
+        <div class="row">
         
             <div class="col-xl-6">
                 <div class="card">
@@ -15,13 +15,6 @@ var Status = Vue.component("Home", {
                     <div class="card-body">
                         <table class="table table-sm table-hover">
                             <tbody>
-                                <tr>
-                                    <td>Celery Worker</td>
-                                    <td>
-                                        <span class="badge badge-success" v-if="status.celery">OK</span>
-                                        <span class="badge badge-danger" v-if="!status.celery">Stopped</span>
-                                    </td>
-                                </tr>
                                 <tr>
                                     <td>Dicom Listener</td>
                                     <td>
