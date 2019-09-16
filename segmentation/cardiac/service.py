@@ -14,9 +14,9 @@ from cardiac import *
 cardiac_settings_defaults = {
     'outputFormat'          : 'Auto_{0}.nii.gz',
     'atlasSettings'         : {
-                                'atlasIdList':               ['04D1','1FA5','7AAC','8505','5FBF'],
-                                'atlasStructures':           ['COR','LAD'],
-                                'atlasPath':                 '/home/robbie/Documents/University/PhD/Research/Software/impit/TempCardiacData'#os.environ['ATLAS_PATH']
+                                'atlasIdList':               ['08','11','12','13','14'],#['04D1','1FA5','7AAC','8505','5FBF'],
+                                'atlasStructures':           ['WHOLEHEART', 'LANTDESCARTERY'],
+                                'atlasPath':                 '/home/robbie/Documents/University/PhD/Research/Software/impit/LiverpoolAtlasSet'#os.environ['ATLAS_PATH']
                               },
     'lungMaskSettings'      : {
                                 'coronalExpansion':          15,
@@ -31,19 +31,20 @@ cardiac_settings_defaults = {
                                 'options':                  {
                                                                 'shrinkFactors': [8,4,2,1],
                                                                 'smoothSigmas' : [8,4,1,0],
-                                                                'samplingRate' : 0.15,
+                                                                'samplingRate' : 0.25,
                                                                 'finalInterp'  : sitk.sitkBSpline
                                                             },
-                                'trace':                    True
+                                'trace':                    True,
+                                'guideStructure':           False
                               },
     'deformableSettings'    : {
                                 'resolutionStaging':        [16,4,2,1],
-                                'iterationStaging':         [100,50,50,50],
+                                'iterationStaging':         [20,10,10,10],
                                 'ncores':                   8,
                                 'trace':                    True
                               },
     'IARSettings'    : {
-                                'referenceStructure':       'COR',
+                                'referenceStructure':       'WHOLEHEART',
                                 'smoothDistanceMaps':       True,
                                 'smoothSigma':              1,
                                 'zScoreStatistic':          'MAD',
@@ -53,14 +54,14 @@ cardiac_settings_defaults = {
                               },
     'labelFusionSettings'   : {
                                 'voteType':                 'local',
-                                'optimalThreshold':         {'COR':0.34}
+                                'optimalThreshold':         {'WHOLEHEART':0.44}
                               },
     'vesselSpliningSettings': {
-                                'vesselNameList':           ['LAD'],
-                                'vesselRadius_mm':          {'LAD':2.2},
-                                'spliningDirection':        {'LAD':'z'},
-                                'stopCondition':            {'LAD':'count'},
-                                'stopConditionValue':       {'LAD':1}
+                                'vesselNameList':           ['LANTDESCARTERY'],
+                                'vesselRadius_mm':          {'LANTDESCARTERY':2.2},
+                                'spliningDirection':        {'LANTDESCARTERY':'z'},
+                                'stopCondition':            {'LANTDESCARTERY':'count'},
+                                'stopConditionValue':       {'LANTDESCARTERY':1}
                               }
 }
 
@@ -113,10 +114,10 @@ def cardiac_service(data_objects, working_dir, settings):
             atlasSet[atlasId] = {}
             atlasSet[atlasId]['Original'] = {}
 
-            atlasSet[atlasId]['Original']['CT Image'] = sitk.ReadImage('{0}/Case_{1}/Images/Case_{1}.nii.gz'.format(atlasPath, atlasId))
+            atlasSet[atlasId]['Original']['CT Image'] = sitk.ReadImage('{0}/Case_{1}/Images/Case_{1}_CROP.nii.gz'.format(atlasPath, atlasId))
 
             for struct in atlasStructures:
-                atlasSet[atlasId]['Original'][struct] = sitk.ReadImage('{0}/Case_{1}/Structures/Case_{1}_{2}.nii.gz'.format(atlasPath, atlasId, struct))
+                atlasSet[atlasId]['Original'][struct] = sitk.ReadImage('{0}/Case_{1}/Structures/Case_{1}_{2}_CROP.nii.gz'.format(atlasPath, atlasId, struct))
 
         """
         Step 1 - Automatic cropping using the lung volume
@@ -135,7 +136,7 @@ def cardiac_service(data_objects, working_dir, settings):
         voxelCountThreshold      = settings['lungMaskSettings']['voxelCountThreshold']
 
         # Get the bounding box containing the lungs
-        lungBoundingBox, _ = AutoLungSegment(img, l=lowerNormalisedThreshold, u=upperNormalisedThreshold, NPthresh=voxelCountThreshold)
+        lungBoundingBox, lungMaskOriginal = AutoLungSegment(img, l=lowerNormalisedThreshold, u=upperNormalisedThreshold, NPthresh=voxelCountThreshold)
 
         # Add an optional expansion
         sag0 = max([lungBoundingBox[0] - sagittalExpansion, 0])
@@ -151,6 +152,9 @@ def cardiac_service(data_objects, working_dir, settings):
         # Crop the image down
         imgCrop = CropImage(img, cropBox)
 
+        # Crop the lung mask - it may be used for structure guided registration
+        lungMask = CropImage(lungMaskOriginal, cropBox)
+
         # We should check here that the lung segmentation has worked, otherwise we need another option!
         # For example, translation registration with a pre-cropped image
 
@@ -159,23 +163,22 @@ def cardiac_service(data_objects, working_dir, settings):
         - Individual atlas images are registered to the target
         - The transformation is used to propagate the labels onto the target
         """
-        initialReg   = settings['rigidSettings']['initialReg']
-        rigidOptions = settings['rigidSettings']['options']
-        trace        = settings['rigidSettings']['trace']
+        initialReg      = settings['rigidSettings']['initialReg']
+        rigidOptions    = settings['rigidSettings']['options']
+        trace           = settings['rigidSettings']['trace']
+        guideStructure  = settings['rigidSettings']['guideStructure']
 
         for atlasId in atlasIdList:
             # Register the atlases
             atlasSet[atlasId]['RIR'] = {}
             atlasImage = atlasSet[atlasId]['Original']['CT Image']
-            if initialReg=='Rigid':
-                rigidImage, initialTfm = RigidRegistration(imgCrop, atlasImage, options=rigidOptions, trace=trace)
-            elif initialReg=='Affine':
-                rigidImage, initialTfm = AffineRegistration(imgCrop, atlasImage, options=rigidOptions, trace=trace)
-            elif initialReg=='Translation':
-                rigidImage, initialTfm = TranslationRegistration(imgCrop, atlasImage, options=rigidOptions, trace=trace)
+
+            if guideStructure:
+                atlasStruct = atlasSet[atlasId]['Original'][guideStructure]
             else:
-                print('ERROR: Initial registration must be "Translation", "Rigid", or "Affine" (not {0}).'.format(initialReg))
-                sys.exit()
+                atlasStruct = False
+
+            rigidImage, initialTfm = InitialRegistration(imgCrop, atlasImage, movingStructure=atlasStruct, options=rigidOptions, trace=trace, regMethod=initialReg)
 
             # Save in the atlas dict
             atlasSet[atlasId]['RIR']['CT Image']  = rigidImage
@@ -186,6 +189,8 @@ def cardiac_service(data_objects, working_dir, settings):
             for struct in atlasStructures:
                 inputStruct = atlasSet[atlasId]['Original'][struct]
                 atlasSet[atlasId]['RIR'][struct] = TransformPropagation(imgCrop, inputStruct, initialTfm, structure=True, interp=sitk.sitkLinear)
+
+            sitk.WriteImage(rigidImage, f"./{atlasId}.RIR.nii.gz")
 
         """
         Step 3 - Deformable image registration
@@ -212,6 +217,8 @@ def cardiac_service(data_objects, working_dir, settings):
             for struct in atlasStructures:
                 inputStruct = atlasSet[atlasId]['RIR'][struct]
                 atlasSet[atlasId]['DIR'][struct] = ApplyField(inputStruct, deformField, structure=True, interp=sitk.sitkLinear)
+
+            sitk.WriteImage(deformImage, f"./{atlasId}.DIR.nii.gz")
 
         """
         Step 4 - Iterative atlas removal
