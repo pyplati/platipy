@@ -370,8 +370,7 @@ def FastSymmetricForcesDemonsRegistration(fixed_image, moving_image, resolutionS
         moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
 
     # Set up the appropriate image filter
-    if trace:
-        registration_method = sitk.FastSymmetricForcesDemonsRegistrationFilter()
+    registration_method = sitk.FastSymmetricForcesDemonsRegistrationFilter()
 
     # Multi-resolution framework
     registration_method.SetNumberOfThreads(ncores)
@@ -380,7 +379,8 @@ def FastSymmetricForcesDemonsRegistration(fixed_image, moving_image, resolutionS
     registration_method.SetStandardDeviations(1.5)
 
     # This allows monitoring of the progress
-    registration_method.AddCommand( sitk.sitkIterationEvent, lambda: command_iteration(registration_method) )
+    if trace:
+        registration_method.AddCommand( sitk.sitkIterationEvent, lambda: command_iteration(registration_method) )
 
     outputTransform = multiscale_demons(registration_algorithm=registration_method,
                                         fixed_image = fixed_image,
