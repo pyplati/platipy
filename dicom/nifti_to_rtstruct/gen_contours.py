@@ -22,6 +22,7 @@ def gen_contours(mask_file):
     sz[2] = 0
     sz[1] = sz2[1]
     sz[0] = sz2[0]
+    region.SetSize(sz)
 
     indx = region.GetIndex()
     indx[0] = 0
@@ -38,6 +39,7 @@ def gen_contours(mask_file):
     for zz in range(0, sz2[2]):
 
         indx[2] = zz
+        region.SetIndex(indx)
         slice_ext.SetExtractionRegion(region)
         slice_ext.Update()
 
