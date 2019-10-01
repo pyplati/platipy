@@ -190,8 +190,6 @@ def cardiac_service(data_objects, working_dir, settings):
                 inputStruct = atlasSet[atlasId]['Original'][struct]
                 atlasSet[atlasId]['RIR'][struct] = TransformPropagation(imgCrop, inputStruct, initialTfm, structure=True, interp=sitk.sitkLinear)
 
-            sitk.WriteImage(rigidImage, f"./{atlasId}.RIR.nii.gz")
-
         """
         Step 3 - Deformable image registration
         - Using Fast Symmetric Diffeomorphic Demons
@@ -217,8 +215,6 @@ def cardiac_service(data_objects, working_dir, settings):
             for struct in atlasStructures:
                 inputStruct = atlasSet[atlasId]['RIR'][struct]
                 atlasSet[atlasId]['DIR'][struct] = ApplyField(inputStruct, deformField, structure=True, interp=sitk.sitkLinear)
-
-            sitk.WriteImage(deformImage, f"./{atlasId}.DIR.nii.gz")
 
         """
         Step 4 - Iterative atlas removal
