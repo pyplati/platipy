@@ -16,7 +16,7 @@ COPY entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 
-RUN export PYTHONPATH="/workspaces"
+ENV PYTHONPATH "/workspaces"
 
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
