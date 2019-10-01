@@ -34,6 +34,7 @@ db = SQLAlchemy(app)
 # TODO Should be in a configuration file
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['result_backend'] = 'redis://localhost:6379/0'
+app.config['worker_max_memory_per_child'] = 5 * 1000 * 1000 # 5GB in KB
 celery = Celery(__name__, broker='redis://localhost:6379/0')
 celery.conf.update(app.config)
 
