@@ -20,13 +20,16 @@ from impit.segmentation.atlas.registration import (
     apply_field,
 )
 
+from impit.segmentation.atlas.label import (
+    compute_weight_map,
+    combine_labels
+)
+
 from cardiac import (
     AutoLungSegment,
     CropImage,
-    computeWeightMap,
     IAR,
     vesselSplineGeneration,
-    combineLabels,
     processProbabilityImage,
 )
 
@@ -278,7 +281,7 @@ def cardiac_service(data_objects, working_dir, settings):
         # Compute weight maps
         for atlas_id in atlas_id_list:
             atlas_image = atlas_set[atlas_id]["DIR"]["CT Image"]
-            weight_map = computeWeightMap(img_crop, atlas_image)
+            weight_map = compute_weight_map(img_crop, atlas_image)
             atlas_set[atlas_id]["DIR"]["Weight Map"] = weight_map
 
         reference_structure = settings["IARSettings"]["referenceStructure"]
@@ -327,7 +330,7 @@ def cardiac_service(data_objects, working_dir, settings):
         """
         Step 5 - Label Fusion
         """
-        combined_label_dict = combineLabels(atlas_set, atlas_structures)
+        combined_label_dict = combine_labels(atlas_set, atlas_structures)
 
         """
         Step 6 - Paste the cropped structure into the original image space
