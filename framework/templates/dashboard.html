@@ -17,6 +17,7 @@
     
     <!-- Vue -->
     <script src="/static/js/vue.min.js"></script>
+    <script src="/static/js/vue-router.js"></script>
     <script src="/static/js/vue-resource.min.js"></script>
   </head>
 
@@ -30,28 +31,28 @@
       </ul>
     </nav>
 
-    <div class="container-fluid">
+    <div class="container-fluid" id="app">
       <div class="row">
         <nav class="col-md-2 d-none d-md-block bg-light sidebar">
           <div class="sidebar-sticky">
             <ul class="nav flex-column">
               <li class="nav-item">
-                <a class="nav-link {% if status %}active{% endif %}" href="/">
+                <router-link to="/status" class="nav-link {% if status %}active{% endif %}">
                   <span data-feather="home"></span>
                   Status {% if status != None %}<span class="sr-only">(current)</span>{% endif %}
-                </a>
+                </router-link>
               </li>
               <li class="nav-item">
-                <a class="nav-link {% if settings %}active{% endif %}" href="/settings">
+                <router-link class="nav-link {% if settings %}active{% endif %}" to="/settings">
                   <span data-feather="settings"></span>
                   Settings
-                </a>
+                </router-link>
               </li>
               <li class="nav-item">
-                <a class="nav-link {% if log %}active{% endif %}" href="/logs">
+                <router-link class="nav-link {% if logs %}active{% endif %}" to="/logs">
                   <span data-feather="file-text"></span>
                   Logs
-                </a>
+                </router-link>
               </li>
             </ul>
 
@@ -75,28 +76,8 @@
         </nav>
 
         <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-          {% block content %}{% endblock %}
+          <router-view></router-view>
         </main>
-      </div>
-    </div>
-    
-    <div class="modal" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Modal title</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>Modal body text goes here.</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary">Save changes</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -108,8 +89,27 @@
 
     <!-- Icons -->
     <script src="/static/feather/feather.min.js"></script>
+    
+    <!-- Pages for Vue Router -->
+    <script src='/static/pages/status.js'></script>
+    <script src='/static/pages/logs.js'></script>
+
     <script>
       feather.replace()
+
+      const routes = [
+        { path: '/status', component: Status },
+        { path: '/settings', component: Status },
+        { path: '/logs', component: Logs }
+      ]
+
+      const router = new VueRouter({
+        routes
+      })
+
+      const app = new Vue({
+        router
+      }).$mount('#app')
     </script>
   </body>
 </html>

@@ -15,7 +15,8 @@ if 'WORK' in os.environ:
     env_work = os.environ['WORK']
 
 # Configure Log file location
-logger.add(os.path.join(env_work, "service.log"))
+log_file_path = os.path.join(env_work, "service.log")
+logger.add(log_file_path, rotation="1 day")
 
 # Create Flask app
 app = FlaskApp(__name__)
@@ -33,6 +34,7 @@ db = SQLAlchemy(app)
 # TODO Should be in a configuration file
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['result_backend'] = 'redis://localhost:6379/0'
+app.config['worker_max_memory_per_child'] = 5 * 1000 * 1000 # 5GB in KB
 celery = Celery(__name__, broker='redis://localhost:6379/0')
 celery.conf.update(app.config)
 

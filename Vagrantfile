@@ -24,12 +24,15 @@ Vagrant.configure("2") do |config|
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
   # NOTE: This will enable public access to the opened port
-  config.vm.network "forwarded_port", guest: 8000, host: 8000
+  config.vm.network "forwarded_port", guest: 8000, host: 8001
   config.vm.network "forwarded_port", guest: 7777, host: 7777
   config.vm.network "forwarded_port", guest: 7778, host: 7778
   config.vm.network "forwarded_port", guest: 7779, host: 7779
   config.vm.network "forwarded_port", guest: 8042, host: 8042
   config.vm.network "forwarded_port", guest: 4242, host: 4242
+  config.vm.network "forwarded_port", guest: 5000, host: 5000
+  config.vm.network "forwarded_port", guest: 443, host: 443
+  config.vm.network "forwarded_port", guest: 8080, host: 8088
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine and only allow access
@@ -53,8 +56,23 @@ Vagrant.configure("2") do |config|
   #config.vm.synced_folder "N:\\", "/N"
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/impit"
-  #config.vm.synced_folder "dicom_data", "/dicom"
+  config.vm.synced_folder "dicom_data", "/dicom"
+  config.vm.synced_folder "../pyradservice", "/pyradservice"
 
+  required_plugins = %w( vagrant-vbguest vagrant-disksize )
+  _retry = false
+  required_plugins.each do |plugin|
+      unless Vagrant.has_plugin? plugin
+          system "vagrant plugin install #{plugin}"
+          _retry=true
+      end
+  end
+
+  if (_retry)
+      exec "vagrant " + ARGV.join(' ')
+  end
+
+  config.disksize.size = "20GB"
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:

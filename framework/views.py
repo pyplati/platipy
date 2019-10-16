@@ -1,4 +1,4 @@
-from impit.framework import app, celery
+from impit.framework import app, celery, log_file_path
 from ..dicom.communication import DicomConnector
 from .models import db, APIKey
 
@@ -17,10 +17,11 @@ def add_endpoint():
 @app.route('/log', methods=['GET'])
 def fetch_log():
 
-    log = ''
-    with open('logfile.log') as f:
+    log = []
+    with open(log_file_path) as f:
 
-        log = f.read()
+        for line in f:
+            log.append(line.replace("\n",""))
 
     return jsonify({'log': log})
 
@@ -81,7 +82,7 @@ def fetch_status():
 
 
 @app.route('/')
-def status():
-    """Homepage of the web app, supplying an overview of the status of the system"""
+def dashboard():
+    """Entry point to the dashboard of the application"""
 
-    return render_template('status.html', data={})
+    return render_template('dashboard.html', data={})
