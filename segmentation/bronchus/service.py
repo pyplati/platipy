@@ -1,40 +1,46 @@
-import sys
-sys.path.append('..')
-
-from impit.framework import app, DataObject, celery
-from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
-
-import SimpleITK as sitk
-import pydicom
-from loguru import logger
+"""
+Service to run bronchus segmentation.
+"""
 import os
 
-from bronchus import GenLungMask, GenAirwayMask
+#import pydicom
 
-bronchus_settings_defaults = {
+import SimpleITK as sitk
+from loguru import logger
+
+from impit.framework import app, DataObject
+#from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
+
+from .bronchus import generate_lung_mask, generate_airway_mask
+
+
+BRONCHUS_SETTINGS_DEFAULTS = {
     'outputContourName': 'Auto_Bronchus',
 }
-    
-@app.register('Bronchus Segmentation', default_settings=bronchus_settings_defaults)
+
+@app.register('Bronchus Segmentation', default_settings=BRONCHUS_SETTINGS_DEFAULTS)
 def bronchus_service(data_objects, working_dir, settings):
+    """
+    Implements the impit framework to provide bronchus segmentation.
+    """
 
     logger.info('Running Bronchus Segmentation')
     logger.info('Using settings: ' + str(settings))
 
     output_objects = []
-    for d in data_objects:
-        logger.info('Running on data object: ' + d.path)
+    for data_object in data_objects:
+        logger.info('Running on data object: ' + data_object.path)
 
         # Read the image series
-        load_path = d.path
-        if d.type == 'DICOM':
-            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(d.path)
+        load_path = data_object.path
+        if data_object.type == 'DICOM':
+            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(data_object.path)
 
         img = sitk.ReadImage(load_path)
 
         # Compute the lung mask
-        lung_mask = GenLungMask(img, working_dir)
-        bronchus_mask = GenAirwayMask(working_dir, img, lung_mask)
+        lung_mask = generate_lung_mask(img, working_dir)
+        bronchus_mask = generate_airway_mask(working_dir, img, lung_mask)
 
         # If the bronchus mask counldn't be generated then skip it
         if not bronchus_mask:
@@ -46,8 +52,8 @@ def bronchus_service(data_objects, working_dir, settings):
         sitk.WriteImage(bronchus_mask, mask_file)
 
         # Create the output Data Object and add it to the list of output_objects
-        do = DataObject(type='FILE', path=mask_file, parent=d)
-        output_objects.append(do)
+        output_data_object = DataObject(type='FILE', path=mask_file, parent=data_object)
+        output_objects.append(output_data_object)
 
         # If the input was a DICOM, then we can use it to generate an output RTStruct
         # if d.type == 'DICOM':
@@ -73,11 +79,11 @@ def bronchus_service(data_objects, working_dir, settings):
 
 if __name__ == "__main__":
 
-    # Run app by calling "python sample.py" from the command line
+    # Run app by calling "python bronchus.py" from the command line
 
-    dicom_listener_port=7777
-    dicom_listener_aetitle="SAMPLE_SERVICE"
+    DICOM_LISTENER_PORT = 7777
+    DICOM_LISTENER_AETITLE = "BRONCHUS_SERVICE"
 
     app.run(debug=True, host="0.0.0.0", port=8000,
-        dicom_listener_port=dicom_listener_port,
-        dicom_listener_aetitle=dicom_listener_aetitle)
+        dicom_listener_port=DICOM_LISTENER_PORT,
+        dicom_listener_aetitle=DICOM_LISTENER_AETITLE)
