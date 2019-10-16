@@ -85,7 +85,7 @@ def click_command(dcm_file, debug, mask, out_rt_filename):
     Convert Nifti masks to Dicom RTStruct
     """
 
-    convert_nifti(dcm_file, mask, out_rt_filename, debug=debu)
+    convert_nifti(dcm_file, mask, out_rt_filename, debug=debug)
 
 if __name__ == '__main__':
     click_command()
