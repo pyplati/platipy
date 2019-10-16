@@ -3,30 +3,28 @@
 """
 Created on Wed Feb 21 16:39:27 2018
 
-Bronchus segmentation.  The superior extent of bronchus is around 4cm SUP from Carina (From first slice where two airways become visible).
+Bronchus segmentation.  The superior extent of bronchus is around 4cm SUP from Carina (From first
+slice where two airways become visible).
 In this code I'm using 2cm as it's easier to detect where the airways are getting wider
 
-Areas to improve: parameters could be improved (eg. the median filter, carina detection, etc).  The GenLungMask is based on old ITK code from a masters student.  I think we can replace this function
+Areas to improve: parameters could be improved (eg. the median filter, carina detection, etc). The
+GenLung_mask is based on old ITK code from a masters student.  I think we can replace this function
 by checking the top (sup) slice for an airhole and then connected thresholding.
 
-Code fails on two Liverpool cases:  13 (lungs appear in the sup slice) and 36 (the mask failed to generate - need to look at this)
+Code fails on two Liverpool cases:  13 (lungs appear in the sup slice) and 36 (the mask failed to
+generate - need to look at this)
 
 @author: Jason Dowling (CSIRO)
 """
 
-import numpy as np
 import SimpleITK as sitk
 from scipy import ndimage
-import os, re
-from multiprocessing import Process, Pool
-import signal, time
 
-debug=True
-fast_mode=True
-iExtendFromCarina=20 #ie. 2cm
+FAST_MODE = True
+EXTEND_FROM_CARINA = 20  # ie. 2cm
 
 
-def FastMask(img, startZ, endZ):
+def fast_mask(img, start, end):
     """Fast masking for area of a 3D volume .
 
     SimpleITK lacks iterators so voxels need to be set with SetPixel which is horribly slow.
@@ -38,15 +36,16 @@ def FastMask(img, startZ, endZ):
     Returns:
         Masked image.  This may be in float, so it might need casting back to original pixel type.
     """
-    npImg = sitk.GetArrayFromImage(img).astype(float)
-    npImg[startZ:endZ, :, :]=0
-    NewImg = sitk.GetImageFromArray(npImg)
-    NewImg.SetSpacing(img.GetSpacing())
-    NewImg.SetOrigin(img.GetOrigin())
-    NewImg.SetDirection(img.GetDirection())
-    return NewImg
+    np_img = sitk.GetArrayFromImage(img).astype(float)
+    np_img[start:end, :, :] = 0
+    new_img = sitk.GetImageFromArray(np_img)
+    new_img.SetSpacing(img.GetSpacing())
+    new_img.SetOrigin(img.GetOrigin())
+    new_img.SetDirection(img.GetDirection())
+    return new_img
 
-def GetDistance(a_mask,b_mask,dest):
+
+def get_distance(a_mask, b_mask):
     """Get the nearest distance between two masks.
 
     Args:
@@ -58,42 +57,43 @@ def GetDistance(a_mask,b_mask,dest):
         None
     """
 
-    #load lung mask from previous step
+    # load lung mask from previous step
     try:
-        aMask=sitk.ReadImage(a_mask)
+        a_mask = sitk.ReadImage(a_mask)
     except:
-        print('File read failed ' + a_mask)
+        print("File read failed " + a_mask)
         raise
 
     try:
-        bMask=sitk.ReadImage(b_mask)
+        b_mask = sitk.ReadImage(b_mask)
     except:
-        print('File read failed ' + b_mask)
+        print("File read failed " + b_mask)
         raise
 
     # 1. Generate distance map from surface of Contour1
-    smdm=sitk.SignedMaurerDistanceMapImageFilter()
-    smdm.UseImageSpacingOn();
+    smdm = sitk.SignedMaurerDistanceMapImageFilter()
+    smdm.UseImageSpacingOn()
     smdm.InsideIsPositiveOff()
     smdm.SquaredDistanceOff()
-    result=smdm.Execute(aMask)
+    result = smdm.Execute(a_mask)
 
     # Subtract 1 from the mask, making 0's -> -1 and 1's -> 0.
-    bMask=bMask-1
+    b_mask = b_mask - 1
 
     # Multiply this result by -10000, making -1's -> 10000.
     # It is assumed that 10000mm > than the max distance
-    bMask=bMask*-10000
+    b_mask = b_mask * -10000
 
-    result=result+sitk.Cast ( bMask, result.GetPixelIDValue() )
+    result = result + sitk.Cast(b_mask, result.GetPixelIDValue())
 
-    sif=sitk.StatisticsImageFilter()
+    sif = sitk.StatisticsImageFilter()
     sif.Execute(result)
     dist = sif.GetMinimum()
 
     return dist
 
-def GenLungMask(img,dest):
+
+def generate_lung_mask(img, dest):
     """Generate initial airway mask (includes lungs).
 
     Args:
@@ -104,81 +104,82 @@ def GenLungMask(img,dest):
         None
     """
 
-    print('Generating Lung Mask...')
+    print("Generating Lung Mask...")
 
-    MidImg = sitk.GetArrayFromImage(img).astype(float)
-    centre = ndimage.measurements.center_of_mass(MidImg)
+    mid_img = sitk.GetArrayFromImage(img).astype(float)
+    centre = ndimage.measurements.center_of_mass(mid_img)
 
-    #get air mask external to body
-    connT=sitk.ConnectedThresholdImageFilter()
-    connT.SetSeed([0,0,0])
-    connT.SetLower(-10000)
-    connT.SetUpper(-300)
-    result=connT.Execute(img)
-    writer=sitk.ImageFileWriter()
-    writer.SetFileName(dest+'/imageB.nii.gz')
+    # get air mask external to body
+    connected_threshold_filter = sitk.ConnectedThresholdImageFilter()
+    connected_threshold_filter.SetSeed([0, 0, 0])
+    connected_threshold_filter.SetLower(-10000)
+    connected_threshold_filter.SetUpper(-300)
+    result = connected_threshold_filter.Execute(img)
+    writer = sitk.ImageFileWriter()
+    writer.SetFileName(dest + "/imageB.nii.gz")
     writer.Execute(result)
 
-    #get body mask (remove couch) Seed this from centre of image.
-    CCIF=sitk.ConfidenceConnectedImageFilter()
-    CCIF.SetSeed([int(centre[1]),int(centre[2]),int(centre[0])])
-    resultF=CCIF.Execute(result)
-    writer=sitk.ImageFileWriter()
-    writer.SetFileName(dest+'/imageF.nii.gz')
-    writer.Execute(resultF)
+    # get body mask (remove couch) Seed this from centre of image.
+    confidence_connected_image_filter = sitk.ConfidenceConnectedImageFilter()
+    confidence_connected_image_filter.SetSeed([int(centre[1]), int(centre[2]), int(centre[0])])
+    result_f = confidence_connected_image_filter.Execute(result)
+    writer = sitk.ImageFileWriter()
+    writer.SetFileName(dest + "/imageF.nii.gz")
+    writer.Execute(result_f)
 
-    #get non-air voxels fom within body
-    connT=sitk.ConnectedThresholdImageFilter()
-    connT.SetSeed([251,240,65])
-    connT.SetLower(-300)
-    connT.SetUpper(10000)
-    result=connT.Execute(img)
-    writer=sitk.ImageFileWriter()
-    writer.SetFileName(dest+'/imageG.nii.gz')
+    # get non-air voxels fom within body
+    connected_threshold_filter = sitk.ConnectedThresholdImageFilter()
+    connected_threshold_filter.SetSeed([251, 240, 65])
+    connected_threshold_filter.SetLower(-300)
+    connected_threshold_filter.SetUpper(10000)
+    result = connected_threshold_filter.Execute(img)
+    writer = sitk.ImageFileWriter()
+    writer.SetFileName(dest + "/imageG.nii.gz")
     writer.Execute(result)
 
-    #problem might be intestinal air below lungs - need to remove this?
-    binInvert=sitk.InvertIntensityImageFilter()
-    resultH=binInvert.Execute(result)
-    writer=sitk.ImageFileWriter()
-    writer.SetFileName(dest+'/imageH.nii.gz')
-    writer.Execute(resultH)
+    # problem might be intestinal air below lungs - need to remove this?
+    invert_filter = sitk.InvertIntensityImageFilter()
+    result_h = invert_filter.Execute(result)
+    writer = sitk.ImageFileWriter()
+    writer.SetFileName(dest + "/imageH.nii.gz")
+    writer.Execute(result_h)
 
-    #not sure this is necessary
-    binDilate=sitk.BinaryDilateImageFilter()
-    binDilate.SetKernelRadius(3)
-    resultJ=binDilate.Execute(resultH)
-    writer=sitk.ImageFileWriter()
-    writer.SetFileName(dest+'/imageJ.nii.gz')
-    writer.Execute(resultJ)
+    # not sure this is necessary
+    binary_dilate = sitk.BinaryDilateImageFilter()
+    binary_dilate.SetKernelRadius(3)
+    result_j = binary_dilate.Execute(result_h)
+    writer = sitk.ImageFileWriter()
+    writer.SetFileName(dest + "/imageJ.nii.gz")
+    writer.Execute(result_j)
 
-    #image j is ok (might need dilation)
-    #image f is fine as well (just a body contour)
-    AND=sitk.AddImageFilter()
-    resultFinal=AND.Execute(resultJ,resultF)
-    writer=sitk.ImageFileWriter()
-    writer.SetFileName(dest+'/imageK.nii.gz')
-    writer.Execute(resultFinal)
+    # image j is ok (might need dilation)
+    # image f is fine as well (just a body contour)
+    add_image_filter = sitk.AddImageFilter()
+    result_final = add_image_filter.Execute(result_j, result_f)
+    writer = sitk.ImageFileWriter()
+    writer.SetFileName(dest + "/imageK.nii.gz")
+    writer.Execute(result_final)
 
-    resultFinal=binInvert.Execute(resultFinal)
-    writer=sitk.ImageFileWriter()
-    writer.SetFileName(dest+'/imageK2H.nii.gz')
-    writer.Execute(resultFinal)
+    result_final = invert_filter.Execute(result_final)
+    writer = sitk.ImageFileWriter()
+    writer.SetFileName(dest + "/imageK2H.nii.gz")
+    writer.Execute(result_final)
 
-    #Just change 255 to 1 for binary label
-    BT=sitk.BinaryThresholdImageFilter()
-    BT.SetLowerThreshold(255)
-    BT.SetUpperThreshold(255)
-    resultFinal=BT.Execute(resultFinal)
-    writer=sitk.ImageFileWriter()
-    writer.SetFileName(dest+'/imageFinal.nii.gz')
-    writer.Execute(resultFinal)
+    # Just change 255 to 1 for binary label
+    binary_threshold_filter = sitk.BinaryThresholdImageFilter()
+    binary_threshold_filter.SetLowerThreshold(255)
+    binary_threshold_filter.SetUpperThreshold(255)
+    result_final = binary_threshold_filter.Execute(result_final)
+    writer = sitk.ImageFileWriter()
+    writer.SetFileName(dest + "/imageFinal.nii.gz")
+    writer.Execute(result_final)
 
-    print('Generating Lung Mask... Done')
+    print("Generating Lung Mask... Done")
 
-    return resultFinal
+    return result_final
 
-def GenAirwayMask(dest,img,lungMask):
+
+def generate_airway_mask(dest, img, lung_mask):
     """Generate final bronchus segmentation .
 
     Args:
@@ -188,110 +189,121 @@ def GenAirwayMask(dest,img,lungMask):
         None
     """
 
-    iLungMaskHUValues = [-750, -775, -800, -825, -850, -900, -700, -950, -650]
-    iDistanceFromSuPSliceValues = [3, 10, 20]
-    expectedPhysicalSizeRange = [22000, 75000]
+    lung_mask_hu_values = [-750, -775, -800, -825, -850, -900, -700, -950, -650]
+    distance_from_supu_slice_values = [3, 10, 20]
+    expected_physical_size_range = [22000, 75000]
 
-    zSize=img.GetDepth()
+    z_size = img.GetDepth()
 
-    #Identify airway start on superior slice
-    LABELSHAPE=sitk.LabelIntensityStatisticsImageFilter()
-    connected_component=sitk.ConnectedComponentImageFilter()
-    connT=sitk.ConnectedThresholdImageFilter()
+    # Identify airway start on superior slice
+    label_shape = sitk.LabelIntensityStatisticsImageFilter()
+    connected_component = sitk.ConnectedComponentImageFilter()
+    connected_threshold_filter = sitk.ConnectedThresholdImageFilter()
 
-    print ('-------------------------------' )
+    print("-------------------------------")
 
-    LABELSHAPE.Execute(lungMask, img)
-    for l in LABELSHAPE.GetLabels():
-        print ('summary of lung intensities.  Mean: ' + str(LABELSHAPE.GetMean(l)) + ' sd: ' + str(LABELSHAPE.GetStandardDeviation(l)) + ' median: ' + str(LABELSHAPE.GetMedian(l))    )
-        iLungMaskMean=int(LABELSHAPE.GetMean(l))
+    label_shape.Execute(lung_mask, img)
+    for label in label_shape.GetLabels():
+        print(
+            "summary of lung intensities.  Mean: "
+            + str(label_shape.GetMean(label))
+            + " sd: "
+            + str(label_shape.GetStandardDeviation(label))
+            + " median: "
+            + str(label_shape.GetMedian(label))
+        )
 
-    #iDistanceFromSuPSlice=3
-    iLoopCount=0
-    bProcessedCorrectly=False
-    #iLungMaskHU=-800
-    #bMedianSmooth=0
+    loop_count = 0
+    processed_correctly = False
+
     best_result = None
     best_result_sim = 100000000
     best_lung_mask_hu = 0
 
     for k in range(2):
 
-        if bProcessedCorrectly and fast_mode:
+        if processed_correctly and FAST_MODE:
             break
 
         if k == 1:
-            #Try smoothing the lung mask - effects all tests below
-            medianfilter=sitk.MedianImageFilter()
-            medianfilter.SetRadius(1)
-            lungMask=medianfilter.Execute(lungMask)
+            # Try smoothing the lung mask - effects all tests below
+            median_filter = sitk.MedianImageFilter()
+            median_filter.SetRadius(1)
+            lung_mask = median_filter.Execute(lung_mask)
 
-        for j in range(len(iDistanceFromSuPSliceValues)):
+        for distance_from_sup_slice in distance_from_supu_slice_values:
 
-            if bProcessedCorrectly and fast_mode:
+            if processed_correctly and FAST_MODE:
                 break
 
-            iDistanceFromSuPSlice=iDistanceFromSuPSliceValues[j]
+            label_slice = lung_mask[
+                :, :, z_size - distance_from_sup_slice - 10 : z_size - distance_from_sup_slice
+            ]  # works for both cases 22 and 17
+            img_slice = img[
+                :, :, z_size - distance_from_sup_slice - 10 : z_size - distance_from_sup_slice
+            ]
 
-            labelSlice= lungMask[:,:,zSize-iDistanceFromSuPSlice-10:zSize-iDistanceFromSuPSlice]   #works for both cases 22 and 17
-            imgSlice= img[:,:,zSize-iDistanceFromSuPSlice-10:zSize-iDistanceFromSuPSlice]
-
-            connected = connected_component.Execute(labelSlice)
+            connected = connected_component.Execute(label_slice)
             nda_connected = sitk.GetArrayFromImage(connected)
             # In case there are multiple air regions at the top, select the region with
             # the max elongation as the airway seed
             # Also check that the region has a minimum physical size, to filter out other
             # unexpected regions
             max_elong = 0
-            airwayOpen = [0,0,0]
-            LABELSHAPE.Execute(connected, imgSlice)
-            for l in LABELSHAPE.GetLabels():
-                #print('Elong: ' + str(LABELSHAPE.GetElongation(l)) + ' Volume: ' + str(LABELSHAPE.GetPhysicalSize(l)))
-                if LABELSHAPE.GetElongation(l) > max_elong and LABELSHAPE.GetPhysicalSize(l) > 2000:
-                    centre=img.TransformPhysicalPointToIndex(LABELSHAPE.GetCentroid(l))
-                    max_elong = LABELSHAPE.GetElongation(l)
-                    airwayOpen=[int(centre[0]),int(centre[1]),int(centre[2])]
+            airway_open = [0, 0, 0]
+            label_shape.Execute(connected, img_slice)
+            for label in label_shape.GetLabels():
+                if (
+                    label_shape.GetElongation(label) > max_elong
+                    and label_shape.GetPhysicalSize(label) > 2000
+                ):
+                    centre = img.TransformPhysicalPointToIndex(label_shape.GetCentroid(label))
+                    max_elong = label_shape.GetElongation(label)
+                    airway_open = [int(centre[0]), int(centre[1]), int(centre[2])]
 
-            #just check the opening is at the right location
-            centroidMaskVal=lungMask.GetPixel(airwayOpen[0],airwayOpen[1],airwayOpen[2])
+            # just check the opening is at the right location
+            centroid_mask_val = lung_mask.GetPixel(airway_open[0], airway_open[1], airway_open[2])
 
-            if (centroidMaskVal==0):
-                print ('Error locating trachea centroid.  Usually because of additional air features on this slice')
+            if centroid_mask_val == 0:
+                print(
+                    """Error locating trachea centroid.  Usually because of additional air features
+                    on this slice"""
+                )
 
                 # No point in doing the airway segmentation here as airway opening wasn't detected
                 continue
 
-            print ('*Airway opening: ' + str(airwayOpen))
-            print ('*Voxel HU at opening: ' + str(lungMask.GetPixel(airwayOpen[0],airwayOpen[1],airwayOpen[2])))
+            print("*Airway opening: " + str(airway_open))
+            print(
+                "*Voxel HU at opening: "
+                + str(lung_mask.GetPixel(airway_open[0], airway_open[1], airway_open[2]))
+            )
 
+            for lung_mask_hu in lung_mask_hu_values:
 
-            for i in range(len(iLungMaskHUValues)):
+                print("--------------------------------------------")
+                print("Extracting airways.  Iteration: " + str(loop_count))
+                print("*Lung Mask HU: " + str(lung_mask_hu))
+                print("*Slices from sup for airway opening: " + str(distance_from_sup_slice))
+                if k == 1:
+                    print("*Mask median smoothing on")
+                loop_count += 1
 
-                iLungMaskHU=iLungMaskHUValues[i]
+                connected_threshold_filter.SetSeed(airway_open)
+                connected_threshold_filter.SetLower(-2000)
+                connected_threshold_filter.SetUpper(lung_mask_hu)
+                result = connected_threshold_filter.Execute(img)
 
-                print ('--------------------------------------------' )
-                print ('Extracting airways.  Iteration: ' + str(iLoopCount) )
-                print ('*Lung Mask HU: ' + str(iLungMaskHU) )
-                print ('*Slices from sup for airway opening: ' + str(iDistanceFromSuPSlice) )
-                if (k==1):
-                    print ('*Mask median smoothing on')
-                iLoopCount=iLoopCount+1
-
-                connT.SetSeed(airwayOpen)
-                connT.SetLower(-2000)
-                connT.SetUpper(iLungMaskHU)
-                result=connT.Execute(img)
-
-                writer=sitk.ImageFileWriter()
-                writer.SetFileName(dest+'/airwaysMask.nii.gz')
+                writer = sitk.ImageFileWriter()
+                writer.SetFileName(dest + "/airwaysMask.nii.gz")
                 writer.Execute(result)
 
-                #process in 2D - check label elongation and size.
-                corinaSlice=0
-                for idxSlice in range(zSize):
-                    labelSlice = result[:,:,idxSlice]
-                    imgSlice=img[:,:,idxSlice]
-                    connected = connected_component.Execute(labelSlice)
+                # process in 2D - check label elongation and size.
+                corina_slice = 0
+                for idx_slice in range(z_size):
+                    label_slice = result[:, :, idx_slice]
+                    img_slice = img[:, :, idx_slice]
+                    connected = connected_component.Execute(label_slice)
                     nda_connected = sitk.GetArrayFromImage(connected)
                     num_regions = nda_connected.max()
 
@@ -299,55 +311,72 @@ def GenAirwayMask(dest,img,lungMask):
                     if num_regions < 2:
                         continue
 
-                    LABELSHAPE.Execute(labelSlice, imgSlice)
-                    for l in LABELSHAPE.GetLabels():
-                        if (LABELSHAPE.GetElongation(l) > 5 and LABELSHAPE.GetPhysicalSize(l) > 30):
-                            corinaSlice=idxSlice
+                    label_shape.Execute(label_slice, img_slice)
+                    for label in label_shape.GetLabels():
+                        if (
+                            label_shape.GetElongation(label) > 5
+                            and label_shape.GetPhysicalSize(label) > 30
+                        ):
+                            corina_slice = idx_slice
 
-                #crop from corinaSlice + 20 slices (~4cm)
-                if (corinaSlice==0):
-                    print ('Failed to located carina.  Adjusting parameters ')
+                # crop from corina_slice + 20 slices (~4cm)
+                if corina_slice == 0:
+                    print("Failed to located carina.  Adjusting parameters ")
 
                 else:
-                    print (' Cropping from slice: ' + str(corinaSlice) + ' + 20 slices and dilating' )
-                    result=FastMask(result,corinaSlice+iExtendFromCarina,zSize)
-                    result = sitk.Cast ( result, lungMask.GetPixelIDValue() )
+                    print(
+                        " Cropping from slice: " + str(corina_slice) + " + 20 slices and dilating"
+                    )
+                    result = fast_mask(result, corina_slice + EXTEND_FROM_CARINA, z_size)
+                    result = sitk.Cast(result, lung_mask.GetPixelIDValue())
 
                     # Dilate and check if the output is in the expected range
-                    binDilate=sitk.BinaryDilateImageFilter()
-                    binDilate.SetKernelRadius(2)
-                    result=binDilate.Execute(result)
+                    binary_dilate = sitk.BinaryDilateImageFilter()
+                    binary_dilate.SetKernelRadius(2)
+                    result = binary_dilate.Execute(result)
 
-                    #check size of label - if it's too large the lungs have been included..
-                    LABELSHAPE.Execute(result, img)
-                    for l in LABELSHAPE.GetLabels():
-                        iAirwayMaskPhysicalSize=int(LABELSHAPE.GetPhysicalSize(l))
-                        fRoundness=float(LABELSHAPE.GetRoundness(l))
-                        fElongation=float(LABELSHAPE.GetElongation(l))
+                    # check size of label - if it's too large the lungs have been included..
+                    label_shape.Execute(result, img)
+                    for label in label_shape.GetLabels():
+                        airway_mask_physical_size = int(label_shape.GetPhysicalSize(label))
+                        roundness = float(label_shape.GetRoundness(label))
+                        elongation = float(label_shape.GetElongation(label))
 
-                    bThisProcessedCorrectly = False
-                    if (iAirwayMaskPhysicalSize > expectedPhysicalSizeRange[1]):
-                        print (' Airway Mask size failed (> '+str(expectedPhysicalSizeRange[1])+'): ' + str(iAirwayMaskPhysicalSize) )
-                    elif (iAirwayMaskPhysicalSize < expectedPhysicalSizeRange[0]):
-                        print (' Airway Mask size failed (< '+str(expectedPhysicalSizeRange[0])+'): ' + str(iAirwayMaskPhysicalSize) )
+                    this_processed_correctly = False
+                    if airway_mask_physical_size > expected_physical_size_range[1]:
+                        print(
+                            " Airway Mask size failed (> "
+                            + str(expected_physical_size_range[1])
+                            + "): "
+                            + str(airway_mask_physical_size)
+                        )
+                    elif airway_mask_physical_size < expected_physical_size_range[0]:
+                        print(
+                            " Airway Mask size failed (< "
+                            + str(expected_physical_size_range[0])
+                            + "): "
+                            + str(airway_mask_physical_size)
+                        )
                     else:
-                        print (' Airway Mask size passed: ' + str(iAirwayMaskPhysicalSize) )
-                        bProcessedCorrectly = True
-                        bThisProcessedCorrectly = True
+                        print(" Airway Mask size passed: " + str(airway_mask_physical_size))
+                        processed_correctly = True
+                        this_processed_correctly = True
 
-                    print (' Roundness: ' + str(fRoundness) )
-                    print (' Elongation: ' + str(fElongation) )
-                    target_size = (expectedPhysicalSizeRange[1] + expectedPhysicalSizeRange[0]) / 2
-                    size_sim = abs(iAirwayMaskPhysicalSize - target_size)
+                    print(" Roundness: " + str(roundness))
+                    print(" Elongation: " + str(elongation))
+                    # target_size = (
+                    #     expected_physical_size_range[1] + expected_physical_size_range[0]
+                    # ) / 2
+                    #size_sim = abs(airway_mask_physical_size - target_size)
 
-                    if fRoundness < best_result_sim and bThisProcessedCorrectly:
-                        best_result_sim = fRoundness
+                    if roundness < best_result_sim and this_processed_correctly:
+                        best_result_sim = roundness
                         best_result = result
-                        best_lung_mask_hu = iLungMaskHU
+                        best_lung_mask_hu = lung_mask_hu
 
-    if not bProcessedCorrectly:
-        print(' Unable to process correctly!!!')
+    if not processed_correctly:
+        print(" Unable to process correctly!!!")
 
-    print('Selected Lung Mask HU: ' + str(best_lung_mask_hu))
+    print("Selected Lung Mask HU: " + str(best_lung_mask_hu))
 
     return best_result
