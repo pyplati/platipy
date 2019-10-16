@@ -25,7 +25,7 @@ from impit.segmentation.atlas.label import (
     combine_labels
 )
 
-from cardiac import (
+from .cardiac import (
     AutoLungSegment,
     CropImage,
     IAR,
