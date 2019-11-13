@@ -9,7 +9,13 @@ import SimpleITK as sitk
 from loguru import logger
 # import pydicom
 
-from impit.framework import app, DataObject
+# Need include celery here to be able to from Docker container 
+#pylint: disable=unused-import
+from impit.framework import (
+    app,
+    DataObject,
+    celery
+ )
 
 # from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
 from impit.segmentation.atlas.registration import (
