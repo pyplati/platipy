@@ -27,7 +27,7 @@ from impit.segmentation.atlas.label import (
 
 from impit.segmentation.atlas.iterative_atlas_removal import run_iar
 
-from .cardiac import (
+from cardiac import (
     AutoLungSegment,
     CropImage,
     vesselSplineGeneration,
