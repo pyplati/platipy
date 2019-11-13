@@ -4,7 +4,6 @@ Service to run multi-atlas based cardiac segmentation.
 Rob Finnegan
 """
 import os
-import datetime
 
 import SimpleITK as sitk
 from loguru import logger
@@ -26,7 +25,7 @@ from impit.segmentation.atlas.label import (
     process_probability_image,
 )
 
-from impit.segmentation.atlas.iterative_atlas_removal import IAR
+from impit.segmentation.atlas.iterative_atlas_removal import run_iar
 
 from .cardiac import (
     AutoLungSegment,
@@ -293,7 +292,7 @@ def cardiac_service(data_objects, working_dir, settings):
         outlier_factor = settings["IARSettings"]["outlierFactor"]
         min_best_atlases = settings["IARSettings"]["minBestAtlases"]
 
-        atlas_set = IAR(
+        atlas_set = run_iar(
             atlas_set=atlas_set,
             structure_name=reference_structure,
             smooth_maps=smooth_distance_maps,
@@ -302,10 +301,9 @@ def cardiac_service(data_objects, working_dir, settings):
             outlier_method=outlier_method,
             min_best_atlases=min_best_atlases,
             n_factor=outlier_factor,
-            log_file="IAR_{0}.log".format(datetime.datetime.now()),
-            debug=False,
             iteration=0,
             single_step=False,
+            project_on_sphere=True
         )
 
         """
