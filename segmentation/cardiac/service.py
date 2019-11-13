@@ -22,15 +22,16 @@ from impit.segmentation.atlas.registration import (
 
 from impit.segmentation.atlas.label import (
     compute_weight_map,
-    combine_labels
+    combine_labels,
+    process_probability_image,
 )
+
+from impit.segmentation.atlas.iterative_atlas_removal import IAR
 
 from .cardiac import (
     AutoLungSegment,
     CropImage,
-    IAR,
     vesselSplineGeneration,
-    processProbabilityImage,
 )
 
 
@@ -293,18 +294,18 @@ def cardiac_service(data_objects, working_dir, settings):
         min_best_atlases = settings["IARSettings"]["minBestAtlases"]
 
         atlas_set = IAR(
-            atlasSet=atlas_set,
-            structureName=reference_structure,
-            smoothMaps=smooth_distance_maps,
-            smoothSigma=smooth_sigma,
-            zScore=z_score_statistic,
-            outlierMethod=outlier_method,
-            minBestAtlases=min_best_atlases,
-            N_factor=outlier_factor,
-            logFile="IAR_{0}.log".format(datetime.datetime.now()),
+            atlas_set=atlas_set,
+            structure_name=reference_structure,
+            smooth_maps=smooth_distance_maps,
+            smooth_sigma=smooth_sigma,
+            z_score=z_score_statistic,
+            outlier_method=outlier_method,
+            min_best_atlases=min_best_atlases,
+            n_factor=outlier_factor,
+            log_file="IAR_{0}.log".format(datetime.datetime.now()),
             debug=False,
             iteration=0,
-            singleStep=False,
+            single_step=False,
         )
 
         """
@@ -344,7 +345,7 @@ def cardiac_service(data_objects, working_dir, settings):
 
         for structure_name in vote_structures:
             optimal_threshold = settings["labelFusionSettings"]["optimalThreshold"][structure_name]
-            binary_struct = processProbabilityImage(
+            binary_struct = process_probability_image(
                 combined_label_dict[structure_name], optimal_threshold
             )
             paste_img = sitk.Paste(

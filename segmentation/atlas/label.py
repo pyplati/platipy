@@ -155,3 +155,39 @@ def combine_labels(atlas_set, structure_name, threshold=1e-4, smooth_sigma=1.0):
         combined_label_dict[structure_name] = combined_label
 
     return combined_label_dict
+
+
+def process_probability_image(probability_image, threshold=0.5):
+    """
+    Generate a mask given a probability image, performing some basic post processing as well.
+    """
+
+    # Check type
+    if not isinstance(probability_image, sitk.Image):
+        probability_image = sitk.GetImageFromArray(probability_image)
+
+    # Normalise probability map
+    probability_image = (probability_image / sitk.GetArrayFromImage(probability_image).max())
+
+    # Get the starting binary image
+    binary_image = sitk.BinaryThreshold(probability_image, lowerThreshold=threshold)
+
+    # Fill holes
+    binary_image = sitk.BinaryFillhole(binary_image)
+
+    # Apply the connected component filter
+    labelled_image = sitk.ConnectedComponent(binary_image)
+
+    # Measure the size of each connected component
+    label_shape_filter = sitk.LabelShapeStatisticsImageFilter()
+    label_shape_filter.Execute(labelled_image)
+    label_indices = label_shape_filter.GetLabels()
+    voxel_counts = [label_shape_filter.GetNumberOfPixels(i) for i in label_indices]
+    if voxel_counts == []:
+        return binary_image
+
+    # Select the largest region
+    largest_component_label = label_indices[np.argmax(voxel_counts)]
+    largest_component_image = (labelled_image == largest_component_label)
+
+    return sitk.Cast(largest_component_image, sitk.sitkUInt8)
