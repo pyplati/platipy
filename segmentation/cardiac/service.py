@@ -9,7 +9,7 @@ import SimpleITK as sitk
 from loguru import logger
 # import pydicom
 
-# Need include celery here to be able to from Docker container 
+# Need include celery here to be able to from Docker container
 #pylint: disable=unused-import
 from impit.framework import (
     app,
@@ -33,7 +33,7 @@ from impit.segmentation.atlas.label import (
 
 from impit.segmentation.atlas.iterative_atlas_removal import run_iar
 
-from cardiac import (
+from impit.segmentation.cardiac.cardiac import (
     AutoLungSegment,
     CropImage,
     vesselSplineGeneration,
@@ -43,7 +43,7 @@ from cardiac import (
 CARDIAC_SETTINGS_DEFAULTS = {
     "outputFormat": "Auto_{0}.nii.gz",
     "atlasSettings": {
-        "atlasIdList": ["08", "11", "12", "13", "14"],
+        "atlasIdList": ["11", "12", "13", "14"],
         "atlasStructures": ["WHOLEHEART", "LANTDESCARTERY"],
         # For development, run: 'export ATLAS_PATH=/atlas/path'
         "atlasPath": os.environ["ATLAS_PATH"],
@@ -59,8 +59,8 @@ CARDIAC_SETTINGS_DEFAULTS = {
     "rigidSettings": {
         "initialReg": "Affine",
         "options": {
-            "shrinkFactors": [8, 4, 2, 1],
-            "smoothSigmas": [8, 4, 1, 0],
+            "shrinkFactors": [8, 4, 2],
+            "smoothSigmas": [8, 4, 1],
             "samplingRate": 0.25,
             "finalInterp": sitk.sitkBSpline,
         },
@@ -68,8 +68,8 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "guideStructure": False,
     },
     "deformableSettings": {
-        "resolutionStaging": [16, 4, 2, 1],
-        "iterationStaging": [20, 10, 10, 10],
+        "resolutionStaging": [4, 2, 1],
+        "iterationStaging": [10, 10, 5],
         "ncores": 8,
         "trace": True,
     },
@@ -80,7 +80,8 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "zScoreStatistic": "MAD",
         "outlierMethod": "IQR",
         "outlierFactor": 1.5,
-        "minBestAtlases": 4,
+        "minBestAtlases": 3,
+        "project_on_sphere":False,
     },
     "labelFusionSettings": {"voteType": "local", "optimalThreshold": {"WHOLEHEART": 0.44}},
     "vesselSpliningSettings": {
@@ -297,6 +298,7 @@ def cardiac_service(data_objects, working_dir, settings):
         outlier_method = settings["IARSettings"]["outlierMethod"]
         outlier_factor = settings["IARSettings"]["outlierFactor"]
         min_best_atlases = settings["IARSettings"]["minBestAtlases"]
+        project_on_sphere = settings["IARSettings"]["project_on_sphere"]
 
         atlas_set = run_iar(
             atlas_set=atlas_set,
@@ -309,7 +311,7 @@ def cardiac_service(data_objects, working_dir, settings):
             n_factor=outlier_factor,
             iteration=0,
             single_step=False,
-            project_on_sphere=True
+            project_on_sphere=False
         )
 
         """

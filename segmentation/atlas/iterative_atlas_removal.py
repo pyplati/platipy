@@ -21,7 +21,6 @@ from .util import (
     gaussian_curve,
 )
 
-
 def evaluate_distance_on_surface(
     reference_volume, test_volume, abs_distance=True, reference_as_distance_map=False
 ):
@@ -53,12 +52,16 @@ def evaluate_distance_on_surface(
     )
     distance_array = sitk.GetArrayFromImage(distance_image)
 
+    # Get centre of mass of reference volume
+    reference_volume_array = sitk.GetArrayFromImage(reference_volume)
+    reference_volume_locations = np.where(reference_volume_array==1)
+    com_index = reference_volume_locations.mean(axis=1)
+    com_real = vectorised_transform_index_to_physical_point(reference_volume, com_index)
+
     # Calculate centre of mass in real coordinates
     test_surface_array = sitk.GetArrayFromImage(test_surface)
     test_surface_locations = np.where(test_surface_array == 1)
     test_surface_locations_array = np.array(test_surface_locations)
-    com_index = test_surface_locations_array.mean(axis=1)
-    com_real = vectorised_transform_index_to_physical_point(test_surface, com_index)
 
     # Calculate each point on the surface in real coordinates
     pts = test_surface_locations_array.T
@@ -75,6 +78,36 @@ def evaluate_distance_on_surface(
 
     return theta, phi, values
 
+def evaluate_distance_to_reference(
+    reference_volume, test_volume, resample_factor=1
+):
+    """
+    Evaluates the distance from the surface of a test volume to a reference
+    Input: reference_volume: binary volume SimpleITK image
+           test_volume: binary volume SimpleITK image
+    Output: values : the distance to each point on the reference volume surface
+    """
+
+    # TO DO
+    # come up with a better resampling strategy
+    # e.g. resample images prior to this process?
+
+    # compute the distance map from the test volume surface
+    test_distance_map = sitk.Abs(
+        sitk.SignedMaurerDistanceMap(
+            test_volume, squaredDistance=False, useImageSpacing=True
+        )
+    )
+
+    # get the distance from the test surface to the reference surface
+    ref_surface = sitk.LabelContour(reference_volume)
+    ref_surface_pts = sitk.GetArrayFromImage(ref_surface)==1
+    surface_values = sitk.GetArrayFromImage(test_distance_map)[ref_surface_pts]
+
+    # resample to keep the points to a reasonable amount
+    values = surface_values[::resample_factor]
+
+    return values
 
 def regrid_spherical_data(theta, phi, values, resolution):
     """
@@ -132,23 +165,10 @@ def run_iar(
     # Get remaining case identifiers to loop through
     remaining_id_list = list(atlas_set.keys())
 
-    # Modify resolution for better statistics
-    if len(remaining_id_list) < 12:
-        logger.info("  Less than 12 atlases, resolution set: 3x3 sqr deg")
-        resolution = 3
-    elif len(remaining_id_list) < 7:
-        logger.info("  Less than 7 atlases, resolution set: 6x6 sqr deg")
-        resolution = 6
-    else:
-        resolution = 1
-
     # Generate the surface projections
     #   1. Set the consensus surface using the reference volume
     probability_label = combine_labels(atlas_set, structure_name)[structure_name]
-    reference_volume = process_probability_image(probability_label, threshold=1)
-    reference_distance_map = sitk.Abs(
-        sitk.SignedMaurerDistanceMap(reference_volume, squaredDistance=False, useImageSpacing=True)
-    )
+    reference_volume = process_probability_image(probability_label, threshold=1-1e-6)
 
     g_val_list = []
     logger.info("  Calculating surface distance maps: ")
@@ -164,8 +184,22 @@ def run_iar(
         test_volume = process_probability_image(test_volume, 0.1)
 
         if project_on_sphere:
+            # Modify resolution for better statistics
+            if len(remaining_id_list) < 12:
+                logger.info("  Less than 12 atlases, resolution set: 3x3 sqr deg")
+                resolution = 3
+            elif len(remaining_id_list) < 7:
+                logger.info("  Less than 7 atlases, resolution set: 6x6 sqr deg")
+                resolution = 6
+            else:
+                resolution = 1
 
-            # Compute the distance across the surface
+            # Compute the reference distance map
+            reference_distance_map = sitk.Abs(
+                sitk.SignedMaurerDistanceMap(reference_volume, squaredDistance=False, useImageSpacing=True)
+            )
+
+            # Compute the distance to test surfaces, across the surface of the reference
             theta, phi, values = evaluate_distance_on_surface(
                 reference_distance_map, test_volume, reference_as_distance_map=True
             )
@@ -174,9 +208,20 @@ def run_iar(
 
             g_val_list.append(g_vals)
         else:
-            # Compute distance on surface
-            _, _, values = evaluate_distance_on_surface(
-                reference_distance_map, test_volume, reference_as_distance_map=True
+
+            # Modify resolution for better statistics
+            if len(remaining_id_list) < 12:
+                logger.info("  Less than 12 atlases, resample factor set: 5")
+                resample_factor = 5
+            elif len(remaining_id_list) < 7:
+                logger.info("  Less than 7 atlases, resolution set: 6x6 sqr deg")
+                resample_factor = 10
+            else:
+                resample_factor = 1
+
+            # Compute distance to reference, from the test volume
+            values = evaluate_distance_to_reference(
+                reference_volume, test_volume, resample_factor=resample_factor
             )
 
             g_val_list.append(values)
@@ -188,7 +233,7 @@ def run_iar(
         g_val_list_test = g_val_list[:]
         g_val_list_test.pop(i)
 
-        if smooth_maps:
+        if project_on_sphere and smooth_maps:
             g_vals = filters.gaussian_filter(g_vals, sigma=smooth_sigma, mode="wrap")
 
         #       b) i] Compute the Z-scores over the projected surface
