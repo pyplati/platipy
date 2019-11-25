@@ -43,7 +43,8 @@ from impit.segmentation.cardiac.cardiac import (
 CARDIAC_SETTINGS_DEFAULTS = {
     "outputFormat": "Auto_{0}.nii.gz",
     "atlasSettings": {
-        "atlasIdList": ["11", "12", "13", "14"],
+        # "atlasIdList": ["11", "12", "13", "14"],
+        "atlasIdList": ['08','13','17','33','12','16','22','27','35'],
         "atlasStructures": ["WHOLEHEART", "LANTDESCARTERY"],
         # For development, run: 'export ATLAS_PATH=/atlas/path'
         "atlasPath": os.environ["ATLAS_PATH"],
@@ -59,8 +60,8 @@ CARDIAC_SETTINGS_DEFAULTS = {
     "rigidSettings": {
         "initialReg": "Affine",
         "options": {
-            "shrinkFactors": [8, 4, 2],
-            "smoothSigmas": [8, 4, 1],
+            "shrinkFactors": [8, 2, 1],
+            "smoothSigmas": [8, 2, 1],
             "samplingRate": 0.25,
             "finalInterp": sitk.sitkBSpline,
         },
@@ -69,7 +70,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
     },
     "deformableSettings": {
         "resolutionStaging": [4, 2, 1],
-        "iterationStaging": [10, 10, 5],
+        "iterationStaging": [50, 25, 25],
         "ncores": 8,
         "trace": True,
     },
@@ -284,11 +285,11 @@ def cardiac_service(data_objects, working_dir, settings):
         - This is an automatic process that will attempt to remove inconsistent atlases from the entire set
 
         """
-
         # Compute weight maps
+        # Here we use simple GWV as this minises the potentially negative influence of mis-registered atlases
         for atlas_id in atlas_id_list:
             atlas_image = atlas_set[atlas_id]["DIR"]["CT Image"]
-            weight_map = compute_weight_map(img_crop, atlas_image)
+            weight_map = compute_weight_map(img_crop, atlas_image, vote_type='global')
             atlas_set[atlas_id]["DIR"]["Weight Map"] = weight_map
 
         reference_structure = settings["IARSettings"]["referenceStructure"]
@@ -311,7 +312,7 @@ def cardiac_service(data_objects, working_dir, settings):
             n_factor=outlier_factor,
             iteration=0,
             single_step=False,
-            project_on_sphere=False
+            project_on_sphere=project_on_sphere
         )
 
         """
@@ -337,6 +338,13 @@ def cardiac_service(data_objects, working_dir, settings):
         """
         Step 5 - Label Fusion
         """
+        # Compute weight maps
+        # Here we use local weighted fusion
+        for atlas_id in list(atlas_set.keys()):
+            atlas_image = atlas_set[atlas_id]["DIR"]["CT Image"]
+            weight_map = compute_weight_map(img_crop, atlas_image)
+            atlas_set[atlas_id]["DIR"]["Weight Map"] = weight_map
+
         combined_label_dict = combine_labels(atlas_set, atlas_structures)
 
         """

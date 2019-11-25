@@ -156,7 +156,8 @@ def run_iar(
     """
 
     if iteration == 0:
-        # Run some checks in the data?
+        # Run some checks in the data
+        # If there is a MAJOR error we need to check
 
         # Begin the process
         logger.info("Iterative atlas removal: ")
@@ -168,11 +169,29 @@ def run_iar(
     # Generate the surface projections
     #   1. Set the consensus surface using the reference volume
     probability_label = combine_labels(atlas_set, structure_name)[structure_name]
-    reference_volume = process_probability_image(probability_label, threshold=1-1e-6)
+
+    # Modify resolution for better statistics
+    if project_on_sphere:
+        if len(remaining_id_list) < 12:
+            logger.info("  Less than 12 atlases, resolution set: 3x3 sqr deg")
+            resolution = 3
+        elif len(remaining_id_list) < 7:
+            logger.info("  Less than 7 atlases, resolution set: 6x6 sqr deg")
+            resolution = 6
+        else:
+            resolution = 1
+    else:
+        if len(remaining_id_list) < 12:
+            logger.info("  Less than 12 atlases, resample factor set: 5")
+            resample_factor = 5
+        elif len(remaining_id_list) < 7:
+            logger.info("  Less than 7 atlases, resolution set: 6x6 sqr deg")
+            resample_factor = 10
+        else:
+            resample_factor = 1
 
     g_val_list = []
     logger.info("  Calculating surface distance maps: ")
-    # print('    ', end=' ')
     for test_id in remaining_id_list:
         logger.info("    {0}".format(test_id))
         #   2. Calculate the distance from the surface to the consensus surface
@@ -184,15 +203,8 @@ def run_iar(
         test_volume = process_probability_image(test_volume, 0.1)
 
         if project_on_sphere:
-            # Modify resolution for better statistics
-            if len(remaining_id_list) < 12:
-                logger.info("  Less than 12 atlases, resolution set: 3x3 sqr deg")
-                resolution = 3
-            elif len(remaining_id_list) < 7:
-                logger.info("  Less than 7 atlases, resolution set: 6x6 sqr deg")
-                resolution = 6
-            else:
-                resolution = 1
+            reference_volume = process_probability_image(probability_label, threshold=0.999)
+            # note: we use a threshold slightly below 1 to ensure the consensus (reference) volume is a suitable binary volume
 
             # Compute the reference distance map
             reference_distance_map = sitk.Abs(
@@ -208,16 +220,11 @@ def run_iar(
 
             g_val_list.append(g_vals)
         else:
-
-            # Modify resolution for better statistics
-            if len(remaining_id_list) < 12:
-                logger.info("  Less than 12 atlases, resample factor set: 5")
-                resample_factor = 5
-            elif len(remaining_id_list) < 7:
-                logger.info("  Less than 7 atlases, resolution set: 6x6 sqr deg")
-                resample_factor = 10
-            else:
-                resample_factor = 1
+            reference_volume = process_probability_image(probability_label, threshold=0.95)
+            # note: we use a threshold slightly below 1 to ensure the consensus (reference) volume is a suitable binary volume
+            # we have the flexibility to modify the reference volume when we do not use spherical projection
+            # a larger surface means more evaluations and better statistics, so we prefer a lower threshold
+            # but not too low, or it may include some errors
 
             # Compute distance to reference, from the test volume
             values = evaluate_distance_to_reference(
