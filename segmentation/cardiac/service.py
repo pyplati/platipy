@@ -159,50 +159,56 @@ def cardiac_service(data_objects, working_dir, settings):
                     )
                 )
 
-        """
-        Step 1 - Automatic cropping using the lung volume
-        - Airways are segmented
-        - A bounding box is defined
-        - Potential expansion of the bounding box to ensure entire heart volume is enclosed
-        - Target image is cropped
-        """
-        # Settings
-        sagittal_expansion = settings["lungMaskSettings"]["sagittalExpansion"]
-        coronal_expansion = settings["lungMaskSettings"]["coronalExpansion"]
-        axial_expansion = settings["lungMaskSettings"]["axialExpansion"]
+    """
+    Step 1 - Automatic cropping using a translation transform
+    - Registration of atlas images (maximum 5)
+    - Potential expansion of the bounding box to ensure entire volume of interest is enclosed
+    - Target image is cropped
+    """
+    # Settings
+    quick_reg_settings = {"shrinkFactors": [8, 2],
+                          "smoothSigmas": [8, 2],
+                          "samplingRate": 0.2
+                         }
 
-        lower_normalised_threshold = settings["lungMaskSettings"]["lowerNormalisedThreshold"]
-        upper_normalised_threshold = settings["lungMaskSettings"]["upperNormalisedThreshold"]
-        voxel_count_threshold = settings["lungMaskSettings"]["voxelCountThreshold"]
+    registered_crop_images = []
 
-        # Get the bounding box containing the lungs
-        lung_bounding_box, lung_mask_original = AutoLungSegment(
+    for atlas_id in atlas_id_list[:max([5, len(atlas_id_list)])]:
+        # Register the atlases
+        atlas_set[atlas_id]["RIR"] = {}
+        atlas_image = atlas_set[atlas_id]["Original"]["CT Image"]
+
+        reg_image, crop_tfm = initial_registration(
             img,
-            l=lower_normalised_threshold,
-            u=upper_normalised_threshold,
-            NPthresh=voxel_count_threshold,
+            atlas_image,
+            moving_structure=False,
+            fixed_structure=False,
+            options=quick_reg_settings,
+            trace=False,
+            reg_method="Rigid",
         )
 
-        # Add an optional expansion
-        sag0 = max([lung_bounding_box[0] - sagittal_expansion, 0])
-        cor0 = max([lung_bounding_box[1] - coronal_expansion, 0])
-        ax0 = max([lung_bounding_box[2] - axial_expansion, 0])
+        registered_crop_images.append(reg_image)
 
-        sag_d = min([lung_bounding_box[3] + sagittal_expansion, img.GetSize()[0] - sag0])
-        cor_d = min([lung_bounding_box[4] + coronal_expansion, img.GetSize()[1] - cor0])
-        ax_d = min([lung_bounding_box[5] + axial_expansion, img.GetSize()[2] - ax0])
+    combined_image_extent = (sum(registered_crop_images) > 0)
 
-        crop_box = (sag0, cor0, ax0, sag_d, cor_d, ax_d)
+    shape_filter = sitk.LabelShapeStatisticsImageFilter()
+    shape_filter.Execute(combined_image_extent)
+    bounding_box = np.array(shape_filter.GetBoundingBox(1))
 
-        # Crop the image down
-        img_crop = CropImage(img, crop_box)
+    expansion = settings["autoCropSettings"]["expansion"]
+    expansion_array = expansion*np.array(img.GetSpacing())
 
-        # Crop the lung mask - it may be used for structure guided registration
-        lung_mask = CropImage(lung_mask_original, crop_box)
+    # Avoid starting outside the image
+    crop_box_index = np.max([bounding_box[:3]-expansion_array, np.array([0,0,0])], axis=0)
 
-        # TODO: We should check here that the lung segmentation has worked, otherwise we need
-        # another option!
-        # For example, translation registration with a pre-cropped image
+    # Avoid ending outside the image
+    crop_box_size = np.min([np.array(image.GetSize())-crop_box_index,  bounding_box[3:]+2*expansion_array], axis=0)
+
+    crop_box_size = [int(i) for i in crop_box_size]
+    crop_box_index = [int(i) for i in crop_box_index]
+
+    img_crop = sitk.RegionOfInterest(img, size=crop_box_size, index=crop_box_index)
 
         """
         Step 2 - Rigid registration of target images
