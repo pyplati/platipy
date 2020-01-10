@@ -190,6 +190,7 @@ def multiscale_demons(
     fixed_image,
     moving_image,
     initial_transform=None,
+    initial_displacement_field=None,
     shrink_factors=None,
     smoothing_sigmas=None,
     iteration_staging=None,
@@ -205,6 +206,8 @@ def multiscale_demons(
         moving_image: Resulting transformation maps points from the fixed_image's spatial domain to
                       this image's spatial domain.
         initial_transform: Any SimpleITK transform, used to initialize the displacement field.
+        initial_displacement_field: Initial displacement field, if this is provided 
+                                    initial_transform will be ignored
         shrink_factors: Shrink factors relative to the original image's size.
         smoothing_sigmas: Amount of smoothing which is done prior to resmapling the image using the
                           given shrink factor. These are in physical (image spacing) units.
@@ -224,23 +227,24 @@ def multiscale_demons(
     # Create initial displacement field at lowest resolution.
     # Currently, the pixel type is required to be sitkVectorFloat64 because of a constraint imposed
     # by the Demons filters.
-    if initial_transform:
-        initial_displacement_field = sitk.TransformToDisplacementField(
-            initial_transform,
-            sitk.sitkVectorFloat64,
-            fixed_images[-1].GetSize(),
-            fixed_images[-1].GetOrigin(),
-            fixed_images[-1].GetSpacing(),
-            fixed_images[-1].GetDirection(),
-        )
-    else:
-        initial_displacement_field = sitk.Image(
-            fixed_images[-1].GetWidth(),
-            fixed_images[-1].GetHeight(),
-            fixed_images[-1].GetDepth(),
-            sitk.sitkVectorFloat64,
-        )
-        initial_displacement_field.CopyInformation(fixed_images[-1])
+    if not initial_displacement_field:
+        if initial_transform:
+            initial_displacement_field = sitk.TransformToDisplacementField(
+                initial_transform,
+                sitk.sitkVectorFloat64,
+                fixed_images[-1].GetSize(),
+                fixed_images[-1].GetOrigin(),
+                fixed_images[-1].GetSpacing(),
+                fixed_images[-1].GetDirection(),
+            )
+        else:
+            initial_displacement_field = sitk.Image(
+                fixed_images[-1].GetWidth(),
+                fixed_images[-1].GetHeight(),
+                fixed_images[-1].GetDepth(),
+                sitk.sitkVectorFloat64,
+            )
+            initial_displacement_field.CopyInformation(fixed_images[-1])
 
     # Run the registration.
     iters = iteration_staging[0]
@@ -273,6 +277,7 @@ def fast_symmetric_forces_demons_registration(
     moving_image,
     resolution_staging=[8, 4, 1],
     iteration_staging=[10, 10, 10],
+    initial_displacement_field=None,
     smoothing_sigma_factor=1,
     ncores=1,
     structure=False,
@@ -288,6 +293,7 @@ def fast_symmetric_forces_demons_registration(
                                           the same image space)
         resolution_staging (list[int])   : down-sampling factor for each resolution level
         iteration_staging (list[int])    : number of iterations for each resolution level
+        initial_displacement_field (sitk.Image) : Initial displacement field to use
         ncores (int)                    : number of processing cores to use
         structure (bool)                : True if the image is a structure image
         smoothing_sigma_factor (float)    : the relative width of the Gaussian smoothing kernel
@@ -329,6 +335,7 @@ def fast_symmetric_forces_demons_registration(
         shrink_factors=resolution_staging,
         smoothing_sigmas=[i * smoothing_sigma_factor for i in resolution_staging],
         iteration_staging=iteration_staging,
+        initial_displacement_field=initial_displacement_field
     )
 
     resampler = sitk.ResampleImageFilter()
