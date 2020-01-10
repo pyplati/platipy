@@ -245,6 +245,8 @@ def multiscale_demons(
                 sitk.sitkVectorFloat64,
             )
             initial_displacement_field.CopyInformation(fixed_images[-1])
+    else:
+        initial_displacement_field = sitk.Resample(initial_displacement_field, fixed_images[-1])
 
     # Run the registration.
     iters = iteration_staging[0]
