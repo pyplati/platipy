@@ -210,46 +210,46 @@ def cardiac_service(data_objects, working_dir, settings):
 
     img_crop = sitk.RegionOfInterest(img, size=crop_box_size, index=crop_box_index)
 
-        """
-        Step 2 - Rigid registration of target images
-        - Individual atlas images are registered to the target
-        - The transformation is used to propagate the labels onto the target
-        """
-        initial_reg = settings["rigidSettings"]["initialReg"]
-        rigid_options = settings["rigidSettings"]["options"]
-        trace = settings["rigidSettings"]["trace"]
-        guide_structure = settings["rigidSettings"]["guideStructure"]
+    """
+    Step 2 - Rigid registration of target images
+    - Individual atlas images are registered to the target
+    - The transformation is used to propagate the labels onto the target
+    """
+    initial_reg = settings["rigidSettings"]["initialReg"]
+    rigid_options = settings["rigidSettings"]["options"]
+    trace = settings["rigidSettings"]["trace"]
+    guide_structure = settings["rigidSettings"]["guideStructure"]
 
-        for atlas_id in atlas_id_list:
-            # Register the atlases
-            atlas_set[atlas_id]["RIR"] = {}
-            atlas_image = atlas_set[atlas_id]["Original"]["CT Image"]
+    for atlas_id in atlas_id_list:
+        # Register the atlases
+        atlas_set[atlas_id]["RIR"] = {}
+        atlas_image = atlas_set[atlas_id]["Original"]["CT Image"]
 
-            if guide_structure:
-                atlas_struct = atlas_set[atlas_id]["Original"][guide_structure]
-            else:
-                atlas_struct = False
+        if guide_structure:
+            atlas_struct = atlas_set[atlas_id]["Original"][guide_structure]
+        else:
+            atlas_struct = False
 
-            rigid_image, initial_tfm = initial_registration(
-                img_crop,
-                atlas_image,
-                moving_structure=atlas_struct,
-                options=rigid_options,
-                trace=trace,
-                reg_method=initial_reg,
+        rigid_image, initial_tfm = initial_registration(
+            img_crop,
+            atlas_image,
+            moving_structure=atlas_struct,
+            options=rigid_options,
+            trace=trace,
+            reg_method=initial_reg,
+        )
+
+        # Save in the atlas dict
+        atlas_set[atlas_id]["RIR"]["CT Image"] = rigid_image
+        atlas_set[atlas_id]["RIR"]["Transform"] = initial_tfm
+
+        # sitk.WriteImage(rigidImage, f'./RR_{atlas_id}.nii.gz')
+
+        for struct in atlas_structures:
+            input_struct = atlas_set[atlas_id]["Original"][struct]
+            atlas_set[atlas_id]["RIR"][struct] = transform_propagation(
+                img_crop, input_struct, initial_tfm, structure=True, interp=sitk.sitkLinear
             )
-
-            # Save in the atlas dict
-            atlas_set[atlas_id]["RIR"]["CT Image"] = rigid_image
-            atlas_set[atlas_id]["RIR"]["Transform"] = initial_tfm
-
-            # sitk.WriteImage(rigidImage, f'./RR_{atlas_id}.nii.gz')
-
-            for struct in atlas_structures:
-                input_struct = atlas_set[atlas_id]["Original"][struct]
-                atlas_set[atlas_id]["RIR"][struct] = transform_propagation(
-                    img_crop, input_struct, initial_tfm, structure=True, interp=sitk.sitkLinear
-                )
 
         """
         Step 3 - Deformable image registration
