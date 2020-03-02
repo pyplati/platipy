@@ -148,9 +148,9 @@ class DicomConnector:
 
         # Specify which SOP Classes are supported as an SCU
         for context in QueryRetrievePresentationContexts:
-            ae.add_requested_context(context.abstract_syntax)
+            ae.add_requested_context(context.abstract_syntax, ImplicitVRLittleEndian)
         for context in StoragePresentationContexts[:115]:
-            ae.add_requested_context(context.abstract_syntax)
+            ae.add_requested_context(context.abstract_syntax, ImplicitVRLittleEndian)
 
         # Add SCP/SCU Role Selection Negotiation to the extended negotiation
         # We want to act as a Storage SCP
@@ -267,9 +267,10 @@ class DicomConnector:
                            'permission')
             # Failed - Out of Resources - IOError
             status_ds.Status = 0xA700
-        except:
+        except Exception as e:
             logger.warning('Could not write file to specified directory:')
             logger.warning("    {0!s}".format(os.path.dirname(filename)))
+            logger.warning(e)
             # Failed - Out of Resources - Miscellaneous error
             status_ds.Status = 0xA701
 

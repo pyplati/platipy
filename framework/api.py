@@ -141,7 +141,7 @@ class DataObjectEndpoint(Resource):
     parser.add_argument('meta_data')
     parser.add_argument('file_name')
     parser.add_argument(
-        'file_data', type=werkzeug.FileStorage, location='files')
+        'file_data', type=werkzeug.datastructures.FileStorage, location='files')
     parser.add_argument(
         'parent', help="Data Object ID to which this data object should be linked")
 
