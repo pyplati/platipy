@@ -288,9 +288,13 @@ def run_iar(
         z_density, bin_edges = np.histogram(z_score_vals, bins=bins, density=True)
         bin_centers = (bin_edges[1:] + bin_edges[:-1]) / 2.0
 
-        popt, _ = curve_fit(f=gaussian_curve, xdata=bin_centers, ydata=z_density)
-        z_ideal = gaussian_curve(bin_centers, *popt)
-        z_diff = np.abs(z_density - z_ideal)
+        try:
+            popt, _ = curve_fit(f=gaussian_curve, xdata=bin_centers, ydata=z_density)
+            z_ideal = gaussian_curve(bin_centers, *popt)
+            z_diff = np.abs(z_density - z_ideal)
+        except:
+            logger.error('IAR couldnt fit curve, stopping...')
+            return atlas_set
 
         # Integrate to get the q_value
         q_value = np.trapz(z_diff * np.abs(bin_centers) ** 2, bin_centers)
