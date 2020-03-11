@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+  jupyter:
+    build: "."
+    restart: "no"
+    ports:
+     - "8080:8080"
+    volumes:
+     - ../../..:/jpy
+     - ../.gitconfig:/home/service/.gitconfig
+     - ../.ssh:/root/.ssh
+
