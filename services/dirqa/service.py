@@ -22,6 +22,16 @@ def crop_to_contour_bounding_box(img, mask):
     Get the bounding box around a mask and return the image cropped to that mask
     """
 
+    # Resample the mask (MIM send the masks at 2x the resolution)
+    mask = sitk.Resample(mask, img.GetSize(),
+                                 sitk.Transform(), 
+                                 sitk.sitkNearestNeighbor,
+                                 img.GetOrigin(),
+                                 img.GetSpacing(),
+                                 img.GetDirection(),
+                                 0,
+                                 mask.GetPixelID())
+
     # Get the mask bounding box
     label_statistics_image_filter = sitk.LabelStatisticsImageFilter()
     label_statistics_image_filter.Execute(img, mask)
