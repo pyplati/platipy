@@ -4,11 +4,14 @@ RUN apt-get update; apt-get install -y python3.6-dev python3-pip redis-server li
 
 WORKDIR /home/service
 
+RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN ln -s /usr/bin/pip3 /usr/bin/pip
+
 COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip install -r requirements.txt
 
 COPY requirements-dev.txt requirements-dev.txt
-RUN pip3 install -r requirements-dev.txt
+RUN pip install -r requirements-dev.txt
 
 COPY . impit
 

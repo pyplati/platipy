@@ -86,6 +86,10 @@ def transformPointSetFromDICOMStruct(DICOMImage, DICOMStruct, writeImage, imageO
             print("No contour sequence found for this structure, skipping.")
             continue
 
+        if len(structPointSequence[structIndex].ContourSequence) == 0:
+            print("Contour sequence empty for this structure, skipping.")
+            continue
+
         if not structPointSequence[structIndex].ContourSequence[0].ContourGeometricType=="CLOSED_PLANAR":
             print("This is not a closed planar structure, skipping.")
             continue

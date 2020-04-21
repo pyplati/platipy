@@ -148,9 +148,9 @@ class DicomConnector:
 
         # Specify which SOP Classes are supported as an SCU
         for context in QueryRetrievePresentationContexts:
-            ae.add_requested_context(context.abstract_syntax)
+            ae.add_requested_context(context.abstract_syntax, ImplicitVRLittleEndian)
         for context in StoragePresentationContexts[:115]:
-            ae.add_requested_context(context.abstract_syntax)
+            ae.add_requested_context(context.abstract_syntax, ImplicitVRLittleEndian)
 
         # Add SCP/SCU Role Selection Negotiation to the extended negotiation
         # We want to act as a Storage SCP
