@@ -18,3 +18,4 @@ loguru
 psutil
 pyradiomics
 gunicorn
+requests

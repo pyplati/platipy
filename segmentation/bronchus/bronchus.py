@@ -18,10 +18,8 @@ generate - need to look at this)
 """
 
 import SimpleITK as sitk
-from scipy import ndimage
 
-FAST_MODE = True
-EXTEND_FROM_CARINA = 20  # ie. 2cm
+from impit.segmentation.common.tools import detect_holes, get_lung_mask
 
 
 def fast_mask(img, start, end):
@@ -93,93 +91,36 @@ def get_distance(a_mask, b_mask):
     return dist
 
 
-def generate_lung_mask(img, dest):
+def generate_lung_mask(img):
     """Generate initial airway mask (includes lungs).
 
     Args:
-        image: path for CT image and mask destination.  The awful output filenames match
-        the output from Antoine's C++ Masters code.
+        img: The SimpleITK CT image to segment the lungs in
 
     Returns:
-        None
+        lung_mask: The mask containing the lung segmentation
     """
 
     print("Generating Lung Mask...")
 
-    mid_img = sitk.GetArrayFromImage(img).astype(float)
-    centre = ndimage.measurements.center_of_mass(mid_img)
-
-    # get air mask external to body
-    connected_threshold_filter = sitk.ConnectedThresholdImageFilter()
-    connected_threshold_filter.SetSeed([0, 0, 0])
-    connected_threshold_filter.SetLower(-10000)
-    connected_threshold_filter.SetUpper(-300)
-    result = connected_threshold_filter.Execute(img)
-    writer = sitk.ImageFileWriter()
-    writer.SetFileName(dest + "/imageB.nii.gz")
-    writer.Execute(result)
-
-    # get body mask (remove couch) Seed this from centre of image.
-    confidence_connected_image_filter = sitk.ConfidenceConnectedImageFilter()
-    confidence_connected_image_filter.SetSeed([int(centre[1]), int(centre[2]), int(centre[0])])
-    result_f = confidence_connected_image_filter.Execute(result)
-    writer = sitk.ImageFileWriter()
-    writer.SetFileName(dest + "/imageF.nii.gz")
-    writer.Execute(result_f)
-
-    # get non-air voxels fom within body
-    connected_threshold_filter = sitk.ConnectedThresholdImageFilter()
-    connected_threshold_filter.SetSeed([251, 240, 65])
-    connected_threshold_filter.SetLower(-300)
-    connected_threshold_filter.SetUpper(10000)
-    result = connected_threshold_filter.Execute(img)
-    writer = sitk.ImageFileWriter()
-    writer.SetFileName(dest + "/imageG.nii.gz")
-    writer.Execute(result)
-
-    # problem might be intestinal air below lungs - need to remove this?
-    invert_filter = sitk.InvertIntensityImageFilter()
-    result_h = invert_filter.Execute(result)
-    writer = sitk.ImageFileWriter()
-    writer.SetFileName(dest + "/imageH.nii.gz")
-    writer.Execute(result_h)
-
-    # not sure this is necessary
-    binary_dilate = sitk.BinaryDilateImageFilter()
-    binary_dilate.SetKernelRadius(3)
-    result_j = binary_dilate.Execute(result_h)
-    writer = sitk.ImageFileWriter()
-    writer.SetFileName(dest + "/imageJ.nii.gz")
-    writer.Execute(result_j)
-
-    # image j is ok (might need dilation)
-    # image f is fine as well (just a body contour)
-    add_image_filter = sitk.AddImageFilter()
-    result_final = add_image_filter.Execute(result_j, result_f)
-    writer = sitk.ImageFileWriter()
-    writer.SetFileName(dest + "/imageK.nii.gz")
-    writer.Execute(result_final)
-
-    result_final = invert_filter.Execute(result_final)
-    writer = sitk.ImageFileWriter()
-    writer.SetFileName(dest + "/imageK2H.nii.gz")
-    writer.Execute(result_final)
-
-    # Just change 255 to 1 for binary label
-    binary_threshold_filter = sitk.BinaryThresholdImageFilter()
-    binary_threshold_filter.SetLowerThreshold(255)
-    binary_threshold_filter.SetUpperThreshold(255)
-    result_final = binary_threshold_filter.Execute(result_final)
-    writer = sitk.ImageFileWriter()
-    writer.SetFileName(dest + "/imageFinal.nii.gz")
-    writer.Execute(result_final)
+    (label_image, labels) = detect_holes(img)
+    lung_mask = get_lung_mask(label_image, labels)
 
     print("Generating Lung Mask... Done")
 
-    return result_final
+    return lung_mask
 
 
-def generate_airway_mask(dest, img, lung_mask):
+default_settings = {
+    "fast_mode": True,
+    "extend_from_carina": 20,
+    "lung_mask_hu_values": [-750, -775, -800, -825, -850, -900, -700, -950, -650],
+    "distance_from_supu_slice_values": [3, 10, 20],
+    "expected_physical_size_range": [22000, 150000],
+}
+
+
+def generate_airway_mask(dest, img, lung_mask, config_dict=None):
     """Generate final bronchus segmentation .
 
     Args:
@@ -189,9 +130,14 @@ def generate_airway_mask(dest, img, lung_mask):
         None
     """
 
-    lung_mask_hu_values = [-750, -775, -800, -825, -850, -900, -700, -950, -650]
-    distance_from_supu_slice_values = [3, 10, 20]
-    expected_physical_size_range = [22000, 75000]
+    if not config_dict:
+        config_dict = default_settings
+
+    fast_mode = config_dict["fast_mode"]
+    extend_from_carina = config_dict["extend_from_carina"]
+    lung_mask_hu_values = config_dict["lung_mask_hu_values"]
+    distance_from_supu_slice_values = config_dict["distance_from_supu_slice_values"]
+    expected_physical_size_range = config_dict["expected_physical_size_range"]
 
     z_size = img.GetDepth()
 
@@ -222,7 +168,7 @@ def generate_airway_mask(dest, img, lung_mask):
 
     for k in range(2):
 
-        if processed_correctly and FAST_MODE:
+        if processed_correctly and fast_mode:
             break
 
         if k == 1:
@@ -233,14 +179,24 @@ def generate_airway_mask(dest, img, lung_mask):
 
         for distance_from_sup_slice in distance_from_supu_slice_values:
 
-            if processed_correctly and FAST_MODE:
+            if processed_correctly and fast_mode:
                 break
 
             label_slice = lung_mask[
-                :, :, z_size - distance_from_sup_slice - 10 : z_size - distance_from_sup_slice
+                :,
+                :,
+                z_size
+                - distance_from_sup_slice
+                - 10 : z_size
+                - distance_from_sup_slice,
             ]  # works for both cases 22 and 17
             img_slice = img[
-                :, :, z_size - distance_from_sup_slice - 10 : z_size - distance_from_sup_slice
+                :,
+                :,
+                z_size
+                - distance_from_sup_slice
+                - 10 : z_size
+                - distance_from_sup_slice,
             ]
 
             connected = connected_component.Execute(label_slice)
@@ -257,12 +213,16 @@ def generate_airway_mask(dest, img, lung_mask):
                     label_shape.GetElongation(label) > max_elong
                     and label_shape.GetPhysicalSize(label) > 2000
                 ):
-                    centre = img.TransformPhysicalPointToIndex(label_shape.GetCentroid(label))
+                    centre = img.TransformPhysicalPointToIndex(
+                        label_shape.GetCentroid(label)
+                    )
                     max_elong = label_shape.GetElongation(label)
                     airway_open = [int(centre[0]), int(centre[1]), int(centre[2])]
 
             # just check the opening is at the right location
-            centroid_mask_val = lung_mask.GetPixel(airway_open[0], airway_open[1], airway_open[2])
+            centroid_mask_val = lung_mask.GetPixel(
+                airway_open[0], airway_open[1], airway_open[2]
+            )
 
             if centroid_mask_val == 0:
                 print(
@@ -276,7 +236,9 @@ def generate_airway_mask(dest, img, lung_mask):
             print("*Airway opening: " + str(airway_open))
             print(
                 "*Voxel HU at opening: "
-                + str(lung_mask.GetPixel(airway_open[0], airway_open[1], airway_open[2]))
+                + str(
+                    lung_mask.GetPixel(airway_open[0], airway_open[1], airway_open[2])
+                )
             )
 
             for lung_mask_hu in lung_mask_hu_values:
@@ -284,7 +246,10 @@ def generate_airway_mask(dest, img, lung_mask):
                 print("--------------------------------------------")
                 print("Extracting airways.  Iteration: " + str(loop_count))
                 print("*Lung Mask HU: " + str(lung_mask_hu))
-                print("*Slices from sup for airway opening: " + str(distance_from_sup_slice))
+                print(
+                    "*Slices from sup for airway opening: "
+                    + str(distance_from_sup_slice)
+                )
                 if k == 1:
                     print("*Mask median smoothing on")
                 loop_count += 1
@@ -325,9 +290,11 @@ def generate_airway_mask(dest, img, lung_mask):
 
                 else:
                     print(
-                        " Cropping from slice: " + str(corina_slice) + " + 20 slices and dilating"
+                        f" Cropping from slice: {corina_slice} + {extend_from_carina} slices and dilating"
                     )
-                    result = fast_mask(result, corina_slice + EXTEND_FROM_CARINA, z_size)
+                    result = fast_mask(
+                        result, corina_slice + extend_from_carina, z_size
+                    )
                     result = sitk.Cast(result, lung_mask.GetPixelIDValue())
 
                     # Dilate and check if the output is in the expected range
@@ -338,7 +305,9 @@ def generate_airway_mask(dest, img, lung_mask):
                     # check size of label - if it's too large the lungs have been included..
                     label_shape.Execute(result, img)
                     for label in label_shape.GetLabels():
-                        airway_mask_physical_size = int(label_shape.GetPhysicalSize(label))
+                        airway_mask_physical_size = int(
+                            label_shape.GetPhysicalSize(label)
+                        )
                         roundness = float(label_shape.GetRoundness(label))
                         elongation = float(label_shape.GetElongation(label))
 
@@ -358,7 +327,10 @@ def generate_airway_mask(dest, img, lung_mask):
                             + str(airway_mask_physical_size)
                         )
                     else:
-                        print(" Airway Mask size passed: " + str(airway_mask_physical_size))
+                        print(
+                            " Airway Mask size passed: "
+                            + str(airway_mask_physical_size)
+                        )
                         processed_correctly = True
                         this_processed_correctly = True
 
@@ -367,7 +339,7 @@ def generate_airway_mask(dest, img, lung_mask):
                     # target_size = (
                     #     expected_physical_size_range[1] + expected_physical_size_range[0]
                     # ) / 2
-                    #size_sim = abs(airway_mask_physical_size - target_size)
+                    # size_sim = abs(airway_mask_physical_size - target_size)
 
                     if roundness < best_result_sim and this_processed_correctly:
                         best_result_sim = roundness
