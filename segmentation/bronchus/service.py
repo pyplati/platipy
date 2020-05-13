@@ -8,7 +8,7 @@ import os
 import SimpleITK as sitk
 from loguru import logger
 
-from impit.framework import app, DataObject
+from impit.framework import app, DataObject, celery
 
 # from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
 
