@@ -41,9 +41,7 @@ class IMPITClient:
         self.api_key = api_key
         self.algorithm_name = algorithm_name
 
-        res = requests.get(
-            API_ALGORITHM.format(self.base_url), headers={"API_KEY": self.api_key}
-        )
+        res = requests.get(API_ALGORITHM.format(self.base_url), headers={"API_KEY": self.api_key})
         logger.debug(res.status_code)
 
     def get_dicom_location(self, name):
@@ -112,7 +110,8 @@ class IMPITClient:
         """Fetches a dataset from the server
 
         Arguments:
-            dataset {dict/int} -- The dictionary object representing the dataset or the id of the dataset
+            dataset {dict/int} -- The dictionary object representing the dataset or the id of the
+                                  dataset
 
         Returns:
             dict -- The dictionary object representing the dataset
@@ -136,18 +135,20 @@ class IMPITClient:
 
         return None
 
-    def add_dataset(
-        self, from_dicom_location=None, to_dicom_location=None, timeout=None
-    ):
+    def add_dataset(self, from_dicom_location=None, to_dicom_location=None, timeout=None):
         """Adds and returns a new dataset
 
         Keyword Arguments:
-            from_dicom_location {dict/int} -- The DICOM location to fetch objects from (default: {None})
-            to_dicom_location {dict/int} -- The DICOM location to send resulting objects to (default: {None})
-            timeout {int} -- How long the data within the dataset should be kept on the server (default: {None})
+            from_dicom_location {dict/int} -- The DICOM location to fetch objects from
+                                              (default: {None})
+            to_dicom_location {dict/int} -- The DICOM location to send resulting objects to
+                                            (default: {None})
+            timeout {int} -- How long the data within the dataset should be kept on the server
+                             (default: {None})
 
         Returns:
-            dict -- The resulting dictionary object representing the dataset or None if something went wrong
+            dict -- The resulting dictionary object representing the dataset or None if something
+                    went wrong
         """
 
         params = {}
@@ -170,9 +171,7 @@ class IMPITClient:
             params["timeout"] = timeout
 
         res = requests.post(
-            API_DATASET.format(self.base_url),
-            headers={"API_KEY": self.api_key},
-            data=params,
+            API_DATASET.format(self.base_url), headers={"API_KEY": self.api_key}, data=params,
         )
         logger.debug(res.status_code)
 
@@ -199,14 +198,18 @@ class IMPITClient:
             dataset {dict/int} -- The dataset to which to add the data object
 
         Keyword Arguments:
-            series_uid {str} -- The SeriesInstanceUID of the DICOM object to fetch (required for DICOM objects) (default: {None})
+            series_uid {str} -- The SeriesInstanceUID of the DICOM object to fetch (required for
+                                DICOM objects) (default: {None})
             parent {dict/int} -- The parent object for this dataobject (default: {None})
             meta_data {dict} -- The Meta Data to attach to this data object (default: {None})
-            dicom_retrieve {str} -- How the DICOM object should be fetched ['GET', 'MOVE' or 'SEND'] (required for DICOM objects) (default: {None})
-            file_path {str} -- Path to the file to add as the data object (Required for non-DICOM objects) (default: {None})
+            dicom_retrieve {str} -- How the DICOM object should be fetched ['GET', 'MOVE' or
+                                    'SEND'] (required for DICOM objects) (default: {None})
+            file_path {str} -- Path to the file to add as the data object (Required for non-DICOM
+                               objects) (default: {None})
 
         Returns:
-            dict -- The resulting dictionary representing the data object or None if something went wrong
+            dict -- The resulting dictionary representing the data object or None if something
+                    went wrong
         """
 
         data_object = None
@@ -226,9 +229,7 @@ class IMPITClient:
         if series_uid or dicom_retrieve:
 
             if not series_uid or dicom_retrieve:
-                logger.error(
-                    "For Dicom, both series_uid and dicom_retrieve must be set"
-                )
+                logger.error("For Dicom, both series_uid and dicom_retrieve must be set")
                 return None
 
             params["type"] = "DICOM"
@@ -277,9 +278,7 @@ class IMPITClient:
         """
 
         algorithm = None
-        res = requests.get(
-            API_ALGORITHM.format(self.base_url), headers={"API_KEY": self.api_key}
-        )
+        res = requests.get(API_ALGORITHM.format(self.base_url), headers={"API_KEY": self.api_key})
         logger.debug(res.status_code)
         if res.status_code == 200:
             for algorithm in res.json():
@@ -319,9 +318,7 @@ class IMPITClient:
             params["config"] = json.dumps(config)
 
         res = requests.post(
-            API_TRIGGER.format(self.base_url),
-            headers={"API_KEY": self.api_key},
-            data=params,
+            API_TRIGGER.format(self.base_url), headers={"API_KEY": self.api_key}, data=params,
         )
         logger.debug(res.status_code)
 
@@ -333,7 +330,11 @@ class IMPITClient:
                 res = requests.get(poll_url, headers={"API_KEY": self.api_key})
                 status = res.json()
 
-                if status["state"] == "SUCCESS" or status["state"] == "FAILURE":
+                if (
+                    not "state" in status
+                    or status["state"] == "SUCCESS"
+                    or status["state"] == "FAILURE"
+                ):
                     break
 
                 yield status
@@ -351,7 +352,8 @@ class IMPITClient:
             dataset {dict/int} -- The dataset from which the output objects should be downloaded
 
         Keyword Arguments:
-            output_path {str} -- The directory in which the objects should be downloaded (default: {"."})
+            output_path {str} -- The directory in which the objects should be downloaded
+                                 (default: {"."})
         """
 
         if not os.path.exists(output_path):
@@ -363,8 +365,7 @@ class IMPITClient:
             for data_obj in dataset["output_data_objects"]:
                 url = API_DOWNLOAD_OBJECT.format(self.base_url)
                 res = requests.get(
-                    "{0}/{1}".format(url, data_obj["id"]),
-                    headers={"API_KEY": self.api_key},
+                    "{0}/{1}".format(url, data_obj["id"]), headers={"API_KEY": self.api_key},
                 )
                 logger.debug(res.status_code)
                 filename = res.headers["Content-Disposition"].split("filename=")[1]
