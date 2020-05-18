@@ -3,6 +3,7 @@ Provides a client to interact with IMPITs framework
 """
 import time
 import os
+import json
 from pprint import pformat
 
 import requests
@@ -284,11 +285,15 @@ class IMPITClient:
             for algorithm in res.json():
                 if self.algorithm_name in algorithm["name"]:
                     logger.debug(pformat(algorithm))
-                    return algorithm
+                    if "default_settings" in algorithm:
+                        return algorithm["default_settings"]
+
+                    # If no default settings show an error
+                    logger.error("No default_settings provided by algorithm")
         return None
 
-    def run_algorithm(self, dataset):
-        """[summary]
+    def run_algorithm(self, dataset, config=None):
+        """Runs the algorithm on the dataset specified
 
         Arguments:
             dataset {dict/int} -- The dataset on which to run the algorithm
@@ -301,6 +306,17 @@ class IMPITClient:
 
         if isinstance(dataset, dict):
             params["dataset"] = dataset["id"]
+
+        if config:
+
+            # Check that the keys of the config passed in are the exact same as the default keys
+            default_settings = self.get_default_settings()
+
+            if not set(default_settings.keys()) == set(config.keys()):
+                logger.error("Config keys must be exactly those from the default_settings")
+                return
+
+            params["config"] = json.dumps(config)
 
         res = requests.post(
             API_TRIGGER.format(self.base_url),
