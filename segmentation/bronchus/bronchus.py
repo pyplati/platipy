@@ -113,7 +113,7 @@ def generate_lung_mask(img):
 
 default_settings = {
     "fast_mode": True,
-    "extend_from_carina": 20,
+    "extend_from_carina_mm": 40,
     "lung_mask_hu_values": [-750, -775, -800, -825, -850, -900, -700, -950, -650],
     "distance_from_supu_slice_values": [3, 10, 20],
     "expected_physical_size_range": [22000, 150000],
@@ -134,12 +134,14 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
         config_dict = default_settings
 
     fast_mode = config_dict["fast_mode"]
-    extend_from_carina = config_dict["extend_from_carina"]
+    extend_from_carina_mm = config_dict["extend_from_carina_mm"]
     lung_mask_hu_values = config_dict["lung_mask_hu_values"]
     distance_from_supu_slice_values = config_dict["distance_from_supu_slice_values"]
     expected_physical_size_range = config_dict["expected_physical_size_range"]
 
     z_size = img.GetDepth()
+    z_spacing = img.GetSpacing()[2]
+    extend_from_carina = round(extend_from_carina_mm / z_spacing)
 
     # Identify airway start on superior slice
     label_shape = sitk.LabelIntensityStatisticsImageFilter()
@@ -185,18 +187,12 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
             label_slice = lung_mask[
                 :,
                 :,
-                z_size
-                - distance_from_sup_slice
-                - 10 : z_size
-                - distance_from_sup_slice,
+                z_size - distance_from_sup_slice - 10 : z_size - distance_from_sup_slice,
             ]  # works for both cases 22 and 17
             img_slice = img[
                 :,
                 :,
-                z_size
-                - distance_from_sup_slice
-                - 10 : z_size
-                - distance_from_sup_slice,
+                z_size - distance_from_sup_slice - 10 : z_size - distance_from_sup_slice,
             ]
 
             connected = connected_component.Execute(label_slice)
@@ -284,7 +280,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                         ):
                             corina_slice = idx_slice
 
-                # crop from corina_slice + 20 slices (~4cm)
+                # crop from corina_slice
                 if corina_slice == 0:
                     print("Failed to located carina.  Adjusting parameters ")
 

@@ -33,7 +33,6 @@ def bronchus_service(data_objects, working_dir, settings):
     """
 
     logger.info("Running Bronchus Segmentation")
-    logger.info("Using settings: " + str(settings))
 
     output_objects = []
     for data_object in data_objects:
