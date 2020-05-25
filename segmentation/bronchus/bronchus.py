@@ -348,7 +348,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
 
             print(phys_size_0)
             print(phys_size_1)
-            if abs(phys_size_0 - phys_size_1) < max(phys_size_0, phys_size_1)/5:
+            if abs(phys_size_0 - phys_size_1) < max(phys_size_0, phys_size_1)/1.5:
 
                 corina_slice = idx_slice
                 break
