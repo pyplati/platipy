@@ -165,7 +165,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
     processed_correctly = False
 
     best_result = None
-    best_result_sim = 100000000
+    best_result_sim = 0
     best_lung_mask_hu = 0
 
     for k in range(2):
@@ -310,8 +310,8 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                 # ) / 2
                 # size_sim = abs(airway_mask_physical_size - target_size)
 
-                if roundness < best_result_sim and this_processed_correctly:
-                    best_result_sim = roundness
+                if airway_mask_physical_size > best_result_sim and this_processed_correctly:
+                    best_result_sim = airway_mask_physical_size
                     best_result = result
                     best_lung_mask_hu = lung_mask_hu
 
