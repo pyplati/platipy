@@ -1,6 +1,9 @@
 {
 	"name": "IMPIT Development",
-	"image": "impit",
+	"dockerComposeFile": "./docker-compose.yml",
+	"service": "impit",
+	"workspaceFolder": "/impit",
+	"shutdownAction": "stopCompose",
 	"appPort": [ 8001, 7777 ],
 
 	// Add the IDs of extensions you want installed when the container is created in the array below.

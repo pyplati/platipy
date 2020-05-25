@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  impit:
+    image: impit
+    ports:
+      - "8001:8000"
+      - "7777:7777"
+    volumes:
+      - .:/impit
+      - impit_data:/data
+    links:
+      - redis:redis
+    entrypoint: /bin/sh -c "while sleep 1000; do :; done"
+    environment:
+      PYTHONPATH: "/"
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 16GB
+
+  redis:
+    image: "redis:latest"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  impit_data:
+  redis_data:
