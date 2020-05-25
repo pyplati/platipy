@@ -259,6 +259,12 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                 writer.SetFileName(dest + "/airwaysMask.nii.gz")
                 writer.Execute(result)
 
+
+                # Dilate and check if the output is in the expected range
+                binary_dilate = sitk.BinaryDilateImageFilter()
+                binary_dilate.SetKernelRadius(2)
+                result = binary_dilate.Execute(result)
+
                 # process in 2D - check label elongation and size.
                 corina_slice = 0
                 for idx_slice in range(z_size):
@@ -285,18 +291,11 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                     print("Failed to located carina.  Adjusting parameters ")
 
                 else:
-                    print(
-                        f" Cropping from slice: {corina_slice} + {extend_from_carina} slices and dilating"
-                    )
+                    print(f" Cropping from slice: {corina_slice} + {extend_from_carina} slices")
                     result = fast_mask(
                         result, corina_slice + extend_from_carina, z_size
                     )
                     result = sitk.Cast(result, lung_mask.GetPixelIDValue())
-
-                    # Dilate and check if the output is in the expected range
-                    binary_dilate = sitk.BinaryDilateImageFilter()
-                    binary_dilate.SetKernelRadius(2)
-                    result = binary_dilate.Execute(result)
 
                     # check size of label - if it's too large the lungs have been included..
                     label_shape.Execute(result, img)
