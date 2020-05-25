@@ -114,6 +114,7 @@ def generate_lung_mask(img):
 default_settings = {
     "fast_mode": True,
     "extend_from_carina_mm": 40,
+    "minimum_tree_half_physical_size": 1000,
     "lung_mask_hu_values": [-750, -775, -800, -825, -850, -900, -700, -950, -650],
     "distance_from_supu_slice_values": [3, 10, 20],
     "expected_physical_size_range": [22000, 150000],
@@ -136,6 +137,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
     fast_mode = config_dict["fast_mode"]
     extend_from_carina_mm = config_dict["extend_from_carina_mm"]
     lung_mask_hu_values = config_dict["lung_mask_hu_values"]
+    minimum_tree_half_physical_size = config_dict["minimum_tree_half_physical_size"]
     distance_from_supu_slice_values = config_dict["distance_from_supu_slice_values"]
     expected_physical_size_range = config_dict["expected_physical_size_range"]
 
@@ -348,7 +350,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
 
             print(phys_size_0)
             print(phys_size_1)
-            if abs(phys_size_0 - phys_size_1) < max(phys_size_0, phys_size_1)/1.5:
+            if abs(phys_size_0 - phys_size_1) < minimum_tree_half_physical_size:
 
                 corina_slice = idx_slice
                 break
