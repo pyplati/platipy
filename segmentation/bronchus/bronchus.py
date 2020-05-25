@@ -169,6 +169,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
     best_result = None
     best_result_sim = 0
     best_lung_mask_hu = 0
+    best_distance_from_sup_slice = 0
 
     for k in range(2):
 
@@ -194,7 +195,6 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
             ]
 
             connected = connected_component.Execute(label_slice)
-            nda_connected = sitk.GetArrayFromImage(connected)
             # In case there are multiple air regions at the top, select the region with
             # the max elongation as the airway seed
             # Also check that the region has a minimum physical size, to filter out other
@@ -296,6 +296,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                     best_result_sim = airway_mask_physical_size
                     best_result = result
                     best_lung_mask_hu = lung_mask_hu
+                    best_distance_from_sup_slice = distance_from_sup_slice
 
     if not processed_correctly:
         print(" Unable to process correctly!!!")
@@ -305,7 +306,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
     # process in 2D - check label elongation and size.
     corina_slice = -1
     lssif = sitk.LabelShapeStatisticsImageFilter()
-    for idx_slice in range(z_size, 0, -1):
+    for idx_slice in range(z_size - best_distance_from_sup_slice, 0, -1):
 
         cut_mask = fast_mask(best_result, idx_slice, z_size)
         cut_mask = sitk.Cast(cut_mask, lung_mask.GetPixelIDValue())
