@@ -265,85 +265,115 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                 binary_dilate.SetKernelRadius(2)
                 result = binary_dilate.Execute(result)
 
-                # process in 2D - check label elongation and size.
-                corina_slice = 0
-                for idx_slice in range(z_size):
-                    label_slice = result[:, :, idx_slice]
-                    img_slice = img[:, :, idx_slice]
-                    connected = connected_component.Execute(label_slice)
-                    nda_connected = sitk.GetArrayFromImage(connected)
-                    num_regions = nda_connected.max()
 
-                    # Make sure the airway has branched
-                    if num_regions < 2:
-                        continue
-
-                    label_shape.Execute(label_slice, img_slice)
-                    for label in label_shape.GetLabels():
-                        if (
-                            label_shape.GetElongation(label) > 5
-                            and label_shape.GetPhysicalSize(label) > 30
-                        ):
-                            corina_slice = idx_slice
-
-                # crop from corina_slice
-                if corina_slice == 0:
-                    print("Failed to located carina.  Adjusting parameters ")
-
-                else:
-                    print(f" Cropping from slice: {corina_slice} + {extend_from_carina} slices")
-                    result = fast_mask(
-                        result, corina_slice + extend_from_carina, z_size
+                # check size of label - if it's too large the lungs have been included..
+                result = sitk.Cast(result, lung_mask.GetPixelIDValue())
+                label_shape.Execute(result, img)
+                airway_mask_physical_size = -1
+                for label in label_shape.GetLabels():
+                    airway_mask_physical_size = int(
+                        label_shape.GetPhysicalSize(label)
                     )
-                    result = sitk.Cast(result, lung_mask.GetPixelIDValue())
+                    roundness = float(label_shape.GetRoundness(label))
+                    elongation = float(label_shape.GetElongation(label))
 
-                    # check size of label - if it's too large the lungs have been included..
-                    label_shape.Execute(result, img)
-                    for label in label_shape.GetLabels():
-                        airway_mask_physical_size = int(
-                            label_shape.GetPhysicalSize(label)
-                        )
-                        roundness = float(label_shape.GetRoundness(label))
-                        elongation = float(label_shape.GetElongation(label))
+                this_processed_correctly = False
+                if airway_mask_physical_size < 0:
+                    print("No labels found in mask")
+                    continue
+                elif airway_mask_physical_size > expected_physical_size_range[1]:
+                    print(
+                        " Airway Mask size failed (> "
+                        + str(expected_physical_size_range[1])
+                        + "): "
+                        + str(airway_mask_physical_size)
+                    )
+                elif airway_mask_physical_size < expected_physical_size_range[0]:
+                    print(
+                        " Airway Mask size failed (< "
+                        + str(expected_physical_size_range[0])
+                        + "): "
+                        + str(airway_mask_physical_size)
+                    )
+                else:
+                    print(
+                        " Airway Mask size passed: "
+                        + str(airway_mask_physical_size)
+                    )
+                    processed_correctly = True
+                    this_processed_correctly = True
 
-                    this_processed_correctly = False
-                    if airway_mask_physical_size > expected_physical_size_range[1]:
-                        print(
-                            " Airway Mask size failed (> "
-                            + str(expected_physical_size_range[1])
-                            + "): "
-                            + str(airway_mask_physical_size)
-                        )
-                    elif airway_mask_physical_size < expected_physical_size_range[0]:
-                        print(
-                            " Airway Mask size failed (< "
-                            + str(expected_physical_size_range[0])
-                            + "): "
-                            + str(airway_mask_physical_size)
-                        )
-                    else:
-                        print(
-                            " Airway Mask size passed: "
-                            + str(airway_mask_physical_size)
-                        )
-                        processed_correctly = True
-                        this_processed_correctly = True
+                print(" Roundness: " + str(roundness))
+                print(" Elongation: " + str(elongation))
+                # target_size = (
+                #     expected_physical_size_range[1] + expected_physical_size_range[0]
+                # ) / 2
+                # size_sim = abs(airway_mask_physical_size - target_size)
 
-                    print(" Roundness: " + str(roundness))
-                    print(" Elongation: " + str(elongation))
-                    # target_size = (
-                    #     expected_physical_size_range[1] + expected_physical_size_range[0]
-                    # ) / 2
-                    # size_sim = abs(airway_mask_physical_size - target_size)
-
-                    if roundness < best_result_sim and this_processed_correctly:
-                        best_result_sim = roundness
-                        best_result = result
-                        best_lung_mask_hu = lung_mask_hu
+                if roundness < best_result_sim and this_processed_correctly:
+                    best_result_sim = roundness
+                    best_result = result
+                    best_lung_mask_hu = lung_mask_hu
 
     if not processed_correctly:
         print(" Unable to process correctly!!!")
 
     print("Selected Lung Mask HU: " + str(best_lung_mask_hu))
+
+    # process in 2D - check label elongation and size.
+    corina_slice = 0
+    lssif = sitk.LabelShapeStatisticsImageFilter()
+    for idx_slice in range(z_size, 0, -1):
+
+        cut_mask = fast_mask(
+            best_result, idx_slice, z_size
+        )
+        cut_mask = sitk.Cast(cut_mask, lung_mask.GetPixelIDValue())
+
+        print(idx_slice)
+        label_image = connected_component.Execute(cut_mask)
+
+        num_regions = connected_component.GetObjectCount()
+        print(num_regions)
+
+        if num_regions == 2:
+            lssif.Execute(label_image)
+
+            phys_size_0 = int(
+                lssif.GetPhysicalSize(1)
+            )
+            phys_size_1 = int(
+                lssif.GetPhysicalSize(2)
+            )
+
+            print(phys_size_0)
+            print(phys_size_1)
+            if abs(phys_size_0 - phys_size_1) < max(phys_size_0, phys_size_1)/2:
+
+                corina_slice = idx_slice
+                break
+
+        # label_slice = best_result[:, :, idx_slice]
+        # img_slice = img[:, :, idx_slice]
+        # connected = connected_component.Execute(label_slice)
+        # nda_connected = sitk.GetArrayFromImage(connected)
+        # num_regions = nda_connected.max()
+
+        # # Make sure the airway has branched
+        # if num_regions < 2:
+        #     continue
+
+        # label_shape.Execute(label_slice, img_slice)
+        # for label in label_shape.GetLabels():
+        #     if (
+        #         label_shape.GetElongation(label) > 5
+        #         and label_shape.GetPhysicalSize(label) > 30
+        #     ):
+        #         corina_slice = idx_slice
+
+    print(f" Cropping from slice: {corina_slice} + {extend_from_carina} slices")
+    best_result = fast_mask(
+        best_result, corina_slice + extend_from_carina, z_size
+    )
 
     return best_result
