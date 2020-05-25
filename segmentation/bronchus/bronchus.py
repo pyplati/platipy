@@ -321,7 +321,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
     print("Selected Lung Mask HU: " + str(best_lung_mask_hu))
 
     # process in 2D - check label elongation and size.
-    corina_slice = 0
+    corina_slice = -1
     lssif = sitk.LabelShapeStatisticsImageFilter()
     for idx_slice in range(z_size, 0, -1):
 
@@ -353,27 +353,10 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                 corina_slice = idx_slice
                 break
 
-        # label_slice = best_result[:, :, idx_slice]
-        # img_slice = img[:, :, idx_slice]
-        # connected = connected_component.Execute(label_slice)
-        # nda_connected = sitk.GetArrayFromImage(connected)
-        # num_regions = nda_connected.max()
-
-        # # Make sure the airway has branched
-        # if num_regions < 2:
-        #     continue
-
-        # label_shape.Execute(label_slice, img_slice)
-        # for label in label_shape.GetLabels():
-        #     if (
-        #         label_shape.GetElongation(label) > 5
-        #         and label_shape.GetPhysicalSize(label) > 30
-        #     ):
-        #         corina_slice = idx_slice
-
-    print(f" Cropping from slice: {corina_slice} + {extend_from_carina} slices")
-    best_result = fast_mask(
-        best_result, corina_slice + extend_from_carina, z_size
-    )
+    if corina_slice >= 0:
+        print(f" Cropping from slice: {corina_slice} + {extend_from_carina} slices")
+        best_result = fast_mask(
+            best_result, corina_slice + extend_from_carina, z_size
+        )
 
     return best_result
