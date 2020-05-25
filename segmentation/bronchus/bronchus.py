@@ -337,4 +337,6 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
         print(f" Cropping from slice: {corina_slice} + {extend_from_carina} slices")
         best_result = fast_mask(best_result, corina_slice + extend_from_carina, z_size)
 
+    best_result = sitk.Cast(best_result, lung_mask.GetPixelIDValue())
+
     return best_result
