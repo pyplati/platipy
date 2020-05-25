@@ -187,14 +187,10 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                 break
 
             label_slice = lung_mask[
-                :,
-                :,
-                z_size - distance_from_sup_slice - 10 : z_size - distance_from_sup_slice,
+                :, :, z_size - distance_from_sup_slice - 10 : z_size - distance_from_sup_slice,
             ]  # works for both cases 22 and 17
             img_slice = img[
-                :,
-                :,
-                z_size - distance_from_sup_slice - 10 : z_size - distance_from_sup_slice,
+                :, :, z_size - distance_from_sup_slice - 10 : z_size - distance_from_sup_slice,
             ]
 
             connected = connected_component.Execute(label_slice)
@@ -211,16 +207,12 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                     label_shape.GetElongation(label) > max_elong
                     and label_shape.GetPhysicalSize(label) > 2000
                 ):
-                    centre = img.TransformPhysicalPointToIndex(
-                        label_shape.GetCentroid(label)
-                    )
+                    centre = img.TransformPhysicalPointToIndex(label_shape.GetCentroid(label))
                     max_elong = label_shape.GetElongation(label)
                     airway_open = [int(centre[0]), int(centre[1]), int(centre[2])]
 
             # just check the opening is at the right location
-            centroid_mask_val = lung_mask.GetPixel(
-                airway_open[0], airway_open[1], airway_open[2]
-            )
+            centroid_mask_val = lung_mask.GetPixel(airway_open[0], airway_open[1], airway_open[2])
 
             if centroid_mask_val == 0:
                 print(
@@ -234,9 +226,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
             print("*Airway opening: " + str(airway_open))
             print(
                 "*Voxel HU at opening: "
-                + str(
-                    lung_mask.GetPixel(airway_open[0], airway_open[1], airway_open[2])
-                )
+                + str(lung_mask.GetPixel(airway_open[0], airway_open[1], airway_open[2]))
             )
 
             for lung_mask_hu in lung_mask_hu_values:
@@ -244,10 +234,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                 print("--------------------------------------------")
                 print("Extracting airways.  Iteration: " + str(loop_count))
                 print("*Lung Mask HU: " + str(lung_mask_hu))
-                print(
-                    "*Slices from sup for airway opening: "
-                    + str(distance_from_sup_slice)
-                )
+                print("*Slices from sup for airway opening: " + str(distance_from_sup_slice))
                 if k == 1:
                     print("*Mask median smoothing on")
                 loop_count += 1
@@ -261,21 +248,17 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                 writer.SetFileName(dest + "/airwaysMask.nii.gz")
                 writer.Execute(result)
 
-
                 # Dilate and check if the output is in the expected range
                 binary_dilate = sitk.BinaryDilateImageFilter()
                 binary_dilate.SetKernelRadius(2)
                 result = binary_dilate.Execute(result)
-
 
                 # check size of label - if it's too large the lungs have been included..
                 result = sitk.Cast(result, lung_mask.GetPixelIDValue())
                 label_shape.Execute(result, img)
                 airway_mask_physical_size = -1
                 for label in label_shape.GetLabels():
-                    airway_mask_physical_size = int(
-                        label_shape.GetPhysicalSize(label)
-                    )
+                    airway_mask_physical_size = int(label_shape.GetPhysicalSize(label))
                     roundness = float(label_shape.GetRoundness(label))
                     elongation = float(label_shape.GetElongation(label))
 
@@ -298,10 +281,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                         + str(airway_mask_physical_size)
                     )
                 else:
-                    print(
-                        " Airway Mask size passed: "
-                        + str(airway_mask_physical_size)
-                    )
+                    print(" Airway Mask size passed: " + str(airway_mask_physical_size))
                     processed_correctly = True
                     this_processed_correctly = True
 
@@ -327,9 +307,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
     lssif = sitk.LabelShapeStatisticsImageFilter()
     for idx_slice in range(z_size, 0, -1):
 
-        cut_mask = fast_mask(
-            best_result, idx_slice, z_size
-        )
+        cut_mask = fast_mask(best_result, idx_slice, z_size)
         cut_mask = sitk.Cast(cut_mask, lung_mask.GetPixelIDValue())
 
         print(idx_slice)
@@ -341,24 +319,21 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
         if num_regions == 2:
             lssif.Execute(label_image)
 
-            phys_size_0 = int(
-                lssif.GetPhysicalSize(1)
-            )
-            phys_size_1 = int(
-                lssif.GetPhysicalSize(2)
-            )
+            phys_size_0 = int(lssif.GetPhysicalSize(1))
+            phys_size_1 = int(lssif.GetPhysicalSize(2))
 
             print(phys_size_0)
             print(phys_size_1)
-            if abs(phys_size_0 - phys_size_1) < minimum_tree_half_physical_size:
+            if (
+                phys_size_0 > minimum_tree_half_physical_size
+                and phys_size_1 > minimum_tree_half_physical_size
+            ):
 
                 corina_slice = idx_slice
                 break
 
     if corina_slice >= 0:
         print(f" Cropping from slice: {corina_slice} + {extend_from_carina} slices")
-        best_result = fast_mask(
-            best_result, corina_slice + extend_from_carina, z_size
-        )
+        best_result = fast_mask(best_result, corina_slice + extend_from_carina, z_size)
 
     return best_result
