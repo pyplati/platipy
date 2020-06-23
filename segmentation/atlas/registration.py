@@ -450,3 +450,166 @@ def apply_field(input_image, transform, structure=False, default_value=-1024, in
     resampled_image = resampler.Execute(sitk.Cast(input_image, sitk.sitkFloat32))
 
     return sitk.Cast(resampled_image, input_image_type)
+
+
+def bspline_registration(
+    fixed_image,
+    moving_image,
+    moving_structure = False,
+    fixed_structure = False,
+    options =   {
+        "resolution_staging" :  [8,4,2],
+        "smooth_sigmas" :  [4,2,1],
+        "sampling_rate" :  0.1,
+        "optimiser" :  'LBFGS',
+        "metric" : 'correlation',
+        "initial_grid_spacing" :  64,
+        "grid_spacing_factors" :  [1, 2, 4],
+        "interp_order" :  3,
+        "default_value" :  -1024,
+        "number_of_iterations" : 20
+    },
+    trace = False,
+    ncores  = 8,
+    debug = False
+):
+    """
+    B-Spline image registration using ITK
+
+    IMPORTANT - THIS IS UNDER ACTIVE DEVELOPMENT
+
+    Args
+        fixed_image (sitk.Image) : the fixed image
+        moving_image (sitk.Image): the moving image, transformed to match fixed_image
+        options (dict)          : registration options
+        structure (bool)        : True if the image is a structure image
+
+    Returns
+        registered_image (sitk.Image): the rigidly registered moving image
+        transform (transform        : the transform, can be used directly with
+                                      sitk.ResampleImageFilter
+
+    """
+
+    # Get the settings
+    resolution_staging = options["resolution_staging"]
+    smooth_sigmas = options["smooth_sigmas"]
+    sampling_rate = options["sampling_rate"]
+    optimiser = options["optimiser"]
+    metric = options["metric"]
+    initial_grid_spacing = options["initial_grid_spacing"]
+    grid_spacing_factors = options["grid_spacing_factors"]
+    number_of_iterations = options["number_of_iterations"]
+    interp_order = options["interp_order"]
+    default_value = options["default_value"]
+
+    # Re-cast
+    fixed_image = sitk.Cast(fixed_image, sitk.sitkFloat32)
+    moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
+
+    # Set up image registration method
+    registration = sitk.ImageRegistrationMethod()
+    registration.SetNumberOfThreads(ncores)
+
+    registration.SetShrinkFactorsPerLevel(resolution_staging)
+    registration.SetSmoothingSigmasPerLevel(smooth_sigmas)
+    registration.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
+
+    # Choose optimiser
+    if optimiser=='LBFGSB':
+        registration.SetOptimizerAsLBFGSB(
+            gradientConvergenceTolerance=1e-5,
+            numberOfIterations=number_of_iterations,
+            maximumNumberOfCorrections=5,
+            maximumNumberOfFunctionEvaluations=1024,
+            costFunctionConvergenceFactor=1e7,
+            trace=trace,
+        )
+    elif optimiser=='LBFGS':
+        registration.SetOptimizerAsLBFGS2(
+            numberOfIterations=number_of_iterations,
+            solutionAccuracy=1e-2,
+            hessianApproximateAccuracy=6,
+            deltaConvergenceDistance=0,
+            deltaConvergenceTolerance=0.01,
+            lineSearchMaximumEvaluations=40,
+            lineSearchMinimumStep=1e-20,
+            lineSearchMaximumStep=1e20,
+            lineSearchAccuracy=0.01
+        )
+    elif optimiser=='CGLS':
+        registration.SetOptimizerAsConjugateGradientLineSearch(
+            learningRate = 0.05,
+            numberOfIterations = number_of_iterations
+        )
+        registration_method.SetOptimizerScalesFromPhysicalShift()
+    elif optimiser=='GradientDescent':
+        registration.SetOptimizerAsGradientDescent(
+            learningRate = 5.0,
+            numberOfIterations = number_of_iterations,
+            convergenceMinimumValue = 1e-6,
+            convergenceWindowSize = 10
+        )
+        registration.SetOptimizerScalesFromPhysicalShift()
+    elif optimiser=='GradientDescentLineSearch':
+        registration.SetOptimizerAsGradientDescentLineSearch(
+            learningRate = 5.0,
+            numberOfIterations = number_of_iterations
+        )
+        registration.SetOptimizerScalesFromPhysicalShift()
+
+    # Set metric
+    if metric == 'correlation':
+        registration.SetMetricAsCorrelation()
+    elif metric == 'mean_squares':
+        registration.SetMetricAsMeanSquares()
+    elif metric == 'demons':
+        registration.SetMetricAsDemons()
+    elif metric == 'mutual_information':
+        try:
+            number_of_histogram_bins = options["number_of_histogram_bins"]
+        except:
+            number_of_histogram_bins = 30
+        registration.SetMetricAsMattesMutualInformation(numberOfHistogramBins=number_of_histogram_bins)
+
+    registration.SetInterpolator(sitk.sitkLinear)
+
+    # Set sampling
+    if type(sampling_rate)==float:
+        registration.SetMetricSamplingPercentage(sampling_rate)
+    elif type(sampling_rate) in [np.ndarray, list]:
+        registration.SetMetricSamplingPercentagePerLevel(sampling_rate)
+
+    registration.SetMetricSamplingStrategy(sitk.ImageRegistrationMethod.REGULAR)
+
+    # Set masks
+    if moving_structure is not False:
+        registration.SetMetricMovingMask(moving_structure)
+
+    if fixed_structure is not False:
+        registration.SetMetricFixedMask(fixed_structure)
+
+    # Set control point spacing
+    transform_domain_mesh_size = control_point_spacing_to_number(fixed_image, initial_grid_spacing)
+    if debug:
+        print(f"Initial grid size: {transform_domain_mesh_size}")
+    initial_transform = sitk.BSplineTransformInitializer(fixed_image, transformDomainMeshSize = [int(i) for i in transform_domain_mesh_size])
+
+    registration.SetInitialTransformAsBSpline(initial_transform, inPlace=True, scaleFactors = grid_spacing_factors)
+    registration.AddCommand( sitk.sitkIterationEvent, lambda: command_iteration(registration) )
+    registration.AddCommand( sitk.sitkMultiResolutionIterationEvent, lambda: stage_iteration(registration) )
+
+    # Run the registration
+    output_transform = registration.Execute(fixed=fixed_image, moving=moving_image)
+
+    # Resample moving image
+    resampler = sitk.ResampleImageFilter()
+    resampler.SetReferenceImage(fixed_image)
+    resampler.SetTransform(output_transform)
+    resampler.SetInterpolator(sitk.sitkBSpline)
+    # Default value
+    resampler.SetDefaultPixelValue(default_value)
+
+    registered_image = resampler.Execute(moving_image)
+
+    return registered_image, output_transform, registration

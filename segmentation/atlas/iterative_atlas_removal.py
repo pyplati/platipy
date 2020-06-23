@@ -293,8 +293,9 @@ def run_iar(
             z_ideal = gaussian_curve(bin_centers, *popt)
             z_diff = np.abs(z_density - z_ideal)
         except:
-            logger.error('IAR couldnt fit curve, stopping...')
-            return atlas_set
+            logger.debug('IAR couldnt fit curve, estimating with sampled statistics.')
+            z_ideal = gaussian_curve(bin_centers, a=1, m=z_density.mean(), a = z_density.std())
+            z_diff = np.abs(z_density - z_ideal)
 
         # Integrate to get the q_value
         q_value = np.trapz(z_diff * np.abs(bin_centers) ** 2, bin_centers)
