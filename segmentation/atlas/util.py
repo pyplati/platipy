@@ -5,11 +5,11 @@ import numpy as np
 
 from scipy.stats import norm as scipy_norm
 
-def vectorised_transform_index_to_physical_point(image, point_array, correct=True):
+def vectorised_transform_index_to_physical_point(image, point_array, rotate=True):
     """
     Transforms a set of points from array indices to real-space
     """
-    if correct:
+    if rotate:
         spacing = image.GetSpacing()[::-1]
         origin = image.GetOrigin()[::-1]
     else:
@@ -18,11 +18,11 @@ def vectorised_transform_index_to_physical_point(image, point_array, correct=Tru
     return point_array * spacing + origin
 
 
-def vectorised_transform_physical_point_to_index(image, point_array, correct=True):
+def vectorised_transform_physical_point_to_index(image, point_array, rotate=True):
     """
     Transforms a set of points from real-space to array indices
     """
-    if correct:
+    if rotate:
         spacing = image.GetSpacing()[::-1]
         origin = image.GetOrigin()[::-1]
     else:

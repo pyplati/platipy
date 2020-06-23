@@ -6,6 +6,19 @@ import sys
 
 import SimpleITK as sitk
 
+def alignment_registration(
+    fixed_image,
+    moving_image,
+    default_value = 0,
+    moments=True
+):
+    moving_image_type = moving_image.GetPixelIDValue()
+    fixed_image = sitk.Cast(fixed_image, sitk.sitkFloat32)
+    moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
+    initial_transform = sitk.CenteredTransformInitializer(fixed_image, moving_image, sitk.VersorRigid3DTransform(), moments)
+    aligned_image = sitk.Resample(moving_image, fixed_image, initial_transform)
+    aligned_image = sitk.Cast(aligned_image, moving_image_type)
+    return aligned_image, initial_transform
 
 def initial_registration(
     fixed_image,
@@ -13,6 +26,7 @@ def initial_registration(
     moving_structure=False,
     fixed_structure=False,
     options=None,
+    default_value=-1024,
     trace=False,
     reg_method="Rigid",
 ):
@@ -34,6 +48,8 @@ def initial_registration(
 
     # Re-cast
     fixed_image = sitk.Cast(fixed_image, sitk.sitkFloat32)
+
+    moving_image_type = moving_image.GetPixelIDValue()
     moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
 
     if not options:
@@ -43,16 +59,34 @@ def initial_registration(
     shrink_factors = options["shrinkFactors"]
     smooth_sigmas = options["smoothSigmas"]
     sampling_rate = options["samplingRate"]
+    default_value = options["defaultValue"]
+    final_interp = options["finalInterp"]
 
     if reg_method == "Rigid":
         # Select the rigid transform
         transform = sitk.VersorRigid3DTransform()
+        initializer = sitk.CenteredTransformInitializerFilter()
+        initializer.GeometryOn()
+        initial_transform = initializer.Execute(fixed_image, moving_image, transform)
+
     elif reg_method == "Affine":
         # Select the affine transform
         transform = sitk.AffineTransform(3)
-    elif reg_method == "Translation":
-        # Select the translation transform
-        transform = sitk.TranslationTransform(3)
+        initializer = sitk.CenteredTransformInitializerFilter()
+        initializer.GeometryOn()
+        initial_transform = initializer.Execute(fixed_image, moving_image, transform)
+
+    elif reg_method == "Translation" or reg_method == "ScaleTranslation":
+        # We have to do something a bit different for these transforms
+        # We first actually perform the centering transform (not just set it as above)
+        # Then run the rest of the pipeline, defining the transform later
+        initializer = sitk.CenteredTransformInitializerFilter()
+        initializer.GeometryOn()
+        initial_transform = initializer.Execute(fixed_image, moving_image, sitk.VersorRigid3DTransform())
+        moving_image = transform_propagation(fixed_image, moving_image, initial_transform, default_value=default_value, interp=final_interp)
+
+        if moving_structure:
+            moving_structure = transform_propagation(fixed_image, moving_structure, initial_transform, default_value=0, interp=2)
     else:
         print("[ERROR] Registration method must be Rigid, Affine or Translation.")
         sys.exit()
@@ -84,26 +118,29 @@ def initial_registration(
     if fixed_structure:
         registration.SetMetricFixedMask(fixed_structure)
 
-    initializer = sitk.CenteredTransformInitializerFilter()
-    initializer.GeometryOn()
-    initial_transform = initializer.Execute(fixed_image, moving_image, transform)
+    if reg_method=='Translation':
+        registration.SetInitialTransform(sitk.TranslationTransform(3))
+    elif reg_method=='ScaleTranslation':
+        transform = sitk.Transform(sitk.TranslationTransform(3))
+        transform.AddTransform(sitk.ScaleTransform(3))
+        transform.AddTransform(sitk.TranslationTransform(3))
+        registration.SetInitialTransform(transform)
+    else:
+        registration.SetInitialTransform(initial_transform)
 
-    registration.SetInitialTransform(initial_transform)
     output_transform = registration.Execute(fixed=fixed_image, moving=moving_image)
+    registered_image = transform_propagation(fixed_image, moving_image, output_transform, default_value=default_value, interp=final_interp)
+    registered_image = sitk.Cast(registered_image, moving_image_type)
 
-    resampler = sitk.ResampleImageFilter()
-    resampler.SetReferenceImage(fixed_image)
-    resampler.SetTransform(output_transform)
-    resampler.SetInterpolator(sitk.sitkBSpline)
-    resampler.SetDefaultPixelValue(-1024)
-
-    registered_image = resampler.Execute(moving_image)
+    if reg_method=='Translation' or reg_method=='ScaleTranslation':
+        output_transform.AddTransform(initial_transform)
+    if trace:
+        print(output_transform)
 
     return registered_image, output_transform
 
-
 def transform_propagation(
-    fixed_image, moving_image, transform, structure=False, interp=sitk.sitkNearestNeighbor
+    fixed_image, moving_image, transform, structure=False, default_value=-1024, interp=sitk.sitkNearestNeighbor
 ):
     """
     Transform propagation using ITK
@@ -130,7 +167,7 @@ def transform_propagation(
     if structure:
         resampler.SetDefaultPixelValue(0)
     else:
-        resampler.SetDefaultPixelValue(-1024)
+        resampler.SetDefaultPixelValue(default_value)
 
     output_image = resampler.Execute(moving_image)
 
@@ -194,6 +231,7 @@ def multiscale_demons(
     shrink_factors=None,
     smoothing_sigmas=None,
     iteration_staging=None,
+    return_field=False
 ):
     """
     Run the given registration algorithm in a multiscale fashion. The original scale should not be
@@ -206,13 +244,14 @@ def multiscale_demons(
         moving_image: Resulting transformation maps points from the fixed_image's spatial domain to
                       this image's spatial domain.
         initial_transform: Any SimpleITK transform, used to initialize the displacement field.
-        initial_displacement_field: Initial displacement field, if this is provided 
+        initial_displacement_field: Initial displacement field, if this is provided
                                     initial_transform will be ignored
         shrink_factors: Shrink factors relative to the original image's size.
         smoothing_sigmas: Amount of smoothing which is done prior to resmapling the image using the
                           given shrink factor. These are in physical (image spacing) units.
     Returns:
         SimpleITK.DisplacementFieldTransform
+        [Optional] Displacemment (vector) field
     """
     # Create image pyramid.
     fixed_images = []
@@ -264,7 +303,13 @@ def multiscale_demons(
         initial_displacement_field = registration_algorithm.Execute(
             f_image, m_image, initial_displacement_field
         )
-    return sitk.DisplacementFieldTransform(initial_displacement_field)
+
+    output_displacement_field = sitk.Resample(initial_displacement_field, initial_displacement_field)
+
+    if return_field:
+        return (sitk.DisplacementFieldTransform(initial_displacement_field), output_displacement_field)
+    else:
+        return sitk.DisplacementFieldTransform(initial_displacement_field)
 
 
 def command_iteration(method):
@@ -281,10 +326,12 @@ def fast_symmetric_forces_demons_registration(
     iteration_staging=[10, 10, 10],
     initial_displacement_field=None,
     smoothing_sigma_factor=1,
+    default_value=-1024,
     ncores=1,
     structure=False,
     interp_order=2,
     trace=False,
+    return_field=False
 ):
     """
     Deformable image propagation using Fast Symmetric-Forces Demons
@@ -307,9 +354,13 @@ def fast_symmetric_forces_demons_registration(
     Returns
         registered_image (sitk.Image)    : the registered moving image
         output_transform                 : the displacement field transform
+        [optional] deformation_field
     """
 
     # Cast to floating point representation, if necessary
+
+    moving_image_type = moving_image.GetPixelID()
+
     if fixed_image.GetPixelID() != 6:
         fixed_image = sitk.Cast(fixed_image, sitk.sitkFloat32)
     if moving_image.GetPixelID() != 6:
@@ -330,15 +381,21 @@ def fast_symmetric_forces_demons_registration(
             sitk.sitkIterationEvent, lambda: command_iteration(registration_method)
         )
 
-    output_transform = multiscale_demons(
+    output = multiscale_demons(
         registration_algorithm=registration_method,
         fixed_image=fixed_image,
         moving_image=moving_image,
         shrink_factors=resolution_staging,
         smoothing_sigmas=[i * smoothing_sigma_factor for i in resolution_staging],
         iteration_staging=iteration_staging,
-        initial_displacement_field=initial_displacement_field
+        initial_displacement_field=initial_displacement_field,
+        return_field=return_field
     )
+
+    if return_field:
+        output_transform, deformation_field = output
+    else:
+        output_transform = output
 
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(fixed_image)
@@ -347,7 +404,7 @@ def fast_symmetric_forces_demons_registration(
     if structure:
         resampler.SetDefaultPixelValue(0)
     else:
-        resampler.SetDefaultPixelValue(-1024)
+        resampler.SetDefaultPixelValue(default_value)
 
     resampler.SetTransform(output_transform)
     registered_image = resampler.Execute(moving_image)
@@ -357,11 +414,15 @@ def fast_symmetric_forces_demons_registration(
         registered_image = sitk.Threshold(registered_image, lower=1e-5, upper=100)
 
     registered_image.CopyInformation(fixed_image)
+    registered_image = sitk.Cast(registered_image, moving_image_type)
 
-    return registered_image, output_transform
+    if return_field:
+        return registered_image, output_transform, deformation_field
+    else:
+        return registered_image, output_transform
 
 
-def apply_field(input_image, transform, structure=False, interp=sitk.sitkNearestNeighbor):
+def apply_field(input_image, transform, structure=False, default_value=-1024, interp=sitk.sitkNearestNeighbor):
     """
     Transform a volume of structure with the given deformation field.
 
@@ -374,19 +435,18 @@ def apply_field(input_image, transform, structure=False, interp=sitk.sitkNearest
     Returns
         resampled_image (sitk.Image)    : the transformed image
     """
-
-
+    input_image_type = input_image.GetPixelIDValue()
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(input_image)
 
     if structure:
         resampler.SetDefaultPixelValue(0)
     else:
-        resampler.SetDefaultPixelValue(-1024)
+        resampler.SetDefaultPixelValue(default_value)
 
     resampler.SetTransform(transform)
     resampler.SetInterpolator(interp)
 
     resampled_image = resampler.Execute(sitk.Cast(input_image, sitk.sitkFloat32))
 
-    return resampled_image
+    return sitk.Cast(resampled_image, input_image_type)
