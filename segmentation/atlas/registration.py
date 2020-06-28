@@ -61,6 +61,7 @@ def initial_registration(
     sampling_rate = options["samplingRate"]
     default_value = options["defaultValue"]
     final_interp = options["finalInterp"]
+    metric = options["metric"]
 
     if reg_method == "Rigid":
         # Select the rigid transform
@@ -107,7 +108,12 @@ def initial_registration(
         trace=trace,
     )
 
-    registration.SetMetricAsMeanSquares()
+    if metric == 'correlation':
+        registration.SetMetricAsCorrelation()
+    elif metric == 'mean_squares':
+        registration.SetMetricAsMeanSquares()
+    # to do: add the rest
+
     registration.SetInterpolator(sitk.sitkLinear)  # Perhaps a small gain in improvement
     registration.SetMetricSamplingPercentage(sampling_rate)
     registration.SetMetricSamplingStrategy(sitk.ImageRegistrationMethod.REGULAR)
@@ -124,6 +130,9 @@ def initial_registration(
         transform = sitk.Transform(sitk.TranslationTransform(3))
         transform.AddTransform(sitk.ScaleTransform(3))
         transform.AddTransform(sitk.TranslationTransform(3))
+        transform.AddTransform(sitk.ScaleTransform(3))
+        transform.AddTransform(sitk.TranslationTransform(3))
+        transform.AddTransform(sitk.ScaleTransform(3))
         registration.SetInitialTransform(transform)
     else:
         registration.SetInitialTransform(initial_transform)
