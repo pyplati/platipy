@@ -378,16 +378,6 @@ def SimpleITKImageFromVTKTube(tube, SITKReferenceImage, verbose=False):
     VTKReferenceImage.GetPointData().GetScalars().Fill(inval)
 
     if verbose:
-        print("Generating volume using extrusion.")
-    extruder = vtk.vtkLinearExtrusionFilter()
-    extruder.SetInputData(tube.GetOutput())
-
-    extruder.SetScaleFactor(1.0)
-    extruder.SetExtrusionTypeToNormalExtrusion()
-    extruder.SetVector(0, 0, 1)
-    extruder.Update()
-
-    if verbose:
         print("Using polydaya to generate stencil.")
     pol2stenc = vtk.vtkPolyDataToImageStencil()
     pol2stenc.SetTolerance(0)  # important if extruder.SetVector(0, 0, 1) !!!
@@ -415,7 +405,6 @@ def SimpleITKImageFromVTKTube(tube, SITKReferenceImage, verbose=False):
     finalImageSITK.CopyInformation(SITKReferenceImage)
 
     return finalImageSITK
-
 
 def ConvertSimpleITKtoVTK(img):
     """
@@ -450,6 +439,7 @@ def ConvertSimpleITKtoVTK(img):
 
 
 def vesselSplineGeneration(
+    referenceImage,
     atlasSet,
     vesselNameList,
     vesselRadiusDict,
@@ -478,9 +468,7 @@ def vesselSplineGeneration(
         )
         tube = tubeFromCOMList(pointArray, radius=vesselRadius)
 
-        SITKReferenceImage = imageList[0]
-
         splinedVessels[vesselName] = SimpleITKImageFromVTKTube(
-            tube, SITKReferenceImage, verbose=False
+            tube, referenceImage, verbose=False
         )
     return splinedVessels
