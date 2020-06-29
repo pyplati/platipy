@@ -28,7 +28,8 @@ def initial_registration(
     options=None,
     default_value=-1024,
     trace=False,
-    reg_method="Rigid",
+    reg_method="Similarity",
+    optimiser='GradientDescentLineSearch'
 ):
     """
     Rigid image registration using ITK
@@ -63,34 +64,8 @@ def initial_registration(
     final_interp = options["finalInterp"]
     metric = options["metric"]
 
-    if reg_method == "Rigid":
-        # Select the rigid transform
-        transform = sitk.VersorRigid3DTransform()
-        initializer = sitk.CenteredTransformInitializerFilter()
-        initializer.GeometryOn()
-        initial_transform = initializer.Execute(fixed_image, moving_image, transform)
-
-    elif reg_method == "Affine":
-        # Select the affine transform
-        transform = sitk.AffineTransform(3)
-        initializer = sitk.CenteredTransformInitializerFilter()
-        initializer.GeometryOn()
-        initial_transform = initializer.Execute(fixed_image, moving_image, transform)
-
-    elif reg_method == "Translation" or reg_method == "ScaleTranslation":
-        # We have to do something a bit different for these transforms
-        # We first actually perform the centering transform (not just set it as above)
-        # Then run the rest of the pipeline, defining the transform later
-        initializer = sitk.CenteredTransformInitializerFilter()
-        initializer.GeometryOn()
-        initial_transform = initializer.Execute(fixed_image, moving_image, sitk.VersorRigid3DTransform())
-        moving_image = transform_propagation(fixed_image, moving_image, initial_transform, default_value=default_value, interp=final_interp)
-
-        if moving_structure:
-            moving_structure = transform_propagation(fixed_image, moving_structure, initial_transform, default_value=0, interp=2)
-    else:
-        print("[ERROR] Registration method must be Rigid, Affine or Translation.")
-        sys.exit()
+    # Initialise using a VersorRigid3DTransform
+    initial_transform = sitk.CenteredTransformInitializer(fixed_image, moving_image, sitk.VersorRigid3DTransform(), False)
 
     # Set up image registration method
     registration = sitk.ImageRegistrationMethod()
@@ -99,14 +74,7 @@ def initial_registration(
     registration.SetSmoothingSigmasPerLevel(smooth_sigmas)
     registration.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
 
-    registration.SetOptimizerAsLBFGSB(
-        gradientConvergenceTolerance=1e-5,
-        numberOfIterations=512,
-        maximumNumberOfCorrections=50,
-        maximumNumberOfFunctionEvaluations=1024,
-        costFunctionConvergenceFactor=1e7,
-        trace=trace,
-    )
+    registration.SetMovingInitialTransform(initial_transform)
 
     if metric == 'correlation':
         registration.SetMetricAsCorrelation()
@@ -118,6 +86,11 @@ def initial_registration(
     registration.SetMetricSamplingPercentage(sampling_rate)
     registration.SetMetricSamplingStrategy(sitk.ImageRegistrationMethod.REGULAR)
 
+    # This is only necessary if using a transform comprising changes with different units
+    # e.g. rigid (rotation: radians, translation: mm)
+    # It can safely be left on
+    registration.SetOptimizerScalesFromPhysicalShift()
+
     if moving_structure:
         registration.SetMetricMovingMask(moving_structure)
 
@@ -126,27 +99,49 @@ def initial_registration(
 
     if reg_method=='Translation':
         registration.SetInitialTransform(sitk.TranslationTransform(3))
-    elif reg_method=='ScaleTranslation':
-        transform = sitk.Transform(sitk.TranslationTransform(3))
-        transform.AddTransform(sitk.ScaleTransform(3))
-        transform.AddTransform(sitk.TranslationTransform(3))
-        transform.AddTransform(sitk.ScaleTransform(3))
-        transform.AddTransform(sitk.TranslationTransform(3))
-        transform.AddTransform(sitk.ScaleTransform(3))
-        registration.SetInitialTransform(transform)
+    elif reg_method=='Similarity':
+        registration.SetInitialTransform(sitk.Similarity3DTransform())
+    elif reg_method=='Affine':
+        registration.SetInitialTransform(sitk.AffineTransform(3))
+    elif reg_method=='Rigid':
+        registration.SetInitialTransform(sitk.VersorRigid3DTransform())
     else:
-        registration.SetInitialTransform(initial_transform)
+        raise ValueError('You have selected a registration method that does not exist.\n Please select from Translation, Similarity, Affine, Rigid')
+
+    if optimiser == 'LBGGSB':
+        registration.SetOptimizerAsLBFGSB(
+            gradientConvergenceTolerance=1e-5,
+            numberOfIterations=512,
+            maximumNumberOfCorrections=50,
+            maximumNumberOfFunctionEvaluations=1024,
+            costFunctionConvergenceFactor=1e7,
+            trace=trace,
+        )
+    elif optimiser == 'Exhaustive':
+        """
+        This isn't well implemented
+        Needs some work to give options for sampling rates
+        Use is not currently recommended
+        """
+        samples = [10,10,10,10,10,10]
+        registration.SetOptimizerAsExhaustive(samples)
+    elif optimiser=='GradientDescentLineSearch':
+        registration.SetOptimizerAsGradientDescentLineSearch(
+            learningRate = 1.0,
+            numberOfIterations = 100
+        )
 
     output_transform = registration.Execute(fixed=fixed_image, moving=moving_image)
-    registered_image = transform_propagation(fixed_image, moving_image, output_transform, default_value=default_value, interp=final_interp)
+
+    # Combine initial and optimised transform
+    combined_transform = sitk.Transform()
+    combined_transform.AddTransform(initial_transform)
+    combined_transform.AddTransform(output_transform)
+
+    registered_image = transform_propagation(fixed_image, moving_image, combined_transform, default_value=default_value, interp=final_interp)
     registered_image = sitk.Cast(registered_image, moving_image_type)
 
-    if reg_method=='Translation' or reg_method=='ScaleTranslation':
-        output_transform.AddTransform(initial_transform)
-    if trace:
-        print(output_transform)
-
-    return registered_image, output_transform
+    return registered_image, combined_transform
 
 def transform_propagation(
     fixed_image, moving_image, transform, structure=False, default_value=-1024, interp=sitk.sitkNearestNeighbor
