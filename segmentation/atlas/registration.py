@@ -65,7 +65,7 @@ def initial_registration(
     metric = options["metric"]
 
     # Initialise using a VersorRigid3DTransform
-    initial_transform = sitk.CenteredTransformInitializer(fixed_image, moving_image, sitk.VersorRigid3DTransform(), False)
+    initial_transform = sitk.CenteredTransformInitializer(fixed_image, moving_image, sitk.Euler3DTransform(), False)
 
     # Set up image registration method
     registration = sitk.ImageRegistrationMethod()
@@ -144,7 +144,7 @@ def initial_registration(
     return registered_image, combined_transform
 
 def transform_propagation(
-    fixed_image, moving_image, transform, structure=False, default_value=-1024, interp=sitk.sitkNearestNeighbor
+    fixed_image, moving_image, transform, structure=False, default_value=-1024, interp=sitk.sitkNearestNeighbor, debug=False
 ):
     """
     Transform propagation using ITK
@@ -176,9 +176,8 @@ def transform_propagation(
     output_image = resampler.Execute(moving_image)
 
     if structure and interp > 1:
-        print(
-            "Note: Higher order interpolation on binary mask - using 32-bit floating point output."
-        )
+        if debug:
+            print("Note: Higher order interpolation on binary mask - using 32-bit floating point output")
         output_image = sitk.Cast(output_image, sitk.sitkFloat32)
 
         # Safe way to remove dodgy values that can cause issues later
