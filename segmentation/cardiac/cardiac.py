@@ -152,7 +152,7 @@ def res(p, y, x):
     return err
 
 
-def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, scanDirection="z"):
+def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, scanDirection="z", debug=False):
     """
     Input: list of SimpleITK images
            minimum total slice area required for the tube to be inserted at that slice
@@ -161,7 +161,7 @@ def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, sca
     Note: positions are converted into image space by default
     """
     if scanDirection.lower() == "x":
-        print("Scanning in sagittal direction")
+        if debug: print("Scanning in sagittal direction")
         COMZ = []
         COMY = []
         W = []
@@ -218,7 +218,7 @@ def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, sca
         return pointArray
 
     elif scanDirection.lower() == "z":
-        print("Scanning in axial direction")
+        if debug: print("Scanning in axial direction")
         COMX = []
         COMY = []
         W = []
@@ -275,7 +275,7 @@ def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, sca
         return pointArray
 
 
-def tubeFromCOMList(COMList, radius):
+def tubeFromCOMList(COMList, radius, debug=False):
     """
     Input: image-space positions along the tube centreline.
     Output: VTK tube
@@ -286,7 +286,7 @@ def tubeFromCOMList(COMList, radius):
         points.InsertPoint(i, pt[0], pt[1], pt[2])
 
     # Fit a spline to the points
-    print("Fitting spline")
+    if debug: print("Fitting spline")
     spline = vtk.vtkParametricSpline()
     spline.SetPoints(points)
 
@@ -340,7 +340,7 @@ def writeVTKTubeToFile(tube, filename):
     return s
 
 
-def SimpleITKImageFromVTKTube(tube, SITKReferenceImage, verbose=False):
+def SimpleITKImageFromVTKTube(tube, SITKReferenceImage, debug=False):
     """
     Input: VTK tube, referenceImage (used for spacing, etc.)
     Output: SimpleITK image
@@ -374,20 +374,19 @@ def SimpleITKImageFromVTKTube(tube, SITKReferenceImage, verbose=False):
     # fill the image with foreground voxels:
     inval = 1
     outval = 0
-    count = VTKReferenceImage.GetNumberOfPoints()
     VTKReferenceImage.GetPointData().GetScalars().Fill(inval)
 
-    if verbose:
+    if debug:
         print("Using polydaya to generate stencil.")
     pol2stenc = vtk.vtkPolyDataToImageStencil()
-    pol2stenc.SetTolerance(0)  # important if extruder.SetVector(0, 0, 1) !!!
+    pol2stenc.SetTolerance(0.5)  # points within 0.5 voxels are included
     pol2stenc.SetInputConnection(tube.GetOutputPort())
     pol2stenc.SetOutputOrigin(VTKReferenceImage.GetOrigin())
     pol2stenc.SetOutputSpacing(VTKReferenceImage.GetSpacing())
     pol2stenc.SetOutputWholeExtent(VTKReferenceImage.GetExtent())
     pol2stenc.Update()
 
-    if verbose:
+    if debug:
         print("using stencil to generate image.")
     imgstenc = vtk.vtkImageStencil()
     imgstenc.SetInputData(VTKReferenceImage)
@@ -396,11 +395,13 @@ def SimpleITKImageFromVTKTube(tube, SITKReferenceImage, verbose=False):
     imgstenc.SetBackgroundValue(outval)
     imgstenc.Update()
 
-    if verbose:
+    if debug:
         print("Generating SimpleITK image.")
     finalImage = imgstenc.GetOutput()
     finalArray = finalImage.GetPointData().GetScalars()
     finalArray = vtk_to_numpy(finalArray).reshape(SITKReferenceImage.GetSize()[::-1])
+    if debug:
+        print(f'Volume = {finalArray.sum()*sum(spacing):.3f} mm^3')
     finalImageSITK = sitk.GetImageFromArray(finalArray)
     finalImageSITK.CopyInformation(SITKReferenceImage)
 
@@ -446,6 +447,7 @@ def vesselSplineGeneration(
     stopConditionTypeDict,
     stopConditionValueDict,
     scanDirectionDict,
+    debug=False
 ):
     """
 
@@ -453,7 +455,15 @@ def vesselSplineGeneration(
     splinedVessels = {}
     for vesselName in vesselNameList:
 
+        # We must set the image direction to identity
+        # This is because it is not possible to modify VTK Image directions
+        # This may get fixed in a future VTK version
+
+        initial_image_direction = referenceImage.GetDirection()
+
         imageList = [atlasSet[i]["DIR"][vesselName] for i in atlasSet.keys()]
+        for im in imageList:
+            im.SetDirection((1,0,0,0,1,0,0,0,1))
 
         vesselRadius = vesselRadiusDict[vesselName]
         stopConditionType = stopConditionTypeDict[vesselName]
@@ -465,10 +475,24 @@ def vesselSplineGeneration(
             conditionType=stopConditionType,
             conditionValue=stopConditionValue,
             scanDirection=scanDirection,
+            debug=debug
         )
-        tube = tubeFromCOMList(pointArray, radius=vesselRadius)
+        tube = tubeFromCOMList(pointArray, radius=vesselRadius, debug=debug)
 
-        splinedVessels[vesselName] = SimpleITKImageFromVTKTube(
-            tube, referenceImage, verbose=False
+        SITKReferenceImage = imageList[0]
+
+        vessel_delineation = SimpleITKImageFromVTKTube(
+            tube, SITKReferenceImage, debug=debug
         )
+
+        vessel_delineation.SetDirection(initial_image_direction)
+
+        splinedVessels[vesselName] = vessel_delineation
+
+        # We also have to reset the direction to whatever it was
+        # This is because SimpleITK doesn't use deep copying
+        # And it isn't necessary here as we can save some sweet, sweet memory
+        for im in imageList:
+            im.SetDirection(initial_image_direction)
+
     return splinedVessels
