@@ -200,18 +200,33 @@ def smooth_and_resample(image, shrink_factor, smoothing_sigma):
         Image which is a result of smoothing the input and then resampling it using the given sigma
         and shrink factor.
     """
-    if smoothing_sigma > 0:
-        smoothed_image = sitk.SmoothingRecursiveGaussian(image, smoothing_sigma)
+    if type(smoothing_sigma) == list:
+        if any([i>0 for i in smoothing_sigma]):
+            # smoothed_image = sitk.SmoothingRecursiveGaussian(image, smoothing_sigma)
+            smoothed_image = sitk.DiscreteGaussian(image, smoothing_sigma)
+        else:
+            smoothed_image = image
+
     else:
-        smoothed_image = image
+        if smoothing_sigma > 0:
+            # smoothed_image = sitk.SmoothingRecursiveGaussian(image, smoothing_sigma)
+            smoothed_image = sitk.DiscreteGaussian(image, smoothing_sigma)
+        else:
+            smoothed_image = image
 
     original_spacing = image.GetSpacing()
     original_size = image.GetSize()
-    new_size = [int(sz / float(shrink_factor) + 0.5) for sz in original_size]
+
+    if type(shrink_factor) == list:
+        new_size = [int(sz / float(sf) + 0.5) for sz,sf in zip(original_size, shrink_factor)]
+    else:
+        new_size = [int(sz / float(shrink_factor) + 0.5) for sz in original_size]
+
     new_spacing = [
         ((original_sz - 1) * original_spc) / (new_sz - 1)
         for original_sz, original_spc, new_sz in zip(original_size, original_spacing, new_size)
     ]
+
     return sitk.Resample(
         smoothed_image,
         new_size,
@@ -329,6 +344,7 @@ def fast_symmetric_forces_demons_registration(
     iteration_staging=[10, 10, 10],
     initial_displacement_field=None,
     smoothing_sigma_factor=1,
+    smoothing_sigmas=False,
     default_value=-1024,
     ncores=1,
     structure=False,
@@ -384,12 +400,15 @@ def fast_symmetric_forces_demons_registration(
             sitk.sitkIterationEvent, lambda: command_iteration(registration_method)
         )
 
+    if not smoothing_sigmas:
+        smoothing_sigmas = [i * smoothing_sigma_factor for i in resolution_staging]
+
     output = multiscale_demons(
         registration_algorithm=registration_method,
         fixed_image=fixed_image,
         moving_image=moving_image,
         shrink_factors=resolution_staging,
-        smoothing_sigmas=[i * smoothing_sigma_factor for i in resolution_staging],
+        smoothing_sigmas=smoothing_sigmas,
         iteration_staging=iteration_staging,
         initial_displacement_field=initial_displacement_field,
         return_field=return_field
