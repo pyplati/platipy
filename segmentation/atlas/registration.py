@@ -3,7 +3,7 @@ Provides tools to perform registration for use within atlas based segmentation a
 """
 
 import sys
-
+import numpy as np
 import SimpleITK as sitk
 
 def alignment_registration(
@@ -188,7 +188,7 @@ def transform_propagation(
     return output_image
 
 
-def smooth_and_resample(image, shrink_factor, smoothing_sigma):
+def smooth_and_resample(image, shrink_factor, smoothing_sigma, isotropic_resample=False):
     """
     Args:
         image: The image we want to resample.
@@ -196,6 +196,7 @@ def smooth_and_resample(image, shrink_factor, smoothing_sigma):
                        original_size/shrink_factor.
         smoothing_sigma: Sigma for Gaussian smoothing, this is in physical (image spacing) units,
                          not pixels.
+        isotropic_resample: A flag that changes the behaviour to resample the image to isotropic voxels of size (shrink_factor)
     Return:
         Image which is a result of smoothing the input and then resampling it using the given sigma
         and shrink factor.
@@ -217,10 +218,15 @@ def smooth_and_resample(image, shrink_factor, smoothing_sigma):
     original_spacing = image.GetSpacing()
     original_size = image.GetSize()
 
-    if type(shrink_factor) == list:
-        new_size = [int(sz / float(sf) + 0.5) for sz,sf in zip(original_size, shrink_factor)]
-    else:
-        new_size = [int(sz / float(shrink_factor) + 0.5) for sz in original_size]
+    if isotropic_resample:
+        scale_factor = shrink_factor * np.ones(3)/np.array(image.GetSpacing())
+        new_size = [int(sz / float(sf) + 0.5) for sz,sf in zip(original_size, scale_factor)]
+
+    if not isotropic_resample:
+        if type(shrink_factor) == list:
+            new_size = [int(sz / float(sf) + 0.5) for sz,sf in zip(original_size, shrink_factor)]
+        else:
+            new_size = [int(sz / float(shrink_factor) + 0.5) for sz in original_size]
 
     new_spacing = [
         ((original_sz - 1) * original_spc) / (new_sz - 1)
@@ -249,6 +255,7 @@ def multiscale_demons(
     shrink_factors=None,
     smoothing_sigmas=None,
     iteration_staging=None,
+    isotropic_resample=False,
     return_field=False
 ):
     """
@@ -274,12 +281,13 @@ def multiscale_demons(
     # Create image pyramid.
     fixed_images = []
     moving_images = []
-    if shrink_factors:
-        for shrink_factor, smoothing_sigma in reversed(
-            list(zip(shrink_factors, smoothing_sigmas))
-        ):
-            fixed_images.append(smooth_and_resample(fixed_image, shrink_factor, smoothing_sigma))
-            moving_images.append(smooth_and_resample(moving_image, shrink_factor, smoothing_sigma))
+
+
+    for shrink_factor, smoothing_sigma in reversed(
+        list(zip(shrink_factors, smoothing_sigmas))
+    ):
+        fixed_images.append(smooth_and_resample(fixed_image, shrink_factor, smoothing_sigma, isotropic_resample=isotropic_resample))
+        moving_images.append(smooth_and_resample(moving_image, shrink_factor, smoothing_sigma, isotropic_resample=isotropic_resample))
 
     # Create initial displacement field at lowest resolution.
     # Currently, the pixel type is required to be sitkVectorFloat64 because of a constraint imposed
@@ -342,6 +350,7 @@ def fast_symmetric_forces_demons_registration(
     moving_image,
     resolution_staging=[8, 4, 1],
     iteration_staging=[10, 10, 10],
+    isotropic_resample=False,
     initial_displacement_field=None,
     smoothing_sigma_factor=1,
     smoothing_sigmas=False,
@@ -361,6 +370,8 @@ def fast_symmetric_forces_demons_registration(
                                           the same image space)
         resolution_staging (list[int])   : down-sampling factor for each resolution level
         iteration_staging (list[int])    : number of iterations for each resolution level
+        isotropic_resample (bool)        : flag to request isotropic resampling of images, in which
+                                           case resolution_staging is used to define voxel size (mm) per level
         initial_displacement_field (sitk.Image) : Initial displacement field to use
         ncores (int)                    : number of processing cores to use
         structure (bool)                : True if the image is a structure image
@@ -410,6 +421,7 @@ def fast_symmetric_forces_demons_registration(
         shrink_factors=resolution_staging,
         smoothing_sigmas=smoothing_sigmas,
         iteration_staging=iteration_staging,
+        isotropic_resample=isotropic_resample,
         initial_displacement_field=initial_displacement_field,
         return_field=return_field
     )
