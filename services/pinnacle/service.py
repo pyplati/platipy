@@ -100,7 +100,7 @@ def pinnacle_export_service(data_objects, working_dir, settings):
             pinn.export_dose(export_plan, output_dir)
 
         for image in pinn.images:
-            if image.image_info["uid"][0]["SeriesUID"] in settings["exportSeriesUIDs"]:
+            if image.image_info[0]["SeriesUID"] in settings["exportSeriesUIDs"]:
                 pinn.export_image(image, export_path=output_dir)
 
         # Find the output files
