@@ -16,6 +16,7 @@ from impit.framework import app, DataObject, celery
 
 PINNACLE_EXPORT_SETTINGS_DEFAULTS = {
     "exportModalities": ["CT", "RTSTRUCT", "RTPLAN", "RTDOSE"],
+    "exportSeriesUIDs": []
 }
 
 
@@ -97,6 +98,10 @@ def pinnacle_export_service(data_objects, working_dir, settings):
         if "RTDOSE" in settings["exportModalities"]:
             logger.info("Exporting RTDOSE")
             pinn.export_dose(export_plan, output_dir)
+
+        for image in pinn.images:
+            if image.image_info["uid"][0]["SeriesUID"] in settings["exportSeriesUIDs"]:
+                pinn.export_image(image, export_path=output_dir)
 
         # Find the output files
         output_objects = [os.path.join(output_dir, f) for f in os.listdir(output_dir)]
