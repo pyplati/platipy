@@ -5,8 +5,8 @@ import os
 import tarfile
 import tempfile
 import shutil
-import pydicom
 import json
+import pydicom
 
 from loguru import logger
 
@@ -104,7 +104,9 @@ def pinnacle_export_service(data_objects, working_dir, settings):
                 pinn.export_image(image, export_path=output_dir)
 
         # Find the output files
-        output_objects = [os.path.join(output_dir, f) for f in os.listdir(output_dir)]
+        output_files = os.listdir(output_dir)
+        output_files.sort()
+        output_objects = [os.path.join(output_dir, f) for f in output_files]
 
         # Create the output data objects
         for obj in output_objects:
