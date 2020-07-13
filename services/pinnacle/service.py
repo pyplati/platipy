@@ -10,7 +10,7 @@ import pydicom
 
 from loguru import logger
 
-from pymedphys.labs.pinnacle import PinnacleExport
+from pymedphys.experimental.pinnacle import PinnacleExport
 
 from impit.framework import app, DataObject, celery
 
