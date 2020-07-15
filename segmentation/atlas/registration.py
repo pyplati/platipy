@@ -554,6 +554,10 @@ def bspline_registration(
         transform (transform        : the transform, can be used directly with
                                       sitk.ResampleImageFilter
 
+    Notes:
+     - smooth_sigmas are relative to resolution staging
+        e.g. for image spacing of 1x1x1 mm^3, with smooth sigma=2 and resolution_staging=4, the scale of the Gaussian filter would be 2x4 = 8mm (i.e. 8x8x8 mm^3)
+
     """
 
     # Get the settings
