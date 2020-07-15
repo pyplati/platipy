@@ -6,6 +6,18 @@ import sys
 import numpy as np
 import SimpleITK as sitk
 
+def intial_registration_command_iteration(method):
+    """
+    Utility function to print information during initial (rigid, similarity, affine, translation) registration
+    """
+    print("{0:3} = {1:10.5f}".format(method.GetOptimizerIteration(), method.GetMetricValue()))
+
+def deformable_registration_command_iteration(method):
+    """
+    Utility function to print information during demons registration
+    """
+    print("{0:3} = {1:10.5f}".format(method.GetElapsedIterations(), method.GetMetric()))
+
 def alignment_registration(
     fixed_image,
     moving_image,
@@ -54,19 +66,19 @@ def initial_registration(
     moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
 
     if not options:
-        options = {"shrinkFactors": [8, 2, 1], "smoothSigmas": [4, 2, 0], "samplingRate": 0.1}
+        options = {"shrinkFactors": [8, 2, 1], "smoothSigmas": [4, 2, 0], "samplingRate": 0.1, "numberOfIterations":50}
+
 
     # Get the options
     shrink_factors = options["shrinkFactors"]
     smooth_sigmas = options["smoothSigmas"]
     sampling_rate = options["samplingRate"]
-    default_value = options["defaultValue"]
     final_interp = options["finalInterp"]
     metric = options["metric"]
+    number_of_iterations = options["numberOfIterations"]
 
     # Initialise using a VersorRigid3DTransform
     initial_transform = sitk.CenteredTransformInitializer(fixed_image, moving_image, sitk.Euler3DTransform(), False)
-
     # Set up image registration method
     registration = sitk.ImageRegistrationMethod()
 
@@ -111,7 +123,7 @@ def initial_registration(
     if optimiser == 'LBGGSB':
         registration.SetOptimizerAsLBFGSB(
             gradientConvergenceTolerance=1e-5,
-            numberOfIterations=512,
+            numberOfIterations=number_of_iterations,
             maximumNumberOfCorrections=50,
             maximumNumberOfFunctionEvaluations=1024,
             costFunctionConvergenceFactor=1e7,
@@ -128,11 +140,15 @@ def initial_registration(
     elif optimiser=='GradientDescentLineSearch':
         registration.SetOptimizerAsGradientDescentLineSearch(
             learningRate = 1.0,
-            numberOfIterations = 100
+            numberOfIterations = number_of_iterations
+        )
+
+    if trace:
+        registration.AddCommand(
+            sitk.sitkIterationEvent, lambda: initial_registration_command_iteration(registration)
         )
 
     output_transform = registration.Execute(fixed=fixed_image, moving=moving_image)
-
     # Combine initial and optimised transform
     combined_transform = sitk.Transform()
     combined_transform.AddTransform(initial_transform)
@@ -338,13 +354,6 @@ def multiscale_demons(
         return sitk.DisplacementFieldTransform(initial_displacement_field)
 
 
-def command_iteration(method):
-    """
-    Utility function to print information during demons registration
-    """
-    print("{0:3} = {1:10.5f}".format(method.GetElapsedIterations(), method.GetMetric()))
-
-
 def fast_symmetric_forces_demons_registration(
     fixed_image,
     moving_image,
@@ -408,7 +417,7 @@ def fast_symmetric_forces_demons_registration(
     # This allows monitoring of the progress
     if trace:
         registration_method.AddCommand(
-            sitk.sitkIterationEvent, lambda: command_iteration(registration_method)
+            sitk.sitkIterationEvent, lambda: deformable_registration_command_iteration(registration_method)
         )
 
     if not smoothing_sigmas:
@@ -630,7 +639,7 @@ def bspline_registration(
     initial_transform = sitk.BSplineTransformInitializer(fixed_image, transformDomainMeshSize = [int(i) for i in transform_domain_mesh_size])
 
     registration.SetInitialTransformAsBSpline(initial_transform, inPlace=True, scaleFactors = grid_spacing_factors)
-    registration.AddCommand( sitk.sitkIterationEvent, lambda: command_iteration(registration) )
+    registration.AddCommand( sitk.sitkIterationEvent, lambda: deformable_registration_command_iteration(registration) )
     registration.AddCommand( sitk.sitkMultiResolutionIterationEvent, lambda: stage_iteration(registration) )
 
     # Run the registration

@@ -6,7 +6,46 @@ from functools import reduce
 
 import SimpleITK as sitk
 import numpy as np
+import itk
 
+def sitk_to_itk(sitk_image):
+    sitk_arr = sitk.GetArrayFromImage(sitk_image)
+
+    itk_image = itk.GetImageFromArray(sitk_arr, is_vector = False)
+    itk_image.SetOrigin(sitk_image.GetOrigin())
+    itk_image.SetSpacing(sitk_image.GetSpacing())
+    itk_image.SetDirection(itk.GetMatrixFromArray(np.reshape(np.array(sitk_image.GetDirection()), [3]*2)))
+
+    return itk_image
+
+def itk_to_sitk(itk_image):
+
+    sitk_image = sitk.GetImageFromArray(itk.GetArrayFromImage(itk_image), isVector=False)
+    sitk_image.SetOrigin(tuple(itk_image.GetOrigin()))
+    sitk_image.SetSpacing(tuple(itk_image.GetSpacing()))
+    sitk_image.SetDirection(itk.GetArrayFromMatrix(itk_image.GetDirection()).flatten())
+
+    return sitk_image
+
+def morphological_interpolate(sitk_image):
+
+    itk_image = sitk_to_itk(sitk_image)
+
+    output_type = itk.Image[itk.UC, 3]
+
+    f_cast = itk.CastImageFilter[itk_image, output_type].New()
+    f_cast.SetInput(itk_image)
+    img_cast = f_cast.GetOutput()
+
+    f_interpolator = itk.MorphologicalContourInterpolator.New()
+    f_interpolator.SetInput(img_cast)
+    f_interpolator.Update()
+
+    img_interpolated = f_interpolator.GetOutput()
+
+    sitk_img_interpolated = itk_to_sitk(img_interpolated)
+
+    return sitk_img_interpolated
 
 def compute_weight_map(
     target_image,
