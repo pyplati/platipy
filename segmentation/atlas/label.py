@@ -9,6 +9,9 @@ import numpy as np
 import itk
 
 def sitk_to_itk(sitk_image):
+    """
+    Helper function to convert SimpleITK images to ITK images
+    """
     sitk_arr = sitk.GetArrayFromImage(sitk_image)
 
     itk_image = itk.GetImageFromArray(sitk_arr, is_vector = False)
@@ -19,7 +22,9 @@ def sitk_to_itk(sitk_image):
     return itk_image
 
 def itk_to_sitk(itk_image):
-
+    """
+    Helper function to convert ITK images to SimpleITK images
+    """
     sitk_image = sitk.GetImageFromArray(itk.GetArrayFromImage(itk_image), isVector=False)
     sitk_image.SetOrigin(tuple(itk_image.GetOrigin()))
     sitk_image.SetSpacing(tuple(itk_image.GetSpacing()))
@@ -28,6 +33,12 @@ def itk_to_sitk(itk_image):
     return sitk_image
 
 def morphological_interpolate(sitk_image):
+    """
+    Performs morphological interpolation
+    See: https://github.com/KitwareMedical/ITKMorphologicalContourInterpolation
+
+    Useful for filling in gaps in contouring between slices
+    """
 
     itk_image = sitk_to_itk(sitk_image)
 
