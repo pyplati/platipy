@@ -18,6 +18,24 @@ def deformable_registration_command_iteration(method):
     """
     print("{0:3} = {1:10.5f}".format(method.GetElapsedIterations(), method.GetMetric()))
 
+def stage_iteration(method) :
+    """
+    Utility function to print information during stage change in registration
+    """
+    print(f"Number of parameters = {method.GetInitialTransform().GetNumberOfParameters()}")
+
+def control_point_spacing_distance_to_number(
+    image,
+    grid_spacing
+):
+    """
+    Convert grid spacing specified in distance to number of control points
+    """
+    image_spacing = np.array(image.GetSpacing())
+    image_size    = np.array(image.GetSize())
+    number_points = image_size * image_spacing / np.array(grid_spacing)
+    return (number_points+0.5).astype(int)
+
 def alignment_registration(
     fixed_image,
     moving_image,
@@ -67,7 +85,6 @@ def initial_registration(
 
     if not options:
         options = {"shrinkFactors": [8, 2, 1], "smoothSigmas": [4, 2, 0], "samplingRate": 0.1, "numberOfIterations":50}
-
 
     # Get the options
     shrink_factors = options["shrinkFactors"]
@@ -210,6 +227,7 @@ def smooth_and_resample(image, shrink_factor, smoothing_sigma, isotropic_resampl
         image: The image we want to resample.
         shrink_factor: A number greater than one, such that the new image's size is
                        original_size/shrink_factor.
+                       If isotropic_resample is True, this will instead define the voxel size (mm)
         smoothing_sigma: Sigma for Gaussian smoothing, this is in physical (image spacing) units,
                          not pixels.
         isotropic_resample: A flag that changes the behaviour to resample the image to isotropic voxels of size (shrink_factor)
@@ -217,7 +235,7 @@ def smooth_and_resample(image, shrink_factor, smoothing_sigma, isotropic_resampl
         Image which is a result of smoothing the input and then resampling it using the given sigma
         and shrink factor.
     """
-    if type(smoothing_sigma) == list:
+    if type(smoothing_sigma) == list or type(smoothing_sigma) == tuple:
         if any([i>0 for i in smoothing_sigma]):
             # smoothed_image = sitk.SmoothingRecursiveGaussian(image, smoothing_sigma)
             smoothed_image = sitk.DiscreteGaussian(image, smoothing_sigma)
@@ -507,13 +525,17 @@ def bspline_registration(
         "optimiser" :  'LBFGS',
         "metric" : 'correlation',
         "initial_grid_spacing" :  64,
-        "grid_spacing_factors" :  [1, 2, 4],
+        "grid_scale_factors" :  [1, 2, 4],
         "interp_order" :  3,
         "default_value" :  -1024,
         "number_of_iterations" : 20
     },
+    isotropic_resample = False,
+    initial_isotropic_size = 1,
+    initial_isotropic_smooth_scale = 0,
     trace = False,
     ncores  = 8,
+    default_value = -1024,
     debug = False
 ):
     """
@@ -541,14 +563,31 @@ def bspline_registration(
     optimiser = options["optimiser"]
     metric = options["metric"]
     initial_grid_spacing = options["initial_grid_spacing"]
-    grid_spacing_factors = options["grid_spacing_factors"]
+    grid_scale_factors = options["grid_scale_factors"]
     number_of_iterations = options["number_of_iterations"]
     interp_order = options["interp_order"]
     default_value = options["default_value"]
 
-    # Re-cast
+    # Re-cast input images
     fixed_image = sitk.Cast(fixed_image, sitk.sitkFloat32)
+
+    moving_image_type = moving_image.GetPixelID()
     moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
+
+    # (Optional) isotropic resample
+    # This changes the behaviour, so care should be taken
+    # For highly anisotropic images may be preferable
+
+    if isotropic_resample:
+        # First, copy the fixed image so we can resample back into this space at the end
+        fixed_image_original = fixed_image
+        fixed_image_original.MakeUnique()
+
+        fixed_image = smooth_and_resample(fixed_image, initial_isotropic_size, initial_isotropic_smooth_scale, isotropic_resample=True)
+        moving_image = smooth_and_resample(moving_image, initial_isotropic_size, initial_isotropic_smooth_scale, isotropic_resample=True)
+
+    else:
+        fixed_image_original = fixed_image
 
     # Set up image registration method
     registration = sitk.ImageRegistrationMethod()
@@ -596,7 +635,7 @@ def bspline_registration(
         registration.SetOptimizerScalesFromPhysicalShift()
     elif optimiser=='GradientDescentLineSearch':
         registration.SetOptimizerAsGradientDescentLineSearch(
-            learningRate = 5.0,
+            learningRate = 1.0,
             numberOfIterations = number_of_iterations
         )
         registration.SetOptimizerScalesFromPhysicalShift()
@@ -633,26 +672,26 @@ def bspline_registration(
         registration.SetMetricFixedMask(fixed_structure)
 
     # Set control point spacing
-    transform_domain_mesh_size = control_point_spacing_to_number(fixed_image, initial_grid_spacing)
+    transform_domain_mesh_size = control_point_spacing_distance_to_number(fixed_image, initial_grid_spacing)
+
     if debug:
         print(f"Initial grid size: {transform_domain_mesh_size}")
-    initial_transform = sitk.BSplineTransformInitializer(fixed_image, transformDomainMeshSize = [int(i) for i in transform_domain_mesh_size])
 
-    registration.SetInitialTransformAsBSpline(initial_transform, inPlace=True, scaleFactors = grid_spacing_factors)
-    registration.AddCommand( sitk.sitkIterationEvent, lambda: deformable_registration_command_iteration(registration) )
-    registration.AddCommand( sitk.sitkMultiResolutionIterationEvent, lambda: stage_iteration(registration) )
+    # Initialise transform
+    initial_transform = sitk.BSplineTransformInitializer(fixed_image, transformDomainMeshSize = [int(i) for i in transform_domain_mesh_size])
+    registration.SetInitialTransformAsBSpline(initial_transform, inPlace=True, scaleFactors = grid_scale_factors)
+
+    # (Optionally) add iteration commands
+    if trace:
+        registration.AddCommand( sitk.sitkIterationEvent, lambda: intial_registration_command_iteration(registration) )
+        registration.AddCommand( sitk.sitkMultiResolutionIterationEvent, lambda: stage_iteration(registration) )
 
     # Run the registration
     output_transform = registration.Execute(fixed=fixed_image, moving=moving_image)
 
     # Resample moving image
-    resampler = sitk.ResampleImageFilter()
-    resampler.SetReferenceImage(fixed_image)
-    resampler.SetTransform(output_transform)
-    resampler.SetInterpolator(sitk.sitkBSpline)
-    # Default value
-    resampler.SetDefaultPixelValue(default_value)
+    registered_image = transform_propagation(fixed_image, moving_image, output_transform, default_value=default_value, interp=interp_order)
+    registered_image = sitk.Cast(registered_image, moving_image_type)
 
-    registered_image = resampler.Execute(moving_image)
-
+    # Return outputs
     return registered_image, output_transform, registration
