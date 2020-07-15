@@ -690,7 +690,7 @@ def bspline_registration(
     output_transform = registration.Execute(fixed=fixed_image, moving=moving_image)
 
     # Resample moving image
-    registered_image = transform_propagation(fixed_image, moving_image, output_transform, default_value=default_value, interp=interp_order)
+    registered_image = transform_propagation(fixed_image_original, moving_image, output_transform, default_value=default_value, interp=interp_order)
     registered_image = sitk.Cast(registered_image, moving_image_type)
 
     # Return outputs
