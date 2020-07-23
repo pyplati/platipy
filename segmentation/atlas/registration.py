@@ -6,7 +6,7 @@ import sys
 import numpy as np
 import SimpleITK as sitk
 
-def intial_registration_command_iteration(method):
+def initial_registration_command_iteration(method):
     """
     Utility function to print information during initial (rigid, similarity, affine, translation) registration
     """
@@ -628,7 +628,7 @@ def bspline_registration(
             learningRate = 0.05,
             numberOfIterations = number_of_iterations
         )
-        registration_method.SetOptimizerScalesFromPhysicalShift()
+        registration.SetOptimizerScalesFromPhysicalShift()
     elif optimiser=='GradientDescent':
         registration.SetOptimizerAsGradientDescent(
             learningRate = 5.0,
@@ -687,7 +687,7 @@ def bspline_registration(
 
     # (Optionally) add iteration commands
     if trace:
-        registration.AddCommand( sitk.sitkIterationEvent, lambda: intial_registration_command_iteration(registration) )
+        registration.AddCommand( sitk.sitkIterationEvent, lambda: initial_registration_command_iteration(registration) )
         registration.AddCommand( sitk.sitkMultiResolutionIterationEvent, lambda: stage_iteration(registration) )
 
     # Run the registration
