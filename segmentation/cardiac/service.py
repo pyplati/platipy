@@ -8,6 +8,7 @@ import os
 import SimpleITK as sitk
 from loguru import logger
 # import pydicom
+import numpy as np
 
 # Need include celery here to be able to from Docker container
 #pylint: disable=unused-import
@@ -159,240 +160,241 @@ def cardiac_service(data_objects, working_dir, settings):
                     )
                 )
 
-    """
-    Step 1 - Automatic cropping using a translation transform
-    - Registration of atlas images (maximum 5)
-    - Potential expansion of the bounding box to ensure entire volume of interest is enclosed
-    - Target image is cropped
-    """
-    # Settings
-    quick_reg_settings = {"shrinkFactors": [8, 2],
-                          "smoothSigmas": [8, 2],
-                          "samplingRate": 0.2
-                         }
-
-    registered_crop_images = []
-
-    for atlas_id in atlas_id_list[:max([5, len(atlas_id_list)])]:
-        # Register the atlases
-        atlas_set[atlas_id]["RIR"] = {}
-        atlas_image = atlas_set[atlas_id]["Original"]["CT Image"]
-
-        reg_image, crop_tfm = initial_registration(
-            img,
-            atlas_image,
-            moving_structure=False,
-            fixed_structure=False,
-            options=quick_reg_settings,
-            trace=False,
-            reg_method="Rigid",
-        )
-
-        registered_crop_images.append(reg_image)
-
-    combined_image_extent = (sum(registered_crop_images) > 0)
-
-    shape_filter = sitk.LabelShapeStatisticsImageFilter()
-    shape_filter.Execute(combined_image_extent)
-    bounding_box = np.array(shape_filter.GetBoundingBox(1))
-
-    expansion = settings["autoCropSettings"]["expansion"]
-    expansion_array = expansion*np.array(img.GetSpacing())
-
-    # Avoid starting outside the image
-    crop_box_index = np.max([bounding_box[:3]-expansion_array, np.array([0,0,0])], axis=0)
-
-    # Avoid ending outside the image
-    crop_box_size = np.min([np.array(image.GetSize())-crop_box_index,  bounding_box[3:]+2*expansion_array], axis=0)
-
-    crop_box_size = [int(i) for i in crop_box_size]
-    crop_box_index = [int(i) for i in crop_box_index]
-
-    img_crop = sitk.RegionOfInterest(img, size=crop_box_size, index=crop_box_index)
-
-    """
-    Step 2 - Rigid registration of target images
-    - Individual atlas images are registered to the target
-    - The transformation is used to propagate the labels onto the target
-    """
-    initial_reg = settings["rigidSettings"]["initialReg"]
-    rigid_options = settings["rigidSettings"]["options"]
-    trace = settings["rigidSettings"]["trace"]
-    guide_structure = settings["rigidSettings"]["guideStructure"]
-
-    for atlas_id in atlas_id_list:
-        # Register the atlases
-        atlas_set[atlas_id]["RIR"] = {}
-        atlas_image = atlas_set[atlas_id]["Original"]["CT Image"]
-
-        if guide_structure:
-            atlas_struct = atlas_set[atlas_id]["Original"][guide_structure]
-        else:
-            atlas_struct = False
-
-        rigid_image, initial_tfm = initial_registration(
-            img_crop,
-            atlas_image,
-            moving_structure=atlas_struct,
-            options=rigid_options,
-            trace=trace,
-            reg_method=initial_reg,
-        )
-
-        # Save in the atlas dict
-        atlas_set[atlas_id]["RIR"]["CT Image"] = rigid_image
-        atlas_set[atlas_id]["RIR"]["Transform"] = initial_tfm
-
-        # sitk.WriteImage(rigidImage, f'./RR_{atlas_id}.nii.gz')
-
-        for struct in atlas_structures:
-            input_struct = atlas_set[atlas_id]["Original"][struct]
-            atlas_set[atlas_id]["RIR"][struct] = transform_propagation(
-                img_crop, input_struct, initial_tfm, structure=True, interp=sitk.sitkLinear
-            )
-
         """
-        Step 3 - Deformable image registration
-        - Using Fast Symmetric Diffeomorphic Demons
+        Step 1 - Automatic cropping using a translation transform
+        - Registration of atlas images (maximum 5)
+        - Potential expansion of the bounding box to ensure entire volume of interest is enclosed
+        - Target image is cropped
         """
         # Settings
-        resolution_staging = settings["deformableSettings"]["resolutionStaging"]
-        iteration_staging = settings["deformableSettings"]["iterationStaging"]
-        ncores = settings["deformableSettings"]["ncores"]
-        trace = settings["deformableSettings"]["trace"]
+        quick_reg_settings = {"shrinkFactors": [8, 2],
+                            "smoothSigmas": [8, 2],
+                            "samplingRate": 0.2
+                            }
+
+        registered_crop_images = []
+
+        for atlas_id in atlas_id_list[:max([5, len(atlas_id_list)])]:
+            # Register the atlases
+            atlas_set[atlas_id]["RIR"] = {}
+            atlas_image = atlas_set[atlas_id]["Original"]["CT Image"]
+
+            reg_image, crop_tfm = initial_registration(
+                img,
+                atlas_image,
+                moving_structure=False,
+                fixed_structure=False,
+                options=quick_reg_settings,
+                trace=False,
+                reg_method="Rigid",
+            )
+
+            registered_crop_images.append(reg_image)
+
+        combined_image_extent = (sum(registered_crop_images) > 0)
+
+        shape_filter = sitk.LabelShapeStatisticsImageFilter()
+        shape_filter.Execute(combined_image_extent)
+        bounding_box = np.array(shape_filter.GetBoundingBox(1))
+
+        expansion = settings["autoCropSettings"]["expansion"]
+        expansion_array = expansion*np.array(img.GetSpacing())
+
+        # Avoid starting outside the image
+        crop_box_index = np.max([bounding_box[:3]-expansion_array, np.array([0,0,0])], axis=0)
+
+        # Avoid ending outside the image
+        crop_box_size = np.min([np.array(img.GetSize())-crop_box_index,  bounding_box[3:]+2*expansion_array], axis=0)
+
+        crop_box_size = [int(i) for i in crop_box_size]
+        crop_box_index = [int(i) for i in crop_box_index]
+
+        img_crop = sitk.RegionOfInterest(img, size=crop_box_size, index=crop_box_index)
+
+        """
+        Step 2 - Rigid registration of target images
+        - Individual atlas images are registered to the target
+        - The transformation is used to propagate the labels onto the target
+        """
+        initial_reg = settings["rigidSettings"]["initialReg"]
+        rigid_options = settings["rigidSettings"]["options"]
+        trace = settings["rigidSettings"]["trace"]
+        guide_structure = settings["rigidSettings"]["guideStructure"]
 
         for atlas_id in atlas_id_list:
             # Register the atlases
-            atlas_set[atlas_id]["DIR"] = {}
-            atlas_image = atlas_set[atlas_id]["RIR"]["CT Image"]
-            deform_image, deform_field = fast_symmetric_forces_demons_registration(
+            atlas_set[atlas_id]["RIR"] = {}
+            atlas_image = atlas_set[atlas_id]["Original"]["CT Image"]
+
+            if guide_structure:
+                atlas_struct = atlas_set[atlas_id]["Original"][guide_structure]
+            else:
+                atlas_struct = False
+
+            rigid_image, initial_tfm = initial_registration(
                 img_crop,
                 atlas_image,
-                resolution_staging=resolution_staging,
-                iteration_staging=iteration_staging,
-                ncores=ncores,
+                moving_structure=atlas_struct,
+                options=rigid_options,
                 trace=trace,
+                reg_method=initial_reg,
             )
 
             # Save in the atlas dict
-            atlas_set[atlas_id]["DIR"]["CT Image"] = deform_image
-            atlas_set[atlas_id]["DIR"]["Transform"] = deform_field
+            atlas_set[atlas_id]["RIR"]["CT Image"] = rigid_image
+            atlas_set[atlas_id]["RIR"]["Transform"] = initial_tfm
 
-            # sitk.WriteImage(deformImage, f'./DIR_{atlas_id}.nii.gz')
+            # sitk.WriteImage(rigidImage, f'./RR_{atlas_id}.nii.gz')
 
             for struct in atlas_structures:
-                input_struct = atlas_set[atlas_id]["RIR"][struct]
-                atlas_set[atlas_id]["DIR"][struct] = apply_field(
-                    input_struct, deform_field, structure=True, interp=sitk.sitkLinear
+                input_struct = atlas_set[atlas_id]["Original"][struct]
+                atlas_set[atlas_id]["RIR"][struct] = transform_propagation(
+                    img_crop, input_struct, initial_tfm, structure=True, interp=sitk.sitkLinear
                 )
 
-        """
-        Step 4 - Iterative atlas removal
-        - This is an automatic process that will attempt to remove inconsistent atlases from the entire set
+            """
+            Step 3 - Deformable image registration
+            - Using Fast Symmetric Diffeomorphic Demons
+            """
+            # Settings
+            resolution_staging = settings["deformableSettings"]["resolutionStaging"]
+            iteration_staging = settings["deformableSettings"]["iterationStaging"]
+            ncores = settings["deformableSettings"]["ncores"]
+            trace = settings["deformableSettings"]["trace"]
 
-        """
-        # Compute weight maps
-        # Here we use simple GWV as this minises the potentially negative influence of mis-registered atlases
-        for atlas_id in atlas_id_list:
-            atlas_image = atlas_set[atlas_id]["DIR"]["CT Image"]
-            weight_map = compute_weight_map(img_crop, atlas_image, vote_type='global')
-            atlas_set[atlas_id]["DIR"]["Weight Map"] = weight_map
+            for atlas_id in atlas_id_list:
+                # Register the atlases
+                atlas_set[atlas_id]["DIR"] = {}
+                atlas_image = atlas_set[atlas_id]["RIR"]["CT Image"]
+                deform_image, deform_field = fast_symmetric_forces_demons_registration(
+                    img_crop,
+                    atlas_image,
+                    resolution_staging=resolution_staging,
+                    iteration_staging=iteration_staging,
+                    ncores=ncores,
+                    trace=trace,
+                )
 
-        reference_structure = settings["IARSettings"]["referenceStructure"]
-        smooth_distance_maps = settings["IARSettings"]["smoothDistanceMaps"]
-        smooth_sigma = settings["IARSettings"]["smoothSigma"]
-        z_score_statistic = settings["IARSettings"]["zScoreStatistic"]
-        outlier_method = settings["IARSettings"]["outlierMethod"]
-        outlier_factor = settings["IARSettings"]["outlierFactor"]
-        min_best_atlases = settings["IARSettings"]["minBestAtlases"]
-        project_on_sphere = settings["IARSettings"]["project_on_sphere"]
+                # Save in the atlas dict
+                atlas_set[atlas_id]["DIR"]["CT Image"] = deform_image
+                atlas_set[atlas_id]["DIR"]["Transform"] = deform_field
 
-        atlas_set = run_iar(
-            atlas_set=atlas_set,
-            structure_name=reference_structure,
-            smooth_maps=smooth_distance_maps,
-            smooth_sigma=smooth_sigma,
-            z_score=z_score_statistic,
-            outlier_method=outlier_method,
-            min_best_atlases=min_best_atlases,
-            n_factor=outlier_factor,
-            iteration=0,
-            single_step=False,
-            project_on_sphere=project_on_sphere
-        )
+                # sitk.WriteImage(deformImage, f'./DIR_{atlas_id}.nii.gz')
 
-        """
-        Step 4 - Vessel Splining
+                for struct in atlas_structures:
+                    input_struct = atlas_set[atlas_id]["RIR"][struct]
+                    atlas_set[atlas_id]["DIR"][struct] = apply_field(
+                        input_struct, deform_field, structure=True, interp=sitk.sitkLinear
+                    )
 
-        """
+            """
+            Step 4 - Iterative atlas removal
+            - This is an automatic process that will attempt to remove inconsistent atlases from the entire set
 
-        vessel_name_list = settings["vesselSpliningSettings"]["vesselNameList"]
-        vessel_radius_mm = settings["vesselSpliningSettings"]["vesselRadius_mm"]
-        splining_direction = settings["vesselSpliningSettings"]["spliningDirection"]
-        stop_condition = settings["vesselSpliningSettings"]["stopCondition"]
-        stop_condition_value = settings["vesselSpliningSettings"]["stopConditionValue"]
+            """
+            # Compute weight maps
+            # Here we use simple GWV as this minises the potentially negative influence of mis-registered atlases
+            for atlas_id in atlas_id_list:
+                atlas_image = atlas_set[atlas_id]["DIR"]["CT Image"]
+                weight_map = compute_weight_map(img_crop, atlas_image, vote_type='global')
+                atlas_set[atlas_id]["DIR"]["Weight Map"] = weight_map
 
-        segmented_vessel_dict = vesselSplineGeneration(
-            atlas_set,
-            vessel_name_list,
-            vesselRadiusDict=vessel_radius_mm,
-            stopConditionTypeDict=stop_condition,
-            stopConditionValueDict=stop_condition_value,
-            scanDirectionDict=splining_direction,
-        )
+            reference_structure = settings["IARSettings"]["referenceStructure"]
+            smooth_distance_maps = settings["IARSettings"]["smoothDistanceMaps"]
+            smooth_sigma = settings["IARSettings"]["smoothSigma"]
+            z_score_statistic = settings["IARSettings"]["zScoreStatistic"]
+            outlier_method = settings["IARSettings"]["outlierMethod"]
+            outlier_factor = settings["IARSettings"]["outlierFactor"]
+            min_best_atlases = settings["IARSettings"]["minBestAtlases"]
+            project_on_sphere = settings["IARSettings"]["project_on_sphere"]
 
-        """
-        Step 5 - Label Fusion
-        """
-        # Compute weight maps
-        # Here we use local weighted fusion
-        for atlas_id in list(atlas_set.keys()):
-            atlas_image = atlas_set[atlas_id]["DIR"]["CT Image"]
-            weight_map = compute_weight_map(img_crop, atlas_image)
-            atlas_set[atlas_id]["DIR"]["Weight Map"] = weight_map
-
-        combined_label_dict = combine_labels(atlas_set, atlas_structures)
-
-        """
-        Step 6 - Paste the cropped structure into the original image space
-        """
-
-        output_format = settings["outputFormat"]
-
-        template_im = sitk.Cast((img * 0), sitk.sitkUInt8)
-
-        vote_structures = settings["labelFusionSettings"]["optimalThreshold"].keys()
-
-        for structure_name in vote_structures:
-            optimal_threshold = settings["labelFusionSettings"]["optimalThreshold"][structure_name]
-            binary_struct = process_probability_image(
-                combined_label_dict[structure_name], optimal_threshold
-            )
-            paste_img = sitk.Paste(
-                template_im, binary_struct, binary_struct.GetSize(), (0, 0, 0), (sag0, cor0, ax0)
+            atlas_set = run_iar(
+                atlas_set=atlas_set,
+                structure_name=reference_structure,
+                smooth_maps=smooth_distance_maps,
+                smooth_sigma=smooth_sigma,
+                z_score=z_score_statistic,
+                outlier_method=outlier_method,
+                min_best_atlases=min_best_atlases,
+                n_factor=outlier_factor,
+                iteration=0,
+                single_step=False,
+                project_on_sphere=project_on_sphere
             )
 
-            # Write the mask to a file in the working_dir
-            mask_file = os.path.join(working_dir, output_format.format(structure_name))
-            sitk.WriteImage(paste_img, mask_file)
+            """
+            Step 4 - Vessel Splining
 
-            # Create the output Data Object and add it to the list of output_objects
-            output_data_object = DataObject(type="FILE", path=mask_file, parent=data_object)
-            output_objects.append(output_data_object)
+            """
 
-        for structure_name in vessel_name_list:
-            binary_struct = segmented_vessel_dict[structure_name]
-            paste_img = sitk.Paste(
-                template_im, binary_struct, binary_struct.GetSize(), (0, 0, 0), (sag0, cor0, ax0)
+            vessel_name_list = settings["vesselSpliningSettings"]["vesselNameList"]
+            vessel_radius_mm = settings["vesselSpliningSettings"]["vesselRadius_mm"]
+            splining_direction = settings["vesselSpliningSettings"]["spliningDirection"]
+            stop_condition = settings["vesselSpliningSettings"]["stopCondition"]
+            stop_condition_value = settings["vesselSpliningSettings"]["stopConditionValue"]
+
+            segmented_vessel_dict = vesselSplineGeneration(
+                img_crop,
+                atlas_set,
+                vessel_name_list,
+                vessel_radius_mm,
+                stop_condition,
+                stop_condition_value,
+                splining_direction,
             )
 
-            # Write the mask to a file in the working_dir
-            mask_file = os.path.join(working_dir, output_format.format(structure_name))
-            sitk.WriteImage(paste_img, mask_file)
+            """
+            Step 5 - Label Fusion
+            """
+            # Compute weight maps
+            # Here we use local weighted fusion
+            for atlas_id in list(atlas_set.keys()):
+                atlas_image = atlas_set[atlas_id]["DIR"]["CT Image"]
+                weight_map = compute_weight_map(img_crop, atlas_image)
+                atlas_set[atlas_id]["DIR"]["Weight Map"] = weight_map
 
-            # Create the output Data Object and add it to the list of output_objects
-            output_data_object = DataObject(type="FILE", path=mask_file, parent=data_object)
-            output_objects.append(output_data_object)
+            combined_label_dict = combine_labels(atlas_set, atlas_structures)
+
+            """
+            Step 6 - Paste the cropped structure into the original image space
+            """
+
+            output_format = settings["outputFormat"]
+
+            template_im = sitk.Cast((img * 0), sitk.sitkUInt8)
+
+            vote_structures = settings["labelFusionSettings"]["optimalThreshold"].keys()
+
+            for structure_name in vote_structures:
+                optimal_threshold = settings["labelFusionSettings"]["optimalThreshold"][structure_name]
+                binary_struct = process_probability_image(
+                    combined_label_dict[structure_name], optimal_threshold
+                )
+                paste_img = sitk.Paste(
+                    template_im, binary_struct, binary_struct.GetSize(), (0, 0, 0), crop_box_index
+                )
+
+                # Write the mask to a file in the working_dir
+                mask_file = os.path.join(working_dir, output_format.format(structure_name))
+                sitk.WriteImage(paste_img, mask_file)
+
+                # Create the output Data Object and add it to the list of output_objects
+                output_data_object = DataObject(type="FILE", path=mask_file, parent=data_object)
+                output_objects.append(output_data_object)
+
+            for structure_name in vessel_name_list:
+                binary_struct = segmented_vessel_dict[structure_name]
+                paste_img = sitk.Paste(
+                    template_im, binary_struct, binary_struct.GetSize(), (0, 0, 0), crop_box_index
+                )
+
+                # Write the mask to a file in the working_dir
+                mask_file = os.path.join(working_dir, output_format.format(structure_name))
+                sitk.WriteImage(paste_img, mask_file)
+
+                # Create the output Data Object and add it to the list of output_objects
+                output_data_object = DataObject(type="FILE", path=mask_file, parent=data_object)
+                output_objects.append(output_data_object)
 
         # If the input was a DICOM, then we can use it to generate an output RTStruct
         # if data_object.type == 'DICOM':

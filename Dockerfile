@@ -2,13 +2,18 @@ FROM ubuntu:18.04
 
 RUN apt-get update; apt-get install -y python3.6-dev python3-pip redis-server libgl1-mesa-glx libsm6 libxext6 libxrender-dev git
 
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+RUN update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+RUN python -m pip install --upgrade pip
+
 WORKDIR /home/service
 
 COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip install -r requirements.txt
 
 COPY requirements-dev.txt requirements-dev.txt
-RUN pip3 install -r requirements-dev.txt
+RUN pip install -r requirements-dev.txt
 
 COPY . impit
 

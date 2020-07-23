@@ -118,7 +118,6 @@ def AutoLungSegment(image, l=0.05, u=0.4, NPthresh=1e5):
 
     return maskBox, maskBinary
 
-
 def CropImage(image, cropBox):
     """
     Crops an image using a bounding box
@@ -320,7 +319,6 @@ def tubeFromCOMList(COMList, radius, debug=False):
     tuber.Update()
 
     return tuber
-
 
 def writeVTKTubeToFile(tube, filename):
     """

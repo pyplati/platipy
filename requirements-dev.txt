@@ -1,4 +1,6 @@
 pylint
 pylint_flask_sqlalchemy
 black
-jupyter
+jupyterlab
+watchdog
+argh
