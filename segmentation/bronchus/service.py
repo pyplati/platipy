@@ -12,19 +12,7 @@ from impit.framework import app, DataObject, celery # pylint: disable=unused-imp
 
 # from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
 
-from impit.segmentation.bronchus.bronchus import (
-    generate_lung_mask,
-    generate_airway_mask,
-    default_settings
-)
-
-
-BRONCHUS_SETTINGS_DEFAULTS = {
-    "outputBronchusName": "Auto_Bronchus",
-    "outputLungName": "Auto_Lung",
-    "algorithmSettings": default_settings
-}
-
+from impit.segmentation.bronchus.run import run_bronchus_segmentation, BRONCHUS_SETTINGS_DEFAULTS
 
 @app.register("Bronchus Segmentation", default_settings=BRONCHUS_SETTINGS_DEFAULTS)
 def bronchus_service(data_objects, working_dir, settings):
@@ -45,41 +33,20 @@ def bronchus_service(data_objects, working_dir, settings):
                 data_object.path
             )
 
-        img = sitk.ReadImage(load_path)
+        results = run_bronchus_segmentation(load_path, settings)
 
-        # Compute the lung mask
-        lung_mask = generate_lung_mask(img)
+        # Save resulting masks and add to output for service
+        for output in results.keys():
 
-        lung_mask_file = os.path.join(
-            working_dir, "{0}.nii.gz".format(settings["outputLungName"])
-        )
-        sitk.WriteImage(lung_mask, lung_mask_file)
-
-        output_data_object = DataObject(
-            type="FILE", path=lung_mask_file, parent=data_object
-        )
-        output_objects.append(output_data_object)
-
-        bronchus_mask = generate_airway_mask(working_dir,
-                                             img,
-                                             lung_mask,
-                                             config_dict=settings["algorithmSettings"])
-
-        # If the bronchus mask counldn't be generated then skip it
-        if not bronchus_mask:
-            continue
-
-        # Write the mask to a file in the working_dir
-        bronchus_mask_file = os.path.join(
-            working_dir, "{0}.nii.gz".format(settings["outputBronchusName"])
-        )
-        sitk.WriteImage(bronchus_mask, bronchus_mask_file)
-
-        # Create the output Data Object and add it to the list of output_objects
-        output_data_object = DataObject(
-            type="FILE", path=bronchus_mask_file, parent=data_object
-        )
-        output_objects.append(output_data_object)
+            mask_file = os.path.join(
+                working_dir, "{0}.nii.gz".format(output)
+            )
+            sitk.WriteImage(results[output], mask_file)
+            
+            output_data_object = DataObject(
+                type="FILE", path=mask_file, parent=data_object
+            )
+            output_objects.append(output_data_object)
 
         # If the input was a DICOM, then we can use it to generate an output RTStruct
         # if d.type == 'DICOM':
