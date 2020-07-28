@@ -267,9 +267,10 @@ class DicomConnector:
                            'permission')
             # Failed - Out of Resources - IOError
             status_ds.Status = 0xA700
-        except:
+        except Exception as e:
             logger.warning('Could not write file to specified directory:')
             logger.warning("    {0!s}".format(os.path.dirname(filename)))
+            logger.warning(e)
             # Failed - Out of Resources - Miscellaneous error
             status_ds.Status = 0xA701
 

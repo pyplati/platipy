@@ -4,7 +4,11 @@
 Created on Tues Aug 13
 
 """
-import os, re, sys, datetime, warnings
+import os
+import re
+import sys
+import datetime
+import warnings
 
 from functools import reduce
 
@@ -19,9 +23,15 @@ from scipy.ndimage import measurements
 from scipy.interpolate import griddata
 from scipy.interpolate import RectSphereBivariateSpline
 
+from impit.segmentation.atlas.label import combine_labels
+
+from impit.segmentation.atlas.util import (
+    vectorised_transform_index_to_physical_point,
+    vectorised_transform_physical_point_to_index,
+)
+
 from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
 
-debug=True
 
 def ThresholdAndMeasureLungVolume(image, l=0, u=1):
     """
@@ -44,7 +54,7 @@ def ThresholdAndMeasureLungVolume(image, l=0, u=1):
     imThresh = sitk.Threshold(image, lower=l, upper=u)
 
     # Create a connected component image
-    mask = sitk.ConnectedComponent(sitk.Cast(imThresh*1024, sitk.sitkInt32),True)
+    mask = sitk.ConnectedComponent(sitk.Cast(imThresh * 1024, sitk.sitkInt32), True)
 
     # Get the number of pixels that fall into each label map value
     cts = np.bincount(sitk.GetArrayFromImage(mask).flatten())
@@ -65,7 +75,7 @@ def ThresholdAndMeasureLungVolume(image, l=0, u=1):
     return NP, PBR, mask, maxVals
 
 
-def AutoLungSegment(image, l = 0.05, u = 0.4, NPthresh=1e5):
+def AutoLungSegment(image, l=0.05, u=0.4, NPthresh=1e5):
     """
     Segments the lungs, generating a bounding box
 
@@ -82,26 +92,26 @@ def AutoLungSegment(image, l = 0.05, u = 0.4, NPthresh=1e5):
     """
 
     # Normalise image intensity
-    imNorm = sitk.Normalize(sitk.Threshold(image, -1000,500, outsideValue=-1000))
+    imNorm = sitk.Normalize(sitk.Threshold(image, -1000, 500, outsideValue=-1000))
 
     # Calculate the label maps and metrics on non-connected regions
-    NP, PBR, mask, labels = ThresholdAndMeasureLungVolume(imNorm,l,u)
-    indices = np.array(np.where(np.logical_and(PBR<=5e-4, NP>NPthresh)))
+    NP, PBR, mask, labels = ThresholdAndMeasureLungVolume(imNorm, l, u)
+    indices = np.array(np.where(np.logical_and(PBR <= 5e-4, NP > NPthresh)))
 
-    if indices.size==0:
+    if indices.size == 0:
         print("     Warning - non-zero perimeter/border ratio")
         indices = np.argmin(PBR)
 
-    if indices.size==1:
+    if indices.size == 1:
         validLabels = labels[indices]
         maskBinary = sitk.Equal(mask, int(validLabels))
 
     else:
         validLabels = labels[indices[0]]
         maskBinary = sitk.Equal(mask, int(validLabels[0]))
-        for i in range(len(validLabels)-1):
-            maskBinary = sitk.Add(maskBinary, sitk.Equal(mask, int(validLabels[i+1])))
-    maskBinary = maskBinary>0
+        for i in range(len(validLabels) - 1):
+            maskBinary = sitk.Add(maskBinary, sitk.Equal(mask, int(validLabels[i + 1])))
+    maskBinary = maskBinary > 0
     label_shape_analysis = sitk.LabelShapeStatisticsImageFilter()
     label_shape_analysis.Execute(maskBinary)
     maskBox = label_shape_analysis.GetBoundingBox(True)
@@ -124,111 +134,13 @@ def CropImage(image, cropBox):
     imCrop = sitk.RegionOfInterest(image, size=cropBox[3:], index=cropBox[:3])
     return imCrop
 
-def vectorisedTransformIndexToPhysicalPoint(image, pointArr, correct=True):
-    """
-    Transforms a set of points from array indices to real-space
-    """
-    if correct:
-        spacing = image.GetSpacing()[::-1]
-        origin = image.GetOrigin()[::-1]
-    else:
-        spacing = image.GetSpacing()
-        origin = image.GetOrigin()
-    return pointArr*spacing + origin
-
-def vectorisedTransformPhysicalPointToIndex(image, pointArr, correct=True):
-    """
-    Transforms a set of points from real-space to array indices
-    """
-    if correct:
-        spacing = image.GetSpacing()[::-1]
-        origin = image.GetOrigin()[::-1]
-    else:
-        spacing = image.GetSpacing()
-        origin = image.GetOrigin()
-    return (pointArr-origin)/spacing
-
-
-def evaluateDistanceOnSurface(referenceVolume, testVolume, absDistance=True, referenceAsDistanceMap=False):
-    """
-    Evaluates a distance map on a surface
-    Input: referenceVolume: binary volume SimpleITK image, or alternatively a distance map
-           testVolume: binary volume SimpleITK image
-    Output: theta, phi, values
-    """
-    if referenceAsDistanceMap:
-        referenceDistanceMap = referenceVolume
-    else:
-        if absDistance:
-            referenceDistanceMap = sitk.Abs(sitk.SignedMaurerDistanceMap(referenceVolume, squaredDistance=False, useImageSpacing=True))
-
-        else:
-            referenceDistanceMap = sitk.SignedMaurerDistanceMap(referenceVolume, squaredDistance=False, useImageSpacing=True)
-
-    testSurface = sitk.LabelContour(testVolume)
-
-    distanceImage = sitk.Multiply(referenceDistanceMap, sitk.Cast(testSurface, sitk.sitkFloat32))
-    distanceArray = sitk.GetArrayFromImage(distanceImage)
-
-    # Calculate centre of mass in real coordinates
-    testSurfaceArray = sitk.GetArrayFromImage(testSurface)
-    testSurfaceLocations = np.where(testSurfaceArray==1)
-    testSurfaceLocationsArray = np.array(testSurfaceLocations)
-    COMIndex = testSurfaceLocationsArray.mean(axis=1)
-    COMReal = vectorisedTransformIndexToPhysicalPoint(testSurface, COMIndex)
-
-    # Calculate each point on the surface in real coordinates
-    pts = testSurfaceLocationsArray.T
-    ptsReal = vectorisedTransformIndexToPhysicalPoint(testSurface, pts)
-    ptsDiff = ptsReal - COMReal
-
-    # Convert to spherical polar coordinates - base at north pole
-    rho = np.sqrt((ptsDiff*ptsDiff).sum(axis=1))
-    theta = np.pi/2.-np.arccos(ptsDiff.T[0]/rho)
-    phi =  -1*np.arctan2(ptsDiff.T[2],-1.0*ptsDiff.T[1])
-
-    # Extract values
-    values = distanceArray[testSurfaceLocations]
-
-    return theta, phi, values
-
-
-def regridSphericalData(theta, phi, values, resolution):
-    """
-    Re-grids spherical data
-    Input: theta, phi, values
-    Options: plot a figure (plotFig), save a figure (saveFig), case identifier (figName)
-    Output: pLat, pLong, gridValues (, fig)
-    """
-    # Re-grid:
-    #  Set up grid
-    Dradian = resolution*np.pi/180
-    pLong, pLat = np.mgrid[-np.pi:np.pi:Dradian, -np.pi/2.:np.pi/2.0:Dradian]
-
-    # First pass - linear interpolation, works well but not for edges
-    gridValues = griddata(list(zip(theta, phi)), values, (pLat, pLong), method='linear', rescale=False)
-
-    # Second pass - nearest neighbour interpolation
-    gridValuesNN = griddata(list(zip(theta, phi)), values, (pLat, pLong), method='nearest', rescale=False)
-
-    # Third pass - wherever the linear interpolation isn't defined use nearest neighbour interpolation
-    gridValues[~np.isfinite(gridValues)] = gridValuesNN[~np.isfinite(gridValues)]
-
-    return pLat, pLong, gridValues
-
-
-def medianAbsoluteDeviation(data, axis=None):
-    """ Median Absolute Deviation: a "Robust" version of standard deviation.
-        Indices variabililty of the sample.
-        https://en.wikipedia.org/wiki/Median_absolute_deviation
-    """
-    return np.median(np.abs(data - np.median(data, axis=axis)), axis=axis)
 
 def norm(x, mean, sd):
-    norm = []
+    result = []
     for i in range(x.size):
-        norm += [1.0/(sd*np.sqrt(2*np.pi))*np.exp(-(x[i] - mean)**2/(2*sd**2))]
-    return np.array(norm)
+        result += [1.0 / (sd * np.sqrt(2 * np.pi)) * np.exp(-(x[i] - mean) ** 2 / (2 * sd ** 2))]
+    return np.array(result)
+
 
 def res(p, y, x):
     m, dm, sd1, sd2 = p
@@ -238,208 +150,8 @@ def res(p, y, x):
     err = y - y_fit
     return err
 
-def gaussianCurve(x, a, m, s):
-    return a*scipy_norm.pdf(x, loc=m, scale=s)
 
-def IAR(atlasSet, structureName, smoothMaps=False, smoothSigma=1, zScore='MAD', outlierMethod='IQR', minBestAtlases=10, N_factor=1.5, logFile='IAR_{0}.log'.format(datetime.datetime.now()), debug=False, iteration=0, singleStep=False):
-
-    if iteration == 0:
-        # Run some checks in the data?
-
-        # Begin the process
-        print('Iterative atlas removal: ')
-        print('  Beginning process')
-        logFile = open(logFile, 'w')
-        logFile.write('Iteration,Atlases,Qvalue,Threshold\n')
-
-    # Get remaining case identifiers to loop through
-    remainingIdList = list(atlasSet.keys())
-
-    #Modify resolution for better statistics
-    if len(remainingIdList)<12:
-        print('  Less than 12 atlases, resolution set: 3x3 sqr deg')
-        resolution = 3
-    elif len(remainingIdList)<7:
-        print('  Less than 7 atlases, resolution set: 6x6 sqr deg')
-        resolution = 6
-    else:
-        resolution = 1
-
-    # Generate the surface projections
-    #   1. Set the consensus surface using the reference volume
-    probabilityLabel = combineLabels(atlasSet, structureName)[structureName]
-    referenceVolume = processProbabilityImage(probabilityLabel, threshold=1)
-    referenceDistanceMap = sitk.Abs(sitk.SignedMaurerDistanceMap(referenceVolume, squaredDistance=False, useImageSpacing=True))
-
-    gValList = []
-    print('  Calculating surface distance maps: ')
-    #print('    ', end=' ')
-    for testId in remainingIdList:
-        print('    {0}'.format(testId), end=" ")
-        sys.stdout.flush()
-        #   2. Calculate the distance from the surface to the consensus surface
-
-        testVolume = atlasSet[testId]['DIR'][structureName]
-
-        # This next step ensures non-binary labels are treated properly
-        # We use 0.1 to capture the outer edge of the test delineation, if it is probabilistic
-        testVolume = processProbabilityImage(testVolume, 0.1)
-
-        # Now compute the distance across the surface
-        theta, phi, values = evaluateDistanceOnSurface(referenceDistanceMap, testVolume, referenceAsDistanceMap=True)
-        pLat, pLong, gVals = regridSphericalData(theta, phi, values, resolution=resolution)
-
-        gValList.append(gVals)
-    print()
-    QResults = {}
-
-    for i, (testId, gVals) in enumerate(zip(remainingIdList, gValList)):
-
-        gValListTest = gValList[:]
-        gValListTest.pop(i)
-
-        if smoothMaps:
-            gVals = filters.gaussian_filter(gVals, sigma=smoothSigma, mode='wrap')
-
-        #       b) i] Compute the Z-scores over the projected surface
-        if zScore.lower()=='std':
-            gValMean = np.mean(gValListTest, axis=0)
-            gValStd = np.std(gValListTest, axis=0)
-
-            if np.any(gValStd==0):
-                print('    Std Dev zero count: {0}'.format(np.sum(gValStd==0)))
-                gValStd[gValStd==0] = gValStd.mean()
-
-            zScoreValsArr =  ( gVals - gValMean ) / gValStd
-
-        elif zScore.lower()=='mad':
-            gValMedian = np.median(gValListTest, axis=0)
-            gValMAD    = 1.4826 * medianAbsoluteDeviation(gValListTest, axis=0)
-
-            if np.any(~np.isfinite(gValMAD)):
-                print('Error in MAD')
-                print(gValMAD)
-
-            if np.any(gValMAD==0):
-                print('    MAD zero count: {0}'.format(np.sum(gValMAD==0)))
-                gValMAD[gValMAD==0] = np.median(gValMAD)
-
-            zScoreValsArr =  ( gVals - gValMedian ) / gValMAD
-
-        else:
-            print(' Error!')
-            print(' zScore must be one of: MAD, STD')
-            sys.exit()
-
-        zScoreVals = np.ravel( zScoreValsArr )
-
-        if debug:
-            print('      [{0}] Statistics of mZ-scores'.format(testId))
-            print('        Min(Z)    = {0:.2f}'.format(zScoreVals.min()))
-            print('        Q1(Z)     = {0:.2f}'.format(np.percentile(zScoreVals, 25)))
-            print('        Mean(Z)   = {0:.2f}'.format(zScoreVals.mean()))
-            print('        Median(Z) = {0:.2f}'.format(np.percentile(zScoreVals, 50)))
-            print('        Q3(Z)     = {0:.2f}'.format(np.percentile(zScoreVals, 75)))
-            print('        Max(Z)    = {0:.2f}\n'.format(zScoreVals.max()))
-
-        # Calculate excess area from Gaussian: the Q-metric
-        bins = np.linspace(-15,15,501)
-        zDensity, bin_edges = np.histogram(zScoreVals, bins=bins, density=True)
-        bin_centers = (bin_edges[1:]+bin_edges[:-1])/2.0
-
-        popt, pcov = curve_fit(f=gaussianCurve, xdata=bin_centers, ydata=zDensity)
-        zIdeal = gaussianCurve(bin_centers, *popt)
-        zDiff = np.abs(zDensity - zIdeal)
-
-        # Integrate to get the Q_value
-        Q_value = np.trapz(zDiff*np.abs(bin_centers)**2, bin_centers)
-        QResults[testId] = np.float64(Q_value)
-
-    # Exclude (at most) the worst 3 atlases for outlier detection
-    # With a minimum number, this helps provide more robust estimates at low numbers
-    RL = list(QResults.values())
-    bestResults = np.sort(RL)[:max([minBestAtlases, len(RL)-3])]
-
-    if outlierMethod.lower()=='iqr':
-        outlierLimit = np.percentile(bestResults, 75, axis=0) + N_factor*np.subtract(*np.percentile(bestResults, [75, 25], axis=0))
-    elif outlierMethod.lower()=='std':
-        outlierLimit = np.mean(bestResults, axis=0) + N_factor*np.std(bestResults, axis=0)
-    else:
-        print(' Error!')
-        print(' outlierMethod must be one of: IQR, STD')
-        sys.exit()
-
-    print('  Analysing results')
-    print('   Outlier limit: {0:06.3f}'.format(outlierLimit))
-    keepIdList = []
-
-    logFile.write('{0},{1},{2},{3:.4g}\n'.format(iteration,
-                                                 ' '.join(remainingIdList),
-                                                 ' '.join(['{0:.4g}'.format(i) for i in list(QResults.values())]),
-                                                 outlierLimit))
-    logFile.flush()
-
-    for ii, result in QResults.items():
-
-        accept = (result <= outlierLimit)
-
-        print('      {0}: Q = {1:06.3f} [{2}]'.format(ii, result, {True:'KEEP',False:'REMOVE'}[accept]))
-
-        if accept:
-            keepIdList.append(ii)
-
-    if len(keepIdList)<len(remainingIdList):
-        print('\n  Step {0} Complete'.format(iteration))
-        print('   Num. Removed = {0} --\n'.format(len(remainingIdList)-len(keepIdList)))
-
-        iteration += 1
-        atlasSetNew = {i:atlasSet[i] for i in keepIdList}
-
-        if singleStep:
-            return atlasSetNew
-        else:
-            return IAR(atlasSet=atlasSetNew, structureName=structureName, smoothMaps=smoothMaps, smoothSigma=smoothSigma, zScore=zScore, outlierMethod=outlierMethod, minBestAtlases=minBestAtlases, N_factor=N_factor, logFile=logFile, debug=debug, iteration=iteration)
-
-    else:
-        print('  End point reached. Keeping:\n   {0}'.format(keepIdList))
-        logFile.close()
-
-        return atlasSet
-
-def processProbabilityImage(probabilityImage, threshold=0.5):
-
-    # Check type
-    if type(probabilityImage)!=sitk.Image:
-        probabilityImage = sitk.GetImageFromArray(probabilityImage)
-
-    # Normalise probability map
-    probabilityImage = (probabilityImage / sitk.GetArrayFromImage(probabilityImage).max())
-
-    # Get the starting binary image
-    binaryImage = sitk.BinaryThreshold(probabilityImage, lowerThreshold=threshold)
-
-    # Fill holes
-    binaryImage = sitk.BinaryFillhole(binaryImage)
-
-    # Apply the connected component filter
-    labelledImage = sitk.ConnectedComponent(binaryImage)
-
-    # Measure the size of each connected component
-    labelShapeFilter = sitk.LabelShapeStatisticsImageFilter()
-    labelShapeFilter.Execute(labelledImage)
-    labelIndices = labelShapeFilter.GetLabels()
-    voxelCounts  = [labelShapeFilter.GetNumberOfPixels(i) for i in labelIndices]
-    if voxelCounts==[]:
-        return binaryImage
-
-    # Select the largest region
-    largestComponentLabel = labelIndices[np.argmax(voxelCounts)]
-    largestComponentImage = (labelledImage==largestComponentLabel)
-
-    return sitk.Cast(largestComponentImage, sitk.sitkUInt8)
-
-
-def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, scanDirection = 'z'):
+def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, scanDirection="z", debug=False):
     """
     Input: list of SimpleITK images
            minimum total slice area required for the tube to be inserted at that slice
@@ -447,27 +159,27 @@ def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, sca
     Output: mean centre of mass positions, with shape (NumSlices, 2)
     Note: positions are converted into image space by default
     """
-    if scanDirection.lower()=='x':
-        print("Scanning in sagittal direction")
+    if scanDirection.lower() == "x":
+        if debug: print("Scanning in sagittal direction")
         COMZ = []
         COMY = []
-        W    = []
-        C    = []
+        W = []
+        C = []
 
         referenceImage = sitkImageList[0]
         referenceArray = sitk.GetArrayFromImage(referenceImage)
-        z,y = np.mgrid[0:referenceArray.shape[0]:1, 0:referenceArray.shape[1]:1]
+        z, y = np.mgrid[0 : referenceArray.shape[0] : 1, 0 : referenceArray.shape[1] : 1]
 
-        with np.errstate(divide='ignore', invalid='ignore'):
+        with np.errstate(divide="ignore", invalid="ignore"):
             for sitkImage in sitkImageList:
                 volumeArray = sitk.GetArrayFromImage(sitkImage)
-                comZ = 1.0*(z[:,:,np.newaxis]*volumeArray).sum(axis=(1,0))
-                comY = 1.0*(y[:,:,np.newaxis]*volumeArray).sum(axis=(1,0))
-                weights = np.sum(volumeArray, axis=(1,0))
+                comZ = 1.0 * (z[:, :, np.newaxis] * volumeArray).sum(axis=(1, 0))
+                comY = 1.0 * (y[:, :, np.newaxis] * volumeArray).sum(axis=(1, 0))
+                weights = np.sum(volumeArray, axis=(1, 0))
                 W.append(weights)
-                C.append(np.any(volumeArray, axis=(1,0)))
-                comZ/=(1.0*weights)
-                comY/=(1.0*weights)
+                C.append(np.any(volumeArray, axis=(1, 0)))
+                comZ /= 1.0 * weights
+                comY /= 1.0 * weights
                 COMZ.append(comZ)
                 COMY.append(comY)
 
@@ -478,10 +190,16 @@ def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, sca
             warnings.simplefilter("ignore", category=RuntimeWarning)
             meanCOMZ = np.nanmean(COMZ, axis=0)
             meanCOMY = np.nanmean(COMY, axis=0)
-            if conditionType.lower()=="area":
-                meanCOM = np.dstack((meanCOMZ, meanCOMY))[0]*np.array((np.sum(W, axis=0)>(conditionValue),)*2).T
-            elif conditionType.lower()=="count":
-                meanCOM = np.dstack((meanCOMZ, meanCOMY))[0]*np.array((np.sum(C, axis=0)>(conditionValue),)*2).T
+            if conditionType.lower() == "area":
+                meanCOM = (
+                    np.dstack((meanCOMZ, meanCOMY))[0]
+                    * np.array((np.sum(W, axis=0) > (conditionValue),) * 2).T
+                )
+            elif conditionType.lower() == "count":
+                meanCOM = (
+                    np.dstack((meanCOMZ, meanCOMY))[0]
+                    * np.array((np.sum(C, axis=0) > (conditionValue),) * 2).T
+                )
             else:
                 print("Invalid condition type, please select from 'area' or 'count'.")
                 sys.exit()
@@ -489,69 +207,85 @@ def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, sca
         pointArray = []
         for index, COM in enumerate(meanCOM):
             if np.all(np.isfinite(COM)):
-                if np.all(COM>0):
-                    pointArray.append(referenceImage.TransformIndexToPhysicalPoint(( index, int(COM[1]), int(COM[0]))))
+                if np.all(COM > 0):
+                    pointArray.append(
+                        referenceImage.TransformIndexToPhysicalPoint(
+                            (index, int(COM[1]), int(COM[0]))
+                        )
+                    )
 
         return pointArray
 
-    elif scanDirection.lower()=='z':
-        print("Scanning in axial direction")
+    elif scanDirection.lower() == "z":
+        if debug: print("Scanning in axial direction")
         COMX = []
         COMY = []
-        W    = []
-        C    = []
+        W = []
+        C = []
 
         referenceImage = sitkImageList[0]
         referenceArray = sitk.GetArrayFromImage(referenceImage)
-        x,y = np.mgrid[0:referenceArray.shape[1]:1, 0:referenceArray.shape[2]:1]
+        x, y = np.mgrid[0 : referenceArray.shape[1] : 1, 0 : referenceArray.shape[2] : 1]
 
-        with np.errstate(divide='ignore', invalid='ignore'):
+        with np.errstate(divide="ignore", invalid="ignore"):
             for sitkImage in sitkImageList:
                 volumeArray = sitk.GetArrayFromImage(sitkImage)
-                comX = 1.0*(x*volumeArray).sum(axis=(1,2))
-                comY = 1.0*(y*volumeArray).sum(axis=(1,2))
-                weights = np.sum(volumeArray, axis=(1,2))
+                comX = 1.0 * (x * volumeArray).sum(axis=(1, 2))
+                comY = 1.0 * (y * volumeArray).sum(axis=(1, 2))
+                weights = np.sum(volumeArray, axis=(1, 2))
                 W.append(weights)
-                C.append(np.any(volumeArray, axis=(1,2)))
-                comX/=(1.0*weights)
-                comY/=(1.0*weights)
+                C.append(np.any(volumeArray, axis=(1, 2)))
+                comX /= 1.0 * weights
+                comY /= 1.0 * weights
                 COMX.append(comX)
                 COMY.append(comY)
 
         with warnings.catch_warnings():
             """
-            It's fairly likely some slices have just np.NaN values - it raises a warning but we can suppress it here
+            It's fairly likely some slices have just np.NaN values - it raises a warning but we
+            can suppress it here
             """
             warnings.simplefilter("ignore", category=RuntimeWarning)
             meanCOMX = np.nanmean(COMX, axis=0)
             meanCOMY = np.nanmean(COMY, axis=0)
-            if conditionType.lower()=="area":
-                meanCOM = np.dstack((meanCOMX, meanCOMY))[0]*np.array((np.sum(W, axis=0)>(conditionValue),)*2).T
-            elif conditionType.lower()=="count":
-                meanCOM = np.dstack((meanCOMX, meanCOMY))[0]*np.array((np.sum(C, axis=0)>(conditionValue),)*2).T
+            if conditionType.lower() == "area":
+                meanCOM = (
+                    np.dstack((meanCOMX, meanCOMY))[0]
+                    * np.array((np.sum(W, axis=0) > (conditionValue),) * 2).T
+                )
+            elif conditionType.lower() == "count":
+                meanCOM = (
+                    np.dstack((meanCOMX, meanCOMY))[0]
+                    * np.array((np.sum(C, axis=0) > (conditionValue),) * 2).T
+                )
             else:
                 print("Invalid condition type, please select from 'area' or 'count'.")
                 quit()
         pointArray = []
         for index, COM in enumerate(meanCOM):
             if np.all(np.isfinite(COM)):
-                if np.all(COM>0):
-                    pointArray.append(referenceImage.TransformIndexToPhysicalPoint((int(COM[1]), int(COM[0]), index)))
+                if np.all(COM > 0):
+                    pointArray.append(
+                        referenceImage.TransformIndexToPhysicalPoint(
+                            (int(COM[1]), int(COM[0]), index)
+                        )
+                    )
 
         return pointArray
 
-def tubeFromCOMList(COMList, radius):
+
+def tubeFromCOMList(COMList, radius, debug=False):
     """
     Input: image-space positions along the tube centreline.
     Output: VTK tube
     Note: positions do not have to be continuous - the tube is interpolated in real space
     """
     points = vtk.vtkPoints()
-    for i,pt in enumerate(COMList):
+    for i, pt in enumerate(COMList):
         points.InsertPoint(i, pt[0], pt[1], pt[2])
 
     # Fit a spline to the points
-    print("Fitting spline")
+    if debug: print("Fitting spline")
     spline = vtk.vtkParametricSpline()
     spline.SetPoints(points)
 
@@ -567,7 +301,8 @@ def tubeFromCOMList(COMList, radius):
     tubeRadius.SetName("TubeRadius")
     for i in range(n):
         # We can set the radius based on the given propagated segmentations in that slice?
-        # Typically segmentations are elliptical, this could be an issue so for now a constant radius is used
+        # Typically segmentations are elliptical, this could be an issue so for now a constant
+        # radius is used
         tubeRadius.SetTuple1(i, radius)
 
     # Add the scalars to the polydata
@@ -602,30 +337,31 @@ def writeVTKTubeToFile(tube, filename):
 
     return s
 
-def SimpleITKImageFromVTKTube(tube, SITKReferenceImage, verbose = False):
+
+def SimpleITKImageFromVTKTube(tube, SITKReferenceImage, debug=False):
     """
     Input: VTK tube, referenceImage (used for spacing, etc.)
     Output: SimpleITK image
     Note: Uses binary output (background 0, foreground 1)
     """
-    size     = list(SITKReferenceImage.GetSize())
-    origin   = list(SITKReferenceImage.GetOrigin())
-    spacing  = list(SITKReferenceImage.GetSpacing())
-    ncomp    = SITKReferenceImage.GetNumberOfComponentsPerPixel()
+    size = list(SITKReferenceImage.GetSize())
+    origin = list(SITKReferenceImage.GetOrigin())
+    spacing = list(SITKReferenceImage.GetSpacing())
+    ncomp = SITKReferenceImage.GetNumberOfComponentsPerPixel()
 
     # convert the SimpleITK image to a numpy array
-    arr = sitk.GetArrayFromImage(SITKReferenceImage).transpose(2,1,0).flatten()
+    arr = sitk.GetArrayFromImage(SITKReferenceImage).transpose(2, 1, 0).flatten()
 
     # send the numpy array to VTK with a vtkImageImport object
     dataImporter = vtk.vtkImageImport()
 
-    dataImporter.CopyImportVoidPointer( arr, len(arr) )
+    dataImporter.CopyImportVoidPointer(arr, len(arr))
     dataImporter.SetDataScalarTypeToUnsignedChar()
     dataImporter.SetNumberOfScalarComponents(ncomp)
 
     # Set the new VTK image's parameters
-    dataImporter.SetDataExtent (0, size[0]-1, 0, size[1]-1, 0, size[2]-1)
-    dataImporter.SetWholeExtent(0, size[0]-1, 0, size[1]-1, 0, size[2]-1)
+    dataImporter.SetDataExtent(0, size[0] - 1, 0, size[1] - 1, 0, size[2] - 1)
+    dataImporter.SetWholeExtent(0, size[0] - 1, 0, size[1] - 1, 0, size[2] - 1)
     dataImporter.SetDataOrigin(origin)
     dataImporter.SetDataSpacing(spacing)
 
@@ -636,30 +372,19 @@ def SimpleITKImageFromVTKTube(tube, SITKReferenceImage, verbose = False):
     # fill the image with foreground voxels:
     inval = 1
     outval = 0
-    count = VTKReferenceImage.GetNumberOfPoints()
     VTKReferenceImage.GetPointData().GetScalars().Fill(inval)
 
-    if verbose:
-        print("Generating volume using extrusion.")
-    extruder = vtk.vtkLinearExtrusionFilter()
-    extruder.SetInputData(tube.GetOutput())
-
-    extruder.SetScaleFactor(1.)
-    extruder.SetExtrusionTypeToNormalExtrusion()
-    extruder.SetVector(0, 0, 1)
-    extruder.Update()
-
-    if verbose:
+    if debug:
         print("Using polydaya to generate stencil.")
     pol2stenc = vtk.vtkPolyDataToImageStencil()
-    pol2stenc.SetTolerance(0) # important if extruder.SetVector(0, 0, 1) !!!
+    pol2stenc.SetTolerance(0.5)  # points within 0.5 voxels are included
     pol2stenc.SetInputConnection(tube.GetOutputPort())
     pol2stenc.SetOutputOrigin(VTKReferenceImage.GetOrigin())
     pol2stenc.SetOutputSpacing(VTKReferenceImage.GetSpacing())
     pol2stenc.SetOutputWholeExtent(VTKReferenceImage.GetExtent())
     pol2stenc.Update()
 
-    if verbose:
+    if debug:
         print("using stencil to generate image.")
     imgstenc = vtk.vtkImageStencil()
     imgstenc.SetInputData(VTKReferenceImage)
@@ -668,11 +393,13 @@ def SimpleITKImageFromVTKTube(tube, SITKReferenceImage, verbose = False):
     imgstenc.SetBackgroundValue(outval)
     imgstenc.Update()
 
-    if verbose:
+    if debug:
         print("Generating SimpleITK image.")
     finalImage = imgstenc.GetOutput()
     finalArray = finalImage.GetPointData().GetScalars()
     finalArray = vtk_to_numpy(finalArray).reshape(SITKReferenceImage.GetSize()[::-1])
+    if debug:
+        print(f'Volume = {finalArray.sum()*sum(spacing):.3f} mm^3')
     finalImageSITK = sitk.GetImageFromArray(finalArray)
     finalImageSITK.CopyInformation(SITKReferenceImage)
 
@@ -682,25 +409,25 @@ def ConvertSimpleITKtoVTK(img):
     """
 
     """
-    size     = list(img.GetSize())
-    origin   = list(img.GetOrigin())
-    spacing  = list(img.GetSpacing())
-    ncomp    = img.GetNumberOfComponentsPerPixel()
+    size = list(img.GetSize())
+    origin = list(img.GetOrigin())
+    spacing = list(img.GetSpacing())
+    ncomp = img.GetNumberOfComponentsPerPixel()
 
     # convert the SimpleITK image to a numpy array
-    arr = sitk.GetArrayFromImage(img).transpose(2,1,0).flatten()
+    arr = sitk.GetArrayFromImage(img).transpose(2, 1, 0).flatten()
     arr_string = arr.tostring()
 
     # send the numpy array to VTK with a vtkImageImport object
     dataImporter = vtk.vtkImageImport()
 
-    dataImporter.CopyImportVoidPointer( arr_string, len(arr_string) )
+    dataImporter.CopyImportVoidPointer(arr_string, len(arr_string))
     dataImporter.SetDataScalarTypeToUnsignedChar()
     dataImporter.SetNumberOfScalarComponents(ncomp)
 
     # Set the new VTK image's parameters
-    dataImporter.SetDataExtent (0, size[0]-1, 0, size[1]-1, 0, size[2]-1)
-    dataImporter.SetWholeExtent(0, size[0]-1, 0, size[1]-1, 0, size[2]-1)
+    dataImporter.SetDataExtent(0, size[0] - 1, 0, size[1] - 1, 0, size[2] - 1)
+    dataImporter.SetWholeExtent(0, size[0] - 1, 0, size[1] - 1, 0, size[2] - 1)
     dataImporter.SetDataOrigin(origin)
     dataImporter.SetDataSpacing(spacing)
 
@@ -709,24 +436,61 @@ def ConvertSimpleITKtoVTK(img):
     vtk_image = dataImporter.GetOutput()
     return vtk_image
 
-def vesselSplineGeneration(atlasSet, vesselNameList, vesselRadiusDict, stopConditionTypeDict, stopConditionValueDict, scanDirectionDict):
+
+def vesselSplineGeneration(
+    referenceImage,
+    atlasSet,
+    vesselNameList,
+    vesselRadiusDict,
+    stopConditionTypeDict,
+    stopConditionValueDict,
+    scanDirectionDict,
+    debug=False
+):
     """
 
     """
     splinedVessels = {}
     for vesselName in vesselNameList:
 
-        imageList    = [atlasSet[i]['DIR'][vesselName] for i in atlasSet.keys()]
+        # We must set the image direction to identity
+        # This is because it is not possible to modify VTK Image directions
+        # This may get fixed in a future VTK version
 
-        vesselRadius        = vesselRadiusDict[vesselName]
-        stopConditionType   = stopConditionTypeDict[vesselName]
-        stopConditionValue  = stopConditionValueDict[vesselName]
-        scanDirection       = scanDirectionDict[vesselName]
+        initial_image_direction = referenceImage.GetDirection()
 
-        pointArray = COMFromImageList(imageList, conditionType=stopConditionType, conditionValue=stopConditionValue, scanDirection=scanDirection)
-        tube       = tubeFromCOMList(pointArray, radius=vesselRadius)
+        imageList = [atlasSet[i]["DIR"][vesselName] for i in atlasSet.keys()]
+        for im in imageList:
+            im.SetDirection((1,0,0,0,1,0,0,0,1))
 
-        SITKReferenceImage  = imageList[0]
+        vesselRadius = vesselRadiusDict[vesselName]
+        stopConditionType = stopConditionTypeDict[vesselName]
+        stopConditionValue = stopConditionValueDict[vesselName]
+        scanDirection = scanDirectionDict[vesselName]
 
-        splinedVessels[vesselName] = SimpleITKImageFromVTKTube(tube, SITKReferenceImage, verbose = False)
+        pointArray = COMFromImageList(
+            imageList,
+            conditionType=stopConditionType,
+            conditionValue=stopConditionValue,
+            scanDirection=scanDirection,
+            debug=debug
+        )
+        tube = tubeFromCOMList(pointArray, radius=vesselRadius, debug=debug)
+
+        SITKReferenceImage = imageList[0]
+
+        vessel_delineation = SimpleITKImageFromVTKTube(
+            tube, SITKReferenceImage, debug=debug
+        )
+
+        vessel_delineation.SetDirection(initial_image_direction)
+
+        splinedVessels[vesselName] = vessel_delineation
+
+        # We also have to reset the direction to whatever it was
+        # This is because SimpleITK doesn't use deep copying
+        # And it isn't necessary here as we can save some sweet, sweet memory
+        for im in imageList:
+            im.SetDirection(initial_image_direction)
+
     return splinedVessels

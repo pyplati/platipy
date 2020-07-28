@@ -9,7 +9,8 @@
         "--disable=W0102",
         "--disable=W0105",
         "--init-hook",
-        "import sys; sys.path.append('..')"
+        "import sys; sys.path.append('..')",
+        "--extension-pkg-whitelist=vtk"
     ],
     "python.formatting.blackArgs": [
         "--line-length",
