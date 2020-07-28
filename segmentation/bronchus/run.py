@@ -18,7 +18,7 @@ BRONCHUS_SETTINGS_DEFAULTS = {
 }
 
 
-def run_bronchus_segmentation(input_image, settings=default_settings):
+def run_bronchus_segmentation(input_image, settings=BRONCHUS_SETTINGS_DEFAULTS):
     """Runs the Proximal Bronchial Tree segmentation
 
     Args:
