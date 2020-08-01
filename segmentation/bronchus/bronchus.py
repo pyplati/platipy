@@ -311,11 +311,9 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
         cut_mask = fast_mask(best_result, idx_slice, z_size)
         cut_mask = sitk.Cast(cut_mask, lung_mask.GetPixelIDValue())
 
-        print(idx_slice)
         label_image = connected_component.Execute(cut_mask)
 
         num_regions = connected_component.GetObjectCount()
-        print(num_regions)
 
         if num_regions == 2:
             lssif.Execute(label_image)
@@ -323,8 +321,6 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
             phys_size_0 = int(lssif.GetPhysicalSize(1))
             phys_size_1 = int(lssif.GetPhysicalSize(2))
 
-            print(phys_size_0)
-            print(phys_size_1)
             if (
                 phys_size_0 > minimum_tree_half_physical_size
                 and phys_size_1 > minimum_tree_half_physical_size

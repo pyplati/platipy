@@ -33,7 +33,8 @@ def bronchus_service(data_objects, working_dir, settings):
                 data_object.path
             )
 
-        results = run_bronchus_segmentation(load_path, settings)
+        img = sitk.ReadImage(load_path)
+        results = run_bronchus_segmentation(img, settings)
 
         # Save resulting masks and add to output for service
         for output in results.keys():
@@ -42,7 +43,7 @@ def bronchus_service(data_objects, working_dir, settings):
                 working_dir, "{0}.nii.gz".format(output)
             )
             sitk.WriteImage(results[output], mask_file)
-            
+
             output_data_object = DataObject(
                 type="FILE", path=mask_file, parent=data_object
             )

@@ -40,77 +40,97 @@ def test_cardiac_service(cardiac_data):
     # Create a data object to be segmented
     data_object = DataObject()
     data_object.id = 1
-    data_object.path = os.path.join(cardiac_data[patient_ids[0]], "CT.nii.gz")
+    data_object.path = os.path.join(cardiac_data[patient_ids[4]], "CT.nii.gz")
     data_object.type = "FILE"
-    print(cardiac_data)
+    atlas_cases = list(cardiac_data.keys())[:4]
+
+    atlas_dir = tempfile.mkdtemp()
+    for atlas_case in atlas_cases:
+
+        atlas_case_dir = os.path.join(atlas_dir, atlas_case)
+        os.makedirs(atlas_case_dir)
+
+        ct_image_file = os.path.join(cardiac_data[atlas_case], "CT.nii.gz")
+        image = sitk.ReadImage(ct_image_file)
+
+        left_lung_file = os.path.join(cardiac_data[atlas_case], "Struct_Lung_L.nii.gz")
+        right_lung_file = os.path.join(cardiac_data[atlas_case], "Struct_Lung_R.nii.gz")
+        left_lung = sitk.ReadImage(left_lung_file)
+        right_lung = sitk.ReadImage(right_lung_file)
+
+        lungs = left_lung + right_lung
+
+        label_stats_image_filter = sitk.LabelStatisticsImageFilter()
+        label_stats_image_filter.Execute(image, lungs)
+        bounding_box = list(label_stats_image_filter.GetBoundingBox(1))
+        index = [bounding_box[x*2] for x in range(3)]
+        size = [bounding_box[(x*2)+1] - bounding_box[x*2] for x in range(3)]
+
+        cropped_image = sitk.RegionOfInterest(image, size=size, index=index)
+
+        sitk.WriteImage(cropped_image, os.path.join(atlas_case_dir, "CT.nii.gz"))
+
+        for struct in os.listdir(cardiac_data[atlas_case]):
+
+            if not struct.startswith("Struct_"):
+                continue
+
+            mask = sitk.ReadImage(os.path.join(cardiac_data[atlas_case], struct))
+
+            cropped_mask = sitk.RegionOfInterest(mask, size=size, index=index)
+
+            sitk.WriteImage(cropped_mask, os.path.join(atlas_case_dir, struct))
 
     test_settings = CARDIAC_SETTINGS_DEFAULTS
     test_settings["atlasSettings"]["atlasIdList"] = [
+        os.path.basename(patient_ids[0]),
         os.path.basename(patient_ids[1]),
         os.path.basename(patient_ids[2]),
-        os.path.basename(patient_ids[3]),
     ]
-    test_settings["atlasSettings"]["atlasStructures"] = ["Heart"]
-    test_settings["atlasSettings"]["atlasPath"] = os.path.dirname(cardiac_data[patient_ids[1]])
+
+    test_settings["atlasSettings"]["atlasPath"] = atlas_dir
+    test_settings["atlasSettings"]["atlasStructures"] = ["Heart", "Lung_L", "Lung_R"]
+    test_settings["atlasSettings"]["atlasIdList"] = atlas_cases
+    test_settings["atlasSettings"]["atlasImageFormat"] = "{0}/CT.nii.gz"
+    test_settings["atlasSettings"]["atlasLabelFormat"] = "{0}/Struct_{1}.nii.gz"
+
+    # Run the DIR a bit more than default
+    test_settings["deformableSettings"]["iterationStaging"] = [15, 15, 15]
+
+    # Run the IAR using the heart
+    test_settings["IARSettings"]["referenceStructure"] = "Heart"
+
+    # Set the threshold
+    test_settings["labelFusionSettings"]["optimalThreshold"] = {
+        "Heart": 0.5,
+        "Lung_L": 0.5,
+        "Lung_R": 0.5,
+    }
+
+    # No vessels
+    test_settings["vesselSpliningSettings"]["vesselNameList"] = []
 
     # Run the service function
-    result = cardiac_service([data_object], working_dir, CARDIAC_SETTINGS_DEFAULTS)
-    print(result)
-    # Should have returned two output objects
-    assert len(result) == 2
+    results = cardiac_service([data_object], working_dir, CARDIAC_SETTINGS_DEFAULTS)
 
-    # lung_mask = sitk.ReadImage(result[0].path)
-    # assert_lung_mask(lung_mask)
+    # Should have returned three output objects (Heart, Lung_L, Lung_R)
+    assert len(results) == 3
 
+    # Check the results are somewhat similar to the ground truth for
+    # this case. We don't expect good results here since the settings
+    # are set so low for this to run relatively quickly
+    for result in results:
 
-# CARDIAC_SETTINGS_DEFAULTS = {
-#     "outputFormat": "Auto_{0}.nii.gz",
-#     "atlasSettings": {
-#         "atlasIdList": ["08", "11", "12", "13", "14"],
-#         "atlasStructures": ["WHOLEHEART", "LANTDESCARTERY"],
-#         # For development, run: 'export ATLAS_PATH=/atlas/path'
-#         "atlasPath": os.environ["ATLAS_PATH"],
-#     },
-#     "lungMaskSettings": {
-#         "coronalExpansion": 15,
-#         "axialExpansion": 5,
-#         "sagittalExpansion": 0,
-#         "lowerNormalisedThreshold": -0.1,
-#         "upperNormalisedThreshold": 0.4,
-#         "voxelCountThreshold": 5e4,
-#     },
-#     "rigidSettings": {
-#         "initialReg": "Affine",
-#         "options": {
-#             "shrinkFactors": [8, 4, 2, 1],
-#             "smoothSigmas": [8, 4, 1, 0],
-#             "samplingRate": 0.25,
-#             "finalInterp": sitk.sitkBSpline,
-#         },
-#         "trace": True,
-#         "guideStructure": False,
-#     },
-#     "deformableSettings": {
-#         "resolutionStaging": [16, 4, 2, 1],
-#         "iterationStaging": [20, 10, 10, 10],
-#         "ncores": 8,
-#         "trace": True,
-#     },
-#     "IARSettings": {
-#         "referenceStructure": "WHOLEHEART",
-#         "smoothDistanceMaps": True,
-#         "smoothSigma": 1,
-#         "zScoreStatistic": "MAD",
-#         "outlierMethod": "IQR",
-#         "outlierFactor": 1.5,
-#         "minBestAtlases": 4,
-#     },
-#     "labelFusionSettings": {"voteType": "local", "optimalThreshold": {"WHOLEHEART": 0.44}},
-#     "vesselSpliningSettings": {
-#         "vesselNameList": ["LANTDESCARTERY"],
-#         "vesselRadius_mm": {"LANTDESCARTERY": 2.2},
-#         "spliningDirection": {"LANTDESCARTERY": "z"},
-#         "stopCondition": {"LANTDESCARTERY": "count"},
-#         "stopConditionValue": {"LANTDESCARTERY": 1},
-#     },
-# }
+        auto_file = result.path
+        auto_mask = sitk.ReadImage(auto_file)
+        struct = os.path.basename(auto_file)
+
+        gt_file = os.path.join(cardiac_data[patient_ids[4]], f"Struct_{struct}")
+        gt_mask = sitk.ReadImage(gt_file)
+
+        label_overlap_filter = sitk.LabelOverlapMeasuresImageFilter()
+        label_overlap_filter.Execute(auto_mask, gt_mask)
+        print(f"{struct}: {label_overlap_filter.GetDiceCoefficient()}")
+
+        # Let's just check that the DSC is resonable (> 0.8)
+        assert label_overlap_filter.GetDiceCoefficient() > 0.8
