@@ -120,6 +120,8 @@ def fetch_data(dataset, patient_ids=None):
 
     data_directory = os.path.join(os.path.dirname(__file__), "data", "dynamic", dataset)
 
+    os.makedirs(data_directory, exist_ok=True)
+
     collection = datasets[dataset]["collection"]
     modalities = datasets[dataset]["modalities"]
 
