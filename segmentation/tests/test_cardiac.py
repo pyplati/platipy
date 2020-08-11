@@ -9,11 +9,10 @@ import tempfile
 import pytest
 
 import SimpleITK as sitk
-import numpy as np
 
 from impit.segmentation.tests.pull_data import get_lung_data
 
-os.environ["ATLAS_PATH"] = os.path.join(os.path.dirname(__file__), "data", "lung")
+#os.environ["ATLAS_PATH"] = os.path.join(os.path.dirname(__file__), "data", "lung")
 
 from impit.segmentation.cardiac.service import cardiac_service, CARDIAC_SETTINGS_DEFAULTS
 from impit.framework.models import DataObject
