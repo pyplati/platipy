@@ -58,8 +58,7 @@ def initial_registration(
     options=None,
     default_value=-1024,
     trace=False,
-    reg_method="Similarity",
-    optimiser='GradientDescentLineSearch'
+    reg_method="Similarity"
 ):
     """
     Rigid image registration using ITK
@@ -84,7 +83,7 @@ def initial_registration(
     moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
 
     if not options:
-        options = {"shrinkFactors": [8, 2, 1], "smoothSigmas": [4, 2, 0], "samplingRate": 0.1, "numberOfIterations":50}
+        options = {"shrinkFactors": [8, 2, 1], "smoothSigmas": [4, 2, 0], "samplingRate": 0.1, optimiser:'gradient_descent', "numberOfIterations":50}
 
     # Get the options
     shrink_factors = options["shrinkFactors"]
@@ -92,6 +91,7 @@ def initial_registration(
     sampling_rate = options["samplingRate"]
     final_interp = options["finalInterp"]
     metric = options["metric"]
+    optimiser = options["optimiser"]
     number_of_iterations = options["numberOfIterations"]
 
     # Initialise using a VersorRigid3DTransform
@@ -146,7 +146,7 @@ def initial_registration(
             costFunctionConvergenceFactor=1e7,
             trace=trace,
         )
-    elif optimiser == 'Exhaustive':
+    elif optimiser == 'exhaustive':
         """
         This isn't well implemented
         Needs some work to give options for sampling rates
@@ -154,8 +154,13 @@ def initial_registration(
         """
         samples = [10,10,10,10,10,10]
         registration.SetOptimizerAsExhaustive(samples)
-    elif optimiser=='GradientDescentLineSearch':
+    elif optimiser=='gradient_descent_line_search':
         registration.SetOptimizerAsGradientDescentLineSearch(
+            learningRate = 1.0,
+            numberOfIterations = number_of_iterations
+        )
+    elif optimiser=='gradient_descent':
+        registration.SetOptimizerAsGradientDescent(
             learningRate = 1.0,
             numberOfIterations = number_of_iterations
         )
