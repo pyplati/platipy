@@ -3,7 +3,6 @@
 
 import os
 import json
-import pprint
 
 import click
 
@@ -52,8 +51,7 @@ def click_command(algorithm, input_path, config, default):
     algorithm_config = segmentation_algorithms[algorithm]["default_settings"]
 
     if default:
-        pretty_printer = pprint.PrettyPrinter(indent=4)
-        pretty_printer.pprint(algorithm_config)
+        print(json.dumps(algorithm_config, indent=4))
         return
 
     # If we get to here but no input_path was set, we need to inform the user
@@ -64,7 +62,8 @@ def click_command(algorithm, input_path, config, default):
     print(f"Running {algorithm} segmentation")
 
     if config:
-        algorithm_config = json.load(config)
+        with open(config, "r") as file_obj:
+            algorithm_config = json.load(file_obj)
 
     read_path = input_path
     if os.path.isdir(input_path):
