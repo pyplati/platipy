@@ -39,6 +39,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "atlasPath": ATLAS_PATH,
         "atlasImageFormat": "Case_{0}/Images/Case_{0}_CROP.nii.gz",
         "atlasLabelFormat": "Case_{0}/Structures/Case_{0}_{1}_CROP.nii.gz",
+        "autoCropAtlas": True
     },
     "autoCropSettings": {"expansion": [2, 2, 2],},
     "rigidSettings": {
@@ -51,6 +52,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
             "numberOfIterations": 50,
             "finalInterp": sitk.sitkBSpline,
             "metric": "mean_squares",
+            "optimiser": "gradient_descent_line_search"
         },
         "trace": False,
         "guideStructure": False,
@@ -134,19 +136,40 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     atlas_image_format = settings["atlasSettings"]["atlasImageFormat"]
     atlas_label_format = settings["atlasSettings"]["atlasLabelFormat"]
 
+    auto_crop_atlas = settings["atlasSettings"]["autoCropAtlas"]
+
     atlas_set = {}
     for atlas_id in atlas_id_list:
         atlas_set[atlas_id] = {}
         atlas_set[atlas_id]["Original"] = {}
 
-        atlas_set[atlas_id]["Original"]["CT Image"] = sitk.ReadImage(
-            f"{atlas_path}/{atlas_image_format.format(atlas_id)}"
-        )
+        image = sitk.ReadImage(f"{atlas_path}/{atlas_image_format.format(atlas_id)}")
+
+        structures = {struct:sitk.ReadImage(f"{atlas_path}/{atlas_label_format.format(atlas_id, struct)}") for struct in atlas_structures}
+
+        if auto_crop_atlas:
+            logger.info(f"Automatically cropping atlas: {atlas_id}")
+
+            original_volume = np.product(image.GetSize())
+
+            label_stats_image_filter = sitk.LabelStatisticsImageFilter()
+            label_stats_image_filter.Execute(image, sum(structures.values())>0)
+            bounding_box = list(label_stats_image_filter.GetBoundingBox(1))
+            index = [bounding_box[x*2] for x in range(3)]
+            size = [bounding_box[(x*2)+1] - bounding_box[x*2] for x in range(3)]
+
+            image = sitk.RegionOfInterest(image, size=size, index=index)
+
+            final_volume= np.product(image.GetSize())
+            logger.info(f"  > Volume reduced by factor {original_volume/final_volume:.2f}")
+
+            for struct in atlas_structures:
+                structures[struct] = sitk.RegionOfInterest(structures[struct], size=size, index=index)
+
+        atlas_set[atlas_id]["Original"]["CT Image"] = image
 
         for struct in atlas_structures:
-            atlas_set[atlas_id]["Original"][struct] = sitk.ReadImage(
-                f"{atlas_path}/{atlas_label_format.format(atlas_id, struct)}"
-            )
+            atlas_set[atlas_id]["Original"][struct] = structures[struct]
 
     """
     Step 1 - Automatic cropping using a translation transform
@@ -163,6 +186,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
         "numberOfIterations": 25,
         "finalInterp": 3,
         "metric": "mean_squares",
+        "optimiser": "gradient_descent_line_search"
     }
 
     registered_crop_images = []
@@ -230,8 +254,13 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     trace = settings["rigidSettings"]["trace"]
     guide_structure = settings["rigidSettings"]["guideStructure"]
 
+    logger.info(f"Running {initial_reg} tranform to align atlas images")
+
     for atlas_id in atlas_id_list:
         # Register the atlases
+
+        logger.info(f"  > atlas {atlas_id}")
+
         atlas_set[atlas_id]["RIR"] = {}
         atlas_image = atlas_set[atlas_id]["Original"]["CT Image"]
 
@@ -272,6 +301,8 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     smoothing_sigmas = settings["deformableSettings"]["smoothingSigmas"]
     ncores = settings["deformableSettings"]["ncores"]
     trace = settings["deformableSettings"]["trace"]
+
+    logger.info(f"Running DIR to register atlas images")
 
     for atlas_id in atlas_id_list:
 
