@@ -22,11 +22,10 @@ def run_bronchus_segmentation(input_image, settings=BRONCHUS_SETTINGS_DEFAULTS):
     """Runs the Proximal Bronchial Tree segmentation
 
     Args:
-        input_image (str): Path to the input image on which to run the segmentation
-        output_directory (str, optional): Path to output the segmentations. Defaults to ".".
-        settings (dict, optional): Dictionary containing settings for algorithm. 
-                                   Defaults to default_settings.
-    
+        input_image (sitk.Image): SimpleITK image on which to perform the segmentation
+        settings (dict, optional): Dictionary containing settings for algorithm.
+                                   Defaults to BRONCHUS_SETTINGS_DEFAULTS.
+
     Returns:
         dict: Dictionary containing output of segmentation
     """

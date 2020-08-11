@@ -27,13 +27,16 @@ from impit.segmentation.atlas.iterative_atlas_removal import run_iar
 
 from impit.segmentation.cardiac.cardiac import vesselSplineGeneration
 
+ATLAS_PATH = "/atlas"
+if "ATLAS_PATH" in os.environ:
+    ATLAS_PATH = os.environ["ATLAS_PATH"]
 
 CARDIAC_SETTINGS_DEFAULTS = {
     "outputFormat": "Auto_{0}.nii.gz",
     "atlasSettings": {
         "atlasIdList": ["13", "17", "33", "12", "16", "22", "27"],
         "atlasStructures": ["WHOLEHEART", "LANTDESCARTERY_SPLINE"],
-        "atlasPath": os.environ["ATLAS_PATH"],
+        "atlasPath": ATLAS_PATH,
         "atlasImageFormat": "Case_{0}/Images/Case_{0}_CROP.nii.gz",
         "atlasLabelFormat": "Case_{0}/Structures/Case_{0}_{1}_CROP.nii.gz",
     },
