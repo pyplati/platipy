@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  platipy:
+    image: platipy
+    ports:
+      - "8001:8000"
+      - "7777:7777"
+    volumes:
+      - .:/platipy
+      - platipy_data:/data
+    links:
+      - redis:redis
+    entrypoint: /bin/sh -c "while sleep 1000; do :; done"
+    environment:
+      PYTHONPATH: "/platipy"
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 16GB
+
+  redis:
+    image: "redis:latest"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  platipy_data:
+  redis_data:

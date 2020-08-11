@@ -1,0 +1,41 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Bronchus Segmentation Service (with auto-restart)",
+
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/segmentation/bronchus",
+                "env": {
+                    "WORK": "/data",
+                    "PYTHONPATH": "/",
+                    "REDIS_HOST": "redis",
+                    "REDIS_PORT": "6379"
+                }
+            },
+            "command": "watchmedo",
+            "args": [
+                "auto-restart",
+                "--directory=./",
+                "--pattern=*.py",
+                "--recursive",
+                "--",
+                "python",
+                "service.py"
+            ],
+            "problemMatcher": [
+                "$eslint-stylish"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        }
+
+         
+    ]
+}

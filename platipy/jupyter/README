@@ -1,0 +1,10 @@
+## Jupyter Tools
+
+A Dockerfile is provided to create a useful Jupyter environment to develop and 
+work with these platipy tools. It can be launched using ```docker-compose up -d```
+
+Work in progress.
+
+# Author
+
+Phillip Chlap (phillip.chlap@unsw.edu.au)

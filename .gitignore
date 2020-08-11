@@ -131,4 +131,7 @@ test_output*
 
 .vagrant/
 dicom_data/
+.DS_Store
 
+# Exclude data files which are dynamically downloaded for tests
+platipy/*/tests/data/dynamic

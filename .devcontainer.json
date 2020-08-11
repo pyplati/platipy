@@ -1,10 +1,15 @@
 {
-	"name": "IMPIT Development",
-	"image": "impit",
+	"name": "PlatiPy Development",
+	"dockerComposeFile": "./docker-compose.yml",
+	"service": "platipy",
+	"workspaceFolder": "/platipy",
+	"shutdownAction": "stopCompose",
 	"appPort": [ 8001, 7777 ],
 
 	// Add the IDs of extensions you want installed when the container is created in the array below.
 	"extensions": [
-		"ms-python.python"
+		"ms-python.python",
+		"eamodio.gitlens",
+		"njpwerner.autodocstring"
 	]
 }

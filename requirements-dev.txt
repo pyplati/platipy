@@ -2,3 +2,5 @@ pylint
 pylint_flask_sqlalchemy
 black
 jupyterlab
+watchdog
+argh
