@@ -44,3 +44,6 @@ a new case using:
 ```
 python run.py cardiac -c cardiac_settings.json path/to/case.nii.gz
 ```
+
+Note: The command line interface will accept an image in Nifti format or a directory containing a
+Dicom series as input.
