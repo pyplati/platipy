@@ -2,7 +2,7 @@ import os
 import pydicom
 import numpy as np
 
-from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
+from platipy.dicom.nifti_to_rtstruct.convert import convert_nifti
 
 def test_convert_nifti():
 

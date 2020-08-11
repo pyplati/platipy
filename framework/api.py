@@ -1,4 +1,4 @@
-from impit.framework import app, api
+from platipy.framework import app, api
 from loguru import logger
 
 import flask_restful

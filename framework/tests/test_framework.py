@@ -2,7 +2,7 @@ import pytest
 import os
 import json
 import tempfile
-from impit.framework import app
+from platipy.framework import app
 
 
 @pytest.fixture

@@ -8,7 +8,7 @@ from loguru import logger
 import SimpleITK as sitk
 import pandas as pd
 
-from impit.framework import app, DataObject, celery
+from platipy.framework import app, DataObject, celery
 
 
 DIRQA_SETTINGS_DEFAULTS = {
@@ -48,7 +48,7 @@ def crop_to_contour_bounding_box(img, mask):
 @app.register("DIRQA Service", default_settings=DIRQA_SETTINGS_DEFAULTS)
 def dirqa_service(data_objects, working_dir, settings):
     """
-    Implements the impit framework to provide a DIR QA service based on SIFT
+    Implements the platipy framework to provide a DIR QA service based on SIFT
     """
 
     logger.info("Running DIR QA")

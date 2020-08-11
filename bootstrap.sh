@@ -13,15 +13,15 @@ sudo apt-get install -y orthanc
 mkdir ~/environments
 cd ~/environments
 
-python3 -m venv impit_env
+python3 -m venv platipy_env
 
-source ~/environments/impit_env/bin/activate
-echo ". ~/environments/impit_env/bin/activate" > ~/.profile
+source ~/environments/platipy_env/bin/activate
+echo ". ~/environments/platipy_env/bin/activate" > ~/.profile
 
 export PYTHONPATH="${PYTHONPATH}:/"
 echo 'export PYTHONPATH="${PYTHONPATH}:/"' >> ~/.profile
 
-pip install -r /impit/requirements.txt
+pip install -r /platipy/requirements.txt
 
 
 # Install Docker

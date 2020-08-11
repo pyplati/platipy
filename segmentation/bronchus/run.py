@@ -5,7 +5,7 @@ import tempfile
 
 from loguru import logger
 
-from impit.segmentation.bronchus.bronchus import (
+from platipy.segmentation.bronchus.bronchus import (
     generate_lung_mask,
     generate_airway_mask,
     default_settings,

@@ -19,7 +19,7 @@ generate - need to look at this)
 
 import SimpleITK as sitk
 
-from impit.segmentation.common.tools import detect_holes, get_lung_mask
+from platipy.segmentation.common.tools import detect_holes, get_lung_mask
 
 
 def fast_mask(img, start, end):

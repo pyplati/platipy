@@ -12,7 +12,7 @@ from loguru import logger
 
 from pymedphys.experimental.pinnacle import PinnacleExport
 
-from impit.framework import app, DataObject, celery
+from platipy.framework import app, DataObject, celery
 
 PINNACLE_EXPORT_SETTINGS_DEFAULTS = {
     "exportModalities": ["CT", "RTSTRUCT", "RTPLAN", "RTDOSE"],
@@ -23,7 +23,7 @@ PINNACLE_EXPORT_SETTINGS_DEFAULTS = {
 @app.register("Pinnacle Export", default_settings=PINNACLE_EXPORT_SETTINGS_DEFAULTS)
 def pinnacle_export_service(data_objects, working_dir, settings):
     """
-    Implements the impit framework to provide a pinnacle tar export service
+    Implements the platipy framework to provide a pinnacle tar export service
     """
 
     logger.info("Running Pinnacle Export")

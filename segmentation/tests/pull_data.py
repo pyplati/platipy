@@ -12,7 +12,7 @@ import requests
 
 from loguru import logger
 
-from impit.dicom.rtstruct_to_nifti.convert import convert_rtstruct
+from platipy.dicom.rtstruct_to_nifti.convert import convert_rtstruct
 
 API_URL = "https://services.cancerimagingarchive.net/services/v4/TCIA"
 
@@ -108,7 +108,7 @@ def fetch_data(dataset, patient_ids=None):
     """Fetches data from TCIA from the dataset specified
 
     Args:
-        dataset (str): The impit id of the dataset to fetch from (see datasets)
+        dataset (str): The platipy id of the dataset to fetch from (see datasets)
         patient_ids (list, optional): The patient IDs to fetch. If not set all patients are
                                       fetched.
 

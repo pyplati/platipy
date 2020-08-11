@@ -4,8 +4,8 @@ import sys
 import argparse
 import nibabel
 import os
-from impit.dicom.nifti_to_rtstruct.export_to_rtstruct import export_to_rtstruct
-from impit.dicom.nifti_to_rtstruct.gen_contours import gen_contours
+from platipy.dicom.nifti_to_rtstruct.export_to_rtstruct import export_to_rtstruct
+from platipy.dicom.nifti_to_rtstruct.gen_contours import gen_contours
 import pydicom
 from collections import OrderedDict
 from loguru import logger

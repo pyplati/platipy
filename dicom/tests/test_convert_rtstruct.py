@@ -1,7 +1,7 @@
 import os
 import SimpleITK as sitk
 
-from impit.dicom.rtstruct_to_nifti.convert import convert_rtstruct
+from platipy.dicom.rtstruct_to_nifti.convert import convert_rtstruct
 
 def test_convert_rtstruct():
 

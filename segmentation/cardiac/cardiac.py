@@ -23,9 +23,9 @@ from scipy.ndimage import measurements
 from scipy.interpolate import griddata
 from scipy.interpolate import RectSphereBivariateSpline
 
-from impit.segmentation.atlas.label import combine_labels
+from platipy.segmentation.atlas.label import combine_labels
 
-from impit.segmentation.atlas.util import (
+from platipy.segmentation.atlas.util import (
     vectorised_transform_index_to_physical_point,
     vectorised_transform_physical_point_to_index,
 )

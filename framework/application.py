@@ -29,7 +29,7 @@ class FlaskApp(Flask):
     celery_started = False
     beat_started = False
     dicom_listener_port = 7777
-    dicom_listener_aetitle = "IMPIT_SERVICE"
+    dicom_listener_aetitle = "PLATIPY_SERVICE"
 
     api = None # Holds reference to api for extensibility
 
@@ -81,7 +81,7 @@ class FlaskApp(Flask):
         
     def run(self, host=None, port=None, debug=None,
             dicom_listener_port=7777,
-            dicom_listener_aetitle="IMPIT_SERVICE",
+            dicom_listener_aetitle="PLATIPY_SERVICE",
             load_dotenv=True, **options):
 
         logger.info('Starting APP!')

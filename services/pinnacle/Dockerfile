@@ -1,4 +1,4 @@
-FROM impit
+FROM platipy
 
 COPY requirements-pinnacle.txt requirements-pinnacle.txt
 

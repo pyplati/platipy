@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from celery import Celery
 
-from impit.framework.application import FlaskApp
+from platipy.framework.application import FlaskApp
 
 from loguru import logger
 
@@ -45,9 +45,9 @@ celery.conf.update(app.config)
 
 # Configure API
 api = Api(app)
-app.config.from_object('impit.framework.api.CustomConfig')
+app.config.from_object('platipy.framework.api.CustomConfig')
 
-import impit.framework.views
-import impit.framework.api
-import impit.framework.tasks
-from impit.framework.models import DataObject
+import platipy.framework.views
+import platipy.framework.api
+import platipy.framework.tasks
+from platipy.framework.models import DataObject

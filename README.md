@@ -1,9 +1,8 @@
-# IMPIT (Ingham Medical Physics Imaging Toolbox)
+# PlatiPy (Processing Library and Analysis Toolkit for Medical Imaging in Python)
 
-This toolbox contains tools and scripts used for image processing within the Medical Physics group
-at Ingham Institute in Liverpool, Australia. The code makes use of ITK and VTK and is written in
-Python. Jupyter notebooks are provided where possible, mainly for guidance on getting started with
-using the tools.
+This library contains tools and scripts used for image processing and analysis of medical images.
+The code makes use of ITK and VTK and is written in Python. Jupyter notebooks are provided where
+possible, mainly for guidance on getting started with using the tools.
 
 ## Getting Started
 

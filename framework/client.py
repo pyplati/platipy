@@ -1,5 +1,5 @@
 """
-Provides a client to interact with IMPITs framework
+Provides a client to interact with PlatiPy's framework
 """
 import time
 import os
@@ -20,8 +20,8 @@ API_ALGORITHM = "{0}/api/algorithm"
 API_DOWNLOAD_OBJECT = "{0}/api/dataobject/download"
 
 
-class IMPITClient:
-    """Client to help iteract with the framework implemented within IMPIT.
+class PlatiPyClient:
+    """Client to help iteract with the framework implemented within PlatiPy.
     """
 
     def __init__(self, host, port, api_key, algorithm_name):

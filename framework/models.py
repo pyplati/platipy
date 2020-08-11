@@ -1,4 +1,4 @@
-from impit.framework import db
+from platipy.framework import db
 import datetime
 import json
 

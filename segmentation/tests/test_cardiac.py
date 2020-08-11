@@ -10,12 +10,12 @@ import pytest
 
 import SimpleITK as sitk
 
-from impit.segmentation.tests.pull_data import get_lung_data
+from platipy.segmentation.tests.pull_data import get_lung_data
 
 #os.environ["ATLAS_PATH"] = os.path.join(os.path.dirname(__file__), "data", "lung")
 
-from impit.segmentation.cardiac.service import cardiac_service, CARDIAC_SETTINGS_DEFAULTS
-from impit.framework.models import DataObject
+from platipy.segmentation.cardiac.service import cardiac_service, CARDIAC_SETTINGS_DEFAULTS
+from platipy.framework.models import DataObject
 
 
 @pytest.fixture

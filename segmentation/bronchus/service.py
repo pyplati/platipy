@@ -8,16 +8,16 @@ import os
 import SimpleITK as sitk
 from loguru import logger
 
-from impit.framework import app, DataObject, celery # pylint: disable=unused-import
+from platipy.framework import app, DataObject, celery # pylint: disable=unused-import
 
-# from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
+# from platipy.dicom.nifti_to_rtstruct.convert import convert_nifti
 
-from impit.segmentation.bronchus.run import run_bronchus_segmentation, BRONCHUS_SETTINGS_DEFAULTS
+from platipy.segmentation.bronchus.run import run_bronchus_segmentation, BRONCHUS_SETTINGS_DEFAULTS
 
 @app.register("Bronchus Segmentation", default_settings=BRONCHUS_SETTINGS_DEFAULTS)
 def bronchus_service(data_objects, working_dir, settings):
     """
-    Implements the impit framework to provide bronchus segmentation.
+    Implements the platipy framework to provide bronchus segmentation.
     """
 
     logger.info("Running Bronchus Segmentation")

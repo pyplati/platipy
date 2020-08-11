@@ -12,15 +12,15 @@ from loguru import logger
 
 # Need include celery here to be able to from Docker container
 # pylint: disable=unused-import
-from impit.framework import app, DataObject, celery
+from platipy.framework import app, DataObject, celery
 
-from impit.segmentation.cardiac.run import CARDIAC_SETTINGS_DEFAULTS, run_cardiac_segmentation
+from platipy.segmentation.cardiac.run import CARDIAC_SETTINGS_DEFAULTS, run_cardiac_segmentation
 
 
 @app.register("Cardiac Segmentation", default_settings=CARDIAC_SETTINGS_DEFAULTS)
 def cardiac_service(data_objects, working_dir, settings):
     """
-    Implements the impit framework to provide cardiac atlas based segmentation.
+    Implements the platipy framework to provide cardiac atlas based segmentation.
     """
 
     logger.info("Running Cardiac Segmentation")

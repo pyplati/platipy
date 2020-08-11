@@ -1,4 +1,4 @@
-from impit.framework import celery, db, app
+from platipy.framework import celery, db, app
 from celery.schedules import crontab
 
 from loguru import logger
@@ -16,7 +16,7 @@ from .models import Dataset, DataObject
 celery.conf.beat_schedule = {
     # Executes every hour
     'clean-up-every-hour': {
-        'task': 'impit.framework.tasks.clean_up_task',
+        'task': 'platipy.framework.tasks.clean_up_task',
         'schedule': crontab(minute=0),
         'args': (),
     },

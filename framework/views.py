@@ -1,4 +1,4 @@
-from impit.framework import app, celery, log_file_path
+from platipy.framework import app, celery, log_file_path
 from ..dicom.communication import DicomConnector
 from .models import db, APIKey
 

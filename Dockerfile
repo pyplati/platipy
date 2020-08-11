@@ -15,7 +15,7 @@ RUN pip install -r requirements.txt
 COPY requirements-dev.txt requirements-dev.txt
 RUN pip install -r requirements-dev.txt
 
-COPY . impit
+COPY . platipy
 
 COPY entrypoint.sh /entrypoint.sh
 
@@ -31,9 +31,9 @@ ENV WORK C.UTF-8
 ARG dicom_listen_port=7777
 
 ENV DICOM_LISTEN_PORT ${dicom_listen_port}
-ENV DICOM_LISTEN_AET IMPIT_SERVICE
+ENV DICOM_LISTEN_AET PLATIPY_SERVICE
 
-RUN printf '#!/bin/bash\npython3 -m impit.framework.manage $@\n' > /usr/bin/manage && chmod +x /usr/bin/manage
+RUN printf '#!/bin/bash\npython3 -m platipy.framework.manage $@\n' > /usr/bin/manage && chmod +x /usr/bin/manage
 
 EXPOSE 8000
 EXPOSE ${dicom_listen_port}

@@ -1,19 +1,19 @@
 version: '3'
 
 services:
-  impit:
-    image: impit
+  platipy:
+    image: platipy
     ports:
       - "8001:8000"
       - "7777:7777"
     volumes:
-      - .:/impit
-      - impit_data:/data
+      - .:/platipy
+      - platipy_data:/data
     links:
       - redis:redis
     entrypoint: /bin/sh -c "while sleep 1000; do :; done"
     environment:
-      PYTHONPATH: "/"
+      PYTHONPATH: "/platipy"
     deploy:
       resources:
         limits:
@@ -26,5 +26,5 @@ services:
       - redis_data:/data
 
 volumes:
-  impit_data:
+  platipy_data:
   redis_data:

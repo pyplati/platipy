@@ -12,15 +12,15 @@ import pytest
 import SimpleITK as sitk
 import numpy as np
 
-from impit.segmentation.tests.pull_data import get_lung_data
+from platipy.segmentation.tests.pull_data import get_lung_data
 
-from impit.segmentation.bronchus.bronchus import (
+from platipy.segmentation.bronchus.bronchus import (
     generate_lung_mask,
     generate_airway_mask,
 )
 
-from impit.segmentation.bronchus.service import bronchus_service, BRONCHUS_SETTINGS_DEFAULTS
-from impit.framework.models import DataObject
+from platipy.segmentation.bronchus.service import bronchus_service, BRONCHUS_SETTINGS_DEFAULTS
+from platipy.framework.models import DataObject
 
 
 @pytest.fixture

@@ -3,8 +3,8 @@ sys.path.append("../../../")
 
 from loguru import logger
 
-from impit.framework import app, DataObject
-from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
+from platipy.framework import app, DataObject
+from platipy.dicom.nifti_to_rtstruct.convert import convert_nifti
 
 import SimpleITK as sitk
 import pydicom

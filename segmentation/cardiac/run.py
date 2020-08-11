@@ -9,23 +9,23 @@ import os
 
 from loguru import logger
 
-# from impit.dicom.nifti_to_rtstruct.convert import convert_nifti
-from impit.segmentation.atlas.registration import (
+# from platipy.dicom.nifti_to_rtstruct.convert import convert_nifti
+from platipy.segmentation.atlas.registration import (
     initial_registration,
     transform_propagation,
     fast_symmetric_forces_demons_registration,
     apply_field,
 )
 
-from impit.segmentation.atlas.label import (
+from platipy.segmentation.atlas.label import (
     compute_weight_map,
     combine_labels,
     process_probability_image,
 )
 
-from impit.segmentation.atlas.iterative_atlas_removal import run_iar
+from platipy.segmentation.atlas.iterative_atlas_removal import run_iar
 
-from impit.segmentation.cardiac.cardiac import vesselSplineGeneration
+from platipy.segmentation.cardiac.cardiac import vesselSplineGeneration
 
 ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:

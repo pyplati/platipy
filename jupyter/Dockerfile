@@ -1,4 +1,4 @@
-FROM impit:latest
+FROM platipy:latest
 
 RUN pip3 install matplotlib==3.1.0 jupyterlab pandas itkwidgets seaborn gitpython
 

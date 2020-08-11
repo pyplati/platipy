@@ -8,8 +8,8 @@ import click
 
 import SimpleITK as sitk
 
-from impit.segmentation.bronchus.run import run_bronchus_segmentation, BRONCHUS_SETTINGS_DEFAULTS
-from impit.segmentation.cardiac.run import run_cardiac_segmentation, CARDIAC_SETTINGS_DEFAULTS
+from platipy.segmentation.bronchus.run import run_bronchus_segmentation, BRONCHUS_SETTINGS_DEFAULTS
+from platipy.segmentation.cardiac.run import run_cardiac_segmentation, CARDIAC_SETTINGS_DEFAULTS
 
 segmentation_algorithms = {
     "cardiac": {

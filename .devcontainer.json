@@ -1,8 +1,8 @@
 {
-	"name": "IMPIT Development",
+	"name": "PlatiPy Development",
 	"dockerComposeFile": "./docker-compose.yml",
-	"service": "impit",
-	"workspaceFolder": "/impit",
+	"service": "platipy",
+	"workspaceFolder": "/platipy",
 	"shutdownAction": "stopCompose",
 	"appPort": [ 8001, 7777 ],
 
