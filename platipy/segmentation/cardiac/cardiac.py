@@ -118,6 +118,7 @@ def AutoLungSegment(image, l=0.05, u=0.4, NPthresh=1e5):
 
     return maskBox, maskBinary
 
+
 def CropImage(image, cropBox):
     """
     Crops an image using a bounding box
@@ -138,7 +139,11 @@ def CropImage(image, cropBox):
 def norm(x, mean, sd):
     result = []
     for i in range(x.size):
-        result += [1.0 / (sd * np.sqrt(2 * np.pi)) * np.exp(-(x[i] - mean) ** 2 / (2 * sd ** 2))]
+        result += [
+            1.0
+            / (sd * np.sqrt(2 * np.pi))
+            * np.exp(-((x[i] - mean) ** 2) / (2 * sd ** 2))
+        ]
     return np.array(result)
 
 
@@ -151,7 +156,13 @@ def res(p, y, x):
     return err
 
 
-def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, scanDirection="z", debug=False):
+def COMFromImageList(
+    sitkImageList,
+    conditionType="count",
+    conditionValue=0,
+    scanDirection="z",
+    debug=False,
+):
     """
     Input: list of SimpleITK images
            minimum total slice area required for the tube to be inserted at that slice
@@ -160,7 +171,8 @@ def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, sca
     Note: positions are converted into image space by default
     """
     if scanDirection.lower() == "x":
-        if debug: print("Scanning in sagittal direction")
+        if debug:
+            print("Scanning in sagittal direction")
         COMZ = []
         COMY = []
         W = []
@@ -168,7 +180,9 @@ def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, sca
 
         referenceImage = sitkImageList[0]
         referenceArray = sitk.GetArrayFromImage(referenceImage)
-        z, y = np.mgrid[0 : referenceArray.shape[0] : 1, 0 : referenceArray.shape[1] : 1]
+        z, y = np.mgrid[
+            0 : referenceArray.shape[0] : 1, 0 : referenceArray.shape[1] : 1
+        ]
 
         with np.errstate(divide="ignore", invalid="ignore"):
             for sitkImage in sitkImageList:
@@ -217,7 +231,8 @@ def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, sca
         return pointArray
 
     elif scanDirection.lower() == "z":
-        if debug: print("Scanning in axial direction")
+        if debug:
+            print("Scanning in axial direction")
         COMX = []
         COMY = []
         W = []
@@ -225,7 +240,9 @@ def COMFromImageList(sitkImageList, conditionType="count", conditionValue=0, sca
 
         referenceImage = sitkImageList[0]
         referenceArray = sitk.GetArrayFromImage(referenceImage)
-        x, y = np.mgrid[0 : referenceArray.shape[1] : 1, 0 : referenceArray.shape[2] : 1]
+        x, y = np.mgrid[
+            0 : referenceArray.shape[1] : 1, 0 : referenceArray.shape[2] : 1
+        ]
 
         with np.errstate(divide="ignore", invalid="ignore"):
             for sitkImage in sitkImageList:
@@ -285,7 +302,8 @@ def tubeFromCOMList(COMList, radius, debug=False):
         points.InsertPoint(i, pt[0], pt[1], pt[2])
 
     # Fit a spline to the points
-    if debug: print("Fitting spline")
+    if debug:
+        print("Fitting spline")
     spline = vtk.vtkParametricSpline()
     spline.SetPoints(points)
 
@@ -319,6 +337,7 @@ def tubeFromCOMList(COMList, radius, debug=False):
     tuber.Update()
 
     return tuber
+
 
 def writeVTKTubeToFile(tube, filename):
     """
@@ -399,11 +418,12 @@ def SimpleITKImageFromVTKTube(tube, SITKReferenceImage, debug=False):
     finalArray = finalImage.GetPointData().GetScalars()
     finalArray = vtk_to_numpy(finalArray).reshape(SITKReferenceImage.GetSize()[::-1])
     if debug:
-        print(f'Volume = {finalArray.sum()*sum(spacing):.3f} mm^3')
+        print(f"Volume = {finalArray.sum()*sum(spacing):.3f} mm^3")
     finalImageSITK = sitk.GetImageFromArray(finalArray)
     finalImageSITK.CopyInformation(SITKReferenceImage)
 
     return finalImageSITK
+
 
 def ConvertSimpleITKtoVTK(img):
     """
@@ -445,7 +465,7 @@ def vesselSplineGeneration(
     stopConditionTypeDict,
     stopConditionValueDict,
     scanDirectionDict,
-    debug=False
+    debug=False,
 ):
     """
 
@@ -461,7 +481,7 @@ def vesselSplineGeneration(
 
         imageList = [atlasSet[i]["DIR"][vesselName] for i in atlasSet.keys()]
         for im in imageList:
-            im.SetDirection((1,0,0,0,1,0,0,0,1))
+            im.SetDirection((1, 0, 0, 0, 1, 0, 0, 0, 1))
 
         vesselRadius = vesselRadiusDict[vesselName]
         stopConditionType = stopConditionTypeDict[vesselName]
@@ -473,7 +493,7 @@ def vesselSplineGeneration(
             conditionType=stopConditionType,
             conditionValue=stopConditionValue,
             scanDirection=scanDirection,
-            debug=debug
+            debug=debug,
         )
         tube = tubeFromCOMList(pointArray, radius=vesselRadius, debug=debug)
 

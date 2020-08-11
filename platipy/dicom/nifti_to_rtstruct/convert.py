@@ -14,9 +14,9 @@ import SimpleITK as sitk
 
 def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
 
-    logger.info('Will convert the following Nifti masks to RTStruct:')
-    
-    masks = {} # Dict stores key value pairs for masks
+    logger.info("Will convert the following Nifti masks to RTStruct:")
+
+    masks = {}  # Dict stores key value pairs for masks
     if type(mask) == dict:
         # Dict was already passed in
         masks = mask
@@ -27,9 +27,9 @@ def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
             masks[s[0]] = s[1]
 
     for m in masks:
-        logger.info(' - {0}'.format(m))
+        logger.info(" - {0}".format(m))
 
-    logger.info('Will use the following Dicom file as reference: {0}'.format(dcm_file))
+    logger.info("Will use the following Dicom file as reference: {0}".format(dcm_file))
 
     dd = {}
 
@@ -67,7 +67,7 @@ def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
         rois[key] = temp
 
     rt_struct = export_to_rtstruct(dd, dat_ct, debug=debug)
-    logger.info('Writing RTStruct to: {0}'.format(out_rt_filename))
+    logger.info("Writing RTStruct to: {0}".format(out_rt_filename))
     rt_struct.save_as(out_rt_filename)
 
     if debug:
@@ -76,13 +76,26 @@ def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
 
         open(out_param_name, "w").write(yaml.dump(dd))
 
-    logger.info('Finished')
+    logger.info("Finished")
+
 
 @click.command()
-@click.option('--dcm_file', '-d', required=True, help="Reference DICOM file from which header tags will be copied")
-@click.option('--debug', default=False, is_flag=True, help="Whether intermediate debug info is written")
-@click.option('--mask', '-m', multiple=True, required=True, help="Mask pairs with name,filename")
-@click.option('--out_rt_filename', '-o', required=True, help="Name of RT struct output")
+@click.option(
+    "--dcm_file",
+    "-d",
+    required=True,
+    help="Reference DICOM file from which header tags will be copied",
+)
+@click.option(
+    "--debug",
+    default=False,
+    is_flag=True,
+    help="Whether intermediate debug info is written",
+)
+@click.option(
+    "--mask", "-m", multiple=True, required=True, help="Mask pairs with name,filename"
+)
+@click.option("--out_rt_filename", "-o", required=True, help="Name of RT struct output")
 def click_command(dcm_file, debug, mask, out_rt_filename):
     """
     Convert Nifti masks to Dicom RTStruct
@@ -90,5 +103,6 @@ def click_command(dcm_file, debug, mask, out_rt_filename):
 
     convert_nifti(dcm_file, mask, out_rt_filename, debug=debug)
 
-if __name__ == '__main__':
-    click_command() # pylint: disable=no-value-for-parameter
+
+if __name__ == "__main__":
+    click_command()  # pylint: disable=no-value-for-parameter

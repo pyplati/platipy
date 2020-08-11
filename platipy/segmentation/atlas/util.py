@@ -5,6 +5,7 @@ import numpy as np
 
 from scipy.stats import norm as scipy_norm
 
+
 def vectorised_transform_index_to_physical_point(image, point_array, rotate=True):
     """
     Transforms a set of points from array indices to real-space
@@ -40,4 +41,4 @@ def median_absolute_deviation(data, axis=None):
 
 
 def gaussian_curve(x, a, m, s):
-    return a*scipy_norm.pdf(x, loc=m, scale=s)
+    return a * scipy_norm.pdf(x, loc=m, scale=s)

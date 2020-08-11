@@ -38,7 +38,10 @@ def run_bronchus_segmentation(input_image, settings=BRONCHUS_SETTINGS_DEFAULTS):
     results[settings["outputLungName"]] = lung_mask
 
     bronchus_mask = generate_airway_mask(
-        working_directory, input_image, lung_mask, config_dict=settings["algorithmSettings"]
+        working_directory,
+        input_image,
+        lung_mask,
+        config_dict=settings["algorithmSettings"],
     )
 
     # If the bronchus mask counldn't be generated then skip it

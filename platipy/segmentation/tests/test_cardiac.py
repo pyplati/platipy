@@ -12,9 +12,12 @@ import SimpleITK as sitk
 
 from platipy.segmentation.tests.pull_data import get_lung_data
 
-#os.environ["ATLAS_PATH"] = os.path.join(os.path.dirname(__file__), "data", "lung")
+# os.environ["ATLAS_PATH"] = os.path.join(os.path.dirname(__file__), "data", "lung")
 
-from platipy.segmentation.cardiac.service import cardiac_service, CARDIAC_SETTINGS_DEFAULTS
+from platipy.segmentation.cardiac.service import (
+    cardiac_service,
+    CARDIAC_SETTINGS_DEFAULTS,
+)
 from platipy.framework.models import DataObject
 
 
@@ -62,8 +65,8 @@ def test_cardiac_service(cardiac_data):
         label_stats_image_filter = sitk.LabelStatisticsImageFilter()
         label_stats_image_filter.Execute(image, lungs)
         bounding_box = list(label_stats_image_filter.GetBoundingBox(1))
-        index = [bounding_box[x*2] for x in range(3)]
-        size = [bounding_box[(x*2)+1] - bounding_box[x*2] for x in range(3)]
+        index = [bounding_box[x * 2] for x in range(3)]
+        size = [bounding_box[(x * 2) + 1] - bounding_box[x * 2] for x in range(3)]
 
         cropped_image = sitk.RegionOfInterest(image, size=size, index=index)
 

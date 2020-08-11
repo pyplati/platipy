@@ -9,8 +9,8 @@ import os
 import uuid
 import tempfile
 
-class Algorithm():
 
+class Algorithm:
     def __init__(self, name, function, default_settings):
         self.name = name
         self.function = function
@@ -31,13 +31,11 @@ class FlaskApp(Flask):
     dicom_listener_port = 7777
     dicom_listener_aetitle = "PLATIPY_SERVICE"
 
-    api = None # Holds reference to api for extensibility
+    api = None  # Holds reference to api for extensibility
 
     def register(self, name, default_settings=None):
-
         def decorator(f):
-            self.algorithms.update(
-                {name: Algorithm(name, f, default_settings)})
+            self.algorithms.update({name: Algorithm(name, f, default_settings)})
             return f
 
         return decorator
@@ -52,13 +50,12 @@ class FlaskApp(Flask):
         celery_worker = worker.worker(app=application)
 
         options = {
-            'broker': self.config['CELERY_BROKER_URL'],
-            'loglevel': 'INFO',
-            'traceback': True
+            "broker": self.config["CELERY_BROKER_URL"],
+            "loglevel": "INFO",
+            "traceback": True,
         }
 
         celery_worker.run(**options)
-
 
     def run_beat(self):
 
@@ -70,21 +67,27 @@ class FlaskApp(Flask):
         celery_beat = beat.beat(app=application)
 
         options = {
-            'broker': self.config['CELERY_BROKER_URL'],
-            'loglevel': 'INFO',
-            'traceback': True,
-            'beat': True,
-            'schedule': os.path.join(str(tempfile.mkdtemp()),'celery-beat-schedule')
+            "broker": self.config["CELERY_BROKER_URL"],
+            "loglevel": "INFO",
+            "traceback": True,
+            "beat": True,
+            "schedule": os.path.join(str(tempfile.mkdtemp()), "celery-beat-schedule"),
         }
 
         celery_beat.run(**options)
-        
-    def run(self, host=None, port=None, debug=None,
-            dicom_listener_port=7777,
-            dicom_listener_aetitle="PLATIPY_SERVICE",
-            load_dotenv=True, **options):
 
-        logger.info('Starting APP!')
+    def run(
+        self,
+        host=None,
+        port=None,
+        debug=None,
+        dicom_listener_port=7777,
+        dicom_listener_aetitle="PLATIPY_SERVICE",
+        load_dotenv=True,
+        **options
+    ):
+
+        logger.info("Starting APP!")
 
         pc = Process(target=self.run_celery)
         pc.start()
@@ -96,15 +99,19 @@ class FlaskApp(Flask):
 
         self.dicom_listener_port = dicom_listener_port
         self.dicom_listener_aetitle = dicom_listener_aetitle
-        
-        from .tasks import listen_task
-        listen_task.apply_async([
-            dicom_listener_port,
-            dicom_listener_aetitle
-        ])
 
-        super().run(host=host, port=port, debug=debug,
-                    load_dotenv=load_dotenv, use_reloader=False, **options)
+        from .tasks import listen_task
+
+        listen_task.apply_async([dicom_listener_port, dicom_listener_aetitle])
+
+        super().run(
+            host=host,
+            port=port,
+            debug=debug,
+            load_dotenv=load_dotenv,
+            use_reloader=False,
+            **options
+        )
 
         pc.join()
         pb.join()

@@ -147,6 +147,8 @@ def get_crop_bounding_box(img, mask):
             bounding_box[3 + i] = bounding_box[3 + i] + bounding_box[i]
             bounding_box[i] = max(bounding_box[i], 0)
 
-        bounding_box[3 + i] = min(bounding_box[3 + i], img.GetSize()[i] - bounding_box[i])
+        bounding_box[3 + i] = min(
+            bounding_box[3 + i], img.GetSize()[i] - bounding_box[i]
+        )
 
     return bounding_box

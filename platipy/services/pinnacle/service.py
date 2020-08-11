@@ -16,7 +16,7 @@ from platipy.framework import app, DataObject, celery
 
 PINNACLE_EXPORT_SETTINGS_DEFAULTS = {
     "exportModalities": ["CT", "RTSTRUCT", "RTPLAN", "RTDOSE"],
-    "exportSeriesUIDs": []
+    "exportSeriesUIDs": [],
 }
 
 
@@ -34,7 +34,9 @@ def pinnacle_export_service(data_objects, working_dir, settings):
         logger.info("Running on data object: " + data_object.path)
 
         if not data_object.type == "FILE" or not tarfile.is_tarfile(data_object.path):
-            logger.error(f"Can only process TAR file. Skipping file: {data_object.path}")
+            logger.error(
+                f"Can only process TAR file. Skipping file: {data_object.path}"
+            )
             continue
 
         archive_path = tempfile.mkdtemp()
@@ -121,20 +123,26 @@ def pinnacle_export_service(data_objects, working_dir, settings):
                 meta_data["service"] = {
                     "tool": "Pinnacel Export Tool",
                     "trial": export_plan.active_trial["Name"],
-                    "plan_date": export_plan.active_trial["ObjectVersion"]["WriteTimeStamp"],
+                    "plan_date": export_plan.active_trial["ObjectVersion"][
+                        "WriteTimeStamp"
+                    ],
                     "plan_locked": export_plan.plan_info["PlanIsLocked"],
                 }
 
                 if dicom_dataset.Modality == "RTPLAN":
-                    meta_data["warning"] = ("WARNING: OUTPUT GENERATED FOR RTPLAN FILE IS "
-                                            "UNVERIFIED AND MOST LIKELY INCORRECT!")
+                    meta_data["warning"] = (
+                        "WARNING: OUTPUT GENERATED FOR RTPLAN FILE IS "
+                        "UNVERIFIED AND MOST LIKELY INCORRECT!"
+                    )
 
                 if "meta" in data_object.meta_data.keys():
                     meta_data["meta"] = data_object.meta_data["meta"]
 
                 if dicom_dataset.Modality == "RTPLAN":
-                    dicom_dataset.RTPlanDescription = ("Pinnacle Export Meta Data written to "
-                                                       "SOPAuthorizationComment")
+                    dicom_dataset.RTPlanDescription = (
+                        "Pinnacle Export Meta Data written to "
+                        "SOPAuthorizationComment"
+                    )
                 dicom_dataset.SOPAuthorizationComment = json.dumps(meta_data)
 
                 dicom_dataset.save_as(obj)

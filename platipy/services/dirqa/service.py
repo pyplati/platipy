@@ -23,14 +23,17 @@ def crop_to_contour_bounding_box(img, mask):
     """
 
     # Resample the mask (MIM send the masks at 2x the resolution)
-    mask = sitk.Resample(mask, img.GetSize(),
-                                 sitk.Transform(), 
-                                 sitk.sitkNearestNeighbor,
-                                 img.GetOrigin(),
-                                 img.GetSpacing(),
-                                 img.GetDirection(),
-                                 0,
-                                 mask.GetPixelID())
+    mask = sitk.Resample(
+        mask,
+        img.GetSize(),
+        sitk.Transform(),
+        sitk.sitkNearestNeighbor,
+        img.GetOrigin(),
+        img.GetSpacing(),
+        img.GetDirection(),
+        0,
+        mask.GetPixelID(),
+    )
 
     # Get the mask bounding box
     label_statistics_image_filter = sitk.LabelStatisticsImageFilter()
@@ -102,7 +105,10 @@ def dirqa_service(data_objects, working_dir, settings):
                 )
                 continue
 
-            if search_contour_object.meta_data["name"] == primary_contour_object.meta_data["name"]:
+            if (
+                search_contour_object.meta_data["name"]
+                == primary_contour_object.meta_data["name"]
+            ):
                 secondary_contour_object = search_contour_object
 
         if not secondary_contour_object:
@@ -119,7 +125,9 @@ def dirqa_service(data_objects, working_dir, settings):
             primary_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(primary.path)
         secondary_path = secondary.path
         if secondary.type == "DICOM":
-            secondary_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(secondary.path)
+            secondary_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(
+                secondary.path
+            )
         primary_image = sitk.ReadImage(primary_path)
         secondary_image = sitk.ReadImage(secondary_path)
 
@@ -128,8 +136,12 @@ def dirqa_service(data_objects, working_dir, settings):
         secondary_contour_mask = sitk.ReadImage(secondary_contour_object.path)
 
         # Crop to the contour bounding box
-        primary_image = crop_to_contour_bounding_box(primary_image, primary_contour_mask)
-        secondary_image = crop_to_contour_bounding_box(secondary_image, secondary_contour_mask)
+        primary_image = crop_to_contour_bounding_box(
+            primary_image, primary_contour_mask
+        )
+        secondary_image = crop_to_contour_bounding_box(
+            secondary_image, secondary_contour_mask
+        )
 
         # Threshold intensities
         low_range = settings["intensityRange"][0]
@@ -155,11 +167,14 @@ def dirqa_service(data_objects, working_dir, settings):
         sitk.WriteImage(secondary_image, secondary_cropped_path)
 
         primary_cropped_match = os.path.join(
-            working_dir, "primary_{0}_match.csv".format(primary_contour_object.meta_data["name"])
+            working_dir,
+            "primary_{0}_match.csv".format(primary_contour_object.meta_data["name"]),
         )
         secondary_cropped_match = os.path.join(
             working_dir,
-            "secondary_{0}_match.csv".format(secondary_contour_object.meta_data["name"]),
+            "secondary_{0}_match.csv".format(
+                secondary_contour_object.meta_data["name"]
+            ),
         )
 
         subprocess.call(
@@ -192,10 +207,14 @@ def dirqa_service(data_objects, working_dir, settings):
 
         # Prefix point names with structure name
         primary_points[0] = (
-            primary_contour_object.meta_data["name"] + "_" + primary_points[0].astype(str)
+            primary_contour_object.meta_data["name"]
+            + "_"
+            + primary_points[0].astype(str)
         )
         secondary_points[0] = (
-            secondary_contour_object.meta_data["name"] + "_" + secondary_points[0].astype(str)
+            secondary_contour_object.meta_data["name"]
+            + "_"
+            + secondary_points[0].astype(str)
         )
 
         if settings["includePointsMode"] == "CONTOUR":
@@ -205,7 +224,9 @@ def dirqa_service(data_objects, working_dir, settings):
             remove_point_names = []
             for point in primary_points.iterrows():
                 phys_point = list(point[1][1:4])
-                mask_point = primary_contour_mask.TransformPhysicalPointToIndex(phys_point)
+                mask_point = primary_contour_mask.TransformPhysicalPointToIndex(
+                    phys_point
+                )
                 is_in_contour = primary_contour_mask[mask_point]
 
                 if not is_in_contour:
@@ -213,21 +234,27 @@ def dirqa_service(data_objects, working_dir, settings):
 
             for point in secondary_points.iterrows():
                 phys_point = list(point[1][1:4])
-                mask_point = secondary_contour_mask.TransformPhysicalPointToIndex(phys_point)
+                mask_point = secondary_contour_mask.TransformPhysicalPointToIndex(
+                    phys_point
+                )
                 is_in_contour = secondary_contour_mask[mask_point]
 
                 if not is_in_contour:
                     remove_point_names.append(point[1][0])
 
             primary_points = primary_points[~primary_points[0].isin(remove_point_names)]
-            secondary_points = secondary_points[~secondary_points[0].isin(remove_point_names)]
+            secondary_points = secondary_points[
+                ~secondary_points[0].isin(remove_point_names)
+            ]
 
         # Save the updated points
         primary_points.to_csv(primary_cropped_match, index=False, header=None)
         secondary_points.to_csv(secondary_cropped_match, index=False, header=None)
 
         # Create the output Data Object and add it to output_objects
-        primary_output_object = DataObject(type="FILE", path=primary_cropped_match, parent=primary)
+        primary_output_object = DataObject(
+            type="FILE", path=primary_cropped_match, parent=primary
+        )
         secondary_output_object = DataObject(
             type="FILE", path=secondary_cropped_match, parent=secondary
         )

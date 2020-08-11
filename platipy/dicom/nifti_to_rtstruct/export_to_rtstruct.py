@@ -43,7 +43,13 @@ def export_to_rtstruct(params, dat_ct, debug=False):
     dat.ImageType = ["DERIVED", "PRIMARY"]
 
     # Lets do the patient module stuff here
-    pm_attrs = ["PatientName", "PatientID", "PatientBirthDate", "PatientSex", "PatientAge"]
+    pm_attrs = [
+        "PatientName",
+        "PatientID",
+        "PatientBirthDate",
+        "PatientSex",
+        "PatientAge",
+    ]
     copy_attrs_s2t(pm_attrs, dat_ct, dat, debug)
 
     # Let's write the study module
@@ -155,9 +161,7 @@ def export_to_rtstruct(params, dat_ct, debug=False):
             cont.ContourImageSequence = Sequence([cont_img])
             cont.ContourGeometricType = contour["GeometricType"]
             cont.NumberOfContourPoints = len(contour["Data"])
-            cont.ContourData = list(
-                itertools.chain.from_iterable(contour["Data"])
-                )
+            cont.ContourData = list(itertools.chain.from_iterable(contour["Data"]))
             cont_ll.append(cont)
         roi_con.ContourSequence = Sequence(cont_ll)
 

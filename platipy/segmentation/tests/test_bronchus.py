@@ -19,7 +19,10 @@ from platipy.segmentation.bronchus.bronchus import (
     generate_airway_mask,
 )
 
-from platipy.segmentation.bronchus.service import bronchus_service, BRONCHUS_SETTINGS_DEFAULTS
+from platipy.segmentation.bronchus.service import (
+    bronchus_service,
+    BRONCHUS_SETTINGS_DEFAULTS,
+)
 from platipy.framework.models import DataObject
 
 
@@ -32,6 +35,7 @@ def bronchus_data():
     """
     return get_lung_data(number_of_patients=1)
 
+
 def assert_lung_mask(lung_mask):
     """Checks that the lung mask looks as expected for the tests in this file
     """
@@ -39,15 +43,22 @@ def assert_lung_mask(lung_mask):
     label_shape_statistics_image_filter = sitk.LabelShapeStatisticsImageFilter()
     label_shape_statistics_image_filter.Execute(lung_mask)
 
-    assert np.allclose(label_shape_statistics_image_filter.GetPhysicalSize(1), 4138240, atol=100)
+    assert np.allclose(
+        label_shape_statistics_image_filter.GetPhysicalSize(1), 4138240, atol=100
+    )
 
-    assert np.allclose(label_shape_statistics_image_filter.GetElongation(1), 1.52, atol=0.01)
-    assert np.allclose(label_shape_statistics_image_filter.GetRoundness(1), 0.46, atol=0.01)
+    assert np.allclose(
+        label_shape_statistics_image_filter.GetElongation(1), 1.52, atol=0.01
+    )
+    assert np.allclose(
+        label_shape_statistics_image_filter.GetRoundness(1), 0.46, atol=0.01
+    )
 
     centroid = label_shape_statistics_image_filter.GetCentroid(1)
     assert np.allclose(centroid[0], 11, atol=1)
     assert np.allclose(centroid[1], -200, atol=1)
     assert np.allclose(centroid[2], -448, atol=1)
+
 
 def assert_bronchus_mask(bronchus_mask):
     """Checks that the bronchus mask looks as expected for the tests in this file
@@ -56,15 +67,22 @@ def assert_bronchus_mask(bronchus_mask):
     label_shape_statistics_image_filter = sitk.LabelShapeStatisticsImageFilter()
     label_shape_statistics_image_filter.Execute(bronchus_mask)
 
-    assert np.allclose(label_shape_statistics_image_filter.GetPhysicalSize(1), 51700, atol=100)
+    assert np.allclose(
+        label_shape_statistics_image_filter.GetPhysicalSize(1), 51700, atol=100
+    )
 
-    assert np.allclose(label_shape_statistics_image_filter.GetElongation(1), 1.39, atol=0.01)
-    assert np.allclose(label_shape_statistics_image_filter.GetRoundness(1), 0.55, atol=0.01)
+    assert np.allclose(
+        label_shape_statistics_image_filter.GetElongation(1), 1.39, atol=0.01
+    )
+    assert np.allclose(
+        label_shape_statistics_image_filter.GetRoundness(1), 0.55, atol=0.01
+    )
 
     centroid = label_shape_statistics_image_filter.GetCentroid(1)
     assert np.allclose(centroid[0], 18, atol=1)
     assert np.allclose(centroid[1], -188, atol=1)
     assert np.allclose(centroid[2], -446, atol=1)
+
 
 def test_lung_segmentation(bronchus_data):
     """Tests the lung segmentation used as an initial step of bronchus segmentation

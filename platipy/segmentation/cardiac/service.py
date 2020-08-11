@@ -14,7 +14,10 @@ from loguru import logger
 # pylint: disable=unused-import
 from platipy.framework import app, DataObject, celery
 
-from platipy.segmentation.cardiac.run import CARDIAC_SETTINGS_DEFAULTS, run_cardiac_segmentation
+from platipy.segmentation.cardiac.run import (
+    CARDIAC_SETTINGS_DEFAULTS,
+    run_cardiac_segmentation,
+)
 
 
 @app.register("Cardiac Segmentation", default_settings=CARDIAC_SETTINGS_DEFAULTS)
@@ -33,7 +36,9 @@ def cardiac_service(data_objects, working_dir, settings):
         # Read the image series
         load_path = data_object.path
         if data_object.type == "DICOM":
-            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(data_object.path)
+            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(
+                data_object.path
+            )
 
         img = sitk.ReadImage(load_path)
 
@@ -45,7 +50,9 @@ def cardiac_service(data_objects, working_dir, settings):
             mask_file = os.path.join(working_dir, "{0}.nii.gz".format(output))
             sitk.WriteImage(results[output], mask_file)
 
-            output_data_object = DataObject(type="FILE", path=mask_file, parent=data_object)
+            output_data_object = DataObject(
+                type="FILE", path=mask_file, parent=data_object
+            )
             output_objects.append(output_data_object)
 
         # If the input was a DICOM, then we can use it to generate an output RTStruct

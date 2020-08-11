@@ -6,11 +6,17 @@ import sys
 import numpy as np
 import SimpleITK as sitk
 
+
 def initial_registration_command_iteration(method):
     """
     Utility function to print information during initial (rigid, similarity, affine, translation) registration
     """
-    print("{0:3} = {1:10.5f}".format(method.GetOptimizerIteration(), method.GetMetricValue()))
+    print(
+        "{0:3} = {1:10.5f}".format(
+            method.GetOptimizerIteration(), method.GetMetricValue()
+        )
+    )
+
 
 def deformable_registration_command_iteration(method):
     """
@@ -18,37 +24,37 @@ def deformable_registration_command_iteration(method):
     """
     print("{0:3} = {1:10.5f}".format(method.GetElapsedIterations(), method.GetMetric()))
 
-def stage_iteration(method) :
+
+def stage_iteration(method):
     """
     Utility function to print information during stage change in registration
     """
-    print(f"Number of parameters = {method.GetInitialTransform().GetNumberOfParameters()}")
+    print(
+        f"Number of parameters = {method.GetInitialTransform().GetNumberOfParameters()}"
+    )
 
-def control_point_spacing_distance_to_number(
-    image,
-    grid_spacing
-):
+
+def control_point_spacing_distance_to_number(image, grid_spacing):
     """
     Convert grid spacing specified in distance to number of control points
     """
     image_spacing = np.array(image.GetSpacing())
-    image_size    = np.array(image.GetSize())
+    image_size = np.array(image.GetSize())
     number_points = image_size * image_spacing / np.array(grid_spacing)
-    return (number_points+0.5).astype(int)
+    return (number_points + 0.5).astype(int)
 
-def alignment_registration(
-    fixed_image,
-    moving_image,
-    default_value = 0,
-    moments=True
-):
+
+def alignment_registration(fixed_image, moving_image, default_value=0, moments=True):
     moving_image_type = moving_image.GetPixelIDValue()
     fixed_image = sitk.Cast(fixed_image, sitk.sitkFloat32)
     moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
-    initial_transform = sitk.CenteredTransformInitializer(fixed_image, moving_image, sitk.VersorRigid3DTransform(), moments)
+    initial_transform = sitk.CenteredTransformInitializer(
+        fixed_image, moving_image, sitk.VersorRigid3DTransform(), moments
+    )
     aligned_image = sitk.Resample(moving_image, fixed_image, initial_transform)
     aligned_image = sitk.Cast(aligned_image, moving_image_type)
     return aligned_image, initial_transform
+
 
 def initial_registration(
     fixed_image,
@@ -58,7 +64,7 @@ def initial_registration(
     options=None,
     default_value=-1024,
     trace=False,
-    reg_method="Similarity"
+    reg_method="Similarity",
 ):
     """
     Rigid image registration using ITK
@@ -83,7 +89,13 @@ def initial_registration(
     moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
 
     if not options:
-        options = {"shrinkFactors": [8, 2, 1], "smoothSigmas": [4, 2, 0], "samplingRate": 0.1, optimiser:'gradient_descent', "numberOfIterations":50}
+        options = {
+            "shrinkFactors": [8, 2, 1],
+            "smoothSigmas": [4, 2, 0],
+            "samplingRate": 0.1,
+            optimiser: "gradient_descent",
+            "numberOfIterations": 50,
+        }
 
     # Get the options
     shrink_factors = options["shrinkFactors"]
@@ -95,7 +107,9 @@ def initial_registration(
     number_of_iterations = options["numberOfIterations"]
 
     # Initialise using a VersorRigid3DTransform
-    initial_transform = sitk.CenteredTransformInitializer(fixed_image, moving_image, sitk.Euler3DTransform(), False)
+    initial_transform = sitk.CenteredTransformInitializer(
+        fixed_image, moving_image, sitk.Euler3DTransform(), False
+    )
     # Set up image registration method
     registration = sitk.ImageRegistrationMethod()
 
@@ -105,9 +119,9 @@ def initial_registration(
 
     registration.SetMovingInitialTransform(initial_transform)
 
-    if metric == 'correlation':
+    if metric == "correlation":
         registration.SetMetricAsCorrelation()
-    elif metric == 'mean_squares':
+    elif metric == "mean_squares":
         registration.SetMetricAsMeanSquares()
     # to do: add the rest
 
@@ -126,18 +140,20 @@ def initial_registration(
     if fixed_structure:
         registration.SetMetricFixedMask(fixed_structure)
 
-    if reg_method=='Translation':
+    if reg_method == "Translation":
         registration.SetInitialTransform(sitk.TranslationTransform(3))
-    elif reg_method=='Similarity':
+    elif reg_method == "Similarity":
         registration.SetInitialTransform(sitk.Similarity3DTransform())
-    elif reg_method=='Affine':
+    elif reg_method == "Affine":
         registration.SetInitialTransform(sitk.AffineTransform(3))
-    elif reg_method=='Rigid':
+    elif reg_method == "Rigid":
         registration.SetInitialTransform(sitk.VersorRigid3DTransform())
     else:
-        raise ValueError('You have selected a registration method that does not exist.\n Please select from Translation, Similarity, Affine, Rigid')
+        raise ValueError(
+            "You have selected a registration method that does not exist.\n Please select from Translation, Similarity, Affine, Rigid"
+        )
 
-    if optimiser == 'LBGGSB':
+    if optimiser == "LBGGSB":
         registration.SetOptimizerAsLBFGSB(
             gradientConvergenceTolerance=1e-5,
             numberOfIterations=number_of_iterations,
@@ -146,28 +162,27 @@ def initial_registration(
             costFunctionConvergenceFactor=1e7,
             trace=trace,
         )
-    elif optimiser == 'exhaustive':
+    elif optimiser == "exhaustive":
         """
         This isn't well implemented
         Needs some work to give options for sampling rates
         Use is not currently recommended
         """
-        samples = [10,10,10,10,10,10]
+        samples = [10, 10, 10, 10, 10, 10]
         registration.SetOptimizerAsExhaustive(samples)
-    elif optimiser=='gradient_descent_line_search':
+    elif optimiser == "gradient_descent_line_search":
         registration.SetOptimizerAsGradientDescentLineSearch(
-            learningRate = 1.0,
-            numberOfIterations = number_of_iterations
+            learningRate=1.0, numberOfIterations=number_of_iterations
         )
-    elif optimiser=='gradient_descent':
+    elif optimiser == "gradient_descent":
         registration.SetOptimizerAsGradientDescent(
-            learningRate = 1.0,
-            numberOfIterations = number_of_iterations
+            learningRate=1.0, numberOfIterations=number_of_iterations
         )
 
     if trace:
         registration.AddCommand(
-            sitk.sitkIterationEvent, lambda: initial_registration_command_iteration(registration)
+            sitk.sitkIterationEvent,
+            lambda: initial_registration_command_iteration(registration),
         )
 
     output_transform = registration.Execute(fixed=fixed_image, moving=moving_image)
@@ -176,13 +191,26 @@ def initial_registration(
     combined_transform.AddTransform(initial_transform)
     combined_transform.AddTransform(output_transform)
 
-    registered_image = transform_propagation(fixed_image, moving_image, combined_transform, default_value=default_value, interp=final_interp)
+    registered_image = transform_propagation(
+        fixed_image,
+        moving_image,
+        combined_transform,
+        default_value=default_value,
+        interp=final_interp,
+    )
     registered_image = sitk.Cast(registered_image, moving_image_type)
 
     return registered_image, combined_transform
 
+
 def transform_propagation(
-    fixed_image, moving_image, transform, structure=False, default_value=-1024, interp=sitk.sitkNearestNeighbor, debug=False
+    fixed_image,
+    moving_image,
+    transform,
+    structure=False,
+    default_value=-1024,
+    interp=sitk.sitkNearestNeighbor,
+    debug=False,
 ):
     """
     Transform propagation using ITK
@@ -215,7 +243,9 @@ def transform_propagation(
 
     if structure and interp > 1:
         if debug:
-            print("Note: Higher order interpolation on binary mask - using 32-bit floating point output")
+            print(
+                "Note: Higher order interpolation on binary mask - using 32-bit floating point output"
+            )
         output_image = sitk.Cast(output_image, sitk.sitkFloat32)
 
         # Safe way to remove dodgy values that can cause issues later
@@ -226,7 +256,9 @@ def transform_propagation(
     return output_image
 
 
-def smooth_and_resample(image, shrink_factor, smoothing_sigma, isotropic_resample=False):
+def smooth_and_resample(
+    image, shrink_factor, smoothing_sigma, isotropic_resample=False
+):
     """
     Args:
         image: The image we want to resample.
@@ -241,7 +273,7 @@ def smooth_and_resample(image, shrink_factor, smoothing_sigma, isotropic_resampl
         and shrink factor.
     """
     if type(smoothing_sigma) == list or type(smoothing_sigma) == tuple:
-        if any([i>0 for i in smoothing_sigma]):
+        if any([i > 0 for i in smoothing_sigma]):
             # smoothed_image = sitk.SmoothingRecursiveGaussian(image, smoothing_sigma)
             smoothed_image = sitk.DiscreteGaussian(image, smoothing_sigma)
         else:
@@ -258,18 +290,25 @@ def smooth_and_resample(image, shrink_factor, smoothing_sigma, isotropic_resampl
     original_size = image.GetSize()
 
     if isotropic_resample:
-        scale_factor = shrink_factor * np.ones(3)/np.array(image.GetSpacing())
-        new_size = [int(sz / float(sf) + 0.5) for sz,sf in zip(original_size, scale_factor)]
+        scale_factor = shrink_factor * np.ones(3) / np.array(image.GetSpacing())
+        new_size = [
+            int(sz / float(sf) + 0.5) for sz, sf in zip(original_size, scale_factor)
+        ]
 
     if not isotropic_resample:
         if type(shrink_factor) == list:
-            new_size = [int(sz / float(sf) + 0.5) for sz,sf in zip(original_size, shrink_factor)]
+            new_size = [
+                int(sz / float(sf) + 0.5)
+                for sz, sf in zip(original_size, shrink_factor)
+            ]
         else:
             new_size = [int(sz / float(shrink_factor) + 0.5) for sz in original_size]
 
     new_spacing = [
         ((original_sz - 1) * original_spc) / (new_sz - 1)
-        for original_sz, original_spc, new_sz in zip(original_size, original_spacing, new_size)
+        for original_sz, original_spc, new_sz in zip(
+            original_size, original_spacing, new_size
+        )
     ]
 
     return sitk.Resample(
@@ -295,7 +334,7 @@ def multiscale_demons(
     smoothing_sigmas=None,
     iteration_staging=None,
     isotropic_resample=False,
-    return_field=False
+    return_field=False,
 ):
     """
     Run the given registration algorithm in a multiscale fashion. The original scale should not be
@@ -321,12 +360,25 @@ def multiscale_demons(
     fixed_images = []
     moving_images = []
 
-
     for shrink_factor, smoothing_sigma in reversed(
         list(zip(shrink_factors, smoothing_sigmas))
     ):
-        fixed_images.append(smooth_and_resample(fixed_image, shrink_factor, smoothing_sigma, isotropic_resample=isotropic_resample))
-        moving_images.append(smooth_and_resample(moving_image, shrink_factor, smoothing_sigma, isotropic_resample=isotropic_resample))
+        fixed_images.append(
+            smooth_and_resample(
+                fixed_image,
+                shrink_factor,
+                smoothing_sigma,
+                isotropic_resample=isotropic_resample,
+            )
+        )
+        moving_images.append(
+            smooth_and_resample(
+                moving_image,
+                shrink_factor,
+                smoothing_sigma,
+                isotropic_resample=isotropic_resample,
+            )
+        )
 
     # Create initial displacement field at lowest resolution.
     # Currently, the pixel type is required to be sitkVectorFloat64 because of a constraint imposed
@@ -350,7 +402,9 @@ def multiscale_demons(
             )
             initial_displacement_field.CopyInformation(fixed_images[-1])
     else:
-        initial_displacement_field = sitk.Resample(initial_displacement_field, fixed_images[-1])
+        initial_displacement_field = sitk.Resample(
+            initial_displacement_field, fixed_images[-1]
+        )
 
     # Run the registration.
     iters = iteration_staging[0]
@@ -369,10 +423,15 @@ def multiscale_demons(
             f_image, m_image, initial_displacement_field
         )
 
-    output_displacement_field = sitk.Resample(initial_displacement_field, initial_displacement_field)
+    output_displacement_field = sitk.Resample(
+        initial_displacement_field, initial_displacement_field
+    )
 
     if return_field:
-        return (sitk.DisplacementFieldTransform(initial_displacement_field), output_displacement_field)
+        return (
+            sitk.DisplacementFieldTransform(initial_displacement_field),
+            output_displacement_field,
+        )
     else:
         return sitk.DisplacementFieldTransform(initial_displacement_field)
 
@@ -391,7 +450,7 @@ def fast_symmetric_forces_demons_registration(
     structure=False,
     interp_order=2,
     trace=False,
-    return_field=False
+    return_field=False,
 ):
     """
     Deformable image propagation using Fast Symmetric-Forces Demons
@@ -440,7 +499,8 @@ def fast_symmetric_forces_demons_registration(
     # This allows monitoring of the progress
     if trace:
         registration_method.AddCommand(
-            sitk.sitkIterationEvent, lambda: deformable_registration_command_iteration(registration_method)
+            sitk.sitkIterationEvent,
+            lambda: deformable_registration_command_iteration(registration_method),
         )
 
     if not smoothing_sigmas:
@@ -455,7 +515,7 @@ def fast_symmetric_forces_demons_registration(
         iteration_staging=iteration_staging,
         isotropic_resample=isotropic_resample,
         initial_displacement_field=initial_displacement_field,
-        return_field=return_field
+        return_field=return_field,
     )
 
     if return_field:
@@ -488,7 +548,13 @@ def fast_symmetric_forces_demons_registration(
         return registered_image, output_transform
 
 
-def apply_field(input_image, transform, structure=False, default_value=-1024, interp=sitk.sitkNearestNeighbor):
+def apply_field(
+    input_image,
+    transform,
+    structure=False,
+    default_value=-1024,
+    interp=sitk.sitkNearestNeighbor,
+):
     """
     Transform a volume of structure with the given deformation field.
 
@@ -521,27 +587,27 @@ def apply_field(input_image, transform, structure=False, default_value=-1024, in
 def bspline_registration(
     fixed_image,
     moving_image,
-    moving_structure = False,
-    fixed_structure = False,
-    options =   {
-        "resolution_staging" :  [8,4,2],
-        "smooth_sigmas" :  [4,2,1],
-        "sampling_rate" :  0.1,
-        "optimiser" :  'LBFGS',
-        "metric" : 'correlation',
-        "initial_grid_spacing" :  64,
-        "grid_scale_factors" :  [1, 2, 4],
-        "interp_order" :  3,
-        "default_value" :  -1024,
-        "number_of_iterations" : 20
+    moving_structure=False,
+    fixed_structure=False,
+    options={
+        "resolution_staging": [8, 4, 2],
+        "smooth_sigmas": [4, 2, 1],
+        "sampling_rate": 0.1,
+        "optimiser": "LBFGS",
+        "metric": "correlation",
+        "initial_grid_spacing": 64,
+        "grid_scale_factors": [1, 2, 4],
+        "interp_order": 3,
+        "default_value": -1024,
+        "number_of_iterations": 20,
     },
-    isotropic_resample = False,
-    initial_isotropic_size = 1,
-    initial_isotropic_smooth_scale = 0,
-    trace = False,
-    ncores  = 8,
-    default_value = -1024,
-    debug = False
+    isotropic_resample=False,
+    initial_isotropic_size=1,
+    initial_isotropic_smooth_scale=0,
+    trace=False,
+    ncores=8,
+    default_value=-1024,
+    debug=False,
 ):
     """
     B-Spline image registration using ITK
@@ -592,8 +658,18 @@ def bspline_registration(
         fixed_image_original = fixed_image
         fixed_image_original.MakeUnique()
 
-        fixed_image = smooth_and_resample(fixed_image, initial_isotropic_size, initial_isotropic_smooth_scale, isotropic_resample=True)
-        moving_image = smooth_and_resample(moving_image, initial_isotropic_size, initial_isotropic_smooth_scale, isotropic_resample=True)
+        fixed_image = smooth_and_resample(
+            fixed_image,
+            initial_isotropic_size,
+            initial_isotropic_smooth_scale,
+            isotropic_resample=True,
+        )
+        moving_image = smooth_and_resample(
+            moving_image,
+            initial_isotropic_size,
+            initial_isotropic_smooth_scale,
+            isotropic_resample=True,
+        )
 
     else:
         fixed_image_original = fixed_image
@@ -607,7 +683,7 @@ def bspline_registration(
     registration.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
 
     # Choose optimiser
-    if optimiser=='LBFGSB':
+    if optimiser == "LBFGSB":
         registration.SetOptimizerAsLBFGSB(
             gradientConvergenceTolerance=1e-5,
             numberOfIterations=number_of_iterations,
@@ -616,7 +692,7 @@ def bspline_registration(
             costFunctionConvergenceFactor=1e7,
             trace=trace,
         )
-    elif optimiser=='LBFGS':
+    elif optimiser == "LBFGS":
         registration.SetOptimizerAsLBFGS2(
             numberOfIterations=number_of_iterations,
             solutionAccuracy=1e-2,
@@ -626,47 +702,47 @@ def bspline_registration(
             lineSearchMaximumEvaluations=40,
             lineSearchMinimumStep=1e-20,
             lineSearchMaximumStep=1e20,
-            lineSearchAccuracy=0.01
+            lineSearchAccuracy=0.01,
         )
-    elif optimiser=='CGLS':
+    elif optimiser == "CGLS":
         registration.SetOptimizerAsConjugateGradientLineSearch(
-            learningRate = 0.05,
-            numberOfIterations = number_of_iterations
+            learningRate=0.05, numberOfIterations=number_of_iterations
         )
         registration.SetOptimizerScalesFromPhysicalShift()
-    elif optimiser=='GradientDescent':
+    elif optimiser == "GradientDescent":
         registration.SetOptimizerAsGradientDescent(
-            learningRate = 5.0,
-            numberOfIterations = number_of_iterations,
-            convergenceMinimumValue = 1e-6,
-            convergenceWindowSize = 10
+            learningRate=5.0,
+            numberOfIterations=number_of_iterations,
+            convergenceMinimumValue=1e-6,
+            convergenceWindowSize=10,
         )
         registration.SetOptimizerScalesFromPhysicalShift()
-    elif optimiser=='GradientDescentLineSearch':
+    elif optimiser == "GradientDescentLineSearch":
         registration.SetOptimizerAsGradientDescentLineSearch(
-            learningRate = 1.0,
-            numberOfIterations = number_of_iterations
+            learningRate=1.0, numberOfIterations=number_of_iterations
         )
         registration.SetOptimizerScalesFromPhysicalShift()
 
     # Set metric
-    if metric == 'correlation':
+    if metric == "correlation":
         registration.SetMetricAsCorrelation()
-    elif metric == 'mean_squares':
+    elif metric == "mean_squares":
         registration.SetMetricAsMeanSquares()
-    elif metric == 'demons':
+    elif metric == "demons":
         registration.SetMetricAsDemons()
-    elif metric == 'mutual_information':
+    elif metric == "mutual_information":
         try:
             number_of_histogram_bins = options["number_of_histogram_bins"]
         except:
             number_of_histogram_bins = 30
-        registration.SetMetricAsMattesMutualInformation(numberOfHistogramBins=number_of_histogram_bins)
+        registration.SetMetricAsMattesMutualInformation(
+            numberOfHistogramBins=number_of_histogram_bins
+        )
 
     registration.SetInterpolator(sitk.sitkLinear)
 
     # Set sampling
-    if type(sampling_rate)==float:
+    if type(sampling_rate) == float:
         registration.SetMetricSamplingPercentage(sampling_rate)
     elif type(sampling_rate) in [np.ndarray, list]:
         registration.SetMetricSamplingPercentagePerLevel(sampling_rate)
@@ -681,25 +757,44 @@ def bspline_registration(
         registration.SetMetricFixedMask(fixed_structure)
 
     # Set control point spacing
-    transform_domain_mesh_size = control_point_spacing_distance_to_number(fixed_image, initial_grid_spacing)
+    transform_domain_mesh_size = control_point_spacing_distance_to_number(
+        fixed_image, initial_grid_spacing
+    )
 
     if debug:
         print(f"Initial grid size: {transform_domain_mesh_size}")
 
     # Initialise transform
-    initial_transform = sitk.BSplineTransformInitializer(fixed_image, transformDomainMeshSize = [int(i) for i in transform_domain_mesh_size])
-    registration.SetInitialTransformAsBSpline(initial_transform, inPlace=True, scaleFactors = grid_scale_factors)
+    initial_transform = sitk.BSplineTransformInitializer(
+        fixed_image,
+        transformDomainMeshSize=[int(i) for i in transform_domain_mesh_size],
+    )
+    registration.SetInitialTransformAsBSpline(
+        initial_transform, inPlace=True, scaleFactors=grid_scale_factors
+    )
 
     # (Optionally) add iteration commands
     if trace:
-        registration.AddCommand( sitk.sitkIterationEvent, lambda: initial_registration_command_iteration(registration) )
-        registration.AddCommand( sitk.sitkMultiResolutionIterationEvent, lambda: stage_iteration(registration) )
+        registration.AddCommand(
+            sitk.sitkIterationEvent,
+            lambda: initial_registration_command_iteration(registration),
+        )
+        registration.AddCommand(
+            sitk.sitkMultiResolutionIterationEvent,
+            lambda: stage_iteration(registration),
+        )
 
     # Run the registration
     output_transform = registration.Execute(fixed=fixed_image, moving=moving_image)
 
     # Resample moving image
-    registered_image = transform_propagation(fixed_image_original, moving_image, output_transform, default_value=default_value, interp=interp_order)
+    registered_image = transform_propagation(
+        fixed_image_original,
+        moving_image,
+        output_transform,
+        default_value=default_value,
+        interp=interp_order,
+    )
     registered_image = sitk.Cast(registered_image, moving_image_type)
 
     # Return outputs

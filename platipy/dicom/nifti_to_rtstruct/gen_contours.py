@@ -5,7 +5,7 @@ import numpy
 
 
 def gen_contours(mask_file):
-        
+
     image = itk.Image[itk.SS, 3]
     image2 = itk.Image[itk.SS, 2]
 

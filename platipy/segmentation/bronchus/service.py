@@ -8,11 +8,15 @@ import os
 import SimpleITK as sitk
 from loguru import logger
 
-from platipy.framework import app, DataObject, celery # pylint: disable=unused-import
+from platipy.framework import app, DataObject, celery  # pylint: disable=unused-import
 
 # from platipy.dicom.nifti_to_rtstruct.convert import convert_nifti
 
-from platipy.segmentation.bronchus.run import run_bronchus_segmentation, BRONCHUS_SETTINGS_DEFAULTS
+from platipy.segmentation.bronchus.run import (
+    run_bronchus_segmentation,
+    BRONCHUS_SETTINGS_DEFAULTS,
+)
+
 
 @app.register("Bronchus Segmentation", default_settings=BRONCHUS_SETTINGS_DEFAULTS)
 def bronchus_service(data_objects, working_dir, settings):
@@ -39,9 +43,7 @@ def bronchus_service(data_objects, working_dir, settings):
         # Save resulting masks and add to output for service
         for output in results.keys():
 
-            mask_file = os.path.join(
-                working_dir, "{0}.nii.gz".format(output)
-            )
+            mask_file = os.path.join(working_dir, "{0}.nii.gz".format(output))
             sitk.WriteImage(results[output], mask_file)
 
             output_data_object = DataObject(
@@ -70,6 +72,7 @@ def bronchus_service(data_objects, working_dir, settings):
         #     logger.info('RTStruct generated')
 
     return output_objects
+
 
 if __name__ == "__main__":
 

@@ -136,7 +136,8 @@ def fetch_data(dataset, patient_ids=None):
 
         logger.debug(f"Fetching data for Patient: {pid}")
         res = requests.get(
-            series_endpoint, params={"Collection": collection, "PatientID": pid, "Modality": "CT"}
+            series_endpoint,
+            params={"Collection": collection, "PatientID": pid, "Modality": "CT"},
         )
         series = json.loads(res.text)
         series_fetched = {}
@@ -157,7 +158,9 @@ def fetch_data(dataset, patient_ids=None):
                     for chunk in response.iter_content():
                         file_obj.write(chunk)
 
-                directory_to_extract_to = os.path.join(working_dir, pid, obj["Modality"])
+                directory_to_extract_to = os.path.join(
+                    working_dir, pid, obj["Modality"]
+                )
                 with zipfile.ZipFile(save_path, "r") as zip_ref:
                     zip_ref.extractall(directory_to_extract_to)
 

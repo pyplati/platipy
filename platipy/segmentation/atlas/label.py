@@ -8,29 +8,36 @@ import SimpleITK as sitk
 import numpy as np
 import itk
 
+
 def sitk_to_itk(sitk_image):
     """
     Helper function to convert SimpleITK images to ITK images
     """
     sitk_arr = sitk.GetArrayFromImage(sitk_image)
 
-    itk_image = itk.GetImageFromArray(sitk_arr, is_vector = False)
+    itk_image = itk.GetImageFromArray(sitk_arr, is_vector=False)
     itk_image.SetOrigin(sitk_image.GetOrigin())
     itk_image.SetSpacing(sitk_image.GetSpacing())
-    itk_image.SetDirection(itk.GetMatrixFromArray(np.reshape(np.array(sitk_image.GetDirection()), [3]*2)))
+    itk_image.SetDirection(
+        itk.GetMatrixFromArray(np.reshape(np.array(sitk_image.GetDirection()), [3] * 2))
+    )
 
     return itk_image
+
 
 def itk_to_sitk(itk_image):
     """
     Helper function to convert ITK images to SimpleITK images
     """
-    sitk_image = sitk.GetImageFromArray(itk.GetArrayFromImage(itk_image), isVector=False)
+    sitk_image = sitk.GetImageFromArray(
+        itk.GetArrayFromImage(itk_image), isVector=False
+    )
     sitk_image.SetOrigin(tuple(itk_image.GetOrigin()))
     sitk_image.SetSpacing(tuple(itk_image.GetSpacing()))
     sitk_image.SetDirection(itk.GetArrayFromMatrix(itk_image.GetDirection()).flatten())
 
     return sitk_image
+
 
 def morphological_interpolate(sitk_image):
     """
@@ -58,11 +65,18 @@ def morphological_interpolate(sitk_image):
 
     return sitk_img_interpolated
 
+
 def compute_weight_map(
     target_image,
     moving_image,
     vote_type="unweighted",
-    vote_params={"sigma": 2.0, "epsilon": 1e-5, "factor": 1e12, "gain": 6, "blockSize": 5},
+    vote_params={
+        "sigma": 2.0,
+        "epsilon": 1e-5,
+        "factor": 1e12,
+        "gain": 6,
+        "blockSize": 5,
+    },
 ):
     """
     Computes the weight map
@@ -123,7 +137,9 @@ def combine_labels_staple(label_list_dict, threshold=1e-4):
     combined_label_dict = {}
 
     structure_name_list = [list(i.keys()) for i in label_list_dict.values()]
-    structure_name_list = np.unique([item for sublist in structure_name_list for item in sublist])
+    structure_name_list = np.unique(
+        [item for sublist in structure_name_list for item in sublist]
+    )
 
     for structure_name in structure_name_list:
         # Ensure all labels are binarised
@@ -191,7 +207,9 @@ def combine_labels(atlas_set, structure_name, threshold=1e-4, smooth_sigma=1.0):
         combined_label = reduce(lambda x, y: x + y, weighted_labels) / weight_sum_image
 
         # Smooth combined label
-        combined_label = sitk.DiscreteGaussian(combined_label, smooth_sigma * smooth_sigma)
+        combined_label = sitk.DiscreteGaussian(
+            combined_label, smooth_sigma * smooth_sigma
+        )
 
         # Normalise
         combined_label = sitk.RescaleIntensity(combined_label, 0, 1)
@@ -217,7 +235,9 @@ def process_probability_image(probability_image, threshold=0.5):
         probability_image = sitk.GetImageFromArray(probability_image)
 
     # Normalise probability map
-    probability_image = (probability_image / sitk.GetArrayFromImage(probability_image).max())
+    probability_image = (
+        probability_image / sitk.GetArrayFromImage(probability_image).max()
+    )
 
     # Get the starting binary image
     binary_image = sitk.BinaryThreshold(probability_image, lowerThreshold=threshold)
@@ -238,6 +258,6 @@ def process_probability_image(probability_image, threshold=0.5):
 
     # Select the largest region
     largest_component_label = label_indices[np.argmax(voxel_counts)]
-    largest_component_image = (labelled_image == largest_component_label)
+    largest_component_image = labelled_image == largest_component_label
 
     return sitk.Cast(largest_component_image, sitk.sitkUInt8)
