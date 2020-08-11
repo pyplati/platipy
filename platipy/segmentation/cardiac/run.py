@@ -76,7 +76,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "project_on_sphere": False,
     },
     "labelFusionSettings": {
-        "voteType": "majority",
+        "voteType": "unweighted",
         "voteParams": {},  # No parameters needed for majority voting
         "optimalThreshold": {"WHOLEHEART": 0.44},
     },

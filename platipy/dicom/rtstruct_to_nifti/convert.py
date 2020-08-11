@@ -205,4 +205,4 @@ def click_command(dcm_img, dcm_rt_file, prefix, output_dir, output_img, spacing)
 
 if __name__ == '__main__':
 
-    click_command()
+    click_command() # pylint: disable=no-value-for-parameter

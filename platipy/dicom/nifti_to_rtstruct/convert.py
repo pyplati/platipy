@@ -2,13 +2,14 @@ import click
 import yaml
 import sys
 import argparse
-import nibabel
 import os
 from platipy.dicom.nifti_to_rtstruct.export_to_rtstruct import export_to_rtstruct
 from platipy.dicom.nifti_to_rtstruct.gen_contours import gen_contours
 import pydicom
 from collections import OrderedDict
 from loguru import logger
+
+import SimpleITK as sitk
 
 
 def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
@@ -41,7 +42,9 @@ def convert_nifti(dcm_file, mask, out_rt_filename, debug=False):
     out_param_name = name + "_param.yaml"
 
     dd["StartSliceNum"] = 0
-    dd["NumSlices"] = nibabel.load(masks[list(masks)[0]]).shape[2]
+
+    mask_img = sitk.ReadImage(masks[list(masks)[0]])
+    dd["NumSlices"] = mask_img.GetSize()[0]
     dat_ct = pydicom.dcmread(dcm_file)
     dd["UIDPrefix"] = ".".join(dat_ct.SOPInstanceUID.split(".")[:-1]) + "."
 
@@ -88,4 +91,4 @@ def click_command(dcm_file, debug, mask, out_rt_filename):
     convert_nifti(dcm_file, mask, out_rt_filename, debug=debug)
 
 if __name__ == '__main__':
-    click_command()
+    click_command() # pylint: disable=no-value-for-parameter

@@ -134,4 +134,4 @@ dicom_data/
 .DS_Store
 
 # Exclude data files which are dynamically downloaded for tests
-*/tests/data/dynamic
+platipy/*/tests/data/dynamic
