@@ -256,9 +256,7 @@ def transform_propagation(
     return output_image
 
 
-def smooth_and_resample(
-    image, shrink_factor, smoothing_sigma, isotropic_resample=False
-):
+def smooth_and_resample(image, shrink_factor, smoothing_sigma, isotropic_resample=False, resampler=sitk.sitkLinear):
     """
     Args:
         image: The image we want to resample.
@@ -272,50 +270,36 @@ def smooth_and_resample(
         Image which is a result of smoothing the input and then resampling it using the given sigma
         and shrink factor.
     """
-    if type(smoothing_sigma) == list or type(smoothing_sigma) == tuple:
-        if any([i > 0 for i in smoothing_sigma]):
-            # smoothed_image = sitk.SmoothingRecursiveGaussian(image, smoothing_sigma)
-            smoothed_image = sitk.DiscreteGaussian(image, smoothing_sigma)
-        else:
-            smoothed_image = image
-
+    if smoothing_sigma > 0:
+        # smoothed_image = sitk.SmoothingRecursiveGaussian(image, smoothing_sigma)
+        maximumKernelWidth = int( max( [8*smoothing_sigma * i for i in image.GetSpacing()]) )
+        smoothed_image = sitk.DiscreteGaussian(image, smoothing_sigma**2, maximumKernelWidth)
     else:
-        if smoothing_sigma > 0:
-            # smoothed_image = sitk.SmoothingRecursiveGaussian(image, smoothing_sigma)
-            smoothed_image = sitk.DiscreteGaussian(image, smoothing_sigma)
-        else:
-            smoothed_image = image
+        smoothed_image = image
 
     original_spacing = image.GetSpacing()
     original_size = image.GetSize()
 
     if isotropic_resample:
-        scale_factor = shrink_factor * np.ones(3) / np.array(image.GetSpacing())
-        new_size = [
-            int(sz / float(sf) + 0.5) for sz, sf in zip(original_size, scale_factor)
-        ]
+        scale_factor = shrink_factor * np.ones(3)/np.array(image.GetSpacing())
+        new_size = [int(sz / float(sf) + 0.5) for sz,sf in zip(original_size, scale_factor)]
 
     if not isotropic_resample:
         if type(shrink_factor) == list:
-            new_size = [
-                int(sz / float(sf) + 0.5)
-                for sz, sf in zip(original_size, shrink_factor)
-            ]
+            new_size = [int(sz / float(sf) + 0.5) for sz,sf in zip(original_size, shrink_factor)]
         else:
             new_size = [int(sz / float(shrink_factor) + 0.5) for sz in original_size]
 
     new_spacing = [
         ((original_sz - 1) * original_spc) / (new_sz - 1)
-        for original_sz, original_spc, new_sz in zip(
-            original_size, original_spacing, new_size
-        )
+        for original_sz, original_spc, new_sz in zip(original_size, original_spacing, new_size)
     ]
 
     return sitk.Resample(
         smoothed_image,
         new_size,
         sitk.Transform(),
-        sitk.sitkLinear,
+        resampler,
         image.GetOrigin(),
         new_spacing,
         image.GetDirection(),
