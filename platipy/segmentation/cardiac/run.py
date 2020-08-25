@@ -369,33 +369,39 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     """
     # Compute weight maps
     # Here we use simple GWV as this minises the potentially negative influence of mis-registered atlases
-    for atlas_id in atlas_id_list:
-        atlas_image = atlas_set[atlas_id]["DIR"]["CT Image"]
-        weight_map = compute_weight_map(img_crop, atlas_image, vote_type="global")
-        atlas_set[atlas_id]["DIR"]["Weight Map"] = weight_map
-
     reference_structure = settings["IARSettings"]["referenceStructure"]
-    smooth_distance_maps = settings["IARSettings"]["smoothDistanceMaps"]
-    smooth_sigma = settings["IARSettings"]["smoothSigma"]
-    z_score_statistic = settings["IARSettings"]["zScoreStatistic"]
-    outlier_method = settings["IARSettings"]["outlierMethod"]
-    outlier_factor = settings["IARSettings"]["outlierFactor"]
-    min_best_atlases = settings["IARSettings"]["minBestAtlases"]
-    project_on_sphere = settings["IARSettings"]["project_on_sphere"]
+    
+    if reference_structure:
 
-    atlas_set = run_iar(
-        atlas_set=atlas_set,
-        structure_name=reference_structure,
-        smooth_maps=smooth_distance_maps,
-        smooth_sigma=smooth_sigma,
-        z_score=z_score_statistic,
-        outlier_method=outlier_method,
-        min_best_atlases=min_best_atlases,
-        n_factor=outlier_factor,
-        iteration=0,
-        single_step=False,
-        project_on_sphere=project_on_sphere,
-    )
+        smooth_distance_maps = settings["IARSettings"]["smoothDistanceMaps"]
+        smooth_sigma = settings["IARSettings"]["smoothSigma"]
+        z_score_statistic = settings["IARSettings"]["zScoreStatistic"]
+        outlier_method = settings["IARSettings"]["outlierMethod"]
+        outlier_factor = settings["IARSettings"]["outlierFactor"]
+        min_best_atlases = settings["IARSettings"]["minBestAtlases"]
+        project_on_sphere = settings["IARSettings"]["project_on_sphere"]
+        
+        for atlas_id in atlas_id_list:
+            atlas_image = atlas_set[atlas_id]["DIR"]["CT Image"]
+            weight_map = compute_weight_map(img_crop, atlas_image, vote_type="global")
+            atlas_set[atlas_id]["DIR"]["Weight Map"] = weight_map
+
+        atlas_set = run_iar(
+            atlas_set=atlas_set,
+            structure_name=reference_structure,
+            smooth_maps=smooth_distance_maps,
+            smooth_sigma=smooth_sigma,
+            z_score=z_score_statistic,
+            outlier_method=outlier_method,
+            min_best_atlases=min_best_atlases,
+            n_factor=outlier_factor,
+            iteration=0,
+            single_step=False,
+            project_on_sphere=project_on_sphere,
+        )
+
+    else:
+        logger.info('IAR: No reference structure, skipping iterative atlas removal.')
 
     """
     Step 4 - Vessel Splining
