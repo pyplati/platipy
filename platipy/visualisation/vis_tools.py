@@ -23,6 +23,17 @@ import matplotlib.pyplot as plt
 import matplotlib
 from mpl_toolkits.axes_grid1 import make_axes_locatable, AxesGrid, ImageGrid
 
+class Visualisation(object):
+    def __init__(self):
+        for cls in reversed(self.__class__.mro()):
+            if hasattr(cls, 'init'):
+                cls.init(self)
+
+    def init(self):
+        None
+
+    
+
 
 def returnSlice(axis, index):
     if axis == "x":
