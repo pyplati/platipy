@@ -86,7 +86,7 @@ def displaySlice(
             2,
             figsize=fSize,
             gridspec_kw={"height_ratios": [(CorSize) / (asp * AxSize), 1], "width_ratios": [SagSize, CorSize]},
-        )
+        );
         blank.axis("off")
 
         if not cut:
@@ -169,149 +169,72 @@ def displaySlice(
     return fig, axis, cut
 
 
-def overlayContour(contourIm, fig, axis, cut, colorBase=plt.cm.Blues):
+def overlayContour(contour_input, fig, axis, cut, use_legend=True, color_base=plt.cm.Blues):
 
-    # Test types of contours
-    if type(contourIm) == sitk.Image:
-        # print('Single contour detected.')
-        nda = sitk.GetArrayFromImage(contourIm)
+    # Check input type
+    if type(contour_input) == sitk.Image:
+        use_legend = False
+        plot_dict = {'input':sitk.GetArrayFromImage(contour_input)}
+        color = color_base(126)
 
-        color = colorBase(126)
 
-        flag = "single"
+    elif type(contour_input) == dict:
+        if all( map(lambda i: type(i)==sitk.Image, contour_input.values()) ):
+            plot_dict = {i:sitk.GetArrayFromImage(j) for i,j in contour_input.items()}
+            colors = color_base(np.linspace(0,1,len(contour_input.keys())))
 
-    elif len(contourIm) == 1:
-        # print('Single contour detected.')
-        nda = sitk.GetArrayFromImage(contourIm[0])
-
-        color = colorBase(126)
-
-        flag = "single"
+        else:
+            raise ValueError('If passing a dictionary, all values must be of type SimpleITK.Image') 
 
     else:
-        try:
-            if len(contourIm) > 1:
-                # print('Contour list detected.')
-                ndaList = [sitk.GetArrayFromImage(i) for i in contourIm]
+        raise ValueError('Input not recognised, this must be either a single (or dictionary of) SimpleITK.Image')
 
-                colors = colorBase(
-                    np.array(
-                        255.0 / len(ndaList) * np.arange(len(ndaList)), dtype=np.int
-                    )
-                )
-                colors = colors[:, None] * np.ones((len(ndaList), 4))
-
-                flag = "multi"
-        except:
-            print("Could not determine contour image type.")
-            return None
 
     # Test types of axes
     axes = fig.axes
-    if len(axes) == 1:
+    if axis in ['x','y','z']:
         ax = axes[0]
         s = returnSlice(axis, cut)
-        if flag == "single":
+        for index, c_name in enumerate(plot_dict.keys()):
             try:
                 ax.contour(
-                    nda.__getitem__(s),
-                    colors=color,
+                    plot_dict[c_name].__getitem__(s),
+                    colors=colors[index],
                     levels=[0],
                     #alpha=0.8,
-                    linewidths=1.5,
+                    linewidths=1,
+                    label=c_name
                 )
             except:
                 None
 
-        elif flag == "multi":
-            for index, nda in enumerate(ndaList):
-                try:
-                    ax.contour(
-                        nda.__getitem__(s),
-                        colors=colors[index],
-                        levels=[0],
-                        #alpha=0.8,
-                        linewidths=1,
-                    )
-                except:
-                    None
-
-    elif len(axes) == 4:
+    elif axis == 'ortho':
         axAx, blank, axCor, axSag = axes
+
+        ax = axAx
 
         sAx = returnSlice("z", cut[0])
         sCor = returnSlice("y", cut[1])
         sSag = returnSlice("x", cut[2])
 
-        if flag == "single":
-            try:
-                axAx.contour(
-                    nda.__getitem__(sAx),
-                    colors=color,
-                    levels=[0],
-                    #alpha=0.8,
-                    linewidths=1.5,
-                )
-            except:
-                None
-            try:
-                axSag.contour(
-                    nda.__getitem__(sSag),
-                    colors=color,
-                    levels=[0],
-                    #alpha=0.8,
-                    linewidths=1.5,
-                )
-            except:
-                None
-            try:
-                axCor.contour(
-                    nda.__getitem__(sCor),
-                    colors=color,
-                    levels=[0],
-                    #alpha=0.8,
-                    linewidths=1.5,
-                )
-            except:
-                None
+        for index, c_name in enumerate(plot_dict.keys()):
 
-        elif flag == "multi":
-            for index, nda in enumerate(ndaList):
-                try:
-                    axAx.contour(
-                        nda.__getitem__(sAx),
-                        colors=colors[index],
-                        levels=[0],
-                        #alpha=0.8,
-                        linewidths=1,
-                    )
-                except:
-                    None
-                try:
-                    axSag.contour(
-                        nda.__getitem__(sSag),
-                        colors=colors[index],
-                        levels=[0],
-                        #alpha=0.8,
-                        linewidths=1,
-                    )
-                except:
-                    None
-                try:
-                    axCor.contour(
-                        nda.__getitem__(sCor),
-                        colors=colors[index],
-                        levels=[0],
-                        #alpha=0.8,
-                        linewidths=1,
-                    )
-                except:
-                    None
+            temp = axAx.contour(plot_dict[c_name].__getitem__(sAx), levels=[0], linewidths=2, colors=[colors[index]])
+            temp.collections[0].set_label(c_name)
+
+            axCor.contour(plot_dict[c_name].__getitem__(sCor), levels=[0], linewidths=2, colors=[colors[index]])
+            axSag.contour(plot_dict[c_name].__getitem__(sSag), levels=[0], linewidths=2, colors=[colors[index]])
+
+    if use_legend:
+        ax.legend(loc='center left', bbox_to_anchor=(1.05,0.5))
+
+    else:
+        raise ValueError('Axis is must be one of "x","y","z","ortho".')
 
     return fig
 
 
-def overlayScalarField(scalarIm, fig, axis, cut, colorBase=plt.cm.Spectral, addCBar=False, plotArgs={'alpha':0.75, 'sMin':0.01}):
+def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, addCBar=False, plotArgs={'alpha':0.75, 'sMin':0.01}):
 
     alpha = plotArgs['alpha']
     sMin  = plotArgs['sMin']
@@ -331,7 +254,7 @@ def overlayScalarField(scalarIm, fig, axis, cut, colorBase=plt.cm.Spectral, addC
         sp = ax.imshow(
                 nda.__getitem__(s),
                 interpolation=None,
-                cmap=colorBase,
+                cmap=color_base,
                 clim=(0,1),
                 aspect={'z':1,'y':asp,'x':asp}[axis],
                 origin={'z':'upper','y':'lower','x':'lower'}[axis],
@@ -359,7 +282,7 @@ def overlayScalarField(scalarIm, fig, axis, cut, colorBase=plt.cm.Spectral, addC
         axAx.imshow(
                 nda.__getitem__(sAx),
                 interpolation=None,
-                cmap=colorBase,
+                cmap=color_base,
                 clim=(0,1),
                 aspect=1,
                 vmin=sMin,
@@ -369,7 +292,7 @@ def overlayScalarField(scalarIm, fig, axis, cut, colorBase=plt.cm.Spectral, addC
         axCor.imshow(
                 nda.__getitem__(sCor),
                 interpolation=None,
-                cmap=colorBase,
+                cmap=color_base,
                 clim=(0,1),
                 origin='lower',
                 aspect=asp,
@@ -380,7 +303,7 @@ def overlayScalarField(scalarIm, fig, axis, cut, colorBase=plt.cm.Spectral, addC
         axSag.imshow(
                 nda.__getitem__(sSag),
                 interpolation=None,
-                cmap=colorBase,
+                cmap=color_base,
                 clim=(0,1),
                 origin='lower',
                 aspect=asp,
