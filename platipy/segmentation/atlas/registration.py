@@ -93,7 +93,7 @@ def initial_registration(
             "shrinkFactors": [8, 2, 1],
             "smoothSigmas": [4, 2, 0],
             "samplingRate": 0.1,
-            optimiser: "gradient_descent",
+            "optimiser": "gradient_descent",
             "numberOfIterations": 50,
         }
 
