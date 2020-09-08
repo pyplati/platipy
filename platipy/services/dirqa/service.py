@@ -8,7 +8,7 @@ from loguru import logger
 import SimpleITK as sitk
 import pandas as pd
 
-from platipy.framework import app, DataObject, celery
+from platipy.backend import app, DataObject, celery
 
 
 DIRQA_SETTINGS_DEFAULTS = {

@@ -34,6 +34,37 @@
                 "reveal": "always",
                 "panel": "dedicated"
             }
+        },
+        {
+            "label": "Run Cardiac Segmentation Service (with auto-restart)",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/segmentation/cardiac",
+                "env": {
+                    "WORK": "/data",
+                    "PYTHONPATH": "/",
+                    "REDIS_HOST": "redis",
+                    "REDIS_PORT": "6379"
+                }
+            },
+            "command": "watchmedo",
+            "args": [
+                "auto-restart",
+                "--directory=./",
+                "--pattern=*.py",
+                "--recursive",
+                "--",
+                "python",
+                "service.py"
+            ],
+            "problemMatcher": [
+                "$eslint-stylish"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
         }
 
          
