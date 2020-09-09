@@ -12,7 +12,7 @@ from loguru import logger
 
 from pymedphys.experimental.pinnacle import PinnacleExport
 
-from platipy.framework import app, DataObject, celery
+from platipy.backend import app, DataObject, celery
 
 PINNACLE_EXPORT_SETTINGS_DEFAULTS = {
     "exportModalities": ["CT", "RTSTRUCT", "RTPLAN", "RTDOSE"],
