@@ -10,11 +10,11 @@ from loguru import logger
 
 import SimpleITK as sitk
 
-from platipy.segmentation.bronchus.run import (
+from platipy.imaging.projects.bronchus.run import (
     run_bronchus_segmentation,
     BRONCHUS_SETTINGS_DEFAULTS,
 )
-from platipy.segmentation.cardiac.run import (
+from platipy.imaging.projects.cardiac.run import (
     run_cardiac_segmentation,
     CARDIAC_SETTINGS_DEFAULTS,
 )
