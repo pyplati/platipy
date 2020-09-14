@@ -2,9 +2,11 @@
 """
 
 import os
+import sys
 import json
 
 import click
+from loguru import logger
 
 import SimpleITK as sitk
 
@@ -28,6 +30,8 @@ segmentation_algorithms = {
     },
 }
 
+logger.remove()
+logger.add(sys.stderr, level="DEBUG")
 
 @click.command()
 @click.argument("algorithm", nargs=1, type=click.Choice(segmentation_algorithms.keys()))
@@ -45,7 +49,14 @@ segmentation_algorithms = {
     is_flag=True,
     help="Print the default configuration for the selected algorithm",
 )
-def click_command(algorithm, input_path, config, default):
+@click.option(
+    "--output",
+    "-o",
+    required=False,
+    type=click.Path(),
+    help="Path to directory for output",
+)
+def click_command(algorithm, input_path, config, default, output):
     """
     Run an auto-segmentation on an input image. Choose which algorithm to run and pass the path to
     the Nitfti input image OR a directory containing a DICOM series.
@@ -78,8 +89,17 @@ def click_command(algorithm, input_path, config, default):
 
     image = sitk.ReadImage(read_path)
 
-    segmentation_algorithms[algorithm]["algorithm"](image, algorithm_config)
+    # Run the algorithm
+    results = segmentation_algorithms[algorithm]["algorithm"](image, algorithm_config)
 
+    # Save the output to the output directory
+    if not output:
+        output = "."
+    if not os.path.exists(output):
+        os.makedirs(output, exist_ok=True)
+
+    for result in results:
+        sitk.WriteImage(results[result], os.path.join(output, f"{result}.nii.gz"))
 
 if __name__ == "__main__":
 
