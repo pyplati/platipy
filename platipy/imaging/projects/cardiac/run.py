@@ -27,6 +27,8 @@ from platipy.imaging.atlas.iterative_atlas_removal import run_iar
 
 from platipy.imaging.projects.cardiac.utils import vesselSplineGeneration
 
+from platipy.imaging.utils.tools import label_to_roi, crop_to_roi
+
 ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:
     ATLAS_PATH = os.environ["ATLAS_PATH"]
@@ -235,34 +237,23 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     shape_filter.Execute(combined_image_extent)
     bounding_box = np.array(shape_filter.GetBoundingBox(1))
 
+
+    """
+    Crop image to region of interest (ROI)
+    --> Defined by images
+    """
+
     expansion = settings["autoCropSettings"]["expansion"]
     expansion_array = expansion * np.array(img.GetSpacing())
 
-    # Avoid starting outside the image
-    crop_box_index = np.max(
-        [bounding_box[:3] - expansion_array, np.array([0, 0, 0])], axis=0
-    )
-
-    # Avoid ending outside the image
-    crop_box_size = np.min(
-        [
-            np.array(img.GetSize()) - crop_box_index,
-            bounding_box[3:] + 2 * expansion_array,
-        ],
-        axis=0,
-    )
-
-    crop_box_size = [int(i) for i in crop_box_size]
-    crop_box_index = [int(i) for i in crop_box_index]
-
+    crop_box_size, crop_box_index = label_to_roi(img, combined_image_extent, expansion = expansion_array)
+    img_crop = crop_to_roi(img, crop_box_size, crop_box_index)
     logger.info(
         f"Calculated crop box\n\
                 {crop_box_index}\n\
                 {crop_box_size}\n\n\
                 Volume reduced by factor {np.product(img.GetSize())/np.product(crop_box_size)}"
     )
-
-    img_crop = sitk.RegionOfInterest(img, size=crop_box_size, index=crop_box_index)
 
     """
     Step 2 - Rigid registration of target images
