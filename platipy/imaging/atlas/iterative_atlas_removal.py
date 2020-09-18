@@ -175,7 +175,7 @@ def run_iar(
 
     # Generate the surface projections
     #   1. Set the consensus surface using the reference volume
-    probability_label = combine_labels(atlas_set, structure_name)[structure_name]
+    probability_label = combine_labels(atlas_set, structure_name, label=label)[structure_name]
 
     # Modify resolution for better statistics
     if project_on_sphere:
@@ -395,6 +395,7 @@ def run_iar(
             n_factor=n_factor,
             iteration=iteration,
             project_on_sphere=project_on_sphere,
+            label=label
         )
 
     logger.info("  End point reached. Keeping:\n   {0}".format(keep_id_list))
