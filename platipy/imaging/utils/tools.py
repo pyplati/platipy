@@ -230,7 +230,12 @@ def get_crop_bounding_box(img, mask):
 def label_to_roi(image, label_list, expansion = [0,0,0]):
     
     label_stats_image_filter = sitk.LabelStatisticsImageFilter()
-    label_stats_image_filter.Execute(image, sum(label_list) > 0)
+    if type(label_list)==list:
+        label_stats_image_filter.Execute(image, sum(label_list) > 0)
+    elif type(label_list)==sitk.Image:
+        label_stats_image_filter.Execute(image, label_list)
+    else:
+        raise ValueError('Second argument must be a SITK image, or list thereof.')
     
     bounding_box = np.array(label_stats_image_filter.GetBoundingBox(1))
     

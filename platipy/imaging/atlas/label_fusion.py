@@ -106,7 +106,7 @@ def combine_labels_staple(label_list_dict, threshold=1e-4):
     return combined_label_dict
 
 
-def combine_labels(atlas_set, structure_name, threshold=1e-4, smooth_sigma=1.0):
+def combine_labels(atlas_set, structure_name, label='DIR', threshold=1e-4, smooth_sigma=1.0):
     """
     Combine labels using weight maps
     """
@@ -123,12 +123,12 @@ def combine_labels(atlas_set, structure_name, threshold=1e-4, smooth_sigma=1.0):
     for structure_name in structure_name_list:
         # Find the cases which have the strucure (in case some cases do not)
         valid_case_id_list = [
-            i for i in case_id_list if structure_name in atlas_set[i]["DIR"].keys()
+            i for i in case_id_list if structure_name in atlas_set[i][label].keys()
         ]
 
         # Get valid weight images
         weight_image_list = [
-            atlas_set[caseId]["DIR"]["Weight Map"] for caseId in valid_case_id_list
+            atlas_set[caseId][label]["Weight Map"] for caseId in valid_case_id_list
         ]
 
         # Sum the weight images
@@ -139,8 +139,8 @@ def combine_labels(atlas_set, structure_name, threshold=1e-4, smooth_sigma=1.0):
 
         # Combine weight map with each label
         weighted_labels = [
-            atlas_set[caseId]["DIR"]["Weight Map"]
-            * sitk.Cast(atlas_set[caseId]["DIR"][structure_name], sitk.sitkFloat32)
+            atlas_set[caseId][label]["Weight Map"]
+            * sitk.Cast(atlas_set[caseId][label][structure_name], sitk.sitkFloat32)
             for caseId in valid_case_id_list
         ]
 
