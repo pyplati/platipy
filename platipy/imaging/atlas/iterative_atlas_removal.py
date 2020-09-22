@@ -156,6 +156,7 @@ def run_iar(
     iteration=0,
     single_step=False,
     project_on_sphere=False,
+    label='DIR',
 ):
     """
     Perform iterative atlas removal on the atlas_set
@@ -174,7 +175,7 @@ def run_iar(
 
     # Generate the surface projections
     #   1. Set the consensus surface using the reference volume
-    probability_label = combine_labels(atlas_set, structure_name)[structure_name]
+    probability_label = combine_labels(atlas_set, structure_name, label=label)[structure_name]
 
     # Modify resolution for better statistics
     if project_on_sphere:
@@ -202,7 +203,7 @@ def run_iar(
         logger.info("    {0}".format(test_id))
         #   2. Calculate the distance from the surface to the consensus surface
 
-        test_volume = atlas_set[test_id]["DIR"][structure_name]
+        test_volume = atlas_set[test_id][label][structure_name]
 
         # This next step ensures non-binary labels are treated properly
         # We use 0.1 to capture the outer edge of the test delineation, if it is probabilistic
@@ -394,6 +395,7 @@ def run_iar(
             n_factor=n_factor,
             iteration=iteration,
             project_on_sphere=project_on_sphere,
+            label=label
         )
 
     logger.info("  End point reached. Keeping:\n   {0}".format(keep_id_list))

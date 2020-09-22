@@ -225,3 +225,43 @@ def get_crop_bounding_box(img, mask):
         )
 
     return bounding_box
+
+
+def label_to_roi(image, label_list, expansion = [0,0,0]):
+    
+    label_stats_image_filter = sitk.LabelStatisticsImageFilter()
+    if type(label_list)==list:
+        label_stats_image_filter.Execute(image, sum(label_list) > 0)
+    elif type(label_list)==sitk.Image:
+        label_stats_image_filter.Execute(image, label_list)
+    else:
+        raise ValueError('Second argument must be a SITK image, or list thereof.')
+    
+    bounding_box = np.array(label_stats_image_filter.GetBoundingBox(1))
+    
+    index = [bounding_box[x * 2] for x in range(3)]
+    size = [bounding_box[(x * 2) + 1] - bounding_box[x * 2] for x in range(3)]
+    expansion = np.array(expansion)
+    
+    # Avoid starting outside the image
+    crop_box_index = np.max(
+        [index - expansion, np.array([0, 0, 0])], axis=0
+    )
+
+    # Avoid ending outside the image
+    crop_box_size = np.min(
+        [
+            np.array(image.GetSize()) - crop_box_index,
+            np.array(size) + 2*expansion,
+        ],
+        axis=0,
+    )
+
+    crop_box_size = [int(i) for i in crop_box_size]
+    crop_box_index = [int(i) for i in crop_box_index]
+    
+    return crop_box_size, crop_box_index
+
+def crop_to_roi(image, size, index):
+    return sitk.RegionOfInterest(image, size=size, index=index)
+    
