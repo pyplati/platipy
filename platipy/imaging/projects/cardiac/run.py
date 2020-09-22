@@ -93,6 +93,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "stopCondition": {"LANTDESCARTERY_SPLINE": "count"},
         "stopConditionValue": {"LANTDESCARTERY_SPLINE": 1},
     },
+    "returnAsCropped": False
 }
 
 
@@ -109,6 +110,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     """
 
     results = {}
+    return_as_cropped = settings["returnAsCropped"]
 
     """
     Initialisation - Read in atlases
@@ -193,7 +195,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     """
     # Settings
     quick_reg_settings = {
-        "shrinkFactors": [16],
+        "shrinkFactors": [8],
         "smoothSigmas": [0],
         "samplingRate": 0.75,
         "defaultValue": -1024,
@@ -454,26 +456,39 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
 
         binary_struct = process_probability_image(probability_map, optimal_threshold)
 
-        paste_binary_img = sitk.Paste(
-            template_img_binary,
-            binary_struct,
-            binary_struct.GetSize(),
-            (0, 0, 0),
-            crop_box_index,
-        )
+        if return_as_cropped:
+            results[structure_name] = binary_struct
 
-        results[structure_name] = paste_binary_img
+        else:
+            paste_binary_img = sitk.Paste(
+                template_img_binary,
+                binary_struct,
+                binary_struct.GetSize(),
+                (0, 0, 0),
+                crop_box_index,
+            )
+
+            results[structure_name] = paste_binary_img
 
     for structure_name in vessel_name_list:
         binary_struct = segmented_vessel_dict[structure_name]
-        paste_img_binary = sitk.Paste(
-            template_img_binary,
-            binary_struct,
-            binary_struct.GetSize(),
-            (0, 0, 0),
-            crop_box_index,
-        )
 
-        results[structure_name] = paste_img_binary
+        if return_as_cropped:
+            results[structure_name] = binary_struct
+
+        else:
+            paste_img_binary = sitk.Paste(
+                template_img_binary,
+                binary_struct,
+                binary_struct.GetSize(),
+                (0, 0, 0),
+                crop_box_index,
+            )
+
+            results[structure_name] = paste_img_binary
+
+    if return_as_cropped:
+        results['CROP_IMAGE'] = img_crop
+
 
     return results
