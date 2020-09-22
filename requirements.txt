@@ -15,7 +15,6 @@ celery
 redis
 loguru
 psutil
-pyradiomics
 gunicorn
 requests
 pandas
