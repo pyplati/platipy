@@ -1,6 +1,17 @@
-"""
-Tests for cardiac atlas
-"""
+# Copyright 2020 University of New South Wales, University of Sydney, Ingham Institute
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # pylint: disable=redefined-outer-name
 
 import os
@@ -10,7 +21,7 @@ import pytest
 
 import SimpleITK as sitk
 
-from platipy.imaging.tests.pull_data import get_lung_data
+from platipy.imaging.tests.pull_data import fetch_data
 
 # os.environ["ATLAS_PATH"] = os.path.join(os.path.dirname(__file__), "data", "lung")
 
@@ -28,7 +39,16 @@ def cardiac_data():
     Returns:
         dict -- Data for cardiac test
     """
-    return get_lung_data(number_of_patients=5)
+    return fetch_data(
+        "LCTSC",
+        patient_ids=[
+            "LCTSC-Train-S1-001",
+            "LCTSC-Train-S1-002",
+            "LCTSC-Train-S1-003",
+            "LCTSC-Train-S1-004",
+            "LCTSC-Train-S1-005",
+        ],
+    )
 
 
 def test_cardiac_service(cardiac_data):

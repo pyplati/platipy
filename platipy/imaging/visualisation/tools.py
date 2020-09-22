@@ -1,10 +1,16 @@
-"""
+# Copyright 2020 University of New South Wales, University of Sydney, Ingham Institute
 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 
-Author: Rob Finnegan & Phillip Chlap
+#     http://www.apache.org/licenses/LICENSE-2.0
 
-
-"""
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
 import SimpleITK as sitk
@@ -52,7 +58,7 @@ class ImageVisualiser:
     """Class to assist with visualising images and overlaying contours, scalars and bounding boxes.
     """
 
-    def __init__(self, image, cut=None):
+    def __init__(self, image, cut=None, window=[-250, 500]):
         self.__set_image(image)
         self.__contours = []
         self.__bounding_boxes = []
@@ -62,7 +68,7 @@ class ImageVisualiser:
         self.__show_colorbar = False
         self.__figure = None
         self.__figure_size = 6
-        self.__window = [-250, 500]
+        self.__window = window
         self.__axis = "ortho"
         self.__cut = cut
 

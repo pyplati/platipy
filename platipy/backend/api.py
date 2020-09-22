@@ -1,20 +1,38 @@
-from platipy.backend import app, api
-from loguru import logger
+# Copyright 2020 University of New South Wales, University of Sydney, Ingham Institute
 
-import flask_restful
-from flask_restful import Api, reqparse
-from flask import request, send_from_directory
-import werkzeug
-import uuid
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import datetime
 import json
 import os
 import tempfile
 import time
+import uuid
+import werkzeug
+
+from loguru import logger
+
+import flask_restful
+from flask_restful import Api, reqparse
+from flask import request, send_from_directory
+
 from functools import wraps
-from ..dicom.communication import DicomConnector
+
+from platipy.backend import app, api
+from platipy.dicom.communication import DicomConnector
+
 from .models import db, AlchemyEncoder, APIKey, Dataset, DataObject, DicomLocation
-from .tasks import run_task, retrieve_task, listen_task
+from .tasks import run_task, retrieve_task
 
 
 class CustomConfig(object):

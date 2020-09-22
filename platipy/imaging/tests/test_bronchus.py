@@ -1,6 +1,17 @@
-"""
-Tests for bronchus segmentation
-"""
+# Copyright 2020 University of New South Wales, University of Sydney, Ingham Institute
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # pylint: disable=redefined-outer-name
 
 import tempfile
@@ -12,7 +23,7 @@ import pytest
 import SimpleITK as sitk
 import numpy as np
 
-from platipy.imaging.tests.pull_data import get_lung_data
+from platipy.imaging.tests.pull_data import fetch_data
 
 from platipy.imaging.projects.bronchus.bronchus import (
     generate_lung_mask,
@@ -33,7 +44,7 @@ def bronchus_data():
     Returns:
         dict -- Data for broncus test
     """
-    return get_lung_data(number_of_patients=1)
+    return fetch_data("LCTSC", patient_ids=["LCTSC-Train-S1-001"])
 
 
 def assert_lung_mask(lung_mask):
