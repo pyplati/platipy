@@ -37,7 +37,6 @@ applications. The following structure should be observed:
         - **README.md**: Contains description of tool, authors, etc...
         - **Sample.ipynb**: Jupyter notebook demonstrating the basics of using the tool
     - tests/: Directory containing test scripts to be run by pytest
-        - data/: Directory containing test data. Used by tests but also Jupyter notebooks for demonstration.
 
 ### Providing command line functionality with *click*
 
@@ -67,5 +66,4 @@ from the root directory of the toolbox.
 ## Authors
 
 * **Phillip Chlap** - [phillip.chlap@unsw.edu.au](phillip.chlap@unsw.edu.au)
-
 * **Robert Finnegan** - [rfin5459@uni.sydney.edu.au](rfin5459@uni.sydney.edu.au)
