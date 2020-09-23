@@ -6,7 +6,7 @@ SimpleITK
 scikit-image
 click
 pytest
-pydicom
+pydicom >= 2.0.0
 pynetdicom >= 1.3.0
 flask
 flask-restful
@@ -18,3 +18,4 @@ psutil
 gunicorn
 requests
 pandas
+re
