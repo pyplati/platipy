@@ -143,12 +143,12 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
     struct_point_sequence = dicom_struct.ROIContourSequence
     struct_name_sequence = ['_'.join(i.ROIName.split()) for i in dicom_struct.StructureSetROISequence]
 
-    structList = []
+    structure_list = []
     final_struct_name_sequence = []
 
-    for structIndex, structName in enumerate(struct_name_sequence):
-        imageBlank = np.zeros(dicom_image.GetSize()[::-1], dtype=np.uint8)
-        print("Converting structure {0} with name: {1}".format(structIndex, structName))
+    for structIndex, structure_name in enumerate(struct_name_sequence):
+        image_blank = np.zeros(dicom_image.GetSize()[::-1], dtype=np.uint8)
+        print("Converting structure {0} with name: {1}".format(structIndex, structure_name))
 
         if not hasattr(struct_point_sequence[structIndex], "ContourSequence"):
             print("No contour sequence found for this structure, skipping.")
@@ -165,31 +165,34 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
             struct_slice_contour_data = np.array(contour_data, dtype=np.double)
             vertexArr_physical = struct_slice_contour_data.reshape(struct_slice_contour_data.shape[0]//3,3)
 
-            pointArr = np.array([dicom_image.TransformPhysicalPointToIndex(i) for i in vertexArr_physical]).T
+            point_arr = np.array([dicom_image.TransformPhysicalPointToIndex(i) for i in vertexArr_physical]).T
 
-            [xVertexArr_image, yVertexArr_image] = pointArr[[0,1]]
-            zIndex = pointArr[2][0]
+            [xVertexArr_image, yVertexArr_image] = point_arr[[0,1]]
+            zIndex = point_arr[2][0]
 
-            if np.any(pointArr[2]!=zIndex):
+            if np.any(point_arr[2]!=zIndex):
                 print("Error: axial slice index varies in contour. Quitting now.")
-                print("Structure:   {0}".format(structName))
+                print("Structure:   {0}".format(structure_name))
                 print("Slice index: {0}".format(zIndex))
                 quit()
 
             if zIndex>=dicom_image.GetSize()[2]:
                 print("Warning: Slice index greater than image size. Skipping slice.")
-                print("Structure:   {0}".format(structName))
+                print("Structure:   {0}".format(structure_name))
                 print("Slice index: {0}".format(zIndex))
                 continue
 
             sliceArr = np.zeros(dicom_image.GetSize()[:2], dtype=np.uint8)
             filledIndicesX, filledIndicesY = polygon(xVertexArr_image, yVertexArr_image, shape=sliceArr.shape)
             sliceArr[filledIndicesX, filledIndicesY] = 1
-            imageBlank[zIndex] += sliceArr.T
+            image_blank[zIndex] += sliceArr.T
 
-        structImage = sitk.GetImageFromArray(1*(imageBlank>0))
-        structImage.CopyInformation(dicom_image)
-        structList.append(sitk.Cast(structImage, sitk.sitkUInt8))
-        final_struct_name_sequence.append(re.sub(r'[^\w]', '_', structName).upper())
+        struct_image = sitk.GetImageFromArray(1*(image_blank>0))
+        struct_image.CopyInformation(dicom_image)
+        structure_list.append(sitk.Cast(struct_image, sitk.sitkUInt8))
+        structure_name_clean = re.sub(r'[^\w]', '_', structure_name).upper()
+        while '__' in structure_name_clean:
+            structure_name_clean = structure_name_clean.replace('__','_')
+        final_struct_name_sequence.append(structure_name_clean)
 
-    return structList, final_struct_name_sequence
+    return final_struct_name_sequence, structure_list

@@ -1,3 +1,5 @@
+import re
+
 import pydicom
 import SimpleITK as sitk
 
@@ -11,8 +13,9 @@ from platipy.dicom.dicom_directory_crawler.conversion_utils import (
     get_dicom_info_from_description,
 )
 
-output_name_format = '{patient_name}_{index}_{image_modality}_{image_info}'
-study_name_from_UID = True # !TO DO implement this
+output_image_name_format = '{patient_name}_{index}_{image_modality}_{image_desc}'
+output_structure_name_format = '{patient_name}_{index}_{image_modality}_{structure}'
+study_name_from_uid = True # !TO DO implement this
 
 
 logger.info('#######################')
@@ -41,7 +44,8 @@ for i, dicom_file in enumerate(sorted(dicom_list)):
     dicom_file = dicom_file.as_posix()
 
     dicom_object = pydicom.read_file(dicom_file, force=True)
-    patient_name = dicom_object.PatientName
+    # Take out any non-alphanumeric characters for safety
+    patient_name = re.sub(r'[^\w]', '_', str(dicom_object.PatientName)).upper()
 
     if patient_name == '':
         # We will set a default name
@@ -109,7 +113,7 @@ for series_uid, dicom_file_list in sorted(dicom_dict.items()):
         image_desc = get_dicom_info_from_description(initial_dicom)
         acq_date = initial_dicom.AcquisitionDate
 
-        output_name = output_name_format.format(patient_name=patient_name,
+        output_name = output_image_name_format.format(patient_name=patient_name,
                                                 index=0,
                                                 image_modality=image_modality,
                                                 image_desc=image_desc,
@@ -170,6 +174,13 @@ for series_uid, dicom_file_list in sorted(dicom_dict.items()):
             sorted_file_list = sort_dicom_image_list( dicom_dict[image_series_uid] )
             image = sitk.ReadImage(sorted_file_list)
 
-            structure_list, structure_name_list = transform_point_set_from_dicom_struct(image, dicom_object)
+            structure_name_list, structure_image_list = transform_point_set_from_dicom_struct(image, dicom_object)
 
             print(structure_name_list)
+
+            for structure_name, structure_image in zip(structure_name_list, structure_image_list)
+
+            output_name = output_structure_name_format.format(patient_name=patient_name,
+                                        index=0,
+                                        image_modality=image_modality,
+                                        acq_date = acq_date)
