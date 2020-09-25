@@ -94,16 +94,16 @@ def fix_missing_data(contour_data_list):
     """
     contour_data = np.array(contour_data_list)
     if contour_data.any()=='':
-        print("Missing values detected.")
+        logger.warning("    Missing values detected.")
         missing_values = np.where(contour_data=='')[0]
         if missing_values.shape[0]>1:
-            print("More than one value missing, fixing this isn't implemented yet...")
+            logger.warning("    More than one value missing, fixing this isn't implemented yet...")
         else:
-            print("Only one value missing.")
+            logger.warning("    Only one value missing.")
             missing_index = missing_values[0]
             missing_axis = missing_index%3
             if missing_axis==0:
-                print("Missing value in x axis: interpolating.")
+                logger.warning("    Missing value in x axis: interpolating.")
                 if missing_index>len(contour_data)-3:
                     lower_val = contour_data[missing_index-3]
                     upper_val = contour_data[0]
@@ -115,7 +115,7 @@ def fix_missing_data(contour_data_list):
                     upper_val = contour_data[missing_index+3]
                 contour_data[missing_index] = 0.5*(lower_val+upper_val)
             elif missing_axis==1:
-                print("Missing value in y axis: interpolating.")
+                logger.warning("    Missing value in y axis: interpolating.")
                 if missing_index>len(contour_data)-2:
                     lower_val = contour_data[missing_index-3]
                     upper_val = contour_data[1]
@@ -127,7 +127,7 @@ def fix_missing_data(contour_data_list):
                     upper_val = contour_data[missing_index+3]
                 contour_data[missing_index] = 0.5*(lower_val+upper_val)
             else:
-                print("Missing value in z axis: taking slice value")
+                logger.warning("    Missing value in z axis: taking slice value")
                 temp = contour_data[2::3].tolist()
                 temp.remove('')
                 contour_data[missing_index] = np.min(np.array(temp, dtype=np.double))
@@ -148,14 +148,14 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
 
     for structIndex, structure_name in enumerate(struct_name_sequence):
         image_blank = np.zeros(dicom_image.GetSize()[::-1], dtype=np.uint8)
-        print("Converting structure {0} with name: {1}".format(structIndex, structure_name))
+        logger.info("    Converting structure {0} with name: {1}".format(structIndex, structure_name))
 
         if not hasattr(struct_point_sequence[structIndex], "ContourSequence"):
-            print("No contour sequence found for this structure, skipping.")
+            logger.warning("    No contour sequence found for this structure, skipping.")
             continue
 
         if not struct_point_sequence[structIndex].ContourSequence[0].ContourGeometricType=="CLOSED_PLANAR":
-            print("This is not a closed planar structure, skipping.")
+            logger.warning("    This is not a closed planar structure, skipping.")
             continue
 
         for sl in range(len(struct_point_sequence[structIndex].ContourSequence)):
@@ -171,15 +171,15 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
             zIndex = point_arr[2][0]
 
             if np.any(point_arr[2]!=zIndex):
-                print("Error: axial slice index varies in contour. Quitting now.")
-                print("Structure:   {0}".format(structure_name))
-                print("Slice index: {0}".format(zIndex))
+                logger.error("    Axial slice index varies in contour. Quitting now.")
+                logger.error("    Structure:   {0}".format(structure_name))
+                logger.error("    Slice index: {0}".format(zIndex))
                 quit()
 
             if zIndex>=dicom_image.GetSize()[2]:
-                print("Warning: Slice index greater than image size. Skipping slice.")
-                print("Structure:   {0}".format(structure_name))
-                print("Slice index: {0}".format(zIndex))
+                logger.warning("    Slice index greater than image size. Skipping slice.")
+                logger.warning("    Structure:   {0}".format(structure_name))
+                logger.warning("    Slice index: {0}".format(zIndex))
                 continue
 
             sliceArr = np.zeros(dicom_image.GetSize()[:2], dtype=np.uint8)
