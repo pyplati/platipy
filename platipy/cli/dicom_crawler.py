@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright 2020 University of New South Wales, University of Sydney, Ingham Institute
 
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +32,7 @@ logger.add(sys.stderr, level="DEBUG")
     "--input_dir",
     '-i',
     default="./",
-    required=False,
+    required=True,
     type=click.Path(),
     help="Input DICOM directory. This should be at the same level as the parent field (default=PatientName)."
     )
