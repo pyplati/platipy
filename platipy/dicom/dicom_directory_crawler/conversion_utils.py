@@ -1,12 +1,15 @@
 
 import re
+import sys
 
 import pydicom
+import pathlib
 import numpy as np
 import SimpleITK as sitk
 
 from skimage.draw import polygon
 from loguru import logger
+
 
 def get_dicom_info_from_description(dicom_object, return_extra=False):
     """
@@ -42,16 +45,18 @@ def get_dicom_info_from_description(dicom_object, return_extra=False):
 
         elif image_modality=='MR':
             # Not much consistency, but we can get the protocol name
-            protocol_name = dicom_object.ProtocolName
+            protocol_name = re.sub(r'[^\w]', '_', dicom_object.ProtocolName).upper()
+            sequence_name = re.sub(r'[^\w]', '_', dicom_object.SequenceName).upper()
+
+            combined_name = '_'.join([protocol_name, sequence_name])
+            while '__' in combined_name:
+                combined_name = combined_name.replace('__','_')
             
-            if protocol_name != '':
-                return re.sub(r'[^\w]', '_', protocol_name).upper()
+            if protocol_name != '' and not return_extra:
+                return protocol_name
 
             else:
-                # If there is no information in "ProtocolName" we can try another field
-                sequence_name = dicom_object.SequenceName
-
-                return re.sub(r'[^\w]', '_', sequence_name).upper()
+                return combined_name
 
         elif image_modality=='PT':
             # Not much experience with this
@@ -65,21 +70,35 @@ def get_dicom_info_from_description(dicom_object, return_extra=False):
             else:
                 return 'NAC'
 
-
-
-
-
-def sort_dicom_image_list(dicom_image_list, sort_by='SliceLocation'):
+def safe_sort_dicom_image_list(dicom_image_list):
     """
-    Sorts a list of DICOM image files based on a DICOM tag value
+    Sorts a list of DICOM image files based on a DICOM tag value.
+    This is a much safer method than reading SliceLocation.
+    It takes mandatory DICOM fields (Image Position [Patient]) and (Image Orientation [Patient]).
+    The list of DICOM files is sorted by projecting the image position onto the axis normal to the 
+    place defined by the image orientation.
+
+    This accounts for differences in patient position (e.g. HFS/FFS).
 
     Args:
         dicom_image_list (list): [description]
-        sort_by (str, optional): [description]. Defaults to 'SliceLocation'.
     """
-    sorter_float = lambda dcm_file: float(pydicom.read_file(dcm_file, force=True)[sort_by].value)
+    sorted_dict = {}
+    for dicom_file in dicom_image_list:
+        dcm = pydicom.read_file(dicom_file, force=True)
 
-    return sorted(dicom_image_list, key=sorter_float)
+        image_position = np.array(dcm.ImagePositionPatient, dtype=float)
+        image_orientation = np.array(dcm.ImageOrientationPatient, dtype=float)
+
+        image_plane_normal = np.cross(image_orientation[:3], image_orientation[3:])
+
+        slice_location = (image_position * image_plane_normal)[2]
+
+        sorted_dict[dicom_file] = slice_location
+
+    sorter_safe = lambda dcm_file: sorted_dict[dcm_file]
+
+    return sorted(dicom_image_list, key=sorter_safe)
 
 def fix_missing_data(contour_data_list):
     """
@@ -196,3 +215,446 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
         final_struct_name_sequence.append(structure_name_clean)
 
     return final_struct_name_sequence, structure_list
+
+def process_dicom_file_list(dicom_file_list):
+
+    """
+    Organise the DICOM files by the series UID
+    """
+    dicom_series_dict = {}
+
+    for i, dicom_file in enumerate(sorted(dicom_file_list)):
+        logger.debug(f"  Sorting file {i}")
+
+        dicom_file = dicom_file.as_posix()
+
+        dicom_object = pydicom.read_file(dicom_file, force=True)
+
+        series_uid = dicom_object.SeriesInstanceUID
+
+        if series_uid not in dicom_series_dict.keys():
+            dicom_series_dict[series_uid] = [dicom_file]
+
+        else:
+            dicom_series_dict[series_uid].append(dicom_file)
+
+    return dicom_series_dict
+
+def process_dicom_series(dicom_series_dict,
+                         series_uid,
+                         parent_sorting_field = 'PatientName',
+                         return_extra = True
+                        ):
+
+    logger.info(f"  Processing series UID: {series_uid}")
+    dicom_file_list = dicom_series_dict[series_uid]
+
+    logger.info(f"  Number of DICOM files: {len(dicom_file_list)}")
+
+    initial_dicom = pydicom.read_file(dicom_file_list[0])
+
+    # Get the data in the parent sorting field, clean with RegEx
+    parent_sorting_data = re.sub(r"[^\w]", "_", str(initial_dicom[parent_sorting_field].value)).upper()
+    
+    if parent_sorting_data == "":
+        logger.error(f"Could not find any data in {parent_sorting_field}. This is very bad, the data cannot be sorted properly.")
+        logger.error(f"But I can help. ")
+        """
+        ! TO DO
+        Implement a routine to let a user correlate a root directory with a name
+        """
+        parent_sorting_data = "TEMP"
+    
+    initial_dicom_sop_class_uid = initial_dicom.SOPClassUID
+    initial_dicom_sop_class_name = pydicom._uid_dict.UID_dictionary[initial_dicom_sop_class_uid][0]
+    logger.info(f"  SOP Class name: {initial_dicom_sop_class_name}")
+
+    study_uid = initial_dicom.StudyInstanceUID
+
+    """
+    ! TO DO
+    Need to check for secondary capture image storage
+    This can include JPEGs with written information on them
+    This is typically not very useful
+    We can dump it to file
+    Or just save the DICOM file in the folder of interest
+
+    Not a big problem, sort out another day
+    """
+
+    # Check the potential types of DICOM files
+    if "Image" in initial_dicom_sop_class_name and initial_dicom_sop_class_name != "Secondary Capture Image Storage":
+        # Load as an primary image
+
+        sorted_file_list = safe_sort_dicom_image_list(dicom_file_list)
+        image = sitk.ReadImage(sorted_file_list)
+
+        """
+        ! TO DO - integrity check
+            Read in all the files here, check the slice location and determine if any are missing
+        """
+
+        """
+        Retrieve some information
+        This will be used to populate fields in the output name
+        """
+
+        image_modality = initial_dicom.Modality
+        image_desc = get_dicom_info_from_description(initial_dicom, return_extra=return_extra)
+        acq_date = initial_dicom.AcquisitionDate
+        acq_num = initial_dicom.AcquisitionNumber
+        series_num = initial_dicom.SeriesNumber
+
+        dicom_file_metadata = { 'parent_sorting_data': parent_sorting_data,
+                                'study_uid': study_uid,
+                                'image_modality': image_modality,
+                                'image_desc': image_desc,
+                                'acq_date': acq_date,
+                                'acq_num': acq_num,
+                                'series_num': series_num}
+
+        """
+        ! CHECKPOINT
+        Some DCE MRI sequences have the same series UID
+        Here we check the sequence name, and split if necessary
+        """
+        if image_modality == 'MR':
+            sequence_names = np.unique([pydicom.read_file(x).SequenceName for x in dicom_file_list])
+
+            if np.alen(sequence_names) > 1:
+                logger.warning('  Two MR sequences were found under a single series UID.')
+                logger.warning('  These will be split into two images.')
+
+                # Split up the DICOM file list by sequence name
+
+                for sequence_name in sequence_names:
+                    dicom_file_list_by_sequence = [i for i in dicom_file_list if pydicom.read_file(i).SequenceName == sequence_name]
+                    sorted_file_list = safe_sort_dicom_image_list(dicom_file_list_by_sequence)
+
+                    initial_dicom = pydicom.read_file(sorted_file_list[0], force=True)
+                    image_desc = get_dicom_info_from_description(initial_dicom, return_extra=True)
+                    acq_date = initial_dicom.AcquisitionDate
+                    acq_num = initial_dicom.AcquisitionNumber
+                    series_num = initial_dicom.SeriesNumber
+
+                    image_by_sequence = sitk.ReadImage(sorted_file_list)
+
+                    dicom_file_metadata_by_sequence = { 'parent_sorting_data': parent_sorting_data,
+                                                        'study_uid': study_uid,
+                                                        'image_modality': image_modality,
+                                                        'image_desc': image_desc,
+                                                        'acq_date': acq_date,
+                                                        'acq_num': acq_num,
+                                                        'series_num': series_num}
+
+                    yield 'IMAGES', dicom_file_metadata_by_sequence, image_by_sequence
+                    return # Stop iteration
+
+        yield 'IMAGES', dicom_file_metadata, image
+
+    if "Structure" in initial_dicom_sop_class_name:
+        # Load as an RT structure set
+        # This should be done individually for each file
+
+        logger.info(f"      Number of files: {len(dicom_file_list)}")
+        for index, dicom_file in enumerate(dicom_file_list):
+            dicom_object = pydicom.read_file(dicom_file, force=True)
+
+            # We must also read in the corresponding DICOM image
+            # This can be found by matching the references series UID to the series UID
+
+            """
+            ! TO DO
+            What happens if there is an RT structure set with different referenced sequences?
+            """
+
+            # Get the "ReferencedFrameOfReferenceSequence", first item
+            referenced_frame_of_reference_item = dicom_object.ReferencedFrameOfReferenceSequence[0]
+
+            # Get the "RTReferencedStudySequence", first item
+            # This retrieves the study UID
+            # This might be useful, but would typically match the actual StudyInstanceUID in the DICOM object
+            rt_referenced_series_item = referenced_frame_of_reference_item.RTReferencedStudySequence[0]
+
+            # Get the "RTReferencedSeriesSequence", first item
+            # This retreives the actual referenced series UID, which we need to match imaging parameters
+            rt_referenced_series_again_item = rt_referenced_series_item.RTReferencedSeriesSequence[0]
+
+            # Get the appropriate series instance UID
+            image_series_uid = rt_referenced_series_again_item.SeriesInstanceUID
+            logger.info(f"      Item {index}: Matched SeriesInstanceUID = {image_series_uid}")
+
+            # Read in the corresponding image
+            sorted_file_list = safe_sort_dicom_image_list( dicom_series_dict[image_series_uid] )
+            image = sitk.ReadImage(sorted_file_list)
+
+            initial_dicom = pydicom.read_file(sorted_file_list[0], force=True)
+            image_modality = initial_dicom.Modality
+            acq_date = initial_dicom.AcquisitionDate
+            acq_num = initial_dicom.AcquisitionNumber
+            series_num = initial_dicom.SeriesNumber
+
+            structure_name_list, structure_image_list = transform_point_set_from_dicom_struct(image, dicom_object)
+
+            dicom_file_metadata = { 'parent_sorting_data': parent_sorting_data,
+                                    'study_uid': study_uid,
+                                    'image_modality': image_modality,
+                                    'image_desc': image_desc,
+                                    'acq_date': acq_date,
+                                    'series_num': series_num,
+                                    'structure_name_list' : structure_name_list}
+
+            yield 'STRUCTURES', dicom_file_metadata, structure_image_list
+
+        """
+        ! TO DO
+        1. Implement conversion of dose files (to NIFTI images)
+            Match using study instance UID
+        2. Implement conversion of RT plan files to text dump
+        3. For now, do something with other files (e.g. Deformable Image Registration stuff)
+        """
+
+    return 0
+
+def process_dicom_directory(dicom_directory,
+                            parent_sorting_field='PatientName',
+                            output_image_name_format = "{parent_sorting_data}_{image_modality}",
+                            output_structure_name_format = "{parent_sorting_data}_{image_modality}_{structure_name}",
+                            return_extra=True):
+
+    # Get all the DICOM files in the given directory
+    root_path = pathlib.Path(dicom_directory)
+    dicom_file_list = list(root_path.glob("**/*.dcm"))
+
+    if len(dicom_file_list)==0:
+        logger.info("No DICOM files found in input directory. Exiting now.")
+        return
+
+    # Process the DICOM files
+    # This returns a dictionary:
+    #   {series_UID_1: [list_of_DICOM_files], ...}
+    dicom_series_dict = process_dicom_file_list(dicom_file_list)
+
+    # Set up the output data
+    # This stores the SimpleITK images and file names
+    output_data_dict = {}
+
+    # Set up the study UID dict
+    # This helps match structure sets to relevant images
+    # And paired images to each other (e.g. PET/CT)
+    study_uid_dict = {}
+
+    # For each unique series UID, process the DICOM files
+    for series_uid in dicom_series_dict.keys():
+
+        for dicom_type, dicom_file_metadata, dicom_file_data in process_dicom_series(dicom_series_dict=dicom_series_dict,
+                                                                                     series_uid=series_uid,
+                                                                                     parent_sorting_field=parent_sorting_field,
+                                                                                     return_extra=return_extra):
+
+            # This function yields a generator                                                                                               
+            # print(series_uid, dicom_type, dicom_file_metadata)
+            """
+            ! TO DO
+            Generate a parent function that can split a list of DICOM files by this field
+            Then this script can be run more consistently over any directory
+            """
+
+            # Step 1
+            # Check the parent sorting field is consistent
+            # This would usually be the PatientName
+
+            parent_sorting_data = dicom_file_metadata['parent_sorting_data']
+
+            if "parent_sorting_data" not in output_data_dict.keys():
+                output_data_dict["parent_sorting_data"] = parent_sorting_data
+
+            else:
+                if parent_sorting_data != output_data_dict["parent_sorting_data"]:
+                    logger.error(f"A conflict was found for the parent sorting field ({parent_sorting_field}): {parent_sorting_data}")
+                    logger.error("This script should be run on the DICOM data for a single patient.")
+                    logger.error("Quitting now.")
+                    sys.quit()
+                else:
+                    logger.info(f"  Parent sorting field ({parent_sorting_field}) match found: {parent_sorting_data}")
+
+            # Step 2
+            # Get the study UID
+            # Used for indexing DICOM series
+
+            study_uid = dicom_file_metadata['study_uid']
+
+            if study_uid not in study_uid_dict.keys():
+                try:
+                    study_uid_index = max(study_uid_dict.values()) + 1
+                except:
+                    study_uid_index = 0
+
+                logger.info(f"  Setting study instance UID index: {study_uid_index}")
+
+                study_uid_dict[study_uid] = study_uid_index
+
+            else:
+                logger.info(f"  Study instance UID index already exists: {study_uid_dict[study_uid]}")
+
+
+            # Step 3
+            # Generate names for images
+            image_modality = dicom_file_metadata["image_modality"]
+            image_desc = dicom_file_metadata["image_desc"]
+            acq_date = dicom_file_metadata["acq_date"]
+            acq_num = dicom_file_metadata["acq_num"]
+            series_num = dicom_file_metadata["series_num"]
+
+            output_name = output_image_name_format.format(parent_sorting_data=parent_sorting_data,
+                                                          study_uid_index=study_uid_dict[study_uid],
+                                                          image_modality=image_modality,
+                                                          image_desc=image_desc,
+                                                          acq_date = acq_date,
+                                                          acq_num = acq_num,
+                                                          series_num = series_num)
+
+            if dicom_type == "IMAGES":
+                if "IMAGES" not in output_data_dict.keys():
+                    # Make a new entry
+                    output_data_dict["IMAGES"] = {output_name:dicom_file_data}
+
+                else:
+                    # First check if there is another image of the same name
+
+                    if output_name not in output_data_dict["IMAGES"].keys():
+                        output_data_dict["IMAGES"][output_name] = dicom_file_data
+
+                    else:
+                        logger.info("      An image with this name exists, appending.")
+
+                        if type(output_data_dict["IMAGES"][output_name]) != list:
+                            output_data_dict["IMAGES"][output_name] = list([output_data_dict["IMAGES"][output_name]])
+
+                        output_data_dict["IMAGES"][output_name].append(dicom_file_data)
+
+
+            elif dicom_type == "STRUCTURES":
+
+                for structure_name, structure_image in zip(dicom_file_metadata["structure_name_list"], dicom_file_data):
+
+                    output_name = output_structure_name_format.format(parent_sorting_data=parent_sorting_data,
+                                                                     study_uid_index=study_uid_dict[study_uid],
+                                                                     image_modality=image_modality,
+                                                                     image_desc=image_desc,
+                                                                     structure_name=structure_name,
+                                                                     acq_date = acq_date,
+                                                                     acq_num = acq_num,
+                                                                     series_num = series_num)
+
+                    if "STRUCTURES" not in output_data_dict.keys():
+                        # Make a new entry
+                        output_data_dict["STRUCTURES"] = {output_name:structure_image}
+
+                    else:
+                        # First check if there is another structure of the same name
+
+                        if output_name not in output_data_dict["STRUCTURES"].keys():
+                            output_data_dict["STRUCTURES"][output_name] = structure_image
+
+                        else:
+                            logger.info("      A structure with this name exists, appending.")
+                            if type(output_data_dict["STRUCTURES"][output_name]) != list:
+                                output_data_dict["STRUCTURES"][output_name] = list([output_data_dict["STRUCTURES"][output_name]])
+
+                            output_data_dict["STRUCTURES"][output_name].append(structure_image)
+
+    return output_data_dict
+
+
+def write_output_data_to_disk(output_data_dict,
+                              output_directory = './',
+                              output_file_suffix = ".nii.gz",
+                              overwrite_existing_files = False):
+
+    if output_data_dict is None:
+        return
+
+    filename_fields = [ i for i in output_data_dict.keys() if i!="parent_sorting_data"]
+    parent_sorting_data = output_data_dict['parent_sorting_data']
+
+    """
+    Write the the converted images to disk
+
+    ! CONSIDER
+    We could simply write as we go?
+    Pro: save memory, important if processing very large files
+    Con: Reading as we go allows proper indexing
+
+    """
+
+    for field in filename_fields:
+        logger.info(f"  Writing files for field: {field}")
+        p = pathlib.Path(output_directory) / parent_sorting_data / field
+        p.mkdir(parents=True, exist_ok = True)
+
+        for field_filename_base, field_list in output_data_dict[field].items():
+            # Check if there is a list of images with matching names
+            # This will depend on the name format chosen
+            # If there is a list, we append an index as we write to disk
+
+            if type(field_list) == list:
+                # Iterate
+                for suffix, file_to_write in enumerate(field_list):
+                    field_filename = field_filename_base + f"_{suffix}"
+
+                    # Some cleaning
+                    while "__" in field_filename:
+                        field_filename = field_filename.replace("__","_")
+
+                    while field_filename[-1]=="_":
+                        field_filename = field_filename[:-1]
+
+                    # Save image!
+                    """
+                    ! TO DO
+                    Use pathlib, and perform some checks so we don"t overwrite anything!
+                    """
+                    output_name = pathlib.Path(output_directory) / parent_sorting_data / field / (field_filename + output_file_suffix)
+                    
+                    if output_name.is_file():
+                        logger.warning(f"  File exists: {output_name}")
+
+                        if overwrite_existing_files:
+                            logger.warning("f  You have selected to overwrite existing files.")
+                            
+                        else:
+                            logger.info(f"  You have selected to NOT overwrite existing files. Continuing.")
+                            continue
+
+                    sitk.WriteImage(file_to_write, output_name.as_posix())
+
+            else:
+                field_filename = field_filename_base
+                file_to_write = field_list
+
+                # Some cleaning
+                while "__" in field_filename:
+                    field_filename = field_filename.replace("__","_")
+
+                while field_filename[-1]=="_":
+                    field_filename = field_filename[:-1]
+
+                # Save image!
+                """
+                ! TO DO
+                Use pathlib, and perform some checks so we don"t overwrite anything!
+                """
+                output_name = pathlib.Path(output_directory) / parent_sorting_data / field / (field_filename + output_file_suffix)
+                
+                if output_name.is_file():
+                    logger.warning(f"  File exists: {output_name}")
+
+                    if overwrite_existing_files:
+                        logger.warning("f  You have selected to overwrite existing files.")
+                        
+                    else:
+                        logger.info(f"  You have selected to NOT overwrite existing files. Continuing.")
+                        continue
+
+                sitk.WriteImage(file_to_write, output_name.as_posix())
