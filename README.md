@@ -16,7 +16,9 @@ possible, mainly for guidance on getting started with using the tools.
 ### Git
 
 Create a branch off of **devel** while you make your changes or implement your new tool.
-Once complete, head to  [BitBucket to create a pull request](https://bitbucket.org/swscsmedphys/dataweb/pull-requests/new) to merge your changes into the main development branch (**devel**).
+Once complete, head to  [GitHub to create a pull 
+request](https://github.com/pyplati/platipy/compare) to merge your changes into the main
+development branch (**devel**).
 
 ### Style Guide
 
@@ -43,7 +45,7 @@ applications. The following structure should be observed:
 Where possible, the tools and scripts within this toolbox should provide a way to run them from the
 command line. A simple Python library to provide this functionality is *click*. You simply need to
 annotate the functions you want to have accessible from the command line. See
-[the official clickdocumentation](https://click.palletsprojects.com) for an introduction to
+[the official click documentation](https://click.palletsprojects.com) for an introduction to
 using *click*.
 
 ### Writing unit tests for *pytest*
