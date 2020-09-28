@@ -31,7 +31,6 @@ logger.add(sys.stderr, level="DEBUG")
 @click.option(
     "--input_dir",
     '-i',
-    default="./",
     required=True,
     type=click.Path(),
     help="Input DICOM directory. This should be at the same level as the parent field (default=PatientName)."

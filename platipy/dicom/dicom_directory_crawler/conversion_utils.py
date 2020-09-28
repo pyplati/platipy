@@ -424,7 +424,8 @@ def process_dicom_directory(dicom_directory,
 
     # Get all the DICOM files in the given directory
     root_path = pathlib.Path(dicom_directory)
-    dicom_file_list = list(root_path.glob("**/*.dcm"))
+    # Find files ending with .dcm, .dc3
+    dicom_file_list = list(root_path.glob("**/*.dcm")) + list(root_path.glob("**/*.DCM*")) + list(root_path.glob("**/*.dc3")) + list(root_path.glob("**/*.DC3"))
 
     if len(dicom_file_list)==0:
         logger.info("No DICOM files found in input directory. Exiting now.")
@@ -443,6 +444,10 @@ def process_dicom_directory(dicom_directory,
     # This helps match structure sets to relevant images
     # And paired images to each other (e.g. PET/CT)
     study_uid_dict = {}
+
+    # Give some user feedback
+    logger.debug("  Output image name format: {output_image_name_format}")
+    logger.debug("  Output structure name format: {output_structure_name_format}")
 
     # For each unique series UID, process the DICOM files
     for series_uid in dicom_series_dict.keys():
