@@ -78,7 +78,31 @@ logger.add(sys.stderr, level="DEBUG")
     help="Use less verbose descriptions for DICOM images."
     )
 def click_command(input_dir, output_dir, sort_by, image_format, structure_format, overwrite, file_suffix, short_description):
+    """
+    DICOM DIRECTORY CRAWLER
 
+    This tool makes it easier to bulk-convert DICOM files into other formats (default NifTI).
+    There are quite a lot of options, but most do not need to be changed.
+    
+    You need to provide the input directory (-i), from which the crawler will recursively search through.
+
+    You might also like to change the naming format (using --image_format and --structure_format).
+    The default is quite long, better suited for datasets with lots of imaging for a single patient.
+
+    Some examples:
+
+      [simple] --image_format {parent_sorting_data}
+
+      [compact]  --image_format {parent_sorting_data}_{series_uid_index}
+
+    You can separate series using different values (--sort_by ).
+    This would typically be PatientName, or PatientID, although any DICOM header tag is allowed.
+
+    I hope you find this tool useful!
+
+    If you have any feedback, let us know on github.com/pyplati/platipy
+
+    """
     logger.info("########################")
     logger.info(" Running DICOM crawler ")
     logger.info("########################")
