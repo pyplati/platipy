@@ -648,7 +648,7 @@ def process_dicom_directory(dicom_directory,
                         output_name = output_structure_name_format.format(parent_sorting_data=parent_sorting_data,
                                                                             study_uid_index=study_uid_dict[study_uid],
                                                                             image_desc=image_desc,
-                                                                            structure_name=structure_name
+                                                                            structure_name=structure_name,
                                                                             **naming_info_dict)
 
                         if "STRUCTURES" not in output_data_dict.keys():
