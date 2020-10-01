@@ -148,7 +148,7 @@ def fetch_data(
 
                 if save_dicom:
                     shutil.copytree(
-                        directory_to_extract_to, os.path.join(patient_directory, "dicom")
+                        directory_to_extract_to, os.path.join(patient_directory, "dicom", obj["Modality"])
                     )
 
         if save_nifti:

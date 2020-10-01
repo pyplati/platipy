@@ -19,65 +19,68 @@ import click
 
 from loguru import logger
 
-from platipy.dicom.dicom_directory_crawler.conversion_utils import (
-    process_dicom_directory,
-    write_output_data_to_disk
-)
+from platipy.dicom.dicom_directory_crawler.conversion_utils import process_dicom_directory
 
 logger.remove()
 logger.add(sys.stderr, level="DEBUG")
 
+
 @click.command()
 @click.option(
     "--input_dir",
-    '-i',
+    "-i",
     required=True,
     type=click.Path(),
-    help="Input DICOM directory. This should be at the same level as the parent field (default=PatientName)."
-    )
+    help="Input DICOM directory. This should be at the same level as the parent field "
+    "(default=PatientName).",
+)
 @click.option(
     "--output_dir",
-    '-o',
+    "-o",
     default="./",
     required=False,
     type=click.Path(),
-    help="Output directory. A folder structure will be created at this location."
-    )
+    help="Output directory. A folder structure will be created at this location.",
+)
 @click.option(
-    "--sort_by",
-    "-b",
-    default="PatientName",
-    help="DICOM tag to sort at the highest level."
-    )
+    "--sort_by", "-b", default="PatientName", help="DICOM tag to sort at the highest level."
+)
 @click.option(
     "--image_format",
     default="{parent_sorting_data}_{study_uid_index}_{Modality}_{image_desc}_{SeriesNumber}",
-    help="Format for output images. There are three special options that can be used: parent_sorting_data (same as sort_by option), study_uid_index (a counter for distinct DICOM studies), image_desc (info from DICOM header, more nicely formatted). Additionally, any DICOM header tag can be used (e.g. Modality, SeriesNumber, AcquisitionData). Any DICOM header tag that doesn't exist will return a 0."
-    )
+    help="Format for output images. There are three special options that can be used: "
+    "parent_sorting_data (same as sort_by option), study_uid_index (a counter for distinct DICOM "
+    "studies), image_desc (info from DICOM header, more nicely formatted). Additionally, any "
+    "DICOM header tag can be used (e.g. Modality, SeriesNumber, AcquisitionData). Any DICOM "
+    "header tag that doesn't exist will return a 0.",
+)
 @click.option(
     "--structure_format",
     default="{parent_sorting_data}_{study_uid_index}_{Modality}_{structure_name}",
-    help="Format for output structures. Any of the options for images can be used, as well as: structure_name"
-    )
+    help="Format for output structures. Any of the options for images can be used, as well as: "
+    "structure_name",
+)
+@click.option("--overwrite", is_flag=True, default=False, help="Overwrite files if they exist.")
 @click.option(
-    "--overwrite",
-    is_flag=True,
-    default=False,
-    help="Overwrite files if they exist."
-    )
-@click.option(
-    "--file_suffix",
-    default=".nii.gz",
-    help="Output file suffix. Defines the file type."
-    )
+    "--file_suffix", default=".nii.gz", help="Output file suffix. Defines the file type."
+)
 @click.option(
     "--short_description",
     "-s",
     is_flag=True,
     default=False,
-    help="Use less verbose descriptions for DICOM images."
-    )
-def click_command(input_dir, output_dir, sort_by, image_format, structure_format, overwrite, file_suffix, short_description):
+    help="Use less verbose descriptions for DICOM images.",
+)
+def click_command(
+    input_dir,
+    output_dir,
+    sort_by,
+    image_format,
+    structure_format,
+    overwrite,
+    file_suffix,
+    short_description,
+):
     """
     DICOM DIRECTORY CRAWLER
 
@@ -107,19 +110,21 @@ def click_command(input_dir, output_dir, sort_by, image_format, structure_format
     logger.info(" Running DICOM crawler ")
     logger.info("########################")
 
-    output_data_dict = process_dicom_directory( input_dir,
-                                                parent_sorting_field=sort_by,
-                                                output_image_name_format = image_format,
-                                                output_structure_name_format = structure_format,
-                                                return_extra=(not short_description),
-                                                output_directory = output_dir,
-                                                output_file_suffix = file_suffix,
-                                                overwrite_existing_files = overwrite
-                                              )
+    process_dicom_directory(
+        input_dir,
+        parent_sorting_field=sort_by,
+        output_image_name_format=image_format,
+        output_structure_name_format=structure_format,
+        return_extra=(not short_description),
+        output_directory=output_dir,
+        output_file_suffix=file_suffix,
+        overwrite_existing_files=overwrite,
+    )
 
     logger.info("########################")
     logger.info(" DICOM crawler complete")
     logger.info("########################")
+
 
 if __name__ == "__main__":
     click_command()  # pylint: disable=no-value-for-parameter
