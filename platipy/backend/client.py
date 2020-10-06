@@ -148,6 +148,35 @@ class PlatiPyClient:
 
         return None
 
+    def get_dataset_ready(self, dataset):
+        """Checks to see if the dataset is ready to run on the server
+
+        Arguments:
+            dataset {dict/int} -- The dictionary object representing the dataset or the id of the
+                                  dataset
+
+        Returns:
+            dict -- The dictionary object representing the dataset
+        """
+
+        params = {"dataset": dataset}
+
+        if isinstance(dataset, dict):
+            params["dataset"] = dataset["id"]
+
+        res = requests.get(
+            "{0}/{1}".format(API_DATASET_READY.format(self.base_url), params["dataset"]),
+            headers={"API_KEY": self.api_key},
+        )
+        logger.debug(res.status_code)
+
+        if res.status_code == 200:
+            result = res.json()
+            logger.debug(pformat(result))
+            return result["ready"]
+
+        return None
+
     def add_dataset(
         self, from_dicom_location=None, to_dicom_location=None, timeout=None
     ):
