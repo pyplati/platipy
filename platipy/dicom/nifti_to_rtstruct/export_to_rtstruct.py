@@ -1,4 +1,4 @@
-# Copyright 2020 University of New South Wales, University of Sydney, Ingham Institute
+# Copyright 2020 CSIRO
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,13 @@
 # limitations under the License.
 
 
-import sys
+import os
 import pydicom
 import datetime
+import itertools
 import yaml
-import os
 from pydicom.dataset import Dataset, FileDataset
 from pydicom.sequence import Sequence
-import itertools
 from pydicom.uid import ExplicitVRLittleEndian, ImplicitVRLittleEndian
 
 
