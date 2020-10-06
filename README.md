@@ -15,10 +15,10 @@ possible, mainly for guidance on getting started with using the tools.
 
 ### Git
 
-Create a branch off of **devel** while you make your changes or implement your new tool.
+Create a branch off of **master** while you make your changes or implement your new tool.
 Once complete, head to  [GitHub to create a pull 
-request](https://github.com/pyplati/platipy/compare) to merge your changes into the main
-development branch (**devel**).
+request](https://github.com/pyplati/platipy/compare) to merge your changes into the main branch
+(**master**).
 
 ### Style Guide
 
@@ -32,8 +32,6 @@ This toolbox is broken up into separate modules. Each module contains several to
 applications. The following structure should be observed:
 
 - module/
-    - data/: Directory containing sample data to be used by the Jupyter notebooks and/or test cases
-    of tools within module
     - tool/
         - ***.py**: One or more Python scripts providing some functionality
         - **README.md**: Contains description of tool, authors, etc...
