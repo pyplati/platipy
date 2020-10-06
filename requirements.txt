@@ -18,4 +18,3 @@ psutil
 gunicorn
 requests
 pandas
-re
