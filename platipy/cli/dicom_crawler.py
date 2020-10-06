@@ -38,12 +38,17 @@ logger.add(sys.stderr, level="DEBUG")
     "--output_dir",
     "-o",
     default="./",
+    show_default=True,
     required=False,
     type=click.Path(),
     help="Output directory. A folder structure will be created at this location.",
 )
 @click.option(
-    "--sort_by", "-b", default="PatientName", help="DICOM tag to sort at the highest level."
+    "--sort_by",
+    "-b",
+    default="PatientName",
+    help="DICOM tag to sort at the highest level.",
+    show_default=True,
 )
 @click.option(
     "--image_format",
@@ -53,34 +58,53 @@ logger.add(sys.stderr, level="DEBUG")
     "studies), image_desc (info from DICOM header, more nicely formatted). Additionally, any "
     "DICOM header tag can be used (e.g. Modality, SeriesNumber, AcquisitionData). Any DICOM "
     "header tag that doesn't exist will return a 0.",
+    show_default=True,
 )
 @click.option(
     "--structure_format",
     default="{parent_sorting_data}_{study_uid_index}_{Modality}_{structure_name}",
-    help="Format for output structures. Any of the options for images can be used, as well as: structure_name"
-    )
+    help="Format for output structures. Any of the options for images can be used, as "
+    "well as: structure_name",
+    show_default=True,
+)
 @click.option(
     "--dose_format",
     default="{parent_sorting_data}_{study_uid_index}_{DoseSummationType}",
-    help="Format for output radiotherapy dose distributions."
-    )
+    show_default=True,
+    help="Format for output radiotherapy dose distributions.",
+)
 @click.option(
     "--overwrite",
     is_flag=True,
     default=False,
-    help="Overwrite files if they exist."
-    )
+    help="Overwrite files if they exist.",
+    show_default=True,
+)
 @click.option(
-    "--file_suffix", default=".nii.gz", help="Output file suffix. Defines the file type."
+    "--file_suffix",
+    default=".nii.gz",
+    help="Output file suffix. Defines the file type.",
+    show_default=True,
 )
 @click.option(
     "--short_description",
     "-s",
     is_flag=True,
     default=False,
-    help="Use less verbose descriptions for DICOM images."
-    )
-def click_command(input_dir, output_dir, sort_by, image_format, structure_format, dose_format, overwrite, file_suffix, short_description):
+    show_default=True,
+    help="Use less verbose descriptions for DICOM images.",
+)
+def click_command(
+    input_dir,
+    output_dir,
+    sort_by,
+    image_format,
+    structure_format,
+    dose_format,
+    overwrite,
+    file_suffix,
+    short_description,
+):
     """
     DICOM DIRECTORY CRAWLER
 
@@ -112,16 +136,17 @@ def click_command(input_dir, output_dir, sort_by, image_format, structure_format
     logger.info(" Running DICOM crawler ")
     logger.info("########################")
 
-    output_data_dict = process_dicom_directory( input_dir,
-                                                parent_sorting_field=sort_by,
-                                                output_image_name_format = image_format,
-                                                output_structure_name_format = structure_format,
-                                                output_dose_name_format = dose_format,
-                                                return_extra=(not short_description),
-                                                output_directory = output_dir,
-                                                output_file_suffix = file_suffix,
-                                                overwrite_existing_files = overwrite
-                                              )
+    process_dicom_directory(
+        input_dir,
+        parent_sorting_field=sort_by,
+        output_image_name_format=image_format,
+        output_structure_name_format=structure_format,
+        output_dose_name_format=dose_format,
+        return_extra=(not short_description),
+        output_directory=output_dir,
+        output_file_suffix=file_suffix,
+        overwrite_existing_files=overwrite,
+    )
 
     logger.info("########################")
     logger.info(" DICOM crawler complete")

@@ -38,6 +38,7 @@ from platipy.dicom.rtstruct_to_nifti.convert import convert_rtstruct
     "-od",
     default=".",
     help="Directory in which to place converted files",
+    show_default=True
 )
 @click.option("--output_img", "-oi", help="Output name of converted image series")
 @click.option(
