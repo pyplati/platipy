@@ -57,10 +57,19 @@ logger.add(sys.stderr, level="DEBUG")
 @click.option(
     "--structure_format",
     default="{parent_sorting_data}_{study_uid_index}_{Modality}_{structure_name}",
-    help="Format for output structures. Any of the options for images can be used, as well as: "
-    "structure_name",
-)
-@click.option("--overwrite", is_flag=True, default=False, help="Overwrite files if they exist.")
+    help="Format for output structures. Any of the options for images can be used, as well as: structure_name"
+    )
+@click.option(
+    "--dose_format",
+    default="{parent_sorting_data}_{study_uid_index}_{DoseSummationType}",
+    help="Format for output radiotherapy dose distributions."
+    )
+@click.option(
+    "--overwrite",
+    is_flag=True,
+    default=False,
+    help="Overwrite files if they exist."
+    )
 @click.option(
     "--file_suffix", default=".nii.gz", help="Output file suffix. Defines the file type."
 )
@@ -69,18 +78,9 @@ logger.add(sys.stderr, level="DEBUG")
     "-s",
     is_flag=True,
     default=False,
-    help="Use less verbose descriptions for DICOM images.",
-)
-def click_command(
-    input_dir,
-    output_dir,
-    sort_by,
-    image_format,
-    structure_format,
-    overwrite,
-    file_suffix,
-    short_description,
-):
+    help="Use less verbose descriptions for DICOM images."
+    )
+def click_command(input_dir, output_dir, sort_by, image_format, structure_format, dose_format, overwrite, file_suffix, short_description):
     """
     DICOM DIRECTORY CRAWLER
 
@@ -98,7 +98,7 @@ def click_command(
 
       [simple] --image_format {parent_sorting_data}
 
-      [compact]  --image_format {parent_sorting_data}_{series_uid_index}
+      [compact]  --image_format {parent_sorting_data}_{study_uid_index}
 
     You can separate series using different values (--sort_by ).
     This would typically be PatientName, or PatientID, although any DICOM header tag is allowed.
@@ -112,16 +112,16 @@ def click_command(
     logger.info(" Running DICOM crawler ")
     logger.info("########################")
 
-    process_dicom_directory(
-        input_dir,
-        parent_sorting_field=sort_by,
-        output_image_name_format=image_format,
-        output_structure_name_format=structure_format,
-        return_extra=(not short_description),
-        output_directory=output_dir,
-        output_file_suffix=file_suffix,
-        overwrite_existing_files=overwrite,
-    )
+    output_data_dict = process_dicom_directory( input_dir,
+                                                parent_sorting_field=sort_by,
+                                                output_image_name_format = image_format,
+                                                output_structure_name_format = structure_format,
+                                                output_dose_name_format = dose_format,
+                                                return_extra=(not short_description),
+                                                output_directory = output_dir,
+                                                output_file_suffix = file_suffix,
+                                                overwrite_existing_files = overwrite
+                                              )
 
     logger.info("########################")
     logger.info(" DICOM crawler complete")

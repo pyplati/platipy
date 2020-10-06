@@ -394,14 +394,45 @@ def process_dicom_series(dicom_series_dict,
                                    'structure_name_list' : structure_name_list
                                   }
 
-            yield 'STRUCTURES', dicom_file_metadata, initial_dicom, structure_image_list
+            yield 'STRUCTURES', dicom_file_metadata, dicom_object, structure_image_list
+
+
+    if "Dose" in initial_dicom_sop_class_name:
+        # Load as an RT Dose distribution
+        # This should be done individually for each file
+
+        logger.info(f"      Number of files: {len(dicom_file_list)}")
+        for index, dicom_file in enumerate(dicom_file_list):
+            dicom_object = pydicom.read_file(dicom_file, force=True)
+
+            """
+            ! CHECKPOINT
+            There should only be a single RT dose file (with each series UID)
+            If there are more, yield each
+            """
+
+            initial_dicom = pydicom.read_file(dicom_file, force=True)
+
+            dicom_file_metadata = {'parent_sorting_data': parent_sorting_data,
+                                   'study_uid': study_uid
+                                  }
+
+            # We must read in as a float otherwise when we multiply by one later it will not work!
+            raw_dose_image = sitk.ReadImage(dicom_file, sitk.sitkFloat32)
+
+            dose_grid_scaling = dicom_object.DoseGridScaling
+
+            logger.debug(f'  Dose grid scaling: {dose_grid_scaling} Gy')
+
+            scaled_dose_image = raw_dose_image * dose_grid_scaling
+
+            yield 'DOSES', dicom_file_metadata, dicom_object, scaled_dose_image
 
         """
         ! TO DO
-        1. Implement conversion of dose files (to NIFTI images)
-            Match using study instance UID
+        1. (DONE) Implement conversion of dose files (to NIFTI images)
         2. Implement conversion of RT plan files to text dump
-        3. For now, do something with other files (e.g. Deformable Image Registration stuff)
+        3. Do something with other files (e.g. Deformable Image Registration stuff)
         """
 
     return
@@ -504,6 +535,7 @@ def process_dicom_directory(dicom_directory,
                             parent_sorting_field='PatientName',
                             output_image_name_format = "{parent_sorting_data}_{study_uid_index}_{Modality}_{image_desc}_{SeriesNumber}",
                             output_structure_name_format = "{parent_sorting_data}_{study_uid_index}_{Modality}_{structure_name}",
+                            output_dose_name_format = "{parent_sorting_data}_{study_uid_index}_{DoseSummationType}",
                             return_extra=True,
                             output_directory = './',
                             output_file_suffix = ".nii.gz",
@@ -544,9 +576,16 @@ def process_dicom_directory(dicom_directory,
         # Give some user feedback
         logger.debug(f"  Output image name format: {output_image_name_format}")
         logger.debug(f"  Output structure name format: {output_structure_name_format}")
+        logger.debug(f"  Output dose name format: {output_dose_name_format}")
 
         # For each unique series UID, process the DICOM files
         for series_uid in dicom_series_dict.keys():
+            
+            # This function returns four values
+            # 1. dicom_type: This is IMAGES, STRUCTURES, DOSES, etc
+            # 2. dicom_file_metadata: Some special metadata extracted from the DICOM header
+            # 3. initial_dicom: The first DICOM in the series. For doses and structures there is (usually) only one DICOM anyway
+            # 4. dicom_file_data: The actual SimpleITK image data
 
             for dicom_type, dicom_file_metadata, initial_dicom, dicom_file_data in process_dicom_series(dicom_series_dict=dicom_series_dict,
                                                                                                         series_uid=series_uid,
@@ -555,7 +594,8 @@ def process_dicom_directory(dicom_directory,
 
                 # Step 1
                 # Check the parent sorting field is consistent
-                # This would usually be the PatientName
+                # This would usually be the PatientName, PatientID, or similar
+                # Occasionally these will both be blank
 
                 parent_sorting_data = dicom_file_metadata['parent_sorting_data']
 
@@ -592,17 +632,23 @@ def process_dicom_directory(dicom_directory,
 
 
                 # Step 3
-                # Generate names for images
+                # Generate names for output files
 
                 # Special names
-                special_name_fields = ['parent_sorting_data', 'study_uid_index', 'image_desc']
+                # ! This can be defined once at the start of the function
+                special_name_fields = ['parent_sorting_data', 'study_uid_index', 'image_desc', 'structure_name']
 
                 # Get the image description (other special names are already defined above)
                 image_desc = get_dicom_info_from_description(initial_dicom, return_extra=return_extra)
 
                 # Get all the fields from the user-given name format
-                all_naming_fields = [i[i.find('{')+1:] for i in output_image_name_format.split('}') if len(i)>0]
-                
+                if dicom_type == "IMAGES":
+                    all_naming_fields = [i[i.find('{')+1:] for i in output_image_name_format.split('}') if len(i)>0]
+                elif dicom_type == "STRUCTURES":
+                    all_naming_fields = [i[i.find('{')+1:] for i in output_structure_name_format.split('}') if len(i)>0]
+                elif dicom_type == "DOSES":
+                    all_naming_fields = [i[i.find('{')+1:] for i in output_dose_name_format.split('}') if len(i)>0]
+
                 # Now exclude those that aren't derived from the DICOM header
                 dicom_header_tags = [i for i in all_naming_fields if i not in special_name_fields]
 
@@ -667,6 +713,31 @@ def process_dicom_directory(dicom_directory,
                                     output_data_dict["STRUCTURES"][output_name] = list([output_data_dict["STRUCTURES"][output_name]])
 
                                 output_data_dict["STRUCTURES"][output_name].append(structure_image)
+
+                elif dicom_type == "DOSES":
+
+                    output_name = output_dose_name_format.format(parent_sorting_data=parent_sorting_data,
+                                                                 study_uid_index=study_uid_dict[study_uid],
+                                                                 **naming_info_dict)
+                        
+                    if "DOSES" not in output_data_dict.keys():
+                        # Make a new entry
+                        output_data_dict["DOSES"] = {output_name:dicom_file_data}
+
+                    else:
+                        # First check if there is another image of the same name
+
+                        if output_name not in output_data_dict["DOSES"].keys():
+                            output_data_dict["DOSES"][output_name] = dicom_file_data
+
+                        else:
+                            logger.info("      An image with this name exists, appending.")
+
+                            if type(output_data_dict["DOSES"][output_name]) != list:
+                                output_data_dict["DOSES"][output_name] = list([output_data_dict["DOSES"][output_name]])
+
+                            output_data_dict["DOSES"][output_name].append(dicom_file_data)
+
 
         write_output_data_to_disk(output_data_dict = output_data_dict,
                                     output_directory = output_directory,
