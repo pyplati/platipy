@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-import os
 import click
 
 from platipy.dicom.rtstruct_to_nifti.convert import convert_rtstruct
@@ -47,7 +46,7 @@ from platipy.dicom.rtstruct_to_nifti.convert import convert_rtstruct
 )
 def click_command(dcm_img, dcm_rt_file, prefix, output_dir, output_img, spacing):
     """
-    click_command serves to parse the command line arguments by click. Keep this 
+    click_command serves to parse the command line arguments by click. Keep this
     separate from the main convert function so that we can run that one as normal
     from code.
     """

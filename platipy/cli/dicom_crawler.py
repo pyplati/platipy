@@ -86,11 +86,13 @@ def click_command(
 
     This tool makes it easier to bulk-convert DICOM files into other formats (default NifTI).
     There are quite a lot of options, but most do not need to be changed.
-    
-    You need to provide the input directory (-i), from which the crawler will recursively search through.
+
+    You need to provide the input directory (-i), from which the crawler will recursively search
+    through.
 
     You might also like to change the naming format (using --image_format and --structure_format).
-    The default is quite long, better suited for datasets with lots of imaging for a single patient.
+    The default is quite long, better suited for datasets with lots of imaging for a single
+    patient.
 
     Some examples:
 

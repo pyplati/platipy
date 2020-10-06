@@ -15,7 +15,6 @@
 import os
 import yaml
 from collections import OrderedDict
-import click
 import pydicom
 import SimpleITK as sitk
 from loguru import logger

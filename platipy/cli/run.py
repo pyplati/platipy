@@ -16,7 +16,6 @@
 
 import sys
 
-import click
 from loguru import logger
 
 from platipy.cli import dicom_crawler, segmentation, nifti_to_rtstruct, rtstruct_to_nifti
