@@ -58,7 +58,7 @@ class ImageVisualiser:
     """Class to assist with visualising images and overlaying contours, scalars and bounding boxes.
     """
 
-    def __init__(self, image, cut=None, window=[-250, 500]):
+    def __init__(self, image, cut=None, axis="ortho", window=[-250, 500]):
         self.__set_image(image)
         self.__contours = []
         self.__bounding_boxes = []
@@ -69,7 +69,7 @@ class ImageVisualiser:
         self.__figure = None
         self.__figure_size = 6
         self.__window = window
-        self.__axis = "ortho"
+        self.__axis = axis
         self.__cut = cut
 
         self.clear()

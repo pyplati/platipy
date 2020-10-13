@@ -89,6 +89,9 @@ def convert_nifti_to_dicom_series(image, reference_dcm, tag_overrides=[], output
         "0020|0060",  # Laterality
         "0020|1040",  # Position Reference Indicator
         "0020|1041",  # Slice Location
+        "0028|1052",  # Rescale Intercept
+        "0028|1053",  # Rescale Slope
+        "0028|1054",  # Rescale Type
     ]
 
     # Prepare the modification date and time

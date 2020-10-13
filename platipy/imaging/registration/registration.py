@@ -158,6 +158,10 @@ def initial_registration(
         registration.SetInitialTransform(sitk.AffineTransform(3))
     elif reg_method == "Rigid":
         registration.SetInitialTransform(sitk.VersorRigid3DTransform())
+    elif reg_method == "ScaleVersor":
+        registration.SetInitialTransform(sitk.ScaleVersor3DTransform())
+    elif reg_method == "ScaleSkewVersor":
+        registration.SetInitialTransform(sitk.ScaleSkewVersor3DTransform())
     else:
         raise ValueError(
             "You have selected a registration method that does not exist.\n Please select from Translation, Similarity, Affine, Rigid"
@@ -537,7 +541,8 @@ def fast_symmetric_forces_demons_registration(
     registered_image = sitk.Cast(registered_image, moving_image_type)
 
     if return_field:
-        return registered_image, output_transform, deformation_field
+        resampled_field = sitk.Resample(deformation_field, fixed_image)
+        return registered_image, output_transform, resampled_field
     else:
         return registered_image, output_transform
 

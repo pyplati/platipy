@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 # Copyright 2020 University of New South Wales, University of Sydney, Ingham Institute
 
 # Licensed under the Apache License, Version 2.0 (the "License");

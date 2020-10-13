@@ -181,7 +181,7 @@ def displaySlice(
 
     else:
         if axis == "x" or axis == "sag":
-            fSize = (figSize, figSize * (asp * SagSize) / (1.0 * CorSize))
+            fSize = (figSize, figSize * (asp * AxSize) / (1.0 * CorSize))
             fig, ax = plt.subplots(1, 1, figsize=(fSize))
             org = "lower"
             if not cut:
