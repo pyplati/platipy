@@ -158,18 +158,8 @@ def dirqa_service(data_objects, working_dir, settings):
         low_range = settings["intensityRange"][0]
         high_range = settings["intensityRange"][1]
 
-        primary_image = sitk.Threshold(
-            primary_image, lower=low_range, upper=10000000, outsideValue=low_range
-        )
-        primary_image = sitk.Threshold(
-            primary_image, lower=-10000000, upper=high_range, outsideValue=high_range
-        )
-        secondary_image = sitk.Threshold(
-            secondary_image, lower=low_range, upper=10000000, outsideValue=low_range
-        )
-        secondary_image = sitk.Threshold(
-            secondary_image, lower=-10000000, upper=high_range, outsideValue=high_range
-        )
+        primary_image = sitk.Clamp(primary_image, lowerBound=low_range, upperBound=high_range)
+        secondary_image = sitk.Clamp(secondary_image, lowerBound=low_range, upperBound=high_range)
 
         # Save cropped volumes and compute SIFT points
         primary_cropped_path = "cropped_primary.nii.gz"
