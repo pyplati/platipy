@@ -21,7 +21,7 @@ COPY entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 
-ENV PYTHONPATH "/workspaces"
+ENV PYTHONPATH "/home/service/platipy"
 
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
