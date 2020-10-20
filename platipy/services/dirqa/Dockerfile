@@ -1,4 +1,4 @@
-FROM platipy
+FROM platipy/platipy
 
 RUN apt update; apt install -y plastimatch
 
