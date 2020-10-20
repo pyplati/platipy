@@ -7,7 +7,7 @@ scikit-image
 click
 pytest
 pydicom >= 2.0.0
-pynetdicom >= 1.3.0
+pynetdicom >= 1.5.0
 flask
 flask-restful
 flask-sqlalchemy
