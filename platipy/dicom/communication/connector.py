@@ -28,7 +28,12 @@ from pynetdicom import (
     PYNETDICOM_IMPLEMENTATION_UID,
     PYNETDICOM_IMPLEMENTATION_VERSION,
 )
-from pynetdicom.sop_class import VerificationSOPClass, PatientRootQueryRetrieveInformationModelFind
+from pynetdicom.sop_class import (
+    VerificationSOPClass,
+    PatientRootQueryRetrieveInformationModelFind,
+    PatientRootQueryRetrieveInformationModelGet,
+    PatientRootQueryRetrieveInformationModelMove
+)
 from pynetdicom.pdu_primitives import SCP_SCU_RoleSelectionNegotiation
 
 from loguru import logger
@@ -131,7 +136,7 @@ class DicomConnector:
         self,
         seriesInstanceUID,
         move_aet="PYNETDICOM",
-        query_model=PatientRootQueryRetrieveInformationModelFind,
+        query_model=PatientRootQueryRetrieveInformationModelMove,
     ):
 
         ae = AE()
@@ -163,7 +168,7 @@ class DicomConnector:
         self,
         series_instance_uid,
         recieved_callback=None,
-        query_model=PatientRootQueryRetrieveInformationModelFind,
+        query_model=PatientRootQueryRetrieveInformationModelGet,
     ):
 
         self.recieved_callback = recieved_callback
