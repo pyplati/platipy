@@ -7,8 +7,8 @@
 redis-server --daemonize yes
 
 # Run celery beat and worker
-celery beat --app=service:celery --loglevel=INFO &
-celery worker --app=service:celery --loglevel=INFO &
+celery --app=service:celery beat --loglevel=INFO &
+celery --app=service:celery worker --loglevel=INFO &
 
 # Start the Dicom listen celery task
 python3 -c "from platipy.backend.tasks import listen_task; listen_task.apply_async([$DICOM_LISTEN_PORT, '$DICOM_LISTEN_AET'])"
