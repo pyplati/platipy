@@ -11,7 +11,7 @@ pynetdicom >= 1.5.0
 flask
 flask-restful
 flask-sqlalchemy
-celery >= 5.0.1
+celery < 5.0.0
 redis
 loguru
 psutil
