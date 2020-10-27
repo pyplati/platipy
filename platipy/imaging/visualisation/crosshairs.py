@@ -13,7 +13,7 @@ Fill out this section
 """
 
 # Define the image
-im = sitk.ReadImage('/home/robbie/Work/4_Software/platipy/platipy/imaging/tests/data/dynamic/lung/LCTSC-Train-S1-001/CT.nii.gz')
+im = sitk.ReadImage('/home/robbie/Work/3_ResearchProjects/Chinese Lung Cancer/1_data/Case_02/Images/Case_02_0%.nii.gz')
 
 # Define the cut location - this is where the crosshairs will appear
 # Given as [axial, coronal, sagittal] location
@@ -124,4 +124,4 @@ axSag.axis("off")
 fig.subplots_adjust(left=0, right=1, wspace=0.01, hspace=0.01, top=1, bottom=0)
 
 # Save image
-#fig.savefig(f'{fig_name}', dpi=300, transparent=True)
+fig.savefig(f'{fig_name}', dpi=300, transparent=True)

@@ -18,7 +18,7 @@ import SimpleITK as sitk
 
 from platipy.imaging.utils.tools import sitk_to_itk, itk_to_sitk
 
-def morphological_interpolate(sitk_image):
+def morphological_interpolate(sitk_image, copy_info=True):
     """
     Performs morphological interpolation
     See: https://github.com/KitwareMedical/ITKMorphologicalContourInterpolation
@@ -26,7 +26,7 @@ def morphological_interpolate(sitk_image):
     Useful for filling in gaps in contouring between slices
     """
 
-    itk_image = sitk_to_itk(sitk_image)
+    itk_image = sitk_to_itk(sitk_image, copy_info=copy_info)
 
     output_type = itk.Image[itk.UC, 3]
 

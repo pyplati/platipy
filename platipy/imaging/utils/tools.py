@@ -62,19 +62,20 @@ def gaussian_curve(x, a, m, s):
     return a * scipy_norm.pdf(x, loc=m, scale=s)
 
 
-def sitk_to_itk(sitk_image):
+def sitk_to_itk(sitk_image, copy_info=True):
     """
     Helper function to convert SimpleITK images to ITK images
     """
     sitk_arr = sitk.GetArrayFromImage(sitk_image)
 
     itk_image = itk.GetImageFromArray(sitk_arr, is_vector=False)
-    itk_image.SetOrigin(sitk_image.GetOrigin())
-    itk_image.SetSpacing(sitk_image.GetSpacing())
-    itk_image.SetDirection(
-        itk.GetMatrixFromArray(np.reshape(
-            np.array(sitk_image.GetDirection()), [3] * 2))
-    )
+    if copy_info:
+        itk_image.SetOrigin(sitk_image.GetOrigin())
+        itk_image.SetSpacing(sitk_image.GetSpacing())
+        itk_image.SetDirection(
+            itk.GetMatrixFromArray(np.reshape(
+                np.array(sitk_image.GetDirection()), [3] * 2))
+        )
 
     return itk_image
 

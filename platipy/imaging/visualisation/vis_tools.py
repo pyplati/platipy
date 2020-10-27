@@ -113,7 +113,7 @@ def probabilityThreshold(inputImage, lowerThreshold=0.5):
 
 
 def displaySlice(
-    im, axis="ortho", cut=None, figSize=6, cmap=plt.cm.Greys_r, window=[-250, 500]
+    im, axis="ortho", cut=None, figSize=6, cmap=plt.cm.Greys_r, window=[-250, 500], addCBar=False, cmap_label=''
 ):
     if type(im) == sitk.Image:
         nda = sitk.GetArrayFromImage(im)
@@ -176,6 +176,13 @@ def displaySlice(
         axAx.axis("off")
         axCor.axis("off")
         axSag.axis("off")
+
+        if addCBar:
+            divider = make_axes_locatable(axAx)
+            cax = divider.append_axes('right', size='5%', pad=0.05)
+            cbar = fig.colorbar(imAx, cax=cax, orientation='vertical')
+            cbar.set_label(cmap_label)
+
 
         fig.subplots_adjust(left=0, right=1, wspace=0.01, hspace=0.01, top=1, bottom=0)
 
@@ -283,7 +290,7 @@ def overlayContour(contour_input, fig, axis, cut, use_legend=True, color_base=pl
     return fig
 
 
-def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, addCBar=False, plotArgs={'alpha':0.75, 'sMin':0.01}):
+def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, addCBar=False, window=[0,1], plotArgs={'alpha':0.75, 'sMin':0.01}):
 
     alpha = plotArgs['alpha']
     sMin  = plotArgs['sMin']
@@ -304,7 +311,7 @@ def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, add
                 nda.__getitem__(s),
                 interpolation=None,
                 cmap=color_base,
-                clim=(0,1),
+                clim=(window[0],window[0]+window[1]),
                 aspect={'z':1,'y':asp,'x':asp}[axis],
                 origin={'z':'upper','y':'lower','x':'lower'}[axis],
                 vmin=sMin,
@@ -328,11 +335,11 @@ def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, add
         sCor = returnSlice("y", cut[1])
         sSag = returnSlice("x", cut[2])
 
-        axAx.imshow(
+        sp = axAx.imshow(
                 nda.__getitem__(sAx),
                 interpolation=None,
                 cmap=color_base,
-                clim=(0,1),
+                clim=(window[0],window[0]+window[1]),
                 aspect=1,
                 vmin=sMin,
                 alpha=alpha
@@ -342,7 +349,7 @@ def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, add
                 nda.__getitem__(sCor),
                 interpolation=None,
                 cmap=color_base,
-                clim=(0,1),
+                clim=(window[0],window[0]+window[1]),
                 origin='lower',
                 aspect=asp,
                 vmin=sMin,
@@ -353,12 +360,18 @@ def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, add
                 nda.__getitem__(sSag),
                 interpolation=None,
                 cmap=color_base,
-                clim=(0,1),
+                clim=(window[0],window[0]+window[1]),
                 origin='lower',
                 aspect=asp,
                 vmin=sMin,
                 alpha=alpha
                 )
+
+        if addCBar:
+            divider = make_axes_locatable(axAx)
+            cax = divider.append_axes('right', size='5%', pad=0.05)
+            cbar = fig.colorbar(sp, cax=cax, orientation='vertical')
+            cbar.set_label('', fontsize=16)
 
     return fig
 
@@ -453,6 +466,8 @@ def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, add
 #                 )
 
 #     return fig
+
+
 
 def overlayBox(box, fig, axis, color="r"):
 
