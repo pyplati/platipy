@@ -239,7 +239,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
             reg_method="Similarity",
         )
 
-        registered_crop_images.append(reg_image)
+        registered_crop_images.append(sitk.Cast(reg_image, sitk.sitkFloat32))
 
         del reg_image
 
