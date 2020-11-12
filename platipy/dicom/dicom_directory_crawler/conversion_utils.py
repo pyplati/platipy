@@ -195,6 +195,10 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
             logger.warning("    No contour sequence found for this structure, skipping.")
             continue
 
+        if len(struct_point_sequence[structIndex].ContourSequence) == 0:
+            logger.warning("    Contour sequence is empty, skipping.")
+            continue
+
         if (
             not struct_point_sequence[structIndex].ContourSequence[0].ContourGeometricType
             == "CLOSED_PLANAR"
