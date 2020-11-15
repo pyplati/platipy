@@ -51,16 +51,13 @@ def vectorisedTransformIndexToPhysicalPoint(image, pointArr, correct=True):
         origin = image.GetOrigin()
     return pointArr*spacing + origin
 
-def vectorisedTransformPhysicalPointToIndex(image, pointArr, correct=True):
+def vectorisedTransformPhysicalPointToIndex(image, pointArr):
     """
     Transforms a set of points from real-space to array indices
     """
-    if correct:
-        spacing = image.GetSpacing()[::-1]
-        origin = image.GetOrigin()[::-1]
-    else:
-        spacing = image.GetSpacing()
-        origin = image.GetOrigin()
+    spacing = image.GetSpacing()
+    origin = image.GetOrigin()
+
     return (pointArr-origin)/spacing
 
 
@@ -99,6 +96,57 @@ def evaluateDistanceOnSurface(referenceVolume, testVolume, debug=False, absDista
     pts = testSurfaceLocationsArray.T
     ptsReal = vectorisedTransformIndexToPhysicalPoint(testSurface, pts)
     ptsDiff = ptsReal - COMReal
+
+    # Convert to spherical polar coordinates - base at north pole
+    rho = np.sqrt((ptsDiff*ptsDiff).sum(axis=1))
+    theta = np.pi/2.-np.arccos(ptsDiff.T[0]/rho)
+    phi =  np.arctan2(ptsDiff.T[2],-1.0*ptsDiff.T[1])
+
+    # Convert to spherical polar coordinates - base at 0Lat0Lon
+    # rho = np.sqrt((ptsDiff**2).sum(axis=1))
+    # theta = np.pi/2.-np.arccos(ptsDiff.T[2]/rho)
+    # phi = np.arctan2(ptsDiff.T[1],ptsDiff.T[0])
+
+    # Extract values
+    values = distanceArray[testSurfaceLocations]
+    if debug:
+        print('    {0}'.format(values.shape))
+
+    return theta, phi, values
+
+
+def evaluateDistanceToSurface(testVolume, debug=False):
+    """
+    Evaluates the distance from the origin of a volume to the surface
+    Input: referenceVolume: binary volume SimpleITK image, or alternatively a distance map
+           testVolume: binary volume SimpleITK image
+    Output: theta, phi, values
+    """
+    centre = np.array(measurements.center_of_mass(sitk.GetArrayFromImage(testVolume)))[::-1]
+    centre_int = tuple(int(i) for i in centre)
+    blank_volume = (0*testVolume)
+    blank_volume[centre_int] = 1
+
+    referenceDistanceMap = sitk.Abs(sitk.SignedMaurerDistanceMap(blank_volume, squaredDistance=False, useImageSpacing=True))
+
+    testSurface = sitk.LabelContour(testVolume)
+    distanceImage = sitk.Multiply(referenceDistanceMap, sitk.Cast(testSurface, sitk.sitkFloat32))
+    distanceArray = sitk.GetArrayFromImage(distanceImage)
+
+    if debug:
+        print("Distance measures: {0:.2f},{1:.2f},{2:.2f}".format(distanceArray.min(),(distanceArray[distanceArray!=0.0]).mean(),distanceArray.max()))
+
+    # Calculate centre of mass in real coordinates
+    testSurfaceArray = sitk.GetArrayFromImage(testSurface)
+    testSurfaceLocations = np.where(testSurfaceArray==1)
+    testSurfaceLocationsArray = np.array(testSurfaceLocations)
+
+    # Calculate each point on the surface in real coordinates
+    pts = testSurfaceLocationsArray.T
+    ptsReal = vectorisedTransformIndexToPhysicalPoint(testSurface, pts)
+    centreReal = vectorisedTransformIndexToPhysicalPoint(testSurface, centre[::-1])
+
+    ptsDiff = ptsReal - centreReal
 
     # Convert to spherical polar coordinates - base at north pole
     rho = np.sqrt((ptsDiff*ptsDiff).sum(axis=1))
