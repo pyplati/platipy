@@ -58,7 +58,14 @@ def get_dicom_info_from_description(dicom_object, return_extra=False):
                 logger.warning("    Could not find SequenceName")
                 sequence_name = ""
 
-            combined_name = "_".join([protocol_name, sequence_name])
+            try:
+                series_description = re.sub(r"[^\w]", "_", dicom_object.SeriesDescription).upper()
+            except:
+                logger.warning("    Could not find SequenceName")
+                series_description = ""
+
+            combined_name = "_".join([protocol_name, sequence_name, series_description])
+            
             while "__" in combined_name:
                 combined_name = combined_name.replace("__", "_")
 
@@ -331,7 +338,7 @@ def process_dicom_series(
     # Check the potential types of DICOM files
     if (
         "Image" in initial_dicom_sop_class_name
-        and initial_dicom_sop_class_name != "Secondary Capture Image Storage"
+        #and initial_dicom_sop_class_name != "Secondary Capture Image Storage"
     ):
         # Load as an primary image
 
@@ -354,22 +361,78 @@ def process_dicom_series(
         Here we check the sequence name, and split if necessary
         """
         if initial_dicom.Modality == "MR":
-            sequence_names = np.unique(
-                [pydicom.read_file(x).SequenceName for x in dicom_file_list]
-            )
+            
+            try:
+                sequence_names = np.unique(
+                    [pydicom.read_file(x).SequenceName for x in dicom_file_list]
+                )
+
+                sequence_dict = {}
+                for dcm_name in dicom_file_list:
+                    dcm_obj = pydicom.read_file(dcm_name)
+                    var = dcm_obj.SequenceName
+                    if var not in sequence_dict.keys():
+                        sequence_dict[var] = [dcm_name]
+                    else:
+                        sequence_dict[var].append(dcm_name)
+
+            except:
+                logger.warning(f"    MRI sequence name not found. The SeriesDescription will be used instead.")
+                
+                sequence_names = np.unique(
+                    [pydicom.read_file(x).SeriesDescription for x in dicom_file_list]
+                ) 
+
+                sequence_dict = {}
+                for dcm_name in dicom_file_list:
+                    dcm_obj = pydicom.read_file(dcm_name)
+                    var = dcm_obj.SeriesDescription
+                    if var not in sequence_dict.keys():
+                        sequence_dict[var] = [dcm_name]
+                    else:
+                        sequence_dict[var].append(dcm_name)
+
+            if initial_dicom.Manufacturer == "GE MEDICAL SYSTEMS" :
+                # GE use the DICOM tag (0019, 10a2) [Raw data run number]
+                # in Diffusion weighted MRI sequences
+                # We need to separate this out to get the difference sequences
+
+                if initial_dicom.SeriesDescription == "Diffusion Weighted":
+
+                    # num_sequences = int( (initial_dicom[(0x0025, 0x1007)]) / (initial_dicom[(0x0021, 0x104f)]) )
+                    # number_of_images / images_per_seq
+                    num_images_per_seq = initial_dicom[(0x0021, 0x104f)].value
+
+                    sequence_names = np.unique(
+                    [f"DWI_{str( ( pydicom.read_file(x)['InstanceNumber'].value - 1) // num_images_per_seq )}" for x in dicom_file_list]
+                    ) 
+
+                    sequence_name_index_dict = {name:index for index,name in enumerate(sequence_names)}
+
+                    sequence_dict = {}
+                    for dcm_name in dicom_file_list:
+                        dcm_obj = pydicom.read_file(dcm_name)
+                        var = f"DWI_{str( ( dcm_obj['InstanceNumber'].value - 1) // num_images_per_seq )}"
+                        var_to_index = sequence_name_index_dict[var]
+
+                        if var_to_index not in sequence_dict.keys():
+                            sequence_dict[var_to_index] = [dcm_name]
+                        else:
+                            sequence_dict[var_to_index].append(dcm_name)
+
+                    sequence_names = sorted( sequence_dict.keys() )
 
             if np.alen(sequence_names) > 1:
                 logger.warning("  Two MR sequences were found under a single series UID.")
-                logger.warning("  These will be split into two images.")
+                logger.warning("  These will be split into separate images.")
 
                 # Split up the DICOM file list by sequence name
-
                 for sequence_name in sequence_names:
-                    dicom_file_list_by_sequence = [
-                        i
-                        for i in dicom_file_list
-                        if pydicom.read_file(i).SequenceName == sequence_name
-                    ]
+
+                    dicom_file_list_by_sequence = sequence_dict[sequence_name]
+                    
+                    print(sequence_name, len(dicom_file_list_by_sequence))
+
                     sorted_file_list = safe_sort_dicom_image_list(dicom_file_list_by_sequence)
 
                     initial_dicom = pydicom.read_file(sorted_file_list[0], force=True)
@@ -386,7 +449,7 @@ def process_dicom_series(
                     }
 
                     yield "IMAGES", dicom_file_metadata_by_sequence, initial_dicom, image_by_sequence
-                    return  # Stop iteration
+                return  # Stop iteration
 
         yield "IMAGES", dicom_file_metadata, initial_dicom, image
 

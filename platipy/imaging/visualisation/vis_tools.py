@@ -36,6 +36,10 @@ import matplotlib.pyplot as plt
 import matplotlib
 from mpl_toolkits.axes_grid1 import make_axes_locatable, AxesGrid, ImageGrid
 
+from matplotlib.colors import hsv_to_rgb
+from skimage.color import hsv2rgb
+import matplotlib.patches as mpatches
+
 class Visualisation(object):
     def __init__(self):
         for cls in reversed(self.__class__.mro()):
@@ -113,7 +117,7 @@ def probabilityThreshold(inputImage, lowerThreshold=0.5):
 
 
 def displaySlice(
-    im, axis="ortho", cut=None, figSize=6, cmap=plt.cm.Greys_r, window=[-250, 500]
+    im, axis="ortho", cut=None, figSize=6, cmap=plt.cm.Greys_r, window=[-250, 500], addCBar=False, cmap_label=''
 ):
     if type(im) == sitk.Image:
         nda = sitk.GetArrayFromImage(im)
@@ -177,11 +181,18 @@ def displaySlice(
         axCor.axis("off")
         axSag.axis("off")
 
+        if addCBar:
+            divider = make_axes_locatable(axAx)
+            cax = divider.append_axes('right', size='5%', pad=0.05)
+            cbar = fig.colorbar(imAx, cax=cax, orientation='vertical')
+            cbar.set_label(cmap_label)
+
+
         fig.subplots_adjust(left=0, right=1, wspace=0.01, hspace=0.01, top=1, bottom=0)
 
     else:
         if axis == "x" or axis == "sag":
-            fSize = (figSize, figSize * (asp * SagSize) / (1.0 * CorSize))
+            fSize = (figSize, figSize * (asp * AxSize) / (1.0 * CorSize))
             fig, ax = plt.subplots(1, 1, figsize=(fSize))
             org = "lower"
             if not cut:
@@ -218,6 +229,132 @@ def displaySlice(
     return fig, axis, cut
 
 
+def displayComparisonSlice(
+    im_a, im_b, axis="ortho", cut=None, figSize=6, window=[-250, 500], addCBar=False, colour_rotation=0.35, cmap_label=''
+):
+    if type(im_a) == sitk.Image:
+        nda_a = sitk.GetArrayFromImage(im_a)
+    else:
+        print("Image type not recognised, must be SimpleITK image format.")
+
+    if type(im_b) == sitk.Image:
+        nda_b = sitk.GetArrayFromImage(im_b)
+    else:
+        print("Image type not recognised, must be SimpleITK image format.")
+
+    if im_a.GetSize() != im_b.GetSize():
+        raise ValueError("Images must be the same size for this function!")
+
+    (AxSize, CorSize, SagSize) = nda_a.shape
+    spPlane, _, spSlice = im_a.GetSpacing()
+    asp = (1.0 * spSlice) / spPlane
+
+    nda_a_norm = (np.clip(nda_a, window[0], window[1])-window[0])/(window[1]-window[0])
+    nda_b_norm = (np.clip(nda_b, window[0], window[1])-window[0])/(window[1]-window[0])
+
+    nda_colour = np.stack([colour_rotation*(nda_a_norm>nda_b_norm) + (0.5+colour_rotation)*(nda_a_norm<=nda_b_norm),
+                           np.abs(nda_a_norm - nda_b_norm),
+                           (nda_a_norm + nda_b_norm)/2],
+                           axis=-1)
+
+    if axis == "ortho":
+        fSize = (
+            figSize,
+            figSize * (asp * AxSize + CorSize) / (1.0 * SagSize + CorSize),
+        )
+
+        fig, ((axAx, blank), (axCor, axSag)) = plt.subplots(
+            2,
+            2,
+            figsize=fSize,
+            gridspec_kw={"height_ratios": [(CorSize) / (asp * AxSize), 1], "width_ratios": [SagSize, CorSize]},
+        );
+        blank.axis("off")
+
+        if cut is None:
+            sliceAx = int(AxSize / 2.0)
+            sliceCor = int(CorSize / 2.0)
+            sliceSag = int(SagSize / 2.0)
+
+            cut = [sliceAx, sliceCor, sliceSag]
+
+        sAx = returnSlice("z", cut[0])
+        sCor = returnSlice("y", cut[1])
+        sSag = returnSlice("x", cut[2])
+
+        nda_colour_ax = hsv2rgb(nda_colour.__getitem__(sAx))
+        nda_colour_cor = hsv2rgb(nda_colour.__getitem__(sCor))
+        nda_colour_sag = hsv2rgb(nda_colour.__getitem__(sSag))
+
+        imAx = axAx.imshow(
+            nda_colour_ax,
+            aspect=1.0,
+            interpolation=None
+        )
+        imCor = axCor.imshow(
+            nda_colour_cor,
+            origin="lower",
+            aspect=asp,
+            interpolation=None
+        )
+        imSag = axSag.imshow(
+            nda_colour_sag,
+            origin="lower",
+            aspect=asp,
+            interpolation=None
+        )
+
+        axAx.axis("off")
+        axCor.axis("off")
+        axSag.axis("off")
+
+        if addCBar:
+            divider = make_axes_locatable(axAx)
+            cax = divider.append_axes('right', size='5%', pad=0.05)
+            cbar = fig.colorbar(imAx, cax=cax, orientation='vertical')
+            cbar.set_label(cmap_label)
+
+
+        fig.subplots_adjust(left=0, right=1, wspace=0.01, hspace=0.01, top=1, bottom=0)
+
+    else:
+        if axis == "x" or axis == "sag":
+            fSize = (figSize, figSize * (asp * AxSize) / (1.0 * CorSize))
+            fig, ax = plt.subplots(1, 1, figsize=(fSize))
+            org = "lower"
+            if not cut:
+                cut = int(SagSize / 2.0)
+
+        if axis == "y" or axis == "cor":
+            fSize = (figSize, figSize * (asp * AxSize) / (1.0 * SagSize))
+            fig, ax = plt.subplots(1, 1, figsize=(fSize))
+            org = "lower"
+            if not cut:
+                cut = int(CorSize / 2.0)
+
+        if axis == "z" or axis == "ax":
+            asp = 1
+            fSize = (figSize, figSize * (asp * CorSize) / (1.0 * SagSize))
+            fig, ax = plt.subplots(1, 1, figsize=(fSize))
+            org = "upper"
+            if not cut:
+                cut = int(AxSize / 2.0)
+
+        s = returnSlice(axis, cut)
+        nda_colour_slice = hsv2rgb(nda_colour.__getitem__(s))
+        ax.imshow(
+            nda_colour_slice,
+            aspect=asp,
+            interpolation=None,
+            origin=org
+        )
+        ax.axis("off")
+
+        fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
+
+    return fig, axis, cut
+
+
 def overlayContour(contour_input, fig, axis, cut, use_legend=True, color_base=plt.cm.Blues):
 
     # Check input type
@@ -240,7 +377,7 @@ def overlayContour(contour_input, fig, axis, cut, use_legend=True, color_base=pl
 
 
     # Test types of axes
-    axes = fig.axes
+    axes = fig.axes[:4]
     if axis in ['x','y','z']:
         ax = axes[0]
         s = returnSlice(axis, cut)
@@ -258,7 +395,7 @@ def overlayContour(contour_input, fig, axis, cut, use_legend=True, color_base=pl
                 None
 
     elif axis == 'ortho':
-        axAx, blank, axCor, axSag = axes
+        axAx, _, axCor, axSag = axes
 
         ax = axAx
 
@@ -274,16 +411,18 @@ def overlayContour(contour_input, fig, axis, cut, use_legend=True, color_base=pl
             axCor.contour(plot_dict[c_name].__getitem__(sCor), levels=[0], linewidths=2, colors=[colors[index]])
             axSag.contour(plot_dict[c_name].__getitem__(sSag), levels=[0], linewidths=2, colors=[colors[index]])
 
+    else:
+        raise ValueError('Axis is must be one of "x","y","z","ortho".')
+
     if use_legend:
         ax.legend(loc='center left', bbox_to_anchor=(1.05,0.5))
 
-    else:
-        raise ValueError('Axis is must be one of "x","y","z","ortho".')
+
 
     return fig
 
 
-def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, addCBar=False, plotArgs={'alpha':0.75, 'sMin':0.01}):
+def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, addCBar=False, window=[0,1], plotArgs={'alpha':0.75, 'sMin':0.01}):
 
     alpha = plotArgs['alpha']
     sMin  = plotArgs['sMin']
@@ -304,7 +443,7 @@ def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, add
                 nda.__getitem__(s),
                 interpolation=None,
                 cmap=color_base,
-                clim=(0,1),
+                clim=(window[0],window[0]+window[1]),
                 aspect={'z':1,'y':asp,'x':asp}[axis],
                 origin={'z':'upper','y':'lower','x':'lower'}[axis],
                 vmin=sMin,
@@ -328,11 +467,11 @@ def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, add
         sCor = returnSlice("y", cut[1])
         sSag = returnSlice("x", cut[2])
 
-        axAx.imshow(
+        sp = axAx.imshow(
                 nda.__getitem__(sAx),
                 interpolation=None,
                 cmap=color_base,
-                clim=(0,1),
+                clim=(window[0],window[0]+window[1]),
                 aspect=1,
                 vmin=sMin,
                 alpha=alpha
@@ -342,7 +481,7 @@ def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, add
                 nda.__getitem__(sCor),
                 interpolation=None,
                 cmap=color_base,
-                clim=(0,1),
+                clim=(window[0],window[0]+window[1]),
                 origin='lower',
                 aspect=asp,
                 vmin=sMin,
@@ -353,12 +492,18 @@ def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, add
                 nda.__getitem__(sSag),
                 interpolation=None,
                 cmap=color_base,
-                clim=(0,1),
+                clim=(window[0],window[0]+window[1]),
                 origin='lower',
                 aspect=asp,
                 vmin=sMin,
                 alpha=alpha
                 )
+
+        if addCBar:
+            divider = make_axes_locatable(axAx)
+            cax = divider.append_axes('right', size='5%', pad=0.05)
+            cbar = fig.colorbar(sp, cax=cax, orientation='vertical')
+            cbar.set_label('', fontsize=16)
 
     return fig
 
@@ -453,6 +598,8 @@ def overlayScalarField(scalarIm, fig, axis, cut, color_base=plt.cm.Spectral, add
 #                 )
 
 #     return fig
+
+
 
 def overlayBox(box, fig, axis, color="r"):
 
