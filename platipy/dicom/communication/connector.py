@@ -13,18 +13,12 @@
 # limitations under the License.
 
 import os
-import pydicom
 import tempfile
-
-from pydicom.dataset import Dataset
+import pydicom
 
 from pydicom.dataset import Dataset, FileDataset
 
-from pydicom.uid import (
-    ExplicitVRLittleEndian,
-    ImplicitVRLittleEndian,
-    ExplicitVRBigEndian,
-)
+from pydicom.uid import ImplicitVRLittleEndian
 from pynetdicom import (
     AE,
     evt,
@@ -34,16 +28,19 @@ from pynetdicom import (
     PYNETDICOM_IMPLEMENTATION_UID,
     PYNETDICOM_IMPLEMENTATION_VERSION,
 )
-from pynetdicom.sop_class import VerificationSOPClass
+from pynetdicom.sop_class import (
+    VerificationSOPClass,
+    PatientRootQueryRetrieveInformationModelFind,
+    PatientRootQueryRetrieveInformationModelGet,
+    PatientRootQueryRetrieveInformationModelMove
+)
 from pynetdicom.pdu_primitives import SCP_SCU_RoleSelectionNegotiation
 
 from loguru import logger
 
 
 class DicomConnector:
-    def __init__(
-        self, host="127.0.0.1", port=0, ae_title="", output_directory=tempfile.mkdtemp()
-    ):
+    def __init__(self, host="127.0.0.1", port=0, ae_title="", output_directory=tempfile.mkdtemp()):
         self.host = host
         self.port = port
         self.ae_title = ae_title if ae_title else ""
@@ -58,6 +55,8 @@ class DicomConnector:
         )
 
         self.output_directory = output_directory
+        self.current_dir = None
+        self.recieved_callback = None
 
     def verify(self):
         # Verify Connection
@@ -82,9 +81,9 @@ class DicomConnector:
             # Release the association
             assoc.release()
 
-        return not result == None
+        return not result is None
 
-    def do_find(self, dataset, query_model="P"):
+    def do_find(self, dataset, query_model=PatientRootQueryRetrieveInformationModelFind):
 
         ae = AE()
 
@@ -101,7 +100,7 @@ class DicomConnector:
 
             responses = assoc.send_c_find(dataset, query_model=query_model)
 
-            for resp, ds in responses:
+            for _, ds in responses:
                 results.append(ds)
 
             # Release the association
@@ -111,21 +110,21 @@ class DicomConnector:
 
         return results
 
-    def get_studies_for_patient(self, patID):
+    def get_studies_for_patient(self, patient_id):
 
         dataset = Dataset()
         dataset.StudyInstanceUID = ""
         dataset.StudyDescription = ""
-        dataset.PatientID = patID
+        dataset.PatientID = patient_id
         dataset.PatientName = ""
         dataset.QueryRetrieveLevel = "STUDY"
 
         return self.do_find(dataset)
 
-    def get_series_for_study(self, studyInstanceUID, modality):
+    def get_series_for_study(self, study_instance_uid, modality):
 
         dataset = Dataset()
-        dataset.StudyInstanceUID = studyInstanceUID
+        dataset.StudyInstanceUID = study_instance_uid
         dataset.Modality = modality
         dataset.SeriesInstanceUID = ""
         dataset.SeriesDescription = ""
@@ -133,7 +132,12 @@ class DicomConnector:
 
         return self.do_find(dataset)
 
-    def move_series(self, seriesInstanceUID, move_aet="PYNETDICOM", query_model="P"):
+    def move_series(
+        self,
+        seriesInstanceUID,
+        move_aet="PYNETDICOM",
+        query_model=PatientRootQueryRetrieveInformationModelMove,
+    ):
 
         ae = AE()
         ae.requested_contexts = QueryRetrievePresentationContexts
@@ -152,7 +156,7 @@ class DicomConnector:
 
             responses = assoc.send_c_move(dataset, move_aet, query_model=query_model)
 
-            for (a, b) in responses:
+            for (_, _) in responses:
                 pass
 
             # Release the association
@@ -161,7 +165,10 @@ class DicomConnector:
         logger.info("Finished")
 
     def download_series(
-        self, seriesInstanceUID, recieved_callback=None, query_model="P"
+        self,
+        series_instance_uid,
+        recieved_callback=None,
+        query_model=PatientRootQueryRetrieveInformationModelGet,
     ):
 
         self.recieved_callback = recieved_callback
@@ -195,20 +202,18 @@ class DicomConnector:
                 evt_handlers=handlers,
             )
         else:
-            assoc = ae.associate(
-                self.host, self.port, ext_neg=ext_neg, evt_handlers=handlers
-            )
+            assoc = ae.associate(self.host, self.port, ext_neg=ext_neg, evt_handlers=handlers)
 
         if assoc.is_established:
             logger.info("Association accepted by the peer")
 
             dataset = Dataset()
-            dataset.SeriesInstanceUID = seriesInstanceUID
+            dataset.SeriesInstanceUID = series_instance_uid
             dataset.QueryRetrieveLevel = "SERIES"
 
             responses = assoc.send_c_get(dataset, query_model=query_model)
 
-            for (a, b) in responses:
+            for (_, _) in responses:
                 pass
 
             # Release the association
@@ -272,10 +277,10 @@ class DicomConnector:
 
         # The following is not mandatory, set for convenience
         meta.ImplementationVersionName = PYNETDICOM_IMPLEMENTATION_VERSION
-        ds = FileDataset(filename, {}, file_meta=meta, preamble=b"\0" * 128)
-        ds.update(dataset)
-        ds.is_little_endian = context.transfer_syntax.is_little_endian
-        ds.is_implicit_VR = context.transfer_syntax.is_implicit_VR
+        file_ds = FileDataset(filename, {}, file_meta=meta, preamble=b"\0" * 128)
+        file_ds.update(dataset)
+        file_ds.is_little_endian = context.transfer_syntax.is_little_endian
+        file_ds.is_implicit_VR = context.transfer_syntax.is_implicit_VR
 
         status_ds = Dataset()
         status_ds.Status = 0x0000
@@ -283,20 +288,18 @@ class DicomConnector:
         try:
             # We use `write_like_original=False` to ensure that a compliant
             #   File Meta Information Header is written
-            ds.save_as(filename, write_like_original=False)
+            file_ds.save_as(filename, write_like_original=False)
             status_ds.Status = 0x0000  # Success
         except IOError:
             logger.warning("Could not write file to specified directory:")
             logger.warning("    {0!s}".format(os.path.dirname(filename)))
-            logger.warning(
-                "Directory may not exist or you may not have write " "permission"
-            )
+            logger.warning("Directory may not exist or you may not have write " "permission")
             # Failed - Out of Resources - IOError
             status_ds.Status = 0xA700
-        except Exception as e:
+        except Exception as exception:
             logger.warning("Could not write file to specified directory:")
             logger.warning("    {0!s}".format(os.path.dirname(filename)))
-            logger.warning(e)
+            logger.warning(exception)
             # Failed - Out of Resources - Miscellaneous error
             status_ds.Status = 0xA701
 
@@ -311,7 +314,7 @@ class DicomConnector:
         """
 
         dcm_files = dcm_file
-        if type(dcm_file) == str:
+        if isinstance(dcm_file, str):
             dcm_files = [dcm_file]
 
         transfer_syntax = [ImplicitVRLittleEndian]
@@ -330,9 +333,9 @@ class DicomConnector:
         if assoc.is_established:
             logger.debug("Sending file: {0!s}".format(dcm_file))
 
-            for f in dcm_files:
-                ds = pydicom.read_file(f)
-                status = assoc.send_c_store(ds)
+            for dcm_file in dcm_files:
+                dataset = pydicom.read_file(dcm_file)
+                status = assoc.send_c_store(dataset)
 
             # Release the association
             assoc.release()
