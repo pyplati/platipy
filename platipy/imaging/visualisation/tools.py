@@ -30,7 +30,6 @@ class VisualiseContour:
         self.name = name
         self.color = color
 
-
 class VisualiseScalarOverlay:
     """Class to represent the visualiation of a scalar overlay
     """
@@ -71,7 +70,6 @@ class VisualiseComparisonOverlay:
         self.image = image
         self.color_rotation = color_rotation
 
-
 class VisualiseBoundingBox:
     """Class to represent the visualiation of a bounding box
     """
@@ -80,7 +78,6 @@ class VisualiseBoundingBox:
         self.bounding_box = bounding_box
         self.name = name
         self.color = color
-
 
 class ImageVisualiser:
     """Class to assist with visualising images and overlaying contours, scalars and bounding boxes.
@@ -413,7 +410,6 @@ class ImageVisualiser:
         else:
             subsample_ax, subsample_cor, subsample_sag = (subsample,)*3
 
-
         if axis=='x':
             return np.mgrid[0:vector_field_array.shape[1]:subsample_cor,0:vector_field_array.shape[0]:subsample_ax]
         if axis=='y':
@@ -451,6 +447,7 @@ class ImageVisualiser:
             self.display_slice()
         else:
             self.overlay_comparison()
+
         self.overlay_scalar_field()
         self.overlay_vector_field()
         self.overlay_contours()
