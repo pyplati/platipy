@@ -6,10 +6,12 @@ possible, mainly for guidance on getting started with using the tools.
 
 ## Getting Started
 
+You can find the [PlatiPy documentation here](https://pyplati.github.io/platipy/).
+
 ### Requirements
 
 - Python 3.6 or greater
-- See requirements.txt for required Python packages
+- See requirements.txt for required Python packages and requirements-dev.txt for librarites needed to contribute.
 
 ## Contributing
 
