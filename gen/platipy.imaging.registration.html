@@ -1,0 +1,423 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>platipy.imaging.registration package &mdash; PlatiPy  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="PlatiPy  documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PlatiPy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">PlatiPy documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PlatiPy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>platipy.imaging.registration package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/gen/platipy.imaging.registration.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="platipy-imaging-registration-package">
+<h1>platipy.imaging.registration package<a class="headerlink" href="#platipy-imaging-registration-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-platipy.imaging.registration.registration">
+<span id="platipy-imaging-registration-registration-module"></span><h2>platipy.imaging.registration.registration module<a class="headerlink" href="#module-platipy.imaging.registration.registration" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.registration.registration.alignment_registration">
+<code class="sig-prename descclassname">platipy.imaging.registration.registration.</code><code class="sig-name descname">alignment_registration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fixed_image</span></em>, <em class="sig-param"><span class="n">moving_image</span></em>, <em class="sig-param"><span class="n">default_value</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">moments</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.registration.alignment_registration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.registration.registration.apply_field">
+<code class="sig-prename descclassname">platipy.imaging.registration.registration.</code><code class="sig-name descname">apply_field</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_image</span></em>, <em class="sig-param"><span class="n">transform</span></em>, <em class="sig-param"><span class="n">structure</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">default_value</span><span class="o">=</span><span class="default_value">- 1024</span></em>, <em class="sig-param"><span class="n">interp</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.registration.apply_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform a volume of structure with the given deformation field.</p>
+<dl class="simple">
+<dt>Args</dt><dd><p>input_image (sitk.Image)        : the image to transform
+transform (sitk.Transform)      : the transform to apply to the structure or mask
+structure (bool)  : if true, the input will be treated as a struture, as a volume otherwise
+interp (int)   : the type of interpolation to use, eg. sitk.sitkNearestNeighbor</p>
+</dd>
+<dt>Returns</dt><dd><p>resampled_image (sitk.Image)    : the transformed image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.registration.registration.bspline_registration">
+<code class="sig-prename descclassname">platipy.imaging.registration.registration.</code><code class="sig-name descname">bspline_registration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fixed_image</span></em>, <em class="sig-param"><span class="n">moving_image</span></em>, <em class="sig-param"><span class="n">moving_structure</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">fixed_structure</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">options</span><span class="o">=</span><span class="default_value">{'default_value': - 1024, 'grid_scale_factors': [1, 2, 4], 'initial_grid_spacing': 64, 'interp_order': 3, 'metric': 'correlation', 'number_of_iterations': 20, 'optimiser': 'LBFGS', 'resolution_staging': [8, 4, 2], 'sampling_rate': 0.1, 'smooth_sigmas': [4, 2, 1]}</span></em>, <em class="sig-param"><span class="n">isotropic_resample</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">initial_isotropic_size</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">initial_isotropic_smooth_scale</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">trace</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ncores</span><span class="o">=</span><span class="default_value">8</span></em>, <em class="sig-param"><span class="n">default_value</span><span class="o">=</span><span class="default_value">- 1024</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.registration.bspline_registration" title="Permalink to this definition">¶</a></dt>
+<dd><p>B-Spline image registration using ITK</p>
+<p>IMPORTANT - THIS IS UNDER ACTIVE DEVELOPMENT</p>
+<dl>
+<dt>Args</dt><dd><p>fixed_image (sitk.Image) : the fixed image
+moving_image (sitk.Image): the moving image, transformed to match fixed_image
+options (dict)          : registration options
+structure (bool)        : True if the image is a structure image</p>
+</dd>
+<dt>Returns</dt><dd><p>registered_image (sitk.Image): the rigidly registered moving image
+transform (transform        : the transform, can be used directly with</p>
+<blockquote>
+<div><p>sitk.ResampleImageFilter</p>
+</div></blockquote>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>smooth_sigmas are relative to resolution staging</dt><dd><p>e.g. for image spacing of 1x1x1 mm^3, with smooth sigma=2 and resolution_staging=4, the scale of the Gaussian filter would be 2x4 = 8mm (i.e. 8x8x8 mm^3)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.registration.registration.control_point_spacing_distance_to_number">
+<code class="sig-prename descclassname">platipy.imaging.registration.registration.</code><code class="sig-name descname">control_point_spacing_distance_to_number</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em>, <em class="sig-param"><span class="n">grid_spacing</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.registration.control_point_spacing_distance_to_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert grid spacing specified in distance to number of control points</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.registration.registration.deformable_registration_command_iteration">
+<code class="sig-prename descclassname">platipy.imaging.registration.registration.</code><code class="sig-name descname">deformable_registration_command_iteration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.registration.deformable_registration_command_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function to print information during demons registration</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.registration.registration.fast_symmetric_forces_demons_registration">
+<code class="sig-prename descclassname">platipy.imaging.registration.registration.</code><code class="sig-name descname">fast_symmetric_forces_demons_registration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fixed_image</span></em>, <em class="sig-param"><span class="n">moving_image</span></em>, <em class="sig-param"><span class="n">resolution_staging</span><span class="o">=</span><span class="default_value">[8, 4, 1]</span></em>, <em class="sig-param"><span class="n">iteration_staging</span><span class="o">=</span><span class="default_value">[10, 10, 10]</span></em>, <em class="sig-param"><span class="n">isotropic_resample</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">initial_displacement_field</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">smoothing_sigma_factor</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">smoothing_sigmas</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">default_value</span><span class="o">=</span><span class="default_value">- 1024</span></em>, <em class="sig-param"><span class="n">ncores</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">structure</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">interp_order</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">trace</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_field</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.registration.fast_symmetric_forces_demons_registration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deformable image propagation using Fast Symmetric-Forces Demons</p>
+<dl>
+<dt>Args</dt><dd><p>fixed_image (sitk.Image)        : the fixed image
+moving_image (sitk.Image)       : the moving image, to be deformable registered (must be in</p>
+<blockquote>
+<div><p>the same image space)</p>
+</div></blockquote>
+<p>resolution_staging (list[int])   : down-sampling factor for each resolution level
+iteration_staging (list[int])    : number of iterations for each resolution level
+isotropic_resample (bool)        : flag to request isotropic resampling of images, in which</p>
+<blockquote>
+<div><p>case resolution_staging is used to define voxel size (mm) per level</p>
+</div></blockquote>
+<p>initial_displacement_field (sitk.Image) : Initial displacement field to use
+ncores (int)                    : number of processing cores to use
+structure (bool)                : True if the image is a structure image
+smoothing_sigma_factor (float)    : the relative width of the Gaussian smoothing kernel
+interp_order (int)               : the interpolation order</p>
+<blockquote>
+<div><p>1 = Nearest neighbour
+2 = Bi-linear splines
+3 = B-Spline (cubic)</p>
+</div></blockquote>
+</dd>
+<dt>Returns</dt><dd><p>registered_image (sitk.Image)    : the registered moving image
+output_transform                 : the displacement field transform
+[optional] deformation_field</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.registration.registration.initial_registration">
+<code class="sig-prename descclassname">platipy.imaging.registration.registration.</code><code class="sig-name descname">initial_registration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fixed_image</span></em>, <em class="sig-param"><span class="n">moving_image</span></em>, <em class="sig-param"><span class="n">moving_structure</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">fixed_structure</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">options</span><span class="o">=</span><span class="default_value">{'finalInterp': 3, 'metric': 'mean_squares', 'numberOfIterations': 50, 'optimiser': 'gradient_descent', 'samplingRate': 0.1, 'shrinkFactors': [8, 2, 1], 'smoothSigmas': [4, 2, 0]}</span></em>, <em class="sig-param"><span class="n">default_value</span><span class="o">=</span><span class="default_value">- 1024</span></em>, <em class="sig-param"><span class="n">trace</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">reg_method</span><span class="o">=</span><span class="default_value">'Similarity'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.registration.initial_registration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rigid image registration using ITK</p>
+<dl>
+<dt>Args</dt><dd><p>fixed_image (sitk.Image) : the fixed image
+moving_image (sitk.Image): the moving image, transformed to match fixed_image
+options (dict)          : registration options
+structure (bool)        : True if the image is a structure image</p>
+</dd>
+<dt>Returns</dt><dd><p>registered_image (sitk.Image): the rigidly registered moving image
+transform (transform        : the transform, can be used directly with</p>
+<blockquote>
+<div><p>sitk.ResampleImageFilter</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.registration.registration.initial_registration_command_iteration">
+<code class="sig-prename descclassname">platipy.imaging.registration.registration.</code><code class="sig-name descname">initial_registration_command_iteration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.registration.initial_registration_command_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function to print information during initial (rigid, similarity, affine, translation) registration</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.registration.registration.multiscale_demons">
+<code class="sig-prename descclassname">platipy.imaging.registration.registration.</code><code class="sig-name descname">multiscale_demons</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">registration_algorithm</span></em>, <em class="sig-param"><span class="n">fixed_image</span></em>, <em class="sig-param"><span class="n">moving_image</span></em>, <em class="sig-param"><span class="n">initial_transform</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">initial_displacement_field</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">shrink_factors</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">smoothing_sigmas</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">iteration_staging</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">isotropic_resample</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_field</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.registration.multiscale_demons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the given registration algorithm in a multiscale fashion. The original scale should not be
+given as input as the original images are implicitly incorporated as the base of the pyramid.
+:param registration_algorithm: Any registration algorithm that has an Execute(fixed_image,</p>
+<blockquote>
+<div><p>moving_image, displacement_field_image) method.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fixed_image</strong> – Resulting transformation maps points from this image’s spatial domain to the
+moving image spatial domain.</p></li>
+<li><p><strong>moving_image</strong> – Resulting transformation maps points from the fixed_image’s spatial domain to
+this image’s spatial domain.</p></li>
+<li><p><strong>initial_transform</strong> – Any SimpleITK transform, used to initialize the displacement field.</p></li>
+<li><p><strong>initial_displacement_field</strong> – Initial displacement field, if this is provided
+initial_transform will be ignored</p></li>
+<li><p><strong>shrink_factors</strong> – Shrink factors relative to the original image’s size.</p></li>
+<li><p><strong>smoothing_sigmas</strong> – Amount of smoothing which is done prior to resmapling the image using the
+given shrink factor. These are in physical (image spacing) units.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>SimpleITK.DisplacementFieldTransform
+[Optional] Displacemment (vector) field</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.registration.registration.smooth_and_resample">
+<code class="sig-prename descclassname">platipy.imaging.registration.registration.</code><code class="sig-name descname">smooth_and_resample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em>, <em class="sig-param"><span class="n">shrink_factor</span></em>, <em class="sig-param"><span class="n">smoothing_sigma</span></em>, <em class="sig-param"><span class="n">isotropic_resample</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">resampler</span><span class="o">=</span><span class="default_value">2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.registration.smooth_and_resample" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> – The image we want to resample.</p></li>
+<li><p><strong>shrink_factor</strong> – A number greater than one, such that the new image’s size is
+original_size/shrink_factor.
+If isotropic_resample is True, this will instead define the voxel size (mm)</p></li>
+<li><p><strong>smoothing_sigma</strong> – Sigma for Gaussian smoothing, this is in physical (image spacing) units,
+not pixels.</p></li>
+<li><p><strong>isotropic_resample</strong> – A flag that changes the behaviour to resample the image to isotropic voxels of size (shrink_factor)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Image which is a result of smoothing the input and then resampling it using the given sigma
+and shrink factor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.registration.registration.stage_iteration">
+<code class="sig-prename descclassname">platipy.imaging.registration.registration.</code><code class="sig-name descname">stage_iteration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.registration.stage_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function to print information during stage change in registration</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.registration.registration.transform_propagation">
+<code class="sig-prename descclassname">platipy.imaging.registration.registration.</code><code class="sig-name descname">transform_propagation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fixed_image</span></em>, <em class="sig-param"><span class="n">moving_image</span></em>, <em class="sig-param"><span class="n">transform</span></em>, <em class="sig-param"><span class="n">structure</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">default_value</span><span class="o">=</span><span class="default_value">- 1024</span></em>, <em class="sig-param"><span class="n">interp</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.registration.transform_propagation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform propagation using ITK</p>
+<dl>
+<dt>Args</dt><dd><p>fixed_image (sitk.Image)     : the fixed image
+moving_image (sitk.Image)    : the moving image, to be propagated
+transform (sitk.transform)  : the transformation; e.g. VersorRigid3DTransform,</p>
+<blockquote>
+<div><p>AffineTransform</p>
+</div></blockquote>
+<p>structure (bool)            : True if the image is a structure image
+interp (int)                : the interpolation</p>
+<blockquote>
+<div><p>sitk.sitkNearestNeighbor
+sitk.sitkLinear
+sitk.sitkBSpline</p>
+</div></blockquote>
+</dd>
+<dt>Returns</dt><dd><p>registered_image (sitk.Image)        : the rigidly registered moving image</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.registration">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.registration" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Phillip Chlap &amp; Rob Finnegan.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
