@@ -1,0 +1,354 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>platipy.imaging.tests package &mdash; PlatiPy  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="PlatiPy  documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PlatiPy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">PlatiPy documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PlatiPy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>platipy.imaging.tests package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/gen/platipy.imaging.tests.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="platipy-imaging-tests-package">
+<h1>platipy.imaging.tests package<a class="headerlink" href="#platipy-imaging-tests-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-platipy.imaging.tests.pull_data">
+<span id="platipy-imaging-tests-pull-data-module"></span><h2>platipy.imaging.tests.pull_data module<a class="headerlink" href="#module-platipy.imaging.tests.pull_data" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.tests.pull_data.fetch_data">
+<code class="sig-prename descclassname">platipy.imaging.tests.pull_data.</code><code class="sig-name descname">fetch_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">collection</span></em>, <em class="sig-param"><span class="n">patient_ids</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_directory</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">save_nifti</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">save_dicom</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.pull_data.fetch_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetches data from TCIA from the dataset specified</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>collection</strong> (<em>str</em>) – The TCIA collection to fetch from</p></li>
+<li><p><strong>patient_ids</strong> (<em>list</em><em>, </em><em>optional</em>) – The patient IDs to fetch. If not set all patients are
+fetched.</p></li>
+<li><p><strong>output_directory</strong> (<em>str</em>) – The directory in which to place fetched data</p></li>
+<li><p><strong>save_nifti</strong> (<em>bool</em>) – Whether or not to save the data as Nifti in the output directory</p></li>
+<li><p><strong>save_dicom</strong> (<em>bool</em>) – Whether or not to save the data as Dicom in the output directory</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The patients and directories where their data was fetched</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.tests.pull_data.get_hn_data">
+<code class="sig-prename descclassname">platipy.imaging.tests.pull_data.</code><code class="sig-name descname">get_hn_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">number_of_patients</span><span class="o">=</span><span class="default_value">3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.pull_data.get_hn_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets some images and structures from the HN (Lung) dataset in TCIA.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><p><strong>{int} -- The number of patients to fetch</strong><strong> (</strong><strong>default</strong> (<em>number_of_patients</em>) – {3})</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict – dictionary of patient ids as key and path to data as value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.tests.pull_data.get_lung_data">
+<code class="sig-prename descclassname">platipy.imaging.tests.pull_data.</code><code class="sig-name descname">get_lung_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">number_of_patients</span><span class="o">=</span><span class="default_value">3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.pull_data.get_lung_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets some images and structures from the Head-Neck-Radiomics-HN1 (HN) dataset in TCIA.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><p><strong>{int} -- The number of patients to fetch</strong><strong> (</strong><strong>default</strong> (<em>number_of_patients</em>) – {3})</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict – dictionary of patient ids as key and path to data as value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.tests.pull_data.get_patients_in_collection">
+<code class="sig-prename descclassname">platipy.imaging.tests.pull_data.</code><code class="sig-name descname">get_patients_in_collection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">collection</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.pull_data.get_patients_in_collection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of sorted patient IDs in a TCIA collection</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>collection</strong> (<em>str</em>) – TCIA collection</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of sorted Patient IDs in the collection</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.tests.test_bronchus">
+<span id="platipy-imaging-tests-test-bronchus-module"></span><h2>platipy.imaging.tests.test_bronchus module<a class="headerlink" href="#module-platipy.imaging.tests.test_bronchus" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.tests.test_bronchus.assert_bronchus_mask">
+<code class="sig-prename descclassname">platipy.imaging.tests.test_bronchus.</code><code class="sig-name descname">assert_bronchus_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bronchus_mask</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.test_bronchus.assert_bronchus_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that the bronchus mask looks as expected for the tests in this file</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.tests.test_bronchus.assert_lung_mask">
+<code class="sig-prename descclassname">platipy.imaging.tests.test_bronchus.</code><code class="sig-name descname">assert_lung_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lung_mask</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.test_bronchus.assert_lung_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks that the lung mask looks as expected for the tests in this file</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.tests.test_bronchus.bronchus_data">
+<code class="sig-prename descclassname">platipy.imaging.tests.test_bronchus.</code><code class="sig-name descname">bronchus_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.test_bronchus.bronchus_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the data needed for the bronchus tests</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict – Data for broncus test</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.tests.test_bronchus.test_bronchus_segmentation">
+<code class="sig-prename descclassname">platipy.imaging.tests.test_bronchus.</code><code class="sig-name descname">test_bronchus_segmentation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bronchus_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.test_bronchus.test_bronchus_segmentation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the bronchus segmentation algorithm</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.tests.test_bronchus.test_bronchus_service">
+<code class="sig-prename descclassname">platipy.imaging.tests.test_bronchus.</code><code class="sig-name descname">test_bronchus_service</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bronchus_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.test_bronchus.test_bronchus_service" title="Permalink to this definition">¶</a></dt>
+<dd><p>An end-to-end test to check that the bronchus service is running as expected</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.tests.test_bronchus.test_lung_segmentation">
+<code class="sig-prename descclassname">platipy.imaging.tests.test_bronchus.</code><code class="sig-name descname">test_lung_segmentation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bronchus_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.test_bronchus.test_lung_segmentation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests the lung segmentation used as an initial step of bronchus segmentation</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.tests.test_cardiac">
+<span id="platipy-imaging-tests-test-cardiac-module"></span><h2>platipy.imaging.tests.test_cardiac module<a class="headerlink" href="#module-platipy.imaging.tests.test_cardiac" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.tests.test_cardiac.cardiac_data">
+<code class="sig-prename descclassname">platipy.imaging.tests.test_cardiac.</code><code class="sig-name descname">cardiac_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.test_cardiac.cardiac_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the data needed for the cardiac tests</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict – Data for cardiac test</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.tests.test_cardiac.test_cardiac_service">
+<code class="sig-prename descclassname">platipy.imaging.tests.test_cardiac.</code><code class="sig-name descname">test_cardiac_service</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cardiac_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.test_cardiac.test_cardiac_service" title="Permalink to this definition">¶</a></dt>
+<dd><p>An end-to-end test to check that the cardiac service is running as expected</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.tests">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.tests" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Phillip Chlap &amp; Rob Finnegan.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

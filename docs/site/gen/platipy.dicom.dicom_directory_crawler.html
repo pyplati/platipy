@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>platipy.dicom.dicom_directory_crawler package &mdash; PlatiPy  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="PlatiPy  documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PlatiPy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">PlatiPy documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PlatiPy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>platipy.dicom.dicom_directory_crawler package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/gen/platipy.dicom.dicom_directory_crawler.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="platipy-dicom-dicom-directory-crawler-package">
+<h1>platipy.dicom.dicom_directory_crawler package<a class="headerlink" href="#platipy-dicom-dicom-directory-crawler-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-platipy.dicom.dicom_directory_crawler.conversion_utils">
+<span id="platipy-dicom-dicom-directory-crawler-conversion-utils-module"></span><h2>platipy.dicom.dicom_directory_crawler.conversion_utils module<a class="headerlink" href="#module-platipy.dicom.dicom_directory_crawler.conversion_utils" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.dicom.dicom_directory_crawler.conversion_utils.fix_missing_data">
+<code class="sig-prename descclassname">platipy.dicom.dicom_directory_crawler.conversion_utils.</code><code class="sig-name descname">fix_missing_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">contour_data_list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.dicom_directory_crawler.conversion_utils.fix_missing_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fixes missing points in contouring using simple linear interpolation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>contour_data_list</strong> (<em>list</em>) – The contour data for each slice</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Interpolated contour data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>contour_data (numpy array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.dicom.dicom_directory_crawler.conversion_utils.get_dicom_info_from_description">
+<code class="sig-prename descclassname">platipy.dicom.dicom_directory_crawler.conversion_utils.</code><code class="sig-name descname">get_dicom_info_from_description</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dicom_object</span></em>, <em class="sig-param"><span class="n">return_extra</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.dicom_directory_crawler.conversion_utils.get_dicom_info_from_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempts to return some information from a DICOM
+This is typically used for naming converted NIFTI files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dicom_object</strong> (<em>pydicom.dataset.FileDataset</em>) – The DICOM object</p></li>
+<li><p><strong>return_extra</strong> (<em>bool</em><em>, </em><em>optional</em>) – return information that is usually not required</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Some extracted information</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>info (str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.dicom.dicom_directory_crawler.conversion_utils.process_dicom_directory">
+<code class="sig-prename descclassname">platipy.dicom.dicom_directory_crawler.conversion_utils.</code><code class="sig-name descname">process_dicom_directory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dicom_directory</span></em>, <em class="sig-param"><span class="n">parent_sorting_field</span><span class="o">=</span><span class="default_value">'PatientName'</span></em>, <em class="sig-param"><span class="n">output_image_name_format</span><span class="o">=</span><span class="default_value">'{parent_sorting_data}_{study_uid_index}_{Modality}_{image_desc}_{SeriesNumber}'</span></em>, <em class="sig-param"><span class="n">output_structure_name_format</span><span class="o">=</span><span class="default_value">'{parent_sorting_data}_{study_uid_index}_{Modality}_{structure_name}'</span></em>, <em class="sig-param"><span class="n">output_dose_name_format</span><span class="o">=</span><span class="default_value">'{parent_sorting_data}_{study_uid_index}_{DoseSummationType}'</span></em>, <em class="sig-param"><span class="n">return_extra</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">output_directory</span><span class="o">=</span><span class="default_value">'./'</span></em>, <em class="sig-param"><span class="n">output_file_suffix</span><span class="o">=</span><span class="default_value">'.nii.gz'</span></em>, <em class="sig-param"><span class="n">overwrite_existing_files</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.dicom_directory_crawler.conversion_utils.process_dicom_directory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.dicom.dicom_directory_crawler.conversion_utils.process_dicom_file_list">
+<code class="sig-prename descclassname">platipy.dicom.dicom_directory_crawler.conversion_utils.</code><code class="sig-name descname">process_dicom_file_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dicom_file_list</span></em>, <em class="sig-param"><span class="n">parent_sorting_field</span><span class="o">=</span><span class="default_value">'PatientName'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.dicom_directory_crawler.conversion_utils.process_dicom_file_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Organise the DICOM files by the series UID</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.dicom.dicom_directory_crawler.conversion_utils.process_dicom_series">
+<code class="sig-prename descclassname">platipy.dicom.dicom_directory_crawler.conversion_utils.</code><code class="sig-name descname">process_dicom_series</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dicom_series_dict</span></em>, <em class="sig-param"><span class="n">series_uid</span></em>, <em class="sig-param"><span class="n">parent_sorting_field</span><span class="o">=</span><span class="default_value">'PatientName'</span></em>, <em class="sig-param"><span class="n">return_extra</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.dicom_directory_crawler.conversion_utils.process_dicom_series" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.dicom.dicom_directory_crawler.conversion_utils.safe_sort_dicom_image_list">
+<code class="sig-prename descclassname">platipy.dicom.dicom_directory_crawler.conversion_utils.</code><code class="sig-name descname">safe_sort_dicom_image_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dicom_image_list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.dicom_directory_crawler.conversion_utils.safe_sort_dicom_image_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sorts a list of DICOM image files based on a DICOM tag value.
+This is a much safer method than reading SliceLocation.
+It takes mandatory DICOM fields (Image Position [Patient]) and (Image Orientation [Patient]).
+The list of DICOM files is sorted by projecting the image position onto the axis normal to the
+place defined by the image orientation.</p>
+<p>This accounts for differences in patient position (e.g. HFS/FFS).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dicom_image_list</strong> (<em>list</em>) – [description]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.dicom.dicom_directory_crawler.conversion_utils.transform_point_set_from_dicom_struct">
+<code class="sig-prename descclassname">platipy.dicom.dicom_directory_crawler.conversion_utils.</code><code class="sig-name descname">transform_point_set_from_dicom_struct</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dicom_image</span></em>, <em class="sig-param"><span class="n">dicom_struct</span></em>, <em class="sig-param"><span class="n">spacing_override</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.dicom_directory_crawler.conversion_utils.transform_point_set_from_dicom_struct" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.dicom.dicom_directory_crawler.conversion_utils.write_output_data_to_disk">
+<code class="sig-prename descclassname">platipy.dicom.dicom_directory_crawler.conversion_utils.</code><code class="sig-name descname">write_output_data_to_disk</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_data_dict</span></em>, <em class="sig-param"><span class="n">output_directory</span><span class="o">=</span><span class="default_value">'./'</span></em>, <em class="sig-param"><span class="n">output_file_suffix</span><span class="o">=</span><span class="default_value">'.nii.gz'</span></em>, <em class="sig-param"><span class="n">overwrite_existing_files</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.dicom_directory_crawler.conversion_utils.write_output_data_to_disk" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-platipy.dicom.dicom_directory_crawler">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.dicom.dicom_directory_crawler" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Phillip Chlap &amp; Rob Finnegan.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

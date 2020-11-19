@@ -65,6 +65,44 @@
                 "reveal": "always",
                 "panel": "dedicated"
             }
+        },
+
+        {
+            "label": "Refresh PlatiPy Docs",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/docs"
+            },
+            "command": "sphinx-apidoc",
+            "args": [
+                "../platipy",
+                "-o",
+                "gen"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Generate HTML Docs",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "command": "sphinx-build",
+            "args": [
+                "-b",
+                "html",
+                "docs",
+                "docs/site"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
         }
 
          
