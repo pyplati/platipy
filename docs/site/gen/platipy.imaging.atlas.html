@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>platipy.imaging.atlas package &mdash; PlatiPy  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="PlatiPy  documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PlatiPy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">PlatiPy documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PlatiPy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>platipy.imaging.atlas package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/gen/platipy.imaging.atlas.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="platipy-imaging-atlas-package">
+<h1>platipy.imaging.atlas package<a class="headerlink" href="#platipy-imaging-atlas-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-platipy.imaging.atlas.iterative_atlas_removal">
+<span id="platipy-imaging-atlas-iterative-atlas-removal-module"></span><h2>platipy.imaging.atlas.iterative_atlas_removal module<a class="headerlink" href="#module-platipy.imaging.atlas.iterative_atlas_removal" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.atlas.iterative_atlas_removal.evaluate_distance_on_surface">
+<code class="sig-prename descclassname">platipy.imaging.atlas.iterative_atlas_removal.</code><code class="sig-name descname">evaluate_distance_on_surface</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reference_volume</span></em>, <em class="sig-param"><span class="n">test_volume</span></em>, <em class="sig-param"><span class="n">abs_distance</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">reference_as_distance_map</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.atlas.iterative_atlas_removal.evaluate_distance_on_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates a distance map on a surface
+Input: reference_volume: binary volume SimpleITK image, or alternatively a distance map</p>
+<blockquote>
+<div><p>test_volume: binary volume SimpleITK image</p>
+</div></blockquote>
+<p>Output: theta, phi, values</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.atlas.iterative_atlas_removal.evaluate_distance_to_reference">
+<code class="sig-prename descclassname">platipy.imaging.atlas.iterative_atlas_removal.</code><code class="sig-name descname">evaluate_distance_to_reference</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reference_volume</span></em>, <em class="sig-param"><span class="n">test_volume</span></em>, <em class="sig-param"><span class="n">resample_factor</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.atlas.iterative_atlas_removal.evaluate_distance_to_reference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the distance from the surface of a test volume to a reference
+Input: reference_volume: binary volume SimpleITK image</p>
+<blockquote>
+<div><p>test_volume: binary volume SimpleITK image</p>
+</div></blockquote>
+<p>Output: values : the distance to each point on the reference volume surface</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.atlas.iterative_atlas_removal.regrid_spherical_data">
+<code class="sig-prename descclassname">platipy.imaging.atlas.iterative_atlas_removal.</code><code class="sig-name descname">regrid_spherical_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">theta</span></em>, <em class="sig-param"><span class="n">phi</span></em>, <em class="sig-param"><span class="n">values</span></em>, <em class="sig-param"><span class="n">resolution</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.atlas.iterative_atlas_removal.regrid_spherical_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Re-grids spherical data
+Input: theta, phi, values
+Options: plot a figure (plotFig), save a figure (saveFig), case identifier (figName)
+Output: p_lat, p_long, grid_values (, fig)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.atlas.iterative_atlas_removal.run_iar">
+<code class="sig-prename descclassname">platipy.imaging.atlas.iterative_atlas_removal.</code><code class="sig-name descname">run_iar</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atlas_set</span></em>, <em class="sig-param"><span class="n">structure_name</span></em>, <em class="sig-param"><span class="n">smooth_maps</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">smooth_sigma</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">z_score</span><span class="o">=</span><span class="default_value">'MAD'</span></em>, <em class="sig-param"><span class="n">outlier_method</span><span class="o">=</span><span class="default_value">'IQR'</span></em>, <em class="sig-param"><span class="n">min_best_atlases</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">n_factor</span><span class="o">=</span><span class="default_value">1.5</span></em>, <em class="sig-param"><span class="n">iteration</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">single_step</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">project_on_sphere</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">'DIR'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.atlas.iterative_atlas_removal.run_iar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform iterative atlas removal on the atlas_set</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.atlas.label_fusion">
+<span id="platipy-imaging-atlas-label-fusion-module"></span><h2>platipy.imaging.atlas.label_fusion module<a class="headerlink" href="#module-platipy.imaging.atlas.label_fusion" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.atlas.label_fusion.combine_labels">
+<code class="sig-prename descclassname">platipy.imaging.atlas.label_fusion.</code><code class="sig-name descname">combine_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atlas_set</span></em>, <em class="sig-param"><span class="n">structure_name</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">'DIR'</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">0.0001</span></em>, <em class="sig-param"><span class="n">smooth_sigma</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.atlas.label_fusion.combine_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combine labels using weight maps</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.atlas.label_fusion.combine_labels_staple">
+<code class="sig-prename descclassname">platipy.imaging.atlas.label_fusion.</code><code class="sig-name descname">combine_labels_staple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label_list_dict</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">0.0001</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.atlas.label_fusion.combine_labels_staple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combine labels using STAPLE</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.atlas.label_fusion.compute_weight_map">
+<code class="sig-prename descclassname">platipy.imaging.atlas.label_fusion.</code><code class="sig-name descname">compute_weight_map</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">target_image</span></em>, <em class="sig-param"><span class="n">moving_image</span></em>, <em class="sig-param"><span class="n">vote_type</span><span class="o">=</span><span class="default_value">'unweighted'</span></em>, <em class="sig-param"><span class="n">vote_params</span><span class="o">=</span><span class="default_value">{'blockSize': 5, 'epsilon': 1e-05, 'factor': 1000000000000.0, 'gain': 6, 'sigma': 2.0}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.atlas.label_fusion.compute_weight_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the weight map</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.atlas">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.atlas" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Phillip Chlap &amp; Rob Finnegan.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

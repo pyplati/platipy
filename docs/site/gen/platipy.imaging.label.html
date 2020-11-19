@@ -1,0 +1,284 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>platipy.imaging.label package &mdash; PlatiPy  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="PlatiPy  documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PlatiPy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">PlatiPy documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PlatiPy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>platipy.imaging.label package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/gen/platipy.imaging.label.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="platipy-imaging-label-package">
+<h1>platipy.imaging.label package<a class="headerlink" href="#platipy-imaging-label-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-platipy.imaging.label.label_comparison">
+<span id="platipy-imaging-label-label-comparison-module"></span><h2>platipy.imaging.label.label_comparison module<a class="headerlink" href="#module-platipy.imaging.label.label_comparison" title="Permalink to this headline">¶</a></h2>
+<p>Module name: LabelComparison
+Author:      Robert Finnegan
+Date:        December 2018
+Description:
+———————————
+- Overlap metrics
+- Volume metrics
+- Surface metrics
+———————————</p>
+<dl class="py function">
+<dt id="platipy.imaging.label.label_comparison.compute_metric_dsc">
+<code class="sig-prename descclassname">platipy.imaging.label.label_comparison.</code><code class="sig-name descname">compute_metric_dsc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">imA</span></em>, <em class="sig-param"><span class="n">imB</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.label_comparison.compute_metric_dsc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.label.label_comparison.compute_metric_hd">
+<code class="sig-prename descclassname">platipy.imaging.label.label_comparison.</code><code class="sig-name descname">compute_metric_hd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">imFixed</span></em>, <em class="sig-param"><span class="n">imMoving</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.label_comparison.compute_metric_hd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.label.label_comparison.compute_metric_masd">
+<code class="sig-prename descclassname">platipy.imaging.label.label_comparison.</code><code class="sig-name descname">compute_metric_masd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">imFixed</span></em>, <em class="sig-param"><span class="n">imMoving</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.label_comparison.compute_metric_masd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.label.label_comparison.compute_metric_sensitivity">
+<code class="sig-prename descclassname">platipy.imaging.label.label_comparison.</code><code class="sig-name descname">compute_metric_sensitivity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">imFixed</span></em>, <em class="sig-param"><span class="n">imMoving</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.label_comparison.compute_metric_sensitivity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.label.label_comparison.compute_metric_specificity">
+<code class="sig-prename descclassname">platipy.imaging.label.label_comparison.</code><code class="sig-name descname">compute_metric_specificity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">imFixed</span></em>, <em class="sig-param"><span class="n">imMoving</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.label_comparison.compute_metric_specificity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.label.label_comparison.compute_surface_metrics">
+<code class="sig-prename descclassname">platipy.imaging.label.label_comparison.</code><code class="sig-name descname">compute_surface_metrics</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">imFixed</span></em>, <em class="sig-param"><span class="n">imMoving</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.label_comparison.compute_surface_metrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>HD, meanSurfDist, medianSurfDist, maxSurfDist, stdSurfDist</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.label.label_comparison.compute_volume_metrics">
+<code class="sig-prename descclassname">platipy.imaging.label.label_comparison.</code><code class="sig-name descname">compute_volume_metrics</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">imFixed</span></em>, <em class="sig-param"><span class="n">imMoving</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.label_comparison.compute_volume_metrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>DSC, VolOverlap, FracOverlap, TruePosFrac, TrueNegFrac, FalsePosFrac, FalseNegFrac</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.label.label_operations">
+<span id="platipy-imaging-label-label-operations-module"></span><h2>platipy.imaging.label.label_operations module<a class="headerlink" href="#module-platipy.imaging.label.label_operations" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.label.label_operations.morphological_interpolate">
+<code class="sig-prename descclassname">platipy.imaging.label.label_operations.</code><code class="sig-name descname">morphological_interpolate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sitk_image</span></em>, <em class="sig-param"><span class="n">copy_info</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.label_operations.morphological_interpolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs morphological interpolation
+See: <a class="reference external" href="https://github.com/KitwareMedical/ITKMorphologicalContourInterpolation">https://github.com/KitwareMedical/ITKMorphologicalContourInterpolation</a></p>
+<p>Useful for filling in gaps in contouring between slices</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.label.label_operations.process_probability_image">
+<code class="sig-prename descclassname">platipy.imaging.label.label_operations.</code><code class="sig-name descname">process_probability_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">probability_image</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="o">=</span><span class="default_value">0.5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.label_operations.process_probability_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a mask given a probability image, performing some basic post processing as well.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.label">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.label" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Phillip Chlap &amp; Rob Finnegan.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
