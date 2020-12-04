@@ -198,6 +198,10 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
             "    Converting structure {0} with name: {1}".format(structIndex, structure_name)
         )
 
+        if structIndex >= len(struct_point_sequence):
+            logger.warning("    Contour sequence is missing, skipping.")
+            continue
+
         if not hasattr(struct_point_sequence[structIndex], "ContourSequence"):
             logger.warning("    No contour sequence found for this structure, skipping.")
             continue
