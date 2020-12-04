@@ -32,45 +32,26 @@ def cFunc(i, m, cmap=plt.cm.Spectral):
     index = int(255.0*i/m)
     return cmap(index)[:3]
 
-idList = [i[5:] for i in os.listdir('../Data') if i[:4]=='Case']
 
-# change atlas name here
-atlas = 'AustralianAtlas' #ABASAtlas AustralianAtlas
-structDict = {'AustralianAtlas':['WHOLEHEART','LANTDESCARTERY_SPLINE']}
+for case_id in ['101','102','103']:
+    print('Processing {0}'.format(case_id))
 
-for id in idList:
-    print('Processing {0}'.format(id))
+    mlab.figure(size = (512,512), bgcolor = (1,1,1))
 
-    mlab.figure(size = (1024,1024), bgcolor = (1,1,1))
+    # Add structures
+    for index, structure in enumerate(['HEART','LUNG_L','LUNG_R','ESOPHAGUS','SPINALCORD']):
 
-    # Add automatic mesh - heart
-    im = sitk.ReadImage("../Processing/{0}/LabelFusion/LeaveOut{1}/Case_{1}_{2}_BINARY_CORR.nii.gz".format(atlas, id, structDict[atlas][0]))
-    arr = sitk.GetArrayFromImage(im)[::-1]
-    m = mlab.contour3d(arr, contours=[1], color=(0,0,1), transparent=True, opacity=0.15)
-    m.actor.actor.scale = (3,1,1)
-    COM = np.mean(np.where(arr), axis=1)*(3,1,1)
+        filename = f"/home/robbie/Work/3_ResearchProjects/CardiacAtlasSets/NSCLC-Radiomics/NIFTI_CONVERTED/Test-S1-{case_id}/Structures/Test-S1-{case_id}_{structure}.nii.gz"
 
-    # Add manual mesh - heart (vote)
-    im = sitk.ReadImage("../Data/Case_{0}/Structures/Case_{0}_COR_MANUAL_VOTE_CROP.nii.gz".format(id))
-    arr = sitk.GetArrayFromImage(im)[::-1]
-    m = mlab.contour3d(arr, contours=[1], color=(1,0,0), transparent=True, opacity=0.15)
-    m.actor.actor.scale = (3,1,1)
-
-    # Add manual meshes - ladca
-    colors = plt.cm.hot(np.linspace(0.2,0.8, 9))
-    for ii in range(9):
-        im = sitk.ReadImage("../Data/Case_{0}/Structures/Case_{0}_LAD_{1}_CROP.nii.gz".format(id, ii))
+        im = sitk.ReadImage(filename)
         arr = sitk.GetArrayFromImage(im)[::-1]
-        m = mlab.contour3d(arr, contours=[1], color=tuple(colors[:,0:3][ii]), transparent=True, opacity=0.5)
-        m.actor.actor.scale = (3,1,1)
+        m = mlab.contour3d(arr, contours=[1], color=cFunc(index, 5, plt.cm.magma), transparent=True, opacity=0.5)
 
-    # Add automatic splined vessel
-    im = sitk.ReadImage("../Processing/{0}/LabelFusion/LeaveOut{1}/Case_{1}_{2}_CORR.nii.gz".format(atlas, id, structDict[atlas][1]))
-    arr = sitk.GetArrayFromImage(im)[::-1]
-    m = mlab.contour3d(arr, contours=[1], color=(0,0,1), transparent=True, opacity=0.5)
-    m.actor.actor.scale = (3,1,1)
+        im_spacing = im.GetSpacing()[::-1]
+        m.actor.actor.scale = im_spacing
 
-    mlab.view(-110, 41, 317, COM, -80)
+    COM = np.mean(np.where(arr), axis=1)*im_spacing
+    mlab.view(-110, 41, 850, COM, -80)
 
-    mlab.savefig('PythonMeshImages/{0}/Case_{1}.png'.format(atlas, id))
+    mlab.savefig(f'./Case_{case_id}.png')
     mlab.close()
