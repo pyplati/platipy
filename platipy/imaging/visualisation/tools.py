@@ -19,6 +19,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
 
+import matplotlib.gridspec as gridspec
+
 from skimage.color import hsv2rgb
 
 class VisualiseContour:
@@ -83,7 +85,7 @@ class ImageVisualiser:
     """Class to assist with visualising images and overlaying contours, scalars and bounding boxes.
     """
 
-    def __init__(self, image, cut=None, axis="ortho", window=[-250, 500], figure_size_in=10):
+    def __init__(self, image, cut=None, axis="ortho", window=[-250, 500], figure_size_in=10, limits=None):
         self.__set_image(image)
         self.__contours = []
         self.__bounding_boxes = []
@@ -98,6 +100,7 @@ class ImageVisualiser:
         self.__window = window
         self.__axis = axis
         self.__cut = cut
+        self.__limits = limits
 
         self.clear()
 
@@ -452,7 +455,9 @@ class ImageVisualiser:
         self.overlay_vector_field()
         self.overlay_contours()
         self.overlay_bounding_boxes()
+        self.adjust_view()
 
+        return self.__figure
 
     def display_slice(self, cmap=plt.cm.get_cmap("Greys_r")):
         """Display the configured image slice
@@ -533,7 +538,7 @@ class ImageVisualiser:
             if self.__axis == "x" or self.__axis == "sag":
                 figure_size = (
                     self.__figure_size,
-                    self.__figure_size * (asp * sag_size) / (1.0 * cor_size),
+                    self.__figure_size * (asp * ax_size) / (1.0 * cor_size),
                 )
                 self.__figure, ax = plt.subplots(1, 1, figsize=(figure_size))
                 org = "lower"
@@ -693,7 +698,7 @@ class ImageVisualiser:
             if self.__axis == "x" or self.__axis == "sag":
                 figure_size = (
                     self.__figure_size,
-                    self.__figure_size * (asp * sag_size) / (1.0 * cor_size),
+                    self.__figure_size * (asp * ax_size) / (1.0 * cor_size),
                 )
                 self.__figure, ax = plt.subplots(1, 1, figsize=(figure_size))
                 org = "lower"
@@ -743,6 +748,88 @@ class ImageVisualiser:
             ax.axis("off")
 
             self.__figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
+
+    def adjust_view(self):
+        """adjust_view is a helper function for modifying axis limits.
+        Specify *limits* when initialising the ImageVisulaiser to use.
+        """
+
+        limits = self.__limits
+
+        if limits is not None:
+            if self.__axis == "ortho":
+                ax_ax, _, ax_cor, ax_sag = self.__figure.axes
+                ax_orig_0, ax_orig_1 = ax_cor.get_ylim()
+                cor_orig_0, cor_orig_1 = ax_ax.get_ylim()
+                sag_orig_0, sag_orig_1 = ax_ax.get_xlim()
+
+                ax_0, ax_1, cor_0, cor_1, sag_0, sag_1 = limits
+
+                # Perform some corrections
+                ax_0, ax_1 = sorted([ax_0, ax_1])
+                cor_0, cor_1 = sorted([cor_0, cor_1])
+                sag_0, sag_1 = sorted([sag_0, sag_1])
+
+                ax_orig_0, ax_orig_1 = sorted([ax_orig_0, ax_orig_1])
+                cor_orig_0, cor_orig_1 = sorted([cor_orig_0, cor_orig_1])
+                sag_orig_0, sag_orig_1 = sorted([sag_orig_0, sag_orig_1])
+
+                ax_size = ax_1 - ax_0
+                cor_size = cor_1 - cor_0
+                sag_size = sag_1 - sag_0
+
+                asp = ax_cor.get_aspect()
+
+                ratio_x = ( (cor_1 - cor_0) + (sag_1 - sag_0) ) / ( (cor_orig_1 - cor_orig_0) + (sag_orig_1 - sag_orig_0) )
+                ratio_y = ( 1/asp*(cor_1 - cor_0) + (ax_1 - ax_0) ) / ( 1/asp*(cor_orig_1 - cor_orig_0) + (ax_orig_1 - ax_orig_0) )
+
+                ax_ax.set_xlim(sag_0, sag_1)
+                ax_ax.set_ylim(cor_1, cor_0)
+
+                ax_cor.set_xlim(sag_0, sag_1)
+                ax_cor.set_ylim(ax_0, ax_1)
+
+                ax_sag.set_xlim(cor_0, cor_1)
+                ax_sag.set_ylim(ax_0, ax_1)
+
+                gs = gridspec.GridSpec(
+                    2,
+                    2,
+                    height_ratios=[(cor_size) / (asp * ax_size), 1],
+                    width_ratios=[sag_size, cor_size]
+                )
+
+                ax_ax.set_position(gs[0].get_position(self.__figure))
+                ax_ax.set_subplotspec(gs[0]) 
+
+                ax_cor.set_position(gs[2].get_position(self.__figure))
+                ax_cor.set_subplotspec(gs[2]) 
+
+                ax_sag.set_position(gs[3].get_position(self.__figure))
+                ax_sag.set_subplotspec(gs[3]) 
+
+                fig_size_x, fig_size_y = self.__figure.get_size_inches()
+                fig_size_y = fig_size_y*ratio_y/ratio_x
+                
+                self.__figure.set_size_inches(fig_size_x, fig_size_y)
+
+            elif self.__axis in ["x", "y", "z"]:
+                ax = self.__figure.axes[0]
+                x_orig_0, x_orig_1 = ax.get_xlim()
+                y_orig_0, y_orig_1 = ax.get_ylim()
+
+                x_0, x_1, y_0, y_1 = limits
+
+                ratio_x = (np.abs(x_1 - x_0)/np.abs(x_orig_1 - x_orig_0))
+                ratio_y = (np.abs(y_1 - y_0)/np.abs(y_orig_1 - y_orig_0))
+
+                ax.set_xlim(x_0,x_1)
+                ax.set_ylim(y_0,y_1)  
+
+                fig_size_x, fig_size_y = self.__figure.get_size_inches()
+                fig_size_y = fig_size_y*ratio_y/ratio_x
+                
+                self.__figure.set_size_inches(fig_size_x, fig_size_y)
 
 
     def overlay_contours(self):
