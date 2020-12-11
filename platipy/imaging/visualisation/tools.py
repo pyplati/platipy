@@ -819,6 +819,12 @@ class ImageVisualiser:
                 y_orig_0, y_orig_1 = ax.get_ylim()
 
                 x_0, x_1, y_0, y_1 = limits
+                # Perform some corrections
+                x_0, x_1 = sorted([x_0, x_1])
+                y_0, y_1 = sorted([y_0, y_1])
+
+                if self.__axis == "z":
+                    y_0, y_1 = y_1, y_0
 
                 ratio_x = (np.abs(x_1 - x_0)/np.abs(x_orig_1 - x_orig_0))
                 ratio_y = (np.abs(y_1 - y_0)/np.abs(y_orig_1 - y_orig_0))
