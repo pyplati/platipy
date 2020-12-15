@@ -535,7 +535,7 @@ def fast_symmetric_forces_demons_registration(
 
     if structure:
         registered_image = sitk.Cast(registered_image, sitk.sitkFloat32)
-        registered_image = sitk.Threshold(registered_image, lower=1e-5, upper=100)
+        registered_image = sitk.BinaryThreshold(registered_image, lowerThreshold=1e-5, upperThreshold=100)
 
     registered_image.CopyInformation(fixed_image)
     registered_image = sitk.Cast(registered_image, moving_image_type)

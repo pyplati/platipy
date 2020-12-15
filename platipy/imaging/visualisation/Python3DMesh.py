@@ -18,6 +18,7 @@ import os
 
 import matplotlib.pyplot as plt
 from mayavi import mlab
+from skimage import measure
 
 def vectorisedTransformIndexToPhysicalPoint(image, pointArr, correct=True):
     if correct:
@@ -42,15 +43,29 @@ for case_id in ['101','102','103']:
     for index, structure in enumerate(['HEART','LUNG_L','LUNG_R','ESOPHAGUS','SPINALCORD']):
 
         filename = f"/home/robbie/Work/3_ResearchProjects/CardiacAtlasSets/NSCLC-Radiomics/NIFTI_CONVERTED/Test-S1-{case_id}/Structures/Test-S1-{case_id}_{structure}.nii.gz"
+        im_structure = sitk.ReadImage(filename, sitk.sitkFloat32)
 
-        im = sitk.ReadImage(filename)
-        arr = sitk.GetArrayFromImage(im)[::-1]
-        m = mlab.contour3d(arr, contours=[1], color=cFunc(index, 5, plt.cm.magma), transparent=True, opacity=0.5)
+        filename = f"/home/robbie/Work/3_ResearchProjects/CardiacAtlasSets/NSCLC-Radiomics/NIFTI_CONVERTED/Test-S1-{case_id}/Images/Test-S1-{case_id}.nii.gz"
+        im_ct = sitk.ReadImage(filename, sitk.sitkFloat32)
 
-        im_spacing = im.GetSpacing()[::-1]
-        m.actor.actor.scale = im_spacing
+        arr_structure = sitk.GetArrayFromImage(im_structure)[::-1]
+        arr_ct = sitk.GetArrayFromImage(im_ct)[::-1]
 
-    COM = np.mean(np.where(arr), axis=1)*im_spacing
+        verts, faces, normals, values = measure.marching_cubes_lewiner(arr_structure)
+        vert_x, vert_y, vert_z = verts.T
+
+        values_ct = arr_ct[vert_x.astype(int), vert_y.astype(int), vert_z.astype(int)]
+
+        mesh = mlab.triangular_mesh(vert_x, vert_y, vert_z, faces, opacity=0.9, colormap='Greys', vmin=-250, vmax=300)
+
+        mesh.mlab_source.scalars = values_ct
+        mesh.actor.mapper.scalar_visibility = True
+        mesh.actor.property.frontface_culling = True
+
+        im_spacing = im_ct.GetSpacing()[::-1]
+        mesh.actor.actor.scale = im_spacing
+
+    COM = np.mean(np.where(arr_structure), axis=1)*im_spacing
     mlab.view(-110, 41, 850, COM, -80)
 
     mlab.savefig(f'./Case_{case_id}.png')
