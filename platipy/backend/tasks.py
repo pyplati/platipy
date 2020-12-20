@@ -22,6 +22,7 @@ import datetime
 import shutil
 import time
 
+
 from platipy.backend import celery, db, app
 from platipy.dicom.communication import DicomConnector
 
@@ -170,75 +171,6 @@ def move_task(task, endpoint, seriesUIDs, host, port, ae_title):
         state="SUCCESS",
         meta={"current": total, "total": total, "status": "Move Complete"},
     )
-
-
-@celery.task(bind=True)
-def listen_task(task, listen_port, listen_ae_title):
-    """
-    Background task that listens at a specific port for incoming dicom series
-    """
-
-    logger.info(
-        "Starting Dicom Listener on port: {0} with AE Title: {1}",
-        listen_port,
-        listen_ae_title,
-    )
-
-    task_id = task.request.id
-
-    try:
-        dicom_connector = DicomConnector(port=listen_port, ae_title=listen_ae_title)
-
-        def series_recieved(dicom_path):
-            logger.info("Series Recieved at path: {0}".format(dicom_path))
-
-            # Get the SeriesUID
-            series_uid = None
-            for f in os.listdir(dicom_path):
-                f = os.path.join(dicom_path, f)
-
-                try:
-                    d = pydicom.read_file(f)
-                    series_uid = d.SeriesInstanceUID
-                except Exception as e:
-                    logger.debug("No Series UID in: {0}".format(f))
-                    logger.debug(e)
-
-            if series_uid:
-                logger.info("Image Series UID: {0}".format(series_uid))
-            else:
-                logger.error("Series UID could not be determined... Stopping")
-                return
-
-            # Find the data objects with the given series UID and update them
-            dos = DataObject.query.filter_by(series_instance_uid=series_uid).all()
-
-            if len(dos) == 0:
-                logger.error(
-                    "No Data Object found with Series UID: {0} ... Stopping".format(
-                        series_uid
-                    )
-                )
-                return
-
-            for do in dos:
-
-                do.is_fetched = True
-                do.path = dicom_path
-                db.session.commit()
-
-        if not listen_ae_title:
-            listen_ae_title = "PYNETDICOM"
-
-        dicom_connector.listen(series_recieved, ae_title=listen_ae_title)
-
-    except Exception as e:
-        logger.error("Listener Error: " + str(e))
-
-        # Stop the listen task
-        celery.control.revoke(task_id, terminate=True)
-
-    return {"status": "Complete"}
 
 
 @celery.task(bind=True)

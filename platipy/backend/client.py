@@ -52,9 +52,7 @@ class PlatiPyClient:
         self.api_key = api_key
         self.algorithm_name = algorithm_name
 
-        res = requests.get(
-            API_ALGORITHM.format(self.base_url), headers={"API_KEY": self.api_key}
-        )
+        res = requests.get(API_ALGORITHM.format(self.base_url), headers={"API_KEY": self.api_key})
         logger.debug(res.status_code)
 
     def get_dicom_location(self, name):
@@ -177,9 +175,7 @@ class PlatiPyClient:
 
         return None
 
-    def add_dataset(
-        self, from_dicom_location=None, to_dicom_location=None, timeout=None
-    ):
+    def add_dataset(self, from_dicom_location=None, to_dicom_location=None, timeout=None):
         """Adds and returns a new dataset
 
         Keyword Arguments:
@@ -215,9 +211,7 @@ class PlatiPyClient:
             params["timeout"] = timeout
 
         res = requests.post(
-            API_DATASET.format(self.base_url),
-            headers={"API_KEY": self.api_key},
-            data=params,
+            API_DATASET.format(self.base_url), headers={"API_KEY": self.api_key}, data=params,
         )
         logger.debug(res.status_code)
 
@@ -270,14 +264,12 @@ class PlatiPyClient:
                 params["parent"] = parent["id"]
 
         if meta_data:
-            params["meta_data"] = meta_data
+            params["meta_data"] = json.dumps(meta_data)
 
         if series_uid or dicom_retrieve:
 
             if not series_uid or dicom_retrieve:
-                logger.error(
-                    "For Dicom, both series_uid and dicom_retrieve must be set"
-                )
+                logger.error("For Dicom, both series_uid and dicom_retrieve must be set")
                 return None
 
             params["type"] = "DICOM"
@@ -326,9 +318,7 @@ class PlatiPyClient:
         """
 
         algorithm = None
-        res = requests.get(
-            API_ALGORITHM.format(self.base_url), headers={"API_KEY": self.api_key}
-        )
+        res = requests.get(API_ALGORITHM.format(self.base_url), headers={"API_KEY": self.api_key})
         logger.debug(res.status_code)
         if res.status_code == 200:
             for algorithm in res.json():
@@ -362,17 +352,13 @@ class PlatiPyClient:
             default_settings = self.get_default_settings()
 
             if not set(default_settings.keys()) == set(config.keys()):
-                logger.error(
-                    "Config keys must be exactly those from the default_settings"
-                )
+                logger.error("Config keys must be exactly those from the default_settings")
                 return
 
             params["config"] = json.dumps(config)
 
         res = requests.post(
-            API_TRIGGER.format(self.base_url),
-            headers={"API_KEY": self.api_key},
-            data=params,
+            API_TRIGGER.format(self.base_url), headers={"API_KEY": self.api_key}, data=params,
         )
         logger.debug(res.status_code)
 
@@ -419,8 +405,7 @@ class PlatiPyClient:
             for data_obj in dataset["output_data_objects"]:
                 url = API_DOWNLOAD_OBJECT.format(self.base_url)
                 res = requests.get(
-                    "{0}/{1}".format(url, data_obj["id"]),
-                    headers={"API_KEY": self.api_key},
+                    "{0}/{1}".format(url, data_obj["id"]), headers={"API_KEY": self.api_key},
                 )
                 logger.debug(res.status_code)
                 filename = res.headers["Content-Disposition"].split("filename=")[1]
