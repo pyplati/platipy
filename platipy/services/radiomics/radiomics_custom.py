@@ -11,22 +11,22 @@ class RadiomicsCustom(base.RadiomicsFeaturesBase):
     Custom Radiomics Class
     """
 
-    def __init__(self, inputImage, inputMask, **kwargs):
-        super(RadiomicsCustom, self).__init__(inputImage, inputMask, **kwargs)
+    # def __init__(self, inputImage, inputMask, **kwargs):
+    #     super(RadiomicsCustom, self).__init__(inputImage, inputMask, **kwargs)
 
-        # self.pixelSpacing = inputImage.GetSpacing()
-        # self.voxelArrayShift = kwargs.get('voxelArrayShift', 0)
+    # self.pixelSpacing = inputImage.GetSpacing()
+    # self.voxelArrayShift = kwargs.get('voxelArrayShift', 0)
 
-    def _initCalculation(self):
-        super(RadiomicsCustom, self)._initSegmentBasedCalculation()
+    # def _initCalculation(self, voxelCoordinates=None):
+    #     super(RadiomicsCustom, self)._initCalculation(voxelCoordinates)
 
-        self.target_voxel_array = self.imageArray[self.labelledVoxelCoordinates].astype("float")
-        self.logger.debug("Custom feature class initialized")
+    #     # self.target_voxel_array = self.imageArray[voxelCoordinates].astype("float")
+    #     self.logger.debug("Custom feature class initialized")
 
     def get25PercentileFeatureValue(self):
 
-        return numpy.percentile(self.target_voxel_array, 25)
+        return numpy.percentile(self.imageArray[self.maskArray], 25)
 
     def get75PercentileFeatureValue(self):
 
-        return numpy.percentile(self.target_voxel_array, 75)
+        return numpy.percentile(self.imageArray[self.maskArray], 75)

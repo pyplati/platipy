@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+import os
+import tempfile
+
 from flask import Flask
 from celery import current_app
 from celery.bin import worker
 from celery.bin import beat
 from multiprocessing import Process
 from loguru import logger
-import json
-import os
-import uuid
-import tempfile
 import pydicom
 
 from pymedphys._dicom.connect.listen import DicomListener
@@ -106,20 +106,16 @@ class FlaskApp(Flask):
 
         logger.info("Starting APP!")
 
-        pc = Process(target=self.run_celery)
-        pc.start()
+        process_celery = Process(target=self.run_celery)
+        process_celery.start()
         self.celery_started = True
 
-        pb = Process(target=self.run_beat)
-        pb.start()
+        process_beat = Process(target=self.run_beat)
+        process_beat.start()
         self.beat_started = True
 
         self.dicom_listener_port = dicom_listener_port
         self.dicom_listener_aetitle = dicom_listener_aetitle
-
-        # from .tasks import listen_task
-
-        # listen_task.apply_async([dicom_listener_port, dicom_listener_aetitle])
 
         self.run_dicom_listener(dicom_listener_port, dicom_listener_aetitle)
 
@@ -132,8 +128,8 @@ class FlaskApp(Flask):
             **options
         )
 
-        pc.join()
-        pb.join()
+        process_celery.join()
+        process_beat.join()
 
     def run_dicom_listener(self, listen_port, listen_ae_title):
         """
@@ -149,44 +145,43 @@ class FlaskApp(Flask):
             listen_ae_title,
         )
 
+        def series_recieved(dicom_path):
+            logger.info("Series Recieved at path: {0}".format(dicom_path))
+
+            # Get the SeriesUID
+            series_uid = None
+            for f in os.listdir(dicom_path):
+                f = os.path.join(dicom_path, f)
+
+                try:
+                    d = pydicom.read_file(f)
+                    series_uid = d.SeriesInstanceUID
+                except Exception as e:
+                    logger.debug("No Series UID in: {0}".format(f))
+                    logger.debug(e)
+
+            if series_uid:
+                logger.info("Image Series UID: {0}".format(series_uid))
+            else:
+                logger.error("Series UID could not be determined... Stopping")
+                return
+
+            # Find the data objects with the given series UID and update them
+            dos = DataObject.query.filter_by(series_instance_uid=series_uid).all()
+
+            if len(dos) == 0:
+                logger.error(
+                    "No Data Object found with Series UID: {0} ... Stopping".format(series_uid)
+                )
+                return
+
+            for do in dos:
+
+                do.is_fetched = True
+                do.path = dicom_path
+                db.session.commit()
+
         try:
-
-            def series_recieved(dicom_path):
-                logger.info("Series Recieved at path: {0}".format(dicom_path))
-
-                # Get the SeriesUID
-                series_uid = None
-                for f in os.listdir(dicom_path):
-                    f = os.path.join(dicom_path, f)
-
-                    try:
-                        d = pydicom.read_file(f)
-                        series_uid = d.SeriesInstanceUID
-                    except Exception as e:
-                        logger.debug("No Series UID in: {0}".format(f))
-                        logger.debug(e)
-
-                if series_uid:
-                    logger.info("Image Series UID: {0}".format(series_uid))
-                else:
-                    logger.error("Series UID could not be determined... Stopping")
-                    return
-
-                # Find the data objects with the given series UID and update them
-                dos = DataObject.query.filter_by(series_instance_uid=series_uid).all()
-
-                if len(dos) == 0:
-                    logger.error(
-                        "No Data Object found with Series UID: {0} ... Stopping".format(series_uid)
-                    )
-                    return
-
-                for do in dos:
-
-                    do.is_fetched = True
-                    do.path = dicom_path
-                    db.session.commit()
-
             dicom_listener = DicomListener(
                 port=listen_port, ae_title=listen_ae_title, on_released_callback=series_recieved
             )
@@ -195,9 +190,3 @@ class FlaskApp(Flask):
 
         except Exception as e:
             logger.error("Listener Error: " + str(e))
-
-    # def test_client(self, use_cookies=True, **kwargs):
-
-    #     self.init_app()
-
-    #     return super().test_client(use_cookies=use_cookies, **kwargs)
