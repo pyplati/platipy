@@ -18,3 +18,4 @@ psutil
 gunicorn
 requests
 pandas
+pymedphys==0.34.0-dev12
