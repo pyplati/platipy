@@ -40,18 +40,6 @@ from matplotlib.colors import hsv_to_rgb
 from skimage.color import hsv2rgb
 import matplotlib.patches as mpatches
 
-class Visualisation(object):
-    def __init__(self):
-        for cls in reversed(self.__class__.mro()):
-            if hasattr(cls, 'init'):
-                cls.init(self)
-
-    def init(self):
-        None
-
-    
-
-
 def returnSlice(axis, index):
     if axis == "x":
         s = (slice(None), slice(None), index)

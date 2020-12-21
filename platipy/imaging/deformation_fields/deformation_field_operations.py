@@ -5,6 +5,8 @@ Deformatoin field operations
 import SimpleITK as sitk
 import numpy as np
 
+from skimage.morphology import convex_hull_image
+
 from platipy.imaging.registration.registration import apply_field, fast_symmetric_forces_demons_registration
 
 def get_bone_mask(image, lower_threshold=350, upper_threshold=3500, max_hole_size=5):
@@ -25,7 +27,7 @@ def get_bone_mask(image, lower_threshold=350, upper_threshold=3500, max_hole_siz
 
     return bone_mask
 
-def get_external_mask(image, lower_threshold=0, upper_threshold=2500, dilate=10, max_hole_size=5):
+def get_external_mask(image, lower_threshold=-100, upper_threshold=2500, dilate=1, max_hole_size=False):
 
     # Get all points inside the body
     external_mask = sitk.BinaryThreshold(image, lowerThreshold=lower_threshold, upperThreshold=upper_threshold)
@@ -52,14 +54,27 @@ def get_external_mask(image, lower_threshold=0, upper_threshold=2500, dilate=10,
     body_mask = sitk.Equal(external_mask_components, body_value)
 
     if dilate is not False:
-        body_mask_dilate = sitk.BinaryDilate(body_mask, dilate)
+        body_mask = sitk.BinaryDilate(body_mask, dilate)
 
-    if not hasattr(max_hole_size,"__iter__"):
-        max_hole_size = (max_hole_size,) * 3
+    if max_hole_size is not False:
+        if not hasattr(max_hole_size,"__iter__"):
+            max_hole_size = (max_hole_size,) * 3
 
-    body_mask_dilate_filled = sitk.BinaryMorphologicalClosing(body_mask_dilate, max_hole_size)
+        body_mask = sitk.BinaryMorphologicalClosing(body_mask, max_hole_size)
+        body_mask = sitk.BinaryFillhole(body_mask, fullyConnected=True)
 
-    return body_mask_dilate_filled
+    arr = sitk.GetArrayFromImage(body_mask)
+
+    convex_hull_slices = np.zeros_like(arr)
+
+    for index in np.arange(0, np.alen(arr)):
+        convex_hull_slices[index] = convex_hull_image(arr[index])
+
+    body_mask_hull = sitk.GetImageFromArray(convex_hull_slices)
+    body_mask_hull.CopyInformation(body_mask)
+
+    return body_mask_hull
+
 
 def generate_field_shift(mask_image, vector_shift=(10,10,10), gaussian_smooth=5, return_mask=True, return_transform=True):
     """[summary]
@@ -123,7 +138,7 @@ def generate_field_asymmetric_contract(mask_image, vector_asymmetric_contract=(1
     Args:
         mask_image ([type]): [description]
         vector_asymmetric_contract (tuple, optional): Defined as (axial, coronal, sagittal) asymmetric_contract.
-            Signs defining asymmetric_contracts as follows: (+/-, +/-, +/-) = contract volume at (sup/inf, ant/post, l/r) border in patient coordinates.
+            Signs defining asymmetric_contracts as follows: (+/-, +/-, +/-) = contract volume at (inf/sup, post/ant, r/l) border in patient coordinates.
             Defaults to (10,10,10).
         post_asymmetric_contract_gaussian_smooth (tuple, optional): [description]. Defaults to (2,2,2).
         return_mask (bool, optional): [description]. Defaults to True.
@@ -244,9 +259,9 @@ def generate_field_expand(mask_image, bone_mask=False, expand=3, gaussian_smooth
     if not hasattr(expand,"__iter__"):
         expand = (expand,) * 3
 
-    if np.all(np.array(expand) < 0):
+    if np.all(np.array(expand) <= 0):
         mask_images_expand = sitk.BinaryErode(mask_image, list(np.abs(expand)))
-    elif np.all(np.array(expand) > 0):
+    elif np.all(np.array(expand) >= 0):
          mask_images_expand = sitk.BinaryDilate(mask_image, expand)
     else:
         raise ValueError("All values for expand should be the same sign (positive = expand, negative = shrink).")
@@ -286,4 +301,45 @@ def generate_field_expand(mask_image, bone_mask=False, expand=3, gaussian_smooth
     else:
         return dvf_template
 
-def generate_field_radial_bend(reference_image, scale=1, centre=(0,0,0), )
+def generate_field_radial_bend(reference_image, field_mask, scale=1, centre=(0,0,0), ):
+ 
+    # Get an array from either the mask 
+    if field_mask is not False:
+        field_arr = sitk.GetArrayFromImage(field_arr)
+    else:
+        field_arr = ()
+
+    pt_arr = np.array(np.where(body_mask_arr))
+    vector_ref_to_pt = pt_arr - np.array(larynx_reference_point[::-1])[:,None]
+
+    print('  Generating vectors')
+
+    deformation_vectors = np.cross(vector_ref_to_pt[::-1].T, [-1,0,0])
+
+    dvf_arr[np.where(body_mask_arr)] = deformation_vectors / 3
+
+    dvf = sitk.GetImageFromArray(dvf_arr)
+    dvf.CopyInformation(image)
+                                                            
+    # smooth
+    if np.any(gaussian_smooth):
+        
+        if not hasattr(gaussian_smooth,"__iter__"):
+            gaussian_smooth = (gaussian_smooth,) * 3
+        
+        dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
+    
+    dvf_tfm = sitk.DisplacementFieldTransform( sitk.Cast(dvf_template, sitk.sitkVectorFloat64) )
+    mask_image_symmetric_expand = apply_field(mask_image, transform=dvf_tfm, structure=True, interp=1)
+
+    if return_mask:
+        
+        if return_transform:
+            return mask_image_symmetric_expand, dvf_tfm, dvf_template
+
+        else:
+            return mask_image_symmetric_expand, dvf_template
+
+    else:
+        return dvf_template
+
