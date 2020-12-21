@@ -22,6 +22,9 @@ import json
 import os
 import uuid
 import tempfile
+import pydicom
+
+from pymedphys._dicom.connect.listen import DicomListener
 
 
 class Algorithm:
@@ -114,9 +117,11 @@ class FlaskApp(Flask):
         self.dicom_listener_port = dicom_listener_port
         self.dicom_listener_aetitle = dicom_listener_aetitle
 
-        from .tasks import listen_task
+        # from .tasks import listen_task
 
-        listen_task.apply_async([dicom_listener_port, dicom_listener_aetitle])
+        # listen_task.apply_async([dicom_listener_port, dicom_listener_aetitle])
+
+        self.run_dicom_listener(dicom_listener_port, dicom_listener_aetitle)
 
         super().run(
             host=host,
@@ -129,6 +134,67 @@ class FlaskApp(Flask):
 
         pc.join()
         pb.join()
+
+    def run_dicom_listener(self, listen_port, listen_ae_title):
+        """
+        Background task that listens at a specific port for incoming dicom series
+        """
+
+        from .models import Dataset, DataObject
+        from . import db
+
+        logger.info(
+            "Starting Dicom Listener on port: {0} with AE Title: {1}",
+            listen_port,
+            listen_ae_title,
+        )
+
+        try:
+
+            def series_recieved(dicom_path):
+                logger.info("Series Recieved at path: {0}".format(dicom_path))
+
+                # Get the SeriesUID
+                series_uid = None
+                for f in os.listdir(dicom_path):
+                    f = os.path.join(dicom_path, f)
+
+                    try:
+                        d = pydicom.read_file(f)
+                        series_uid = d.SeriesInstanceUID
+                    except Exception as e:
+                        logger.debug("No Series UID in: {0}".format(f))
+                        logger.debug(e)
+
+                if series_uid:
+                    logger.info("Image Series UID: {0}".format(series_uid))
+                else:
+                    logger.error("Series UID could not be determined... Stopping")
+                    return
+
+                # Find the data objects with the given series UID and update them
+                dos = DataObject.query.filter_by(series_instance_uid=series_uid).all()
+
+                if len(dos) == 0:
+                    logger.error(
+                        "No Data Object found with Series UID: {0} ... Stopping".format(series_uid)
+                    )
+                    return
+
+                for do in dos:
+
+                    do.is_fetched = True
+                    do.path = dicom_path
+                    db.session.commit()
+
+            dicom_listener = DicomListener(
+                port=listen_port, ae_title=listen_ae_title, on_released_callback=series_recieved
+            )
+
+            dicom_listener.start()
+
+        except Exception as e:
+            logger.error("Listener Error: " + str(e))
 
     # def test_client(self, use_cookies=True, **kwargs):
 
