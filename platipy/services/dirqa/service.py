@@ -25,7 +25,7 @@ from platipy.backend import app, DataObject, celery
 DIRQA_SETTINGS_DEFAULTS = {
     "includePointsMode": "CONTOUR",  # "CONTOUR" or "BOUNDINGBOX"
     "intensityRange": [-1024, -200],  # Range: low to high
-    "contrastThreshold": 0.3,  # Param for plastimatch
+    "contrastThreshold": 0.03,  # Param for plastimatch
     "curvatureThreshold": 172.3,  # Param for plastimatch
 }
 
