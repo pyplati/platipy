@@ -127,8 +127,8 @@ class Fcomb(torch.nn.Module):
 
     def forward(self, feature_map, z):
 
-        z = torch.unsqueeze(z, 2).expand(-1, -1, feature_map.shape[2], -1)
-        z = torch.unsqueeze(z, 3).expand(-1, -1, -1, feature_map.shape[3], -1)
+        z = torch.unsqueeze(z, 2).expand(-1, -1, feature_map.shape[2])
+        z = torch.unsqueeze(z, 3).expand(-1, -1, -1, feature_map.shape[3])
 
         # Concatenate the feature map (output of the UNet) and the sample taken from the latent
         # space
