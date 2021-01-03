@@ -182,7 +182,7 @@ class ProbabilisticUnet(torch.nn.Module):
         self.beta = beta
         self.z_prior_sample = 0
 
-        self.unet = UNet(input_channels, num_classes, filters_per_layer)
+        self.unet = UNet(input_channels, num_classes, filters_per_layer, final_layer=False)
         self.prior = AxisAlignedConvGaussian(input_channels, filters_per_layer, latent_dim)
         self.posterior = AxisAlignedConvGaussian(input_channels + 1, filters_per_layer, latent_dim)
         self.fcomb = Fcomb(filters_per_layer, latent_dim, num_classes, no_convs_fcomb)
