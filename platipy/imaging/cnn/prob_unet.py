@@ -125,26 +125,10 @@ class Fcomb(torch.nn.Module):
         self.layers.apply(init_weights)
         self.last_layer.apply(init_weights)
 
-    def tile(self, a, dim, n_tile):
-        """
-        This function is taken form PyTorch forum and mimics the behavior of tf.tile.
-        Source: https://discuss.pytorch.org/t/how-to-tile-a-tensor/13853/3
-        """
-        init_dim = a.size(dim)
-        repeat_idx = [1] * a.dim()
-        repeat_idx[dim] = n_tile
-        a = a.repeat(*(repeat_idx))
-        order_index = torch.LongTensor(
-            np.concatenate([init_dim * np.arange(n_tile) + i for i in range(init_dim)])
-        ).cuda()
-        return torch.index_select(a, dim, order_index)
-
     def forward(self, feature_map, z):
 
-        z = torch.unsqueeze(z, 2)
-        z = self.tile(z, 2, feature_map.shape[2])
-        z = torch.unsqueeze(z, 3)
-        z = self.tile(z, 3, feature_map.shape[3])
+        z = torch.unsqueeze(z, 2).expand(-1, -1, feature_map.shape[2], -1)
+        z = torch.unsqueeze(z, 3).expand(-1, -1, -1, feature_map.shape[3], -1)
 
         # Concatenate the feature map (output of the UNet) and the sample taken from the latent
         # space
