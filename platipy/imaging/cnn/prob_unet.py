@@ -268,8 +268,8 @@ class ProbabilisticUnet(torch.nn.Module):
         )
 
         segm = torch.unsqueeze(segm, dim=1)
-        not_seg = segm.logical_not().type("torch.cuda.LongTensor")
-        segm = torch.cat((not_seg, segm), dim=1).type("torch.cuda.FloatTensor")
+        not_seg = segm.logical_not()
+        segm = torch.cat((not_seg, segm), dim=1).float()
         reconstruction_loss = criterion(input=reconstruction, target=segm)
         reconstruction_loss = torch.sum(reconstruction_loss)
         # mean_reconstruction_loss = torch.mean(reconstruction_loss)
