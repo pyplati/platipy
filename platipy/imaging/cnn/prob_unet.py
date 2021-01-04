@@ -21,8 +21,6 @@
 import torch
 from torch.distributions import Normal, Independent, kl
 
-import numpy as np
-
 from platipy.imaging.cnn.unet import UNet, Conv, init_weights
 
 
