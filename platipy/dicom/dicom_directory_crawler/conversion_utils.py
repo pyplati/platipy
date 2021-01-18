@@ -334,7 +334,7 @@ def process_dicom_series(
     # Check the potential types of DICOM files
     if (
         "Image" in initial_dicom_sop_class_name
-        #and initial_dicom_sop_class_name != "Secondary Capture Image Storage"
+        and initial_dicom_sop_class_name != "Secondary Capture Image Storage"
     ):
         # Load as an primary image
 

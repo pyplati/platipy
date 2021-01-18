@@ -294,7 +294,7 @@ class ImageVisualiser:
     """Class to assist with visualising images and overlaying contours, scalars and bounding boxes.
     """
 
-    def __init__(self, image, cut=None, axis="ortho", window=[-250, 500], figure_size_in=10, limits=None):
+    def __init__(self, image, cut=None, axis="ortho", window=[-250, 500], figure_size_in=10, limits=None, colormap=plt.cm.Greys_r):
         self.__set_image(image)
         self.__contours = []
         self.__bounding_boxes = []
@@ -309,6 +309,7 @@ class ImageVisualiser:
         self.__axis = axis
         self.__cut = cut
         self.__limits = limits
+        self.__colormap = colormap
 
         self.clear()
 
@@ -334,6 +335,43 @@ class ImageVisualiser:
         self.__scalar_overlays = []
         self.__comparison_overlays = []
         self.__vector_overlays = []
+
+    def set_limits_from_label(self, label, expansion=[0,0,0], min_value=0):
+   
+        label_stats_image_filter = sitk.LabelStatisticsImageFilter()
+        label_stats_image_filter.Execute(label,label>0)
+        bounding_box = np.array(label_stats_image_filter.GetBoundingBox(1))
+        
+        index = [bounding_box[x * 2] for x in range(3)]
+        size = [bounding_box[(x * 2) + 1] - bounding_box[x * 2] for x in range(3)]
+
+        if not hasattr(expansion, "__iter__"):
+            expansion = expansion*np.array(label.GetSpacing()[::-1])
+
+        expansion = np.array(expansion[::-1])
+        
+        # Avoid starting outside the image
+        sag_0, cor_0, ax_0 = np.max(
+            [index - expansion, np.array([0, 0, 0])], axis=0
+        )
+
+        # Avoid ending outside the image
+        sag_size, cor_size, ax_size = np.min(
+            [
+                np.array(label.GetSize()) - np.array([sag_0, cor_0, ax_0]),
+                np.array(size) + 2*expansion,
+            ],
+            axis=0,
+        )
+
+        if self.__axis == "ortho":
+            self.__limits = [ax_0, ax_0 + ax_size, cor_0, cor_0 + cor_size, sag_0, sag_0 + sag_size]
+        if self.__axis == "x":
+            self.__limits = [cor_0, cor_0 + cor_size, ax_0, ax_0 + ax_size]
+        if self.__axis == "y":
+            self.__limits = [sag_0, sag_0 + sag_size, ax_0, ax_0 + ax_size]
+        if self.__axis == "z":
+            self.__limits = [sag_0, sag_0 + sag_size, cor_0, cor_0 + cor_size]
 
     def add_contour(self, contour, name=None, colorbase=plt.cm.rainbow):
         """Add a contour to overlay
@@ -672,16 +710,13 @@ class ImageVisualiser:
         self.overlay_vector_field()
         self.overlay_contours()
         self.overlay_bounding_boxes()
+
         self.adjust_view()
 
         return self.__figure
 
-    def display_slice(self, cmap=plt.cm.get_cmap("Greys_r")):
+    def display_slice(self):
         """Display the configured image slice
-
-        Args:
-            cmap (matplotlib.colors.Colormap, optional): The colormap to be used to display this
-                                                         image. plt.cm.get_cmap("Greys_r").
         """
 
         image = self.__image
@@ -723,7 +758,7 @@ class ImageVisualiser:
                 nda.__getitem__(s_ax),
                 aspect=1.0,
                 interpolation=None,
-                cmap=cmap,
+                cmap=self.__colormap,
                 clim=(self.__window[0], self.__window[0] + self.__window[1]),
             )
             ax_cor.imshow(
@@ -731,7 +766,7 @@ class ImageVisualiser:
                 origin="lower",
                 aspect=asp,
                 interpolation=None,
-                cmap=cmap,
+                cmap=self.__colormap,
                 clim=(self.__window[0], self.__window[0] + self.__window[1]),
             )
             ax_sag.imshow(
@@ -739,7 +774,7 @@ class ImageVisualiser:
                 origin="lower",
                 aspect=asp,
                 interpolation=None,
-                cmap=cmap,
+                cmap=self.__colormap,
                 clim=(self.__window[0], self.__window[0] + self.__window[1]),
             )
 
@@ -794,7 +829,7 @@ class ImageVisualiser:
                 aspect=asp,
                 interpolation=None,
                 origin=org,
-                cmap=cmap,
+                cmap=self.__colormap,
                 clim=(self.__window[0], self.__window[0] + self.__window[1]),
             )
             ax.axis("off")

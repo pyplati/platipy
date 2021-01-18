@@ -133,6 +133,16 @@ def initial_registration(
         registration.SetMetricAsCorrelation()
     elif metric == "mean_squares":
         registration.SetMetricAsMeanSquares()
+    elif metric == "mattes_mi":
+        registration.SetMetricAsMattesMutualInformation()
+    elif metric == "joint_hist_mi":
+        registration.SetMetricAsJointHistogramMutualInformation()
+    elif metric == "ants":
+        try:
+            ants_radius = options["ants_radius"]
+        except:
+            ants_radius=3
+        registration.SetMetricAsANTSNeighborhoodCorrelation(ants_radius)
     # to do: add the rest
 
     registration.SetInterpolator(sitk.sitkLinear)  # Perhaps a small gain in improvement
@@ -167,7 +177,7 @@ def initial_registration(
             "You have selected a registration method that does not exist.\n Please select from Translation, Similarity, Affine, Rigid"
         )
 
-    if optimiser == "LBGGSB":
+    if optimiser == "LBFGSB":
         registration.SetOptimizerAsLBFGSB(
             gradientConvergenceTolerance=1e-5,
             numberOfIterations=number_of_iterations,
