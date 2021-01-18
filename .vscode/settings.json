@@ -11,7 +11,8 @@
         "--disable=W0105",
         "--init-hook",
         "import sys; sys.path.append('.')",
-        "--extension-pkg-whitelist=vtk"
+        "--extension-pkg-whitelist=vtk",
+        "--generated-members=numpy.* ,torch.*"
     ],
     "python.formatting.blackArgs": [
         "--line-length",
