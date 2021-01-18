@@ -133,6 +133,16 @@ def initial_registration(
         registration.SetMetricAsCorrelation()
     elif metric == "mean_squares":
         registration.SetMetricAsMeanSquares()
+    elif metric == "mattes_mi":
+        registration.SetMetricAsMattesMutualInformation()
+    elif metric == "joint_hist_mi":
+        registration.SetMetricAsJointHistogramMutualInformation()
+    elif metric == "ants":
+        try:
+            ants_radius = options["ants_radius"]
+        except:
+            ants_radius=3
+        registration.SetMetricAsANTSNeighborhoodCorrelation(ants_radius)
     # to do: add the rest
 
     registration.SetInterpolator(sitk.sitkLinear)  # Perhaps a small gain in improvement
@@ -167,7 +177,7 @@ def initial_registration(
             "You have selected a registration method that does not exist.\n Please select from Translation, Similarity, Affine, Rigid"
         )
 
-    if optimiser == "LBGGSB":
+    if optimiser == "LBFGSB":
         registration.SetOptimizerAsLBFGSB(
             gradientConvergenceTolerance=1e-5,
             numberOfIterations=number_of_iterations,
@@ -535,7 +545,7 @@ def fast_symmetric_forces_demons_registration(
 
     if structure:
         registered_image = sitk.Cast(registered_image, sitk.sitkFloat32)
-        registered_image = sitk.Threshold(registered_image, lower=1e-5, upper=100)
+        registered_image = sitk.BinaryThreshold(registered_image, lowerThreshold=1e-5, upperThreshold=100)
 
     registered_image.CopyInformation(fixed_image)
     registered_image = sitk.Cast(registered_image, moving_image_type)

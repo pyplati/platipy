@@ -22,7 +22,17 @@ import numpy as np
 import SimpleITK as sitk
 
 from scipy.stats import norm as scipy_norm
+from scipy.ndimage.measurements import center_of_mass
 
+
+def get_com(label, as_int=True):
+    arr = sitk.GetArrayFromImage(label)
+    com = center_of_mass(arr)
+
+    if as_int:
+        com = [int(i) for i in com]
+
+    return com
 
 def vectorised_transform_index_to_physical_point(image, point_array, rotate=True):
     """
