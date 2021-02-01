@@ -35,51 +35,58 @@ This Python script comprises two contributions to the code base:
 2) A visualisation class used to generate figures of images, contours, vector fields, and more!
 """
 
+
 def project_onto_arbitrary_plane(
     image,
-    projection_name='mean',
+    projection_name="mean",
     projection_axis=0,
-    rotation_axis=[1,0,0],
+    rotation_axis=[1, 0, 0],
     rotation_angle=0,
     default_value=-1000,
-    resample_interpolation=2):
+    resample_interpolation=2,
+):
 
-    projection_dict = {   
-        'sum':    sitk.SumProjection,
-        'mean':   sitk.MeanProjection,
-        'median': sitk.MedianProjection,
-        'std':    sitk.StandardDeviationProjection,
-        'min':    sitk.MinimumProjection,
-        'max':    sitk.MaximumProjection
+    projection_dict = {
+        "sum": sitk.SumProjection,
+        "mean": sitk.MeanProjection,
+        "median": sitk.MedianProjection,
+        "std": sitk.StandardDeviationProjection,
+        "min": sitk.MinimumProjection,
+        "max": sitk.MaximumProjection,
     }
     projection_function = projection_dict[projection_name]
 
     # Set centre as image centre
-    rotation_centre = image.TransformContinuousIndexToPhysicalPoint([(index-1)/2.0 for index in image.GetSize()])
-    
-    # Define the transform, using predefined centre of rotation and given angle 
+    rotation_centre = image.TransformContinuousIndexToPhysicalPoint(
+        [(index - 1) / 2.0 for index in image.GetSize()]
+    )
+
+    # Define the transform, using predefined centre of rotation and given angle
     rotation_transform = sitk.VersorRigid3DTransform()
     rotation_transform.SetCenter(rotation_centre)
-    rotation_transform.SetRotation(rotation_axis, rotation_angle) 
+    rotation_transform.SetRotation(rotation_axis, rotation_angle)
 
     # Resample the image using the rotation transform
-    resampled_image = sitk.Resample(image,
-                                    rotation_transform,
-                                    resample_interpolation,
-                                    default_value,
-                                    image.GetPixelID())
-    
+    resampled_image = sitk.Resample(
+        image,
+        rotation_transform,
+        resample_interpolation,
+        default_value,
+        image.GetPixelID(),
+    )
+
     # Project onto the given axis
     proj_image = projection_function(resampled_image, projection_axis)
 
-    # Return this view   
+    # Return this view
     image_slice = {
-        0:proj_image[0,:,:],
-        1:proj_image[:,0,:],
-        2:proj_image[:,:,0]
+        0: proj_image[0, :, :],
+        1: proj_image[:, 0, :],
+        2: proj_image[:, :, 0],
     }
-    
+
     return image_slice[projection_axis]
+
 
 def generate_animation_from_image_sequence(
     image_list,
@@ -95,13 +102,13 @@ def generate_animation_from_image_sequence(
     scalar_min=False,
     scalar_max=False,
     scalar_alpha=0.5,
-    image_origin='lower'
-    ):
+    image_origin="lower",
+):
 
     # We need to check for ImageMagick
     # There may be other tools that can be used
-    rcParams['animation.convert_path'] = r'/usr/bin/convert'
-    convert_path = pathlib.Path(rcParams['animation.convert_path'])
+    rcParams["animation.convert_path"] = r"/usr/bin/convert"
+    convert_path = pathlib.Path(rcParams["animation.convert_path"])
 
     if not convert_path.exists():
         raise RuntimeError("To use this function you need ImageMagick.")
@@ -113,10 +120,10 @@ def generate_animation_from_image_sequence(
     x_size, y_size = image_list[0].GetSize()
     x_spacing, y_spacing = image_list[1].GetSpacing()
 
-    asp = y_spacing/x_spacing
+    asp = y_spacing / x_spacing
 
     # Define the figure
-    figure_size = (figure_size_in, figure_size_in * (asp * y_size) / (1.0 * x_size) )
+    figure_size = (figure_size_in, figure_size_in * (asp * y_size) / (1.0 * x_size))
     fig, ax = plt.subplots(1, 1, figsize=(figure_size))
 
     # Display the first image
@@ -133,12 +140,12 @@ def generate_animation_from_image_sequence(
     # We now deal with the contours
     # These can be given as a list of sitk.Image objects or a list of dicts {"name":sitk.Image}
     if contour_list is not False:
-        
+
         if type(contour_list[0]) is not dict:
             plot_dict = {"_": contour_list[0]}
         else:
             plot_dict = contour_list[0]
-            
+
         color_map = contour_cmap(np.linspace(0, 1, len(plot_dict)))
 
         for index, contour in enumerate(plot_dict.values()):
@@ -158,7 +165,9 @@ def generate_animation_from_image_sequence(
             scalar_max = np.max([sitk.GetArrayFromImage(i) for i in scalar_list])
 
         display_scalar = ax.imshow(
-            np.ma.masked_outside(sitk.GetArrayFromImage(scalar_list[0]), scalar_min, scalar_max),
+            np.ma.masked_outside(
+                sitk.GetArrayFromImage(scalar_list[0]), scalar_min, scalar_max
+            ),
             aspect=asp,
             interpolation=None,
             origin=image_origin,
@@ -166,15 +175,15 @@ def generate_animation_from_image_sequence(
             clim=(scalar_min, scalar_max),
             alpha=scalar_alpha,
             vmin=scalar_min,
-            vmax=scalar_max
-    )
+            vmax=scalar_max,
+        )
 
     ax.axis("off")
-    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)     
+    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
 
     # The animate function does (you guessed it) the animation
     def animate(i):
-        
+
         # Update the imaging data
         nda = sitk.GetArrayFromImage(image_list[i])
         display_image.set_data(nda)
@@ -190,7 +199,7 @@ def generate_animation_from_image_sequence(
                 plot_dict = {"_": contour_list[i]}
             else:
                 plot_dict = contour_list[i]
-                
+
             color_map = contour_cmap(np.linspace(0, 1, len(plot_dict)))
 
             for index, contour in enumerate(plot_dict.values()):
@@ -204,16 +213,9 @@ def generate_animation_from_image_sequence(
 
         if scalar_list is not False:
             nda = sitk.GetArrayFromImage(scalar_list[i])
-            display_scalar.set_data(
-                np.ma.masked_outside(
-                    nda,
-                    scalar_min,
-                    scalar_max
-                )
-            )
-                
+            display_scalar.set_data(np.ma.masked_outside(nda, scalar_min, scalar_max))
 
-        return display_image,
+        return (display_image,)
 
     # create animation using the animate() function with no repeat
     myAnimation = animation.FuncAnimation(
@@ -222,29 +224,36 @@ def generate_animation_from_image_sequence(
         frames=np.arange(0, len(image_list), 1),
         interval=10,
         blit=True,
-        repeat=False
+        repeat=False,
     )
 
     # save animation at 30 frames per second
-    myAnimation.save(output_file, writer='imagemagick', fps=fps)
+    myAnimation.save(output_file, writer="imagemagick", fps=fps)
 
     return myAnimation
 
-class VisualiseContour:
-    """Class to represent the visualiation of a contour
-    """
 
-    def __init__(self, image, name, color=None):
+class VisualiseContour:
+    """Class to represent the visualiation of a contour"""
+
+    def __init__(self, image, name, color=None, linewidth=2):
         self.image = image
         self.name = name
         self.color = color
+        self.linewidth = linewidth
+
 
 class VisualiseScalarOverlay:
-    """Class to represent the visualiation of a scalar overlay
-    """
+    """Class to represent the visualiation of a scalar overlay"""
 
     def __init__(
-        self, image, name, colormap=plt.cm.get_cmap("Spectral"), alpha=0.75, min_value=0.1, max_value=False
+        self,
+        image,
+        name,
+        colormap=plt.cm.get_cmap("Spectral"),
+        alpha=0.75,
+        min_value=0.1,
+        max_value=False,
     ):
         self.image = image
         self.name = name
@@ -253,13 +262,21 @@ class VisualiseScalarOverlay:
         self.min_value = min_value
         self.max_value = max_value
 
+
 class VisualiseVectorOverlay:
-    """Class to represent the visualiation of a vector overlay
-    """
+    """Class to represent the visualiation of a vector overlay"""
 
     def __init__(
-        self, image, name, colormap=plt.cm.get_cmap("Spectral"), alpha=0.75, arrow_scale=0.25,
-        arrow_width=1, subsample=4, color_function='perpendicular', invert_field=True
+        self,
+        image,
+        name,
+        colormap=plt.cm.get_cmap("Spectral"),
+        alpha=0.75,
+        arrow_scale=0.25,
+        arrow_width=1,
+        subsample=4,
+        color_function="perpendicular",
+        invert_field=True,
     ):
         self.image = image
         self.name = name
@@ -271,30 +288,37 @@ class VisualiseVectorOverlay:
         self.color_function = color_function
         self.invert_field = invert_field
 
-class VisualiseComparisonOverlay:
-    """Class to represent the visualiation of a comparison image
-    """
 
-    def __init__(
-        self, image, name, color_rotation=0.35
-    ):
+class VisualiseComparisonOverlay:
+    """Class to represent the visualiation of a comparison image"""
+
+    def __init__(self, image, name, color_rotation=0.35):
         self.image = image
         self.color_rotation = color_rotation
 
+
 class VisualiseBoundingBox:
-    """Class to represent the visualiation of a bounding box
-    """
+    """Class to represent the visualiation of a bounding box"""
 
     def __init__(self, bounding_box, name, color=None):
         self.bounding_box = bounding_box
         self.name = name
         self.color = color
 
-class ImageVisualiser:
-    """Class to assist with visualising images and overlaying contours, scalars and bounding boxes.
-    """
 
-    def __init__(self, image, cut=None, axis="ortho", window=[-250, 500], figure_size_in=10, limits=None, colormap=plt.cm.Greys_r):
+class ImageVisualiser:
+    """Class to assist with visualising images and overlaying contours, scalars and bounding boxes."""
+
+    def __init__(
+        self,
+        image,
+        cut=None,
+        axis="ortho",
+        window=[-250, 500],
+        figure_size_in=10,
+        limits=None,
+        colormap=plt.cm.Greys_r,
+    ):
         self.__set_image(image)
         self.__contours = []
         self.__bounding_boxes = []
@@ -327,8 +351,7 @@ class ImageVisualiser:
     labelmap = property(fset=__set_labelmap)
 
     def clear(self):
-        """Clear all overlays
-        """
+        """Clear all overlays"""
 
         self.__contours = []
         self.__bounding_boxes = []
@@ -336,36 +359,41 @@ class ImageVisualiser:
         self.__comparison_overlays = []
         self.__vector_overlays = []
 
-    def set_limits_from_label(self, label, expansion=[0,0,0], min_value=0):
-   
+    def set_limits_from_label(self, label, expansion=[0, 0, 0], min_value=0):
+
         label_stats_image_filter = sitk.LabelStatisticsImageFilter()
-        label_stats_image_filter.Execute(label,label>0)
+        label_stats_image_filter.Execute(label, label > 0)
         bounding_box = np.array(label_stats_image_filter.GetBoundingBox(1))
-        
+
         index = [bounding_box[x * 2] for x in range(3)]
         size = [bounding_box[(x * 2) + 1] - bounding_box[x * 2] for x in range(3)]
 
         if not hasattr(expansion, "__iter__"):
-            expansion = expansion*np.array(label.GetSpacing()[::-1])
+            expansion = expansion * np.array(label.GetSpacing()[::-1])
 
         expansion = np.array(expansion[::-1])
-        
+
         # Avoid starting outside the image
-        sag_0, cor_0, ax_0 = np.max(
-            [index - expansion, np.array([0, 0, 0])], axis=0
-        )
+        sag_0, cor_0, ax_0 = np.max([index - expansion, np.array([0, 0, 0])], axis=0)
 
         # Avoid ending outside the image
         sag_size, cor_size, ax_size = np.min(
             [
                 np.array(label.GetSize()) - np.array([sag_0, cor_0, ax_0]),
-                np.array(size) + 2*expansion,
+                np.array(size) + 2 * expansion,
             ],
             axis=0,
         )
 
         if self.__axis == "ortho":
-            self.__limits = [ax_0, ax_0 + ax_size, cor_0, cor_0 + cor_size, sag_0, sag_0 + sag_size]
+            self.__limits = [
+                ax_0,
+                ax_0 + ax_size,
+                cor_0,
+                cor_0 + cor_size,
+                sag_0,
+                sag_0 + sag_size,
+            ]
         if self.__axis == "x":
             self.__limits = [cor_0, cor_0 + cor_size, ax_0, ax_0 + ax_size]
         if self.__axis == "y":
@@ -373,7 +401,9 @@ class ImageVisualiser:
         if self.__axis == "z":
             self.__limits = [sag_0, sag_0 + sag_size, cor_0, cor_0 + cor_size]
 
-    def add_contour(self, contour, name=None, colorbase=plt.cm.rainbow):
+    def add_contour(
+        self, contour, name=None, color=None, colorbase=plt.cm.rainbow, linewidth=2
+    ):
         """Add a contour to overlay
 
         Args:
@@ -393,11 +423,13 @@ class ImageVisualiser:
         if isinstance(contour, dict):
 
             if not all(map(lambda i: isinstance(i, sitk.Image), contour.values())):
-                raise ValueError("When passing dict, all values must be of type SimpleITK.Image")
+                raise ValueError(
+                    "When passing dict, all values must be of type SimpleITK.Image"
+                )
 
             for contour_name in contour:
                 visualise_contour = VisualiseContour(
-                    contour[contour_name], contour_name, color=None
+                    contour[contour_name], contour_name, color=None, linewidth=linewidth
                 )
                 self.__contours.append(visualise_contour)
 
@@ -408,7 +440,9 @@ class ImageVisualiser:
                 name = "input"
                 self.__show_legend = False
 
-            visualise_contour = VisualiseContour(contour, name, color=color)
+            visualise_contour = VisualiseContour(
+                contour, name, color=color, linewidth=linewidth
+            )
             self.__contours.append(visualise_contour)
         else:
 
@@ -426,7 +460,7 @@ class ImageVisualiser:
         colormap=plt.cm.get_cmap("Spectral"),
         alpha=0.75,
         min_value=0.1,
-        max_value=False
+        max_value=False,
     ):
         """Overlay a scalar image on to the existing image
 
@@ -450,11 +484,18 @@ class ImageVisualiser:
         if isinstance(scalar_image, dict):
 
             if not all(map(lambda i: isinstance(i, sitk.Image), scalar_image.values())):
-                raise ValueError("When passing dict, all values must be of type SimpleITK.Image")
+                raise ValueError(
+                    "When passing dict, all values must be of type SimpleITK.Image"
+                )
 
             for name in scalar_image:
                 visualise_contour = VisualiseScalarOverlay(
-                    scalar_image[name], name, colormap=colormap, alpha=alpha, min_value=min_value, max_value=max_value
+                    scalar_image[name],
+                    name,
+                    colormap=colormap,
+                    alpha=alpha,
+                    min_value=min_value,
+                    max_value=max_value,
                 )
                 self.__scalar_overlays.append(visualise_contour)
 
@@ -466,7 +507,12 @@ class ImageVisualiser:
                 self.__show_legend = False
 
             visualise_contour = VisualiseScalarOverlay(
-                scalar_image, name, colormap=colormap, alpha=alpha, min_value=min_value, max_value=max_value
+                scalar_image,
+                name,
+                colormap=colormap,
+                alpha=alpha,
+                min_value=min_value,
+                max_value=max_value,
             )
             self.__scalar_overlays.append(visualise_contour)
         else:
@@ -485,13 +531,13 @@ class ImageVisualiser:
         arrow_scale=0.25,
         arrow_width=1,
         subsample=4,
-        color_function='perpendicular'
+        color_function="perpendicular",
     ):
         """Overlay a vector field on to the existing image
 
         Args:
             vector_image sitk.Image|dict): Vector image (will be displayed as ).
-            name (str, optional): Name to give the vector field (only used if passing 
+            name (str, optional): Name to give the vector field (only used if passing
                                   sitk.Image as vector field). Defaults to None.
             colormap (matplotlib.colors.Colormap, optional): The colormap to be used when
                                                              overlaying this vector field. Defaults
@@ -509,7 +555,10 @@ class ImageVisualiser:
             ValueError: Vector overlay must be of type sitk.Image.
         """
 
-        if isinstance(vector_image, sitk.Image) and vector_image.GetNumberOfComponentsPerPixel()>1:
+        if (
+            isinstance(vector_image, sitk.Image)
+            and vector_image.GetNumberOfComponentsPerPixel() > 1
+        ):
 
             # Use a default name if not specified
             if not name:
@@ -519,26 +568,19 @@ class ImageVisualiser:
             visualise_vector_field = VisualiseVectorOverlay(
                 vector_image,
                 name,
-                colormap = colormap,
-                alpha = alpha,
-                arrow_scale = arrow_scale,
-                arrow_width = arrow_width,
-                subsample = subsample,
-                color_function = color_function
+                colormap=colormap,
+                alpha=alpha,
+                arrow_scale=arrow_scale,
+                arrow_width=arrow_width,
+                subsample=subsample,
+                color_function=color_function,
             )
             self.__vector_overlays.append(visualise_vector_field)
         else:
 
-            raise ValueError(
-                "Vector field should be sitk.Image (of vector type)."
-            )
+            raise ValueError("Vector field should be sitk.Image (of vector type).")
 
-    def add_comparison_overlay(
-        self,
-        image,
-        name=None,
-        color_rotation=0.35
-    ):
+    def add_comparison_overlay(self, image, name=None, color_rotation=0.35):
         """Overlay a comparison image on the existing image
 
         Args:
@@ -558,16 +600,12 @@ class ImageVisualiser:
                 self.__show_legend = False
 
             visualise_comparison = VisualiseComparisonOverlay(
-                image,
-                name,
-                color_rotation=color_rotation
+                image, name, color_rotation=color_rotation
             )
             self.__comparison_overlays.append(visualise_comparison)
         else:
 
-            raise ValueError(
-                "Image should be sitk.Image."
-            )
+            raise ValueError("Image should be sitk.Image.")
 
     def add_bounding_box(self, bounding_box, name=None, color=None):
 
@@ -576,9 +614,14 @@ class ImageVisualiser:
         if isinstance(bounding_box, dict):
 
             if not all(
-                map(lambda i: isinstance(i, (list, tuple)) and len(i) == 6, bounding_box.values())
+                map(
+                    lambda i: isinstance(i, (list, tuple)) and len(i) == 6,
+                    bounding_box.values(),
+                )
             ):
-                raise ValueError("All values must be of type list or tuple with length 6")
+                raise ValueError(
+                    "All values must be of type list or tuple with length 6"
+                )
 
             for name in bounding_box:
                 visualise_bounding_box = VisualiseBoundingBox(
@@ -593,7 +636,9 @@ class ImageVisualiser:
                 name = "input"
                 self.__show_legend = False
 
-            visualise_bounding_box = VisualiseBoundingBox(bounding_box, name, color=color)
+            visualise_bounding_box = VisualiseBoundingBox(
+                bounding_box, name, color=color
+            )
             self.__bounding_boxes.append(visualise_bounding_box)
 
         else:
@@ -636,14 +681,26 @@ class ImageVisualiser:
         if hasattr(subsample, "__iter__"):
             subsample_ax, subsample_cor, subsample_sag = subsample
         else:
-            subsample_ax, subsample_cor, subsample_sag = (subsample,)*3
+            subsample_ax, subsample_cor, subsample_sag = (subsample,) * 3
 
-        if axis=='x':
-            return (slice(None, None, subsample_ax), slice(None, None, subsample_cor), cut)
-        if axis=='y':
-            return (slice(None, None, subsample_ax), cut, slice(None, None, subsample_sag))
-        if axis=='z':
-            return (cut, slice(None, None, subsample_cor), slice(None, None, subsample_sag))
+        if axis == "x":
+            return (
+                slice(None, None, subsample_ax),
+                slice(None, None, subsample_cor),
+                cut,
+            )
+        if axis == "y":
+            return (
+                slice(None, None, subsample_ax),
+                cut,
+                slice(None, None, subsample_sag),
+            )
+        if axis == "z":
+            return (
+                cut,
+                slice(None, None, subsample_cor),
+                slice(None, None, subsample_sag),
+            )
         return None
 
     def vector_image_grid(self, axis, vector_field_array, subsample=1):
@@ -660,17 +717,28 @@ class ImageVisualiser:
         if hasattr(subsample, "__iter__"):
             subsample_ax, subsample_cor, subsample_sag = subsample
         else:
-            subsample_ax, subsample_cor, subsample_sag = (subsample,)*3
+            subsample_ax, subsample_cor, subsample_sag = (subsample,) * 3
 
-        if axis=='x':
-            return np.mgrid[0:vector_field_array.shape[1]:subsample_cor,0:vector_field_array.shape[0]:subsample_ax]
-        if axis=='y':
-            return np.mgrid[0:vector_field_array.shape[2]:subsample_sag,0:vector_field_array.shape[0]:subsample_ax]
-        if axis=='z':
-            return np.mgrid[0:vector_field_array.shape[2]:subsample_sag,0:vector_field_array.shape[1]:subsample_cor]
+        if axis == "x":
+            return np.mgrid[
+                0 : vector_field_array.shape[1] : subsample_cor,
+                0 : vector_field_array.shape[0] : subsample_ax,
+            ]
+        if axis == "y":
+            return np.mgrid[
+                0 : vector_field_array.shape[2] : subsample_sag,
+                0 : vector_field_array.shape[0] : subsample_ax,
+            ]
+        if axis == "z":
+            return np.mgrid[
+                0 : vector_field_array.shape[2] : subsample_sag,
+                0 : vector_field_array.shape[1] : subsample_cor,
+            ]
         return None
 
-    def reorientate_vector_field(self, axis, vector_ax, vector_cor, vector_sag, invert_field=True):
+    def reorientate_vector_field(
+        self, axis, vector_ax, vector_cor, vector_sag, invert_field=True
+    ):
         """Reorients vector field components for rendering
         This is necessary after converting from sitk.Image to np.array
 
@@ -689,19 +757,18 @@ class ImageVisualiser:
             vector_cor = -vector_cor
             vector_sag = -vector_sag
 
-        if axis=='x': # sagittal projection
-            return  vector_cor, vector_ax, vector_sag
-        if axis=='y': # coronal projection
+        if axis == "x":  # sagittal projection
+            return vector_cor, vector_ax, vector_sag
+        if axis == "y":  # coronal projection
             return vector_sag, vector_ax, vector_cor
-        if axis=='z': # axial projection
+        if axis == "z":  # axial projection
             return vector_sag, -vector_cor, vector_ax
-            
+
         return None
 
     def show(self):
-        """Render the image with all overlays
-        """
-        if len(self.__comparison_overlays)==0:
+        """Render the image with all overlays"""
+        if len(self.__comparison_overlays) == 0:
             self.display_slice()
         else:
             self.overlay_comparison()
@@ -716,8 +783,7 @@ class ImageVisualiser:
         return self.__figure
 
     def display_slice(self):
-        """Display the configured image slice
-        """
+        """Display the configured image slice"""
 
         image = self.__image
         nda = sitk.GetArrayFromImage(image)
@@ -729,7 +795,9 @@ class ImageVisualiser:
         if self.__axis == "ortho":
             figure_size = (
                 self.__figure_size,
-                self.__figure_size * (asp * ax_size + cor_size) / (1.0 * sag_size + cor_size),
+                self.__figure_size
+                * (asp * ax_size + cor_size)
+                / (1.0 * sag_size + cor_size),
             )
 
             self.__figure, ((ax_ax, blank), (ax_cor, ax_sag)) = plt.subplots(
@@ -789,8 +857,10 @@ class ImageVisualiser:
         else:
 
             if hasattr(self.__cut, "__iter__"):
-                warnings.warn("You have selected a single axis and multiple slice locations, attempting to match.")
-                self.__cut = self.__cut[{"x":2,"y":1,"z":0}[self.__axis]]
+                warnings.warn(
+                    "You have selected a single axis and multiple slice locations, attempting to match."
+                )
+                self.__cut = self.__cut[{"x": 2, "y": 1, "z": 0}[self.__axis]]
 
             if self.__axis == "x" or self.__axis == "sag":
                 figure_size = (
@@ -843,7 +913,7 @@ class ImageVisualiser:
             color_rotation (float, optional): The hue used to color the original image (0 - 0.5).
         """
 
-        if len(self.__comparison_overlays)>1:
+        if len(self.__comparison_overlays) > 1:
             raise ValueError("You can only display one comparison image.")
 
         else:
@@ -865,7 +935,9 @@ class ImageVisualiser:
         if self.__axis == "ortho":
             figure_size = (
                 self.__figure_size,
-                self.__figure_size * (asp * ax_size + cor_size) / (1.0 * sag_size + cor_size),
+                self.__figure_size
+                * (asp * ax_size + cor_size)
+                / (1.0 * sag_size + cor_size),
             )
 
             self.__figure, ((ax_ax, blank), (ax_cor, ax_sag)) = plt.subplots(
@@ -893,13 +965,22 @@ class ImageVisualiser:
             nda_a = nda_original.__getitem__(s_ax)
             nda_b = nda_new.__getitem__(s_ax)
 
-            nda_a_norm = (np.clip(nda_a, window[0], window[0]+window[1])-window[0])/(window[1])
-            nda_b_norm = (np.clip(nda_b, window[0], window[0]+window[1])-window[0])/(window[1])
+            nda_a_norm = (
+                np.clip(nda_a, window[0], window[0] + window[1]) - window[0]
+            ) / (window[1])
+            nda_b_norm = (
+                np.clip(nda_b, window[0], window[0] + window[1]) - window[0]
+            ) / (window[1])
 
-            nda_colour = np.stack([color_rotation*(nda_a_norm>nda_b_norm) + (0.5+color_rotation)*(nda_a_norm<=nda_b_norm),
-                                np.abs(nda_a_norm - nda_b_norm),
-                                (nda_a_norm + nda_b_norm)/2],
-                                axis=-1)
+            nda_colour = np.stack(
+                [
+                    color_rotation * (nda_a_norm > nda_b_norm)
+                    + (0.5 + color_rotation) * (nda_a_norm <= nda_b_norm),
+                    np.abs(nda_a_norm - nda_b_norm),
+                    (nda_a_norm + nda_b_norm) / 2,
+                ],
+                axis=-1,
+            )
 
             ax_ax.imshow(
                 hsv2rgb(nda_colour),
@@ -910,13 +991,22 @@ class ImageVisualiser:
             nda_a = nda_original.__getitem__(s_cor)
             nda_b = nda_new.__getitem__(s_cor)
 
-            nda_a_norm = (np.clip(nda_a, window[0], window[0]+window[1])-window[0])/(window[1])
-            nda_b_norm = (np.clip(nda_b, window[0], window[0]+window[1])-window[0])/(window[1])
+            nda_a_norm = (
+                np.clip(nda_a, window[0], window[0] + window[1]) - window[0]
+            ) / (window[1])
+            nda_b_norm = (
+                np.clip(nda_b, window[0], window[0] + window[1]) - window[0]
+            ) / (window[1])
 
-            nda_colour = np.stack([color_rotation*(nda_a_norm>nda_b_norm) + (0.5+color_rotation)*(nda_a_norm<=nda_b_norm),
-                                np.abs(nda_a_norm - nda_b_norm),
-                                (nda_a_norm + nda_b_norm)/2],
-                                axis=-1)
+            nda_colour = np.stack(
+                [
+                    color_rotation * (nda_a_norm > nda_b_norm)
+                    + (0.5 + color_rotation) * (nda_a_norm <= nda_b_norm),
+                    np.abs(nda_a_norm - nda_b_norm),
+                    (nda_a_norm + nda_b_norm) / 2,
+                ],
+                axis=-1,
+            )
 
             ax_cor.imshow(
                 hsv2rgb(nda_colour),
@@ -928,13 +1018,22 @@ class ImageVisualiser:
             nda_a = nda_original.__getitem__(s_sag)
             nda_b = nda_new.__getitem__(s_sag)
 
-            nda_a_norm = (np.clip(nda_a, window[0], window[0]+window[1])-window[0])/(window[1])
-            nda_b_norm = (np.clip(nda_b, window[0], window[0]+window[1])-window[0])/(window[1])
+            nda_a_norm = (
+                np.clip(nda_a, window[0], window[0] + window[1]) - window[0]
+            ) / (window[1])
+            nda_b_norm = (
+                np.clip(nda_b, window[0], window[0] + window[1]) - window[0]
+            ) / (window[1])
 
-            nda_colour = np.stack([color_rotation*(nda_a_norm>nda_b_norm) + (0.5+color_rotation)*(nda_a_norm<=nda_b_norm),
-                                np.abs(nda_a_norm - nda_b_norm),
-                                (nda_a_norm + nda_b_norm)/2],
-                                axis=-1)
+            nda_colour = np.stack(
+                [
+                    color_rotation * (nda_a_norm > nda_b_norm)
+                    + (0.5 + color_rotation) * (nda_a_norm <= nda_b_norm),
+                    np.abs(nda_a_norm - nda_b_norm),
+                    (nda_a_norm + nda_b_norm) / 2,
+                ],
+                axis=-1,
+            )
 
             ax_sag.imshow(
                 hsv2rgb(nda_colour),
@@ -954,8 +1053,10 @@ class ImageVisualiser:
         else:
 
             if hasattr(self.__cut, "__iter__"):
-                warnings.warn("You have selected a single axis and multiple slice locations, attempting to match.")
-                self.__cut = self.__cut[{"x":2,"y":1,"z":0}[self.__axis]]
+                warnings.warn(
+                    "You have selected a single axis and multiple slice locations, attempting to match."
+                )
+                self.__cut = self.__cut[{"x": 2, "y": 1, "z": 0}[self.__axis]]
 
             if self.__axis == "x" or self.__axis == "sag":
                 figure_size = (
@@ -993,13 +1094,22 @@ class ImageVisualiser:
             nda_a = nda_original.__getitem__(s)
             nda_b = nda_new.__getitem__(s)
 
-            nda_a_norm = (np.clip(nda_a, window[0], window[0]+window[1])-window[0])/(window[1])
-            nda_b_norm = (np.clip(nda_b, window[0], window[0]+window[1])-window[0])/(window[1])
+            nda_a_norm = (
+                np.clip(nda_a, window[0], window[0] + window[1]) - window[0]
+            ) / (window[1])
+            nda_b_norm = (
+                np.clip(nda_b, window[0], window[0] + window[1]) - window[0]
+            ) / (window[1])
 
-            nda_colour = np.stack([color_rotation*(nda_a_norm>nda_b_norm) + (0.5+color_rotation)*(nda_a_norm<=nda_b_norm),
-                                np.abs(nda_a_norm - nda_b_norm),
-                                (nda_a_norm + nda_b_norm)/2],
-                                axis=-1)
+            nda_colour = np.stack(
+                [
+                    color_rotation * (nda_a_norm > nda_b_norm)
+                    + (0.5 + color_rotation) * (nda_a_norm <= nda_b_norm),
+                    np.abs(nda_a_norm - nda_b_norm),
+                    (nda_a_norm + nda_b_norm) / 2,
+                ],
+                axis=-1,
+            )
 
             ax.imshow(
                 hsv2rgb(nda_colour),
@@ -1042,8 +1152,12 @@ class ImageVisualiser:
 
                 asp = ax_cor.get_aspect()
 
-                ratio_x = ( (cor_1 - cor_0) + (sag_1 - sag_0) ) / ( (cor_orig_1 - cor_orig_0) + (sag_orig_1 - sag_orig_0) )
-                ratio_y = ( 1/asp*(cor_1 - cor_0) + (ax_1 - ax_0) ) / ( 1/asp*(cor_orig_1 - cor_orig_0) + (ax_orig_1 - ax_orig_0) )
+                ratio_x = ((cor_1 - cor_0) + (sag_1 - sag_0)) / (
+                    (cor_orig_1 - cor_orig_0) + (sag_orig_1 - sag_orig_0)
+                )
+                ratio_y = (1 / asp * (cor_1 - cor_0) + (ax_1 - ax_0)) / (
+                    1 / asp * (cor_orig_1 - cor_orig_0) + (ax_orig_1 - ax_orig_0)
+                )
 
                 ax_ax.set_xlim(sag_0, sag_1)
                 ax_ax.set_ylim(cor_1, cor_0)
@@ -1058,21 +1172,21 @@ class ImageVisualiser:
                     2,
                     2,
                     height_ratios=[(cor_size) / (asp * ax_size), 1],
-                    width_ratios=[sag_size, cor_size]
+                    width_ratios=[sag_size, cor_size],
                 )
 
                 ax_ax.set_position(gs[0].get_position(self.__figure))
-                ax_ax.set_subplotspec(gs[0]) 
+                ax_ax.set_subplotspec(gs[0])
 
                 ax_cor.set_position(gs[2].get_position(self.__figure))
-                ax_cor.set_subplotspec(gs[2]) 
+                ax_cor.set_subplotspec(gs[2])
 
                 ax_sag.set_position(gs[3].get_position(self.__figure))
-                ax_sag.set_subplotspec(gs[3]) 
+                ax_sag.set_subplotspec(gs[3])
 
                 fig_size_x, fig_size_y = self.__figure.get_size_inches()
-                fig_size_y = fig_size_y*ratio_y/ratio_x
-                
+                fig_size_y = fig_size_y * ratio_y / ratio_x
+
                 self.__figure.set_size_inches(fig_size_x, fig_size_y)
 
             elif self.__axis in ["x", "y", "z"]:
@@ -1088,33 +1202,34 @@ class ImageVisualiser:
                 if self.__axis == "z":
                     y_0, y_1 = y_1, y_0
 
-                ratio_x = (np.abs(x_1 - x_0)/np.abs(x_orig_1 - x_orig_0))
-                ratio_y = (np.abs(y_1 - y_0)/np.abs(y_orig_1 - y_orig_0))
+                ratio_x = np.abs(x_1 - x_0) / np.abs(x_orig_1 - x_orig_0)
+                ratio_y = np.abs(y_1 - y_0) / np.abs(y_orig_1 - y_orig_0)
 
-                ax.set_xlim(x_0,x_1)
-                ax.set_ylim(y_0,y_1)  
+                ax.set_xlim(x_0, x_1)
+                ax.set_ylim(y_0, y_1)
 
                 fig_size_x, fig_size_y = self.__figure.get_size_inches()
-                fig_size_y = fig_size_y*ratio_y/ratio_x
-                
+                fig_size_y = fig_size_y * ratio_y / ratio_x
+
                 self.__figure.set_size_inches(fig_size_x, fig_size_y)
 
-
     def overlay_contours(self):
-        """Overlay the contours on to the current figure image
-        """
+        """Overlay the contours on to the current figure image"""
 
-        if len(self.__contours)==0:
+        if len(self.__contours) == 0:
             return
-        
+
         plot_dict = {
-            contour.name: sitk.GetArrayFromImage(contour.image) for contour in self.__contours
+            contour.name: sitk.GetArrayFromImage(contour.image)
+            for contour in self.__contours
         }
         color_map = self.__contour_color_base(np.linspace(0, 1, len(self.__contours)))
         colors = [
             color_map[i] if contour.color is None else contour.color
             for i, contour in enumerate(self.__contours)
         ]
+
+        linewidths = [contour.linewidth for contour in self.__contours]
 
         # Test types of axes
         axes = self.__figure.axes
@@ -1128,7 +1243,7 @@ class ImageVisualiser:
                         colors=[colors[index]],
                         levels=[0],
                         # alpha=0.8,
-                        linewidths=2,
+                        linewidths=linewidths,
                         label=c_name,
                     )
                 except:
@@ -1148,7 +1263,7 @@ class ImageVisualiser:
                 temp = ax_ax.contour(
                     plot_dict[c_name].__getitem__(s_ax),
                     levels=[0],
-                    linewidths=2,
+                    linewidths=linewidths,
                     colors=[colors[index]],
                 )
                 temp.collections[0].set_label(c_name)
@@ -1156,26 +1271,29 @@ class ImageVisualiser:
                 ax_cor.contour(
                     plot_dict[c_name].__getitem__(s_cor),
                     levels=[0],
-                    linewidths=2,
+                    linewidths=linewidths,
                     colors=[colors[index]],
                 )
                 ax_sag.contour(
                     plot_dict[c_name].__getitem__(s_sag),
                     levels=[0],
-                    linewidths=2,
+                    linewidths=linewidths,
                     colors=[colors[index]],
                 )
 
             if self.__show_legend:
-                ax.legend(loc="center left", bbox_to_anchor=(1.05, 0.5))
+                approx_scaling = self.__figure_size / (len(plot_dict.keys()))
+                ax.legend(
+                    loc="center left",
+                    bbox_to_anchor=(1.05, 0.5),
+                    fontsize=min([12, 20 * approx_scaling]),
+                )
 
         else:
             raise ValueError('Axis is must be one of "x","y","z","ortho".')
 
-
     def overlay_scalar_field(self):
-        """Overlay the scalar image onto the existing figure
-        """
+        """Overlay the scalar image onto the existing figure"""
 
         for scalar in self.__scalar_overlays:
 
@@ -1190,7 +1308,7 @@ class ImageVisualiser:
             else:
                 sMax = nda.max()
 
-            #nda = nda / nda.max()
+            # nda = nda / nda.max()
             nda = np.ma.masked_less_equal(nda, sMin)
 
             sp_plane, _, sp_slice = scalar_image.GetSpacing()
@@ -1267,22 +1385,20 @@ class ImageVisualiser:
                 )
 
     def overlay_vector_field(self):
-        """Overlay vector field onto existing figure
-        
-        """
+        """Overlay vector field onto existing figure"""
         for vector in self.__vector_overlays:
 
-            image = vector.image 
-            name = vector.name 
-            colormap = vector.colormap 
-            alpha = vector.alpha 
-            arrow_scale = vector.arrow_scale 
-            arrow_width = vector.arrow_width 
-            subsample = vector.subsample 
-            color_function = vector.color_function 
-            invert_field = vector.invert_field 
+            image = vector.image
+            name = vector.name
+            colormap = vector.colormap
+            alpha = vector.alpha
+            arrow_scale = vector.arrow_scale
+            arrow_width = vector.arrow_width
+            subsample = vector.subsample
+            color_function = vector.color_function
+            invert_field = vector.invert_field
 
-            inverse_vector_image = image #sitk.InvertDisplacementField(image)
+            inverse_vector_image = image  # sitk.InvertDisplacementField(image)
             vector_nda = sitk.GetArrayFromImage(inverse_vector_image)
 
             sp_plane, _, sp_slice = image.GetSpacing()
@@ -1294,30 +1410,40 @@ class ImageVisualiser:
                 ax = axes[0]
 
                 if hasattr(subsample, "__iter__"):
-                    raise ValueError("You have selected an iterable subsampling factor for a\
-                                      single axis. Behaviour undefined in this situation.")
+                    raise ValueError(
+                        "You have selected an iterable subsampling factor for a\
+                                      single axis. Behaviour undefined in this situation."
+                    )
 
                 slicer = self.subsample_vector_field(self.__axis, self.__cut, subsample)
                 vector_nda_slice = vector_nda.__getitem__(slicer)
 
-                vector_ax = vector_nda_slice[:,:,2].T
-                vector_cor = vector_nda_slice[:,:,1].T
-                vector_sag = vector_nda_slice[:,:,0].T
+                vector_ax = vector_nda_slice[:, :, 2].T
+                vector_cor = vector_nda_slice[:, :, 1].T
+                vector_sag = vector_nda_slice[:, :, 0].T
 
-                vector_plot_x, vector_plot_y, vector_plot_z = self.reorientate_vector_field(
+                (
+                    vector_plot_x,
+                    vector_plot_y,
+                    vector_plot_z,
+                ) = self.reorientate_vector_field(
                     self.__axis,
                     vector_ax,
                     vector_cor,
                     vector_sag,
-                    invert_field = invert_field
+                    invert_field=invert_field,
                 )
 
-                plot_x_loc, plot_y_loc = self.vector_image_grid(self.__axis, vector_nda, subsample)
+                plot_x_loc, plot_y_loc = self.vector_image_grid(
+                    self.__axis, vector_nda, subsample
+                )
 
-                if color_function == 'perpendicular':
+                if color_function == "perpendicular":
                     vector_color = vector_plot_z
-                elif color_function == 'magnitude':
-                    vector_color = np.sqrt(vector_plot_x**2 + vector_plot_y**2 + vector_plot_z**2)
+                elif color_function == "magnitude":
+                    vector_color = np.sqrt(
+                        vector_plot_x ** 2 + vector_plot_y ** 2 + vector_plot_z ** 2
+                    )
 
                 ax.quiver(
                     plot_x_loc,
@@ -1326,11 +1452,11 @@ class ImageVisualiser:
                     vector_plot_y,
                     vector_color,
                     cmap=colormap,
-                    units='xy',
-                    scale=1/arrow_scale,
+                    units="xy",
+                    scale=1 / arrow_scale,
                     width=arrow_width,
                     minlength=0,
-                    linewidth=1
+                    linewidth=1,
                 )
 
                 # if self.__show_colorbar:
@@ -1346,33 +1472,35 @@ class ImageVisualiser:
             elif len(axes) == 4:
                 ax_ax, _, ax_cor, ax_sag = axes
 
-                for plot_axes, im_axis, im_cut  in zip(
-                    (ax_ax, ax_cor, ax_sag),
-                    ("z","y","x"),
-                    self.__cut
+                for plot_axes, im_axis, im_cut in zip(
+                    (ax_ax, ax_cor, ax_sag), ("z", "y", "x"), self.__cut
                 ):
 
                     slicer = self.subsample_vector_field(im_axis, im_cut, subsample)
                     vector_nda_slice = vector_nda.__getitem__(slicer)
 
-                    vector_ax = vector_nda_slice[:,:,2].T
-                    vector_cor = vector_nda_slice[:,:,1].T
-                    vector_sag = vector_nda_slice[:,:,0].T
+                    vector_ax = vector_nda_slice[:, :, 2].T
+                    vector_cor = vector_nda_slice[:, :, 1].T
+                    vector_sag = vector_nda_slice[:, :, 0].T
 
-                    vector_plot_x, vector_plot_y, vector_plot_z = self.reorientate_vector_field(
-                        im_axis,
-                        vector_ax,
-                        vector_cor,
-                        vector_sag
+                    (
+                        vector_plot_x,
+                        vector_plot_y,
+                        vector_plot_z,
+                    ) = self.reorientate_vector_field(
+                        im_axis, vector_ax, vector_cor, vector_sag
                     )
 
-                    plot_x_loc, plot_y_loc = self.vector_image_grid(im_axis, vector_nda, subsample)
+                    plot_x_loc, plot_y_loc = self.vector_image_grid(
+                        im_axis, vector_nda, subsample
+                    )
 
-                    if color_function == 'perpendicular':
+                    if color_function == "perpendicular":
                         vector_color = vector_plot_z
-                    elif color_function == 'magnitude':
-                        vector_color = np.sqrt(vector_plot_x**2 + vector_plot_y**2 + vector_plot_z**2)
-
+                    elif color_function == "magnitude":
+                        vector_color = np.sqrt(
+                            vector_plot_x ** 2 + vector_plot_y ** 2 + vector_plot_z ** 2
+                        )
 
                     sp = plot_axes.quiver(
                         plot_x_loc,
@@ -1381,13 +1509,12 @@ class ImageVisualiser:
                         vector_plot_y,
                         vector_color,
                         cmap=colormap,
-                        units='xy',
-                        scale=1/arrow_scale,
+                        units="xy",
+                        scale=1 / arrow_scale,
                         width=arrow_width,
                         minlength=0,
-                        linewidth=1
+                        linewidth=1,
                     )
-
 
     def overlay_bounding_boxes(self, color="r"):
         """Overlay bounding boxes onto existing figure
