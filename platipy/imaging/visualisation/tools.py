@@ -254,6 +254,8 @@ class VisualiseScalarOverlay:
         alpha=0.75,
         min_value=0.1,
         max_value=False,
+        discrete_levels=False,
+        show_colorbar=True,
     ):
         self.image = image
         self.name = name
@@ -261,6 +263,8 @@ class VisualiseScalarOverlay:
         self.alpha = alpha
         self.min_value = min_value
         self.max_value = max_value
+        self.discrete_levels = discrete_levels
+        self.show_colorbar = show_colorbar
 
 
 class VisualiseVectorOverlay:
@@ -461,6 +465,8 @@ class ImageVisualiser:
         alpha=0.75,
         min_value=0.1,
         max_value=False,
+        discrete_levels=False,
+        show_colorbar=True,
     ):
         """Overlay a scalar image on to the existing image
 
@@ -496,6 +502,8 @@ class ImageVisualiser:
                     alpha=alpha,
                     min_value=min_value,
                     max_value=max_value,
+                    discrete_levels=discrete_levels,
+                    show_colorbar=show_colorbar,
                 )
                 self.__scalar_overlays.append(visualise_contour)
 
@@ -513,6 +521,8 @@ class ImageVisualiser:
                 alpha=alpha,
                 min_value=min_value,
                 max_value=max_value,
+                discrete_levels=discrete_levels,
+                show_colorbar=show_colorbar,
             )
             self.__scalar_overlays.append(visualise_contour)
         else:
@@ -1130,7 +1140,7 @@ class ImageVisualiser:
 
         if limits is not None:
             if self.__axis == "ortho":
-                ax_ax, _, ax_cor, ax_sag = self.__figure.axes
+                ax_ax, _, ax_cor, ax_sag = self.__figure.axes[:4]
                 ax_orig_0, ax_orig_1 = ax_cor.get_ylim()
                 cor_orig_0, cor_orig_1 = ax_ax.get_ylim()
                 sag_orig_0, sag_orig_1 = ax_ax.get_xlim()
@@ -1232,7 +1242,7 @@ class ImageVisualiser:
         linewidths = [contour.linewidth for contour in self.__contours]
 
         # Test types of axes
-        axes = self.__figure.axes
+        axes = self.__figure.axes[:4]
         if self.__axis in ["x", "y", "z"]:
             ax = axes[0]
             s = self.return_slice(self.__axis, self.__cut)
@@ -1280,12 +1290,15 @@ class ImageVisualiser:
                     linewidths=linewidths,
                     colors=[colors[index]],
                 )
-
+            if len(self.__figure.axes) == 5:
+                pad = 1.25
+            else:
+                pad = 1.05
             if self.__show_legend:
                 approx_scaling = self.__figure_size / (len(plot_dict.keys()))
                 ax.legend(
                     loc="center left",
-                    bbox_to_anchor=(1.05, 0.5),
+                    bbox_to_anchor=(pad, 0.5),
                     fontsize=min([12, 20 * approx_scaling]),
                 )
 
@@ -1308,6 +1321,12 @@ class ImageVisualiser:
             else:
                 sMax = nda.max()
 
+            if scalar.discrete_levels:
+                colormap_name = scalar.colormap.name
+                colormap = plt.cm.get_cmap(colormap_name, scalar.discrete_levels)
+            else:
+                colormap = scalar.colormap
+
             # nda = nda / nda.max()
             nda = np.ma.masked_less_equal(nda, sMin)
 
@@ -1315,14 +1334,14 @@ class ImageVisualiser:
             asp = (1.0 * sp_slice) / sp_plane
 
             # Test types of axes
-            axes = self.__figure.axes
-            if len(axes) == 1:
+            axes = self.__figure.axes[:4]
+            if len(axes) < 4:
                 ax = axes[0]
                 s = self.return_slice(self.__axis, self.__cut)
                 sp = ax.imshow(
                     nda.__getitem__(s),
                     interpolation=None,
-                    cmap=scalar.colormap,
+                    cmap=colormap,
                     clim=(sMin, sMax),
                     aspect={"z": 1, "y": asp, "x": asp}[self.__axis],
                     origin={"z": "upper", "y": "lower", "x": "lower"}[self.__axis],
@@ -1331,12 +1350,16 @@ class ImageVisualiser:
                     alpha=alpha,
                 )
 
-                if self.__show_colorbar:
+                if scalar.show_colorbar:
                     divider = make_axes_locatable(ax)
                     cax = divider.append_axes("right", size="5%", pad=0.05)
                     cbar = self.__figure.colorbar(sp, cax=cax, orientation="vertical")
                     cbar.set_label(scalar.name)
                     cbar.solids.set_alpha(1)
+                    if scalar.discrete_levels:
+                        cbar.set_ticks(
+                            np.linspace(sMin, sMax, scalar.discrete_levels + 1)
+                        )
 
                     fX, fY = self.__figure.get_size_inches()
                     self.__figure.set_size_inches(fX * 1.15, fY)
@@ -1349,10 +1372,10 @@ class ImageVisualiser:
                 sCor = self.return_slice("y", self.__cut[1])
                 sSag = self.return_slice("x", self.__cut[2])
 
-                ax_ax.imshow(
+                sp = ax_ax.imshow(
                     nda.__getitem__(sAx),
                     interpolation=None,
-                    cmap=scalar.colormap,
+                    cmap=colormap,
                     clim=(sMin, sMax),
                     aspect=1,
                     vmin=sMin,
@@ -1363,7 +1386,7 @@ class ImageVisualiser:
                 ax_cor.imshow(
                     nda.__getitem__(sCor),
                     interpolation=None,
-                    cmap=scalar.colormap,
+                    cmap=colormap,
                     clim=(sMin, sMax),
                     origin="lower",
                     aspect=asp,
@@ -1375,7 +1398,7 @@ class ImageVisualiser:
                 ax_sag.imshow(
                     nda.__getitem__(sSag),
                     interpolation=None,
-                    cmap=scalar.colormap,
+                    cmap=colormap,
                     clim=(sMin, sMax),
                     origin="lower",
                     aspect=asp,
@@ -1383,6 +1406,17 @@ class ImageVisualiser:
                     vmax=sMax,
                     alpha=alpha,
                 )
+
+                if scalar.show_colorbar:
+                    divider = make_axes_locatable(ax_ax)
+                    cax = divider.append_axes("right", size="5%", pad=0.05)
+                    cbar = self.__figure.colorbar(sp, cax=cax, orientation="vertical")
+                    cbar.set_label(scalar.name)
+                    cbar.solids.set_alpha(1)
+                    if scalar.discrete_levels:
+                        cbar.set_ticks(
+                            np.linspace(sMin, sMax, scalar.discrete_levels + 1)
+                        )
 
     def overlay_vector_field(self):
         """Overlay vector field onto existing figure"""
@@ -1405,8 +1439,8 @@ class ImageVisualiser:
             asp = (1.0 * sp_slice) / sp_plane
 
             # Test types of axes
-            axes = self.__figure.axes
-            if len(axes) == 1:
+            axes = self.__figure.axes[:4]
+            if len(axes) < 4:
                 ax = axes[0]
 
                 if hasattr(subsample, "__iter__"):
@@ -1530,8 +1564,8 @@ class ImageVisualiser:
                 color = box.color
 
             # Test types of axes
-            axes = self.__figure.axes
-            if len(axes) == 1:
+            axes = self.__figure.axes[:4]
+            if len(axes) < 4:
                 ax = axes[0]
 
                 if self.__axis == "z" or self.__axis == "ax":

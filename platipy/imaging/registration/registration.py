@@ -73,13 +73,13 @@ def initial_registration(
     moving_structure=False,
     fixed_structure=False,
     options={
-        "shrinkFactors": [8, 2, 1],
-        "smoothSigmas": [4, 2, 0],
-        "samplingRate": 0.1,
-        "finalInterp": 3,
+        "shrink_factors": [8, 2, 1],
+        "smooth_sigmas": [4, 2, 0],
+        "sampling_rate": 0.1,
+        "final_interp": 3,
         "metric": "mean_squares",
         "optimiser": "gradient_descent",
-        "numberOfIterations": 50,
+        "number_of_iterations": 50,
     },
     default_value=-1024,
     trace=False,
@@ -108,13 +108,13 @@ def initial_registration(
     moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
 
     # Get the options
-    shrink_factors = options["shrinkFactors"]
-    smooth_sigmas = options["smoothSigmas"]
-    sampling_rate = options["samplingRate"]
-    final_interp = options["finalInterp"]
+    shrink_factors = options["shrink_factors"]
+    smooth_sigmas = options["smooth_sigmas"]
+    sampling_rate = options["sampling_rate"]
+    final_interp = options["final_interp"]
     metric = options["metric"]
     optimiser = options["optimiser"]
-    number_of_iterations = options["numberOfIterations"]
+    number_of_iterations = options["number_of_iterations"]
 
     # Initialise using a VersorRigid3DTransform
     initial_transform = sitk.CenteredTransformInitializer(
@@ -160,24 +160,24 @@ def initial_registration(
     if fixed_structure:
         registration.SetMetricFixedMask(fixed_structure)
 
-    if reg_method == "Translation":
+    if reg_method.lower() == "translation":
         registration.SetInitialTransform(sitk.TranslationTransform(3))
-    elif reg_method == "Similarity":
+    elif reg_method.lower() == "similarity":
         registration.SetInitialTransform(sitk.Similarity3DTransform())
-    elif reg_method == "Affine":
+    elif reg_method.lower() == "affine":
         registration.SetInitialTransform(sitk.AffineTransform(3))
-    elif reg_method == "Rigid":
+    elif reg_method.lower() == "rigid":
         registration.SetInitialTransform(sitk.VersorRigid3DTransform())
-    elif reg_method == "ScaleVersor":
+    elif reg_method.lower() == "scaleversor":
         registration.SetInitialTransform(sitk.ScaleVersor3DTransform())
-    elif reg_method == "ScaleSkewVersor":
+    elif reg_method.lower() == "scaleskewversor":
         registration.SetInitialTransform(sitk.ScaleSkewVersor3DTransform())
     else:
         raise ValueError(
             "You have selected a registration method that does not exist.\n Please select from Translation, Similarity, Affine, Rigid"
         )
 
-    if optimiser == "LBFGSB":
+    if optimiser.lower() == "lbfgsb":
         registration.SetOptimizerAsLBFGSB(
             gradientConvergenceTolerance=1e-5,
             numberOfIterations=number_of_iterations,
@@ -186,7 +186,7 @@ def initial_registration(
             costFunctionConvergenceFactor=1e7,
             trace=trace,
         )
-    elif optimiser == "exhaustive":
+    elif optimiser.lower() == "exhaustive":
         """
         This isn't well implemented
         Needs some work to give options for sampling rates
@@ -194,11 +194,11 @@ def initial_registration(
         """
         samples = [10, 10, 10, 10, 10, 10]
         registration.SetOptimizerAsExhaustive(samples)
-    elif optimiser == "gradient_descent_line_search":
+    elif optimiser.lower() == "gradient_descent_line_search":
         registration.SetOptimizerAsGradientDescentLineSearch(
             learningRate=1.0, numberOfIterations=number_of_iterations
         )
-    elif optimiser == "gradient_descent":
+    elif optimiser.lower() == "gradient_descent":
         registration.SetOptimizerAsGradientDescent(
             learningRate=1.0, numberOfIterations=number_of_iterations
         )
@@ -313,7 +313,9 @@ def smooth_and_resample(
     original_size = image.GetSize()
 
     if isotropic_resample:
-        scale_factor = shrink_factor * np.ones(3) / np.array(image.GetSpacing())
+        scale_factor = (
+            shrink_factor * np.ones_like(image.GetSize()) / np.array(image.GetSpacing())
+        )
         new_size = [
             int(sz / float(sf) + 0.5) for sz, sf in zip(original_size, scale_factor)
         ]
@@ -417,12 +419,19 @@ def multiscale_demons(
                 fixed_images[-1].GetDirection(),
             )
         else:
-            initial_displacement_field = sitk.Image(
-                fixed_images[-1].GetWidth(),
-                fixed_images[-1].GetHeight(),
-                fixed_images[-1].GetDepth(),
-                sitk.sitkVectorFloat64,
-            )
+            if len(moving_image.GetSize()) == 2:
+                initial_displacement_field = sitk.Image(
+                    fixed_images[-1].GetWidth(),
+                    fixed_images[-1].GetHeight(),
+                    sitk.sitkVectorFloat64,
+                )
+            elif len(moving_image.GetSize()) == 3:
+                initial_displacement_field = sitk.Image(
+                    fixed_images[-1].GetWidth(),
+                    fixed_images[-1].GetHeight(),
+                    fixed_images[-1].GetDepth(),
+                    sitk.sitkVectorFloat64,
+                )
             initial_displacement_field.CopyInformation(fixed_images[-1])
     else:
         initial_displacement_field = sitk.Resample(
