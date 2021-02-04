@@ -63,10 +63,11 @@ def get_external_mask(
         num_pix_list[i] = label_shape_analysis.GetNumberOfPixels(True)
 
     # Second largest volume is most likely the body - you should check this!
-    body_value = connected_component_values[np.argsort(num_pix_list)][-2].astype(np.float)
-    body_mask = sitk.Equal(external_mask_components, body_value)
+    body_mask = sitk.Equal(sitk.RelabelComponent(external_mask_components), 1)
 
     if dilate is not False:
+        if not hasattr(dilate, "__iter__"):
+            dilate = (dilate,) * 3
         body_mask = sitk.BinaryDilate(body_mask, dilate)
 
     if max_hole_size is not False:
@@ -117,6 +118,7 @@ def generate_field_shift(
 
     # Units are in mm so convert to voxels
     vector_shift = [x / y for x, y in zip(vector_shift, mask_image.GetSpacing())]
+
     # The template deformation field
     # Used to generate transforms
     dvf_arr = np.zeros(mask_image_arr.shape + (3,))
@@ -126,8 +128,12 @@ def generate_field_shift(
     # Copy image information
     dvf_template.CopyInformation(mask_image)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
-    mask_image_shift = apply_field(mask_image, transform=dvf_tfm, structure=True, interp=1)
+    dvf_tfm = sitk.DisplacementFieldTransform(
+        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
+    )
+    mask_image_shift = apply_field(
+        mask_image, transform=dvf_tfm, structure=True, interp=1
+    )
 
     dvf_template = sitk.Mask(dvf_template, mask_image | mask_image_shift)
 
@@ -139,8 +145,12 @@ def generate_field_shift(
 
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
-    mask_image_shift = apply_field(mask_image, transform=dvf_tfm, structure=True, interp=1)
+    dvf_tfm = sitk.DisplacementFieldTransform(
+        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
+    )
+    mask_image_shift = apply_field(
+        mask_image, transform=dvf_tfm, structure=True, interp=1
+    )
 
     if return_mask:
 
@@ -198,7 +208,10 @@ def generate_field_asymmetric_contract(
 
     dvf_template = sitk.Mask(dvf_template, mask_image)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
+    dvf_tfm = sitk.DisplacementFieldTransform(
+        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
+    )
+
     mask_image_asymmetric_contract = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
     )
@@ -211,7 +224,9 @@ def generate_field_asymmetric_contract(
 
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
+    dvf_tfm = sitk.DisplacementFieldTransform(
+        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
+    )
     mask_image_asymmetric_contract = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
     )
@@ -268,7 +283,10 @@ def generate_field_asymmetric_extend(
     # Copy image information
     dvf_template.CopyInformation(mask_image)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
+    dvf_tfm = sitk.DisplacementFieldTransform(
+        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
+    )
+
     mask_image_asymmetric_extend = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
     )
@@ -283,7 +301,10 @@ def generate_field_asymmetric_extend(
 
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
+    dvf_tfm = sitk.DisplacementFieldTransform(
+        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
+    )
+
     mask_image_asymmetric_extend = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
     )
@@ -323,7 +344,7 @@ def generate_field_expand(
             mask_image, [int(x) for x in np.abs(expand)], sitk.sitkBox
         )
     elif np.all(np.array(expand) >= 0):
-        mask_images_expand = sitk.BinaryDilate(mask_image, expand, sitk.sitkBox)
+        mask_images_expand = sitk.BinaryDilate(mask_image, expand)
     else:
         raise ValueError(
             "All values for expand should be the same sign (positive = expand, negative = shrink)."
@@ -351,7 +372,10 @@ def generate_field_expand(
 
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
+    dvf_tfm = sitk.DisplacementFieldTransform(
+        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
+    )
+
     mask_image_symmetric_expand = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
     )
@@ -369,26 +393,68 @@ def generate_field_expand(
 
 
 def generate_field_radial_bend(
-    reference_image, field_mask, scale=1, centre=(0, 0, 0),
+
+    reference_image,
+    body_mask,
+    reference_point,
+    normal_vector=[0, 0, -1],
+    # field_mask,
+    scale=1,
+    mask_bend_from_reference_point=("z", "inf"),
+    gaussian_smooth=5,
+    return_mask=True,
+    return_transform=True,
 ):
 
     # Get an array from either the mask
-    if field_mask is not False:
-        field_arr = sitk.GetArrayFromImage(field_arr)
-    else:
-        field_arr = ()
+    # if field_mask is not False:
+    #     field_arr = sitk.GetArrayFromImage(field_arr)
+    # else:
+    #     field_arr = ()
+
+    body_mask_arr = sitk.GetArrayFromImage(body_mask)
+
+    if mask_bend_from_reference_point is not False:
+        if mask_bend_from_reference_point[0] == "z":
+            if mask_bend_from_reference_point[1] == "inf":
+                body_mask_arr[: reference_point[0], :, :] = 0
+            elif mask_bend_from_reference_point[1] == "sup":
+                body_mask_arr[reference_point[0] :, :, :] = 0
+        if mask_bend_from_reference_point[0] == "y":
+            if mask_bend_from_reference_point[1] == "pos":
+                body_mask_arr[:, reference_point[1] :, :] = 0
+            elif mask_bend_from_reference_point[1] == "ant":
+                body_mask_arr[:, : reference_point[1], :] = 0
+        if mask_bend_from_reference_point[0] == "x":
+            if mask_bend_from_reference_point[1] == "left":
+                body_mask_arr[:, :, reference_point[2] :] = 0
+            elif mask_bend_from_reference_point[1] == "right":
+                body_mask_arr[:, :, : reference_point[2]] = 0
+
+    ####
+    # pt_arr = np.array(np.where(body_mask_arr))
+    # vector_ref_to_pt = pt_arr - np.array(larynx_reference_point[::-1])[:,None]
+
+    # print('  Generating vectors')
+
+    # deformation_vectors = np.cross(vector_ref_to_pt[::-1].T, [-1,0,0])
+
+    # dvf_arr[np.where(body_mask_arr)] = deformation_vectors / 3
+    ####
 
     pt_arr = np.array(np.where(body_mask_arr))
-    vector_ref_to_pt = pt_arr - np.array(larynx_reference_point[::-1])[:, None]
+    vector_ref_to_pt = pt_arr - np.array(reference_point)[:, None]
 
     print("  Generating vectors")
 
-    deformation_vectors = np.cross(vector_ref_to_pt[::-1].T, [-1, 0, 0])
+    deformation_vectors = np.cross(vector_ref_to_pt[::-1].T, normal_vector[::-1])
 
-    dvf_arr[np.where(body_mask_arr)] = deformation_vectors / 3
+    dvf_template = sitk.Image(reference_image.GetSize(), sitk.sitkVectorFloat64, 3)
+    dvf_template_arr = sitk.GetArrayFromImage(dvf_template)
+    dvf_template_arr[np.where(body_mask_arr)] = deformation_vectors * scale
 
-    dvf = sitk.GetImageFromArray(dvf_arr)
-    dvf.CopyInformation(image)
+    dvf_template = sitk.GetImageFromArray(dvf_template_arr)
+    dvf_template.CopyInformation(reference_image)
 
     # smooth
     if np.any(gaussian_smooth):
@@ -398,18 +464,24 @@ def generate_field_radial_bend(
 
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
-    mask_image_symmetric_expand = apply_field(
-        mask_image, transform=dvf_tfm, structure=True, interp=1
+    dvf_tfm = sitk.DisplacementFieldTransform(
+        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
+    )
+    reference_image_bend = apply_field(
+        reference_image,
+        transform=dvf_tfm,
+        structure=False,
+        default_value=int(sitk.GetArrayViewFromImage(reference_image).min()),
+        interp=2,
     )
 
     if return_mask:
 
         if return_transform:
-            return mask_image_symmetric_expand, dvf_tfm, dvf_template
+            return reference_image_bend, dvf_tfm, dvf_template
 
         else:
-            return mask_image_symmetric_expand, dvf_template
+            return reference_image_bend, dvf_template
 
     else:
         return dvf_template
