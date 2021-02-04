@@ -206,10 +206,18 @@ def transform_point_set_from_dicom_struct(
             )
         )
 
+        if structIndex >= len(struct_point_sequence):
+            logger.warning("    Contour sequence is missing, skipping.")
+            continue
+
         if not hasattr(struct_point_sequence[structIndex], "ContourSequence"):
             logger.warning(
                 "    No contour sequence found for this structure, skipping."
             )
+            continue
+
+        if len(struct_point_sequence[structIndex].ContourSequence) == 0:
+            logger.warning("    Contour sequence is empty, skipping.")
             continue
 
         if (

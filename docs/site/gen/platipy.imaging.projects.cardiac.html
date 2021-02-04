@@ -1,0 +1,360 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>platipy.imaging.projects.cardiac package &mdash; PlatiPy  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="PlatiPy  documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PlatiPy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">PlatiPy documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PlatiPy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>platipy.imaging.projects.cardiac package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/gen/platipy.imaging.projects.cardiac.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="platipy-imaging-projects-cardiac-package">
+<h1>platipy.imaging.projects.cardiac package<a class="headerlink" href="#platipy-imaging-projects-cardiac-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-platipy.imaging.projects.cardiac.run">
+<span id="platipy-imaging-projects-cardiac-run-module"></span><h2>platipy.imaging.projects.cardiac.run module<a class="headerlink" href="#module-platipy.imaging.projects.cardiac.run" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.run.run_cardiac_segmentation">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.run.</code><code class="sig-name descname">run_cardiac_segmentation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">settings</span><span class="o">=</span><span class="default_value">{'IARSettings': {'minBestAtlases': 5, 'outlierFactor': 1.5, 'outlierMethod': 'IQR', 'project_on_sphere': False, 'referenceStructure': 'WHOLEHEART', 'smoothDistanceMaps': True, 'smoothSigma': 1, 'zScoreStatistic': 'MAD'}, 'atlasSettings': {'atlasIdList': ['13', '17', '33', '12', '16', '22', '27'], 'atlasImageFormat': 'Case_{0}/Images/Case_{0}_CROP.nii.gz', 'atlasLabelFormat': 'Case_{0}/Structures/Case_{0}_{1}_CROP.nii.gz', 'atlasPath': '/atlas', 'atlasStructures': ['WHOLEHEART', 'LANTDESCARTERY_SPLINE'], 'autoCropAtlas': True}, 'autoCropSettings': {'expansion': [2, 2, 2]}, 'deformableSettings': {'isotropicResample': True, 'iterationStaging': [5, 5, 5], 'ncores': 8, 'resolutionStaging': [16, 8, 2], 'smoothingSigmas': [0, 0, 0], 'trace': False}, 'labelFusionSettings': {'optimalThreshold': {'WHOLEHEART': 0.44}, 'voteParams': {}, 'voteType': 'unweighted'}, 'outputFormat': 'Auto_{0}.nii.gz', 'returnAsCropped': False, 'rigidSettings': {'guideStructure': False, 'initialReg': 'Similarity', 'options': {'defaultValue': - 1024, 'finalInterp': 3, 'metric': 'mean_squares', 'numberOfIterations': 50, 'optimiser': 'gradient_descent_line_search', 'samplingRate': 0.75, 'shrinkFactors': [16, 8, 4], 'smoothSigmas': [0, 0, 0]}, 'trace': False}, 'vesselSpliningSettings': {'spliningDirection': {'LANTDESCARTERY_SPLINE': 'z'}, 'stopCondition': {'LANTDESCARTERY_SPLINE': 'count'}, 'stopConditionValue': {'LANTDESCARTERY_SPLINE': 1}, 'vesselNameList': ['LANTDESCARTERY_SPLINE'], 'vesselRadius_mm': {'LANTDESCARTERY_SPLINE': 2}}}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.run.run_cardiac_segmentation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the atlas-based cardiac segmentation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>sitk.Image</em>) – </p></li>
+<li><p><strong>settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Dictionary containing settings for algorithm.
+Defaults to default_settings.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary containing output of segmentation</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.projects.cardiac.service">
+<span id="platipy-imaging-projects-cardiac-service-module"></span><h2>platipy.imaging.projects.cardiac.service module<a class="headerlink" href="#module-platipy.imaging.projects.cardiac.service" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.service.cardiac_service">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.service.</code><code class="sig-name descname">cardiac_service</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_objects</span></em>, <em class="sig-param"><span class="n">working_dir</span></em>, <em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.service.cardiac_service" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the platipy framework to provide cardiac atlas based segmentation.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.projects.cardiac.utils">
+<span id="platipy-imaging-projects-cardiac-utils-module"></span><h2>platipy.imaging.projects.cardiac.utils module<a class="headerlink" href="#module-platipy.imaging.projects.cardiac.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.utils.AutoLungSegment">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.utils.</code><code class="sig-name descname">AutoLungSegment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em>, <em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">0.05</span></em>, <em class="sig-param"><span class="n">u</span><span class="o">=</span><span class="default_value">0.4</span></em>, <em class="sig-param"><span class="n">NPthresh</span><span class="o">=</span><span class="default_value">100000.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.utils.AutoLungSegment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Segments the lungs, generating a bounding box</p>
+<dl class="simple">
+<dt>Args</dt><dd><p>image (sitk.Image)  : the input image
+l (float)           : the lower (normalised) threshold
+u (float)           : the upper (normalised) threshold
+NPthresh (int)      : lower limit of voxel counts for a structure to be tested</p>
+</dd>
+<dt>Returns</dt><dd><p>maskBox (np.ndarray)    : bounding box of the automatically segmented lungs
+maskBinary (sitk.Image) : the segmented lungs (+/- airways)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.utils.COMFromImageList">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.utils.</code><code class="sig-name descname">COMFromImageList</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sitkImageList</span></em>, <em class="sig-param"><span class="n">conditionType</span><span class="o">=</span><span class="default_value">'count'</span></em>, <em class="sig-param"><span class="n">conditionValue</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">scanDirection</span><span class="o">=</span><span class="default_value">'z'</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.utils.COMFromImageList" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Input: list of SimpleITK images</dt><dd><p>minimum total slice area required for the tube to be inserted at that slice
+scan direction: x = sagittal, y=coronal, z=axial</p>
+</dd>
+</dl>
+<p>Output: mean centre of mass positions, with shape (NumSlices, 2)
+Note: positions are converted into image space by default</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.utils.ConvertSimpleITKtoVTK">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.utils.</code><code class="sig-name descname">ConvertSimpleITKtoVTK</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.utils.ConvertSimpleITKtoVTK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.utils.CropImage">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.utils.</code><code class="sig-name descname">CropImage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em>, <em class="sig-param"><span class="n">cropBox</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.utils.CropImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Crops an image using a bounding box</p>
+<dl>
+<dt>Args</dt><dd><p>image (sitk.Image)          : the input image
+cropBox (list, np.ndarray)  : the bounding box</p>
+<blockquote>
+<div><p>(sag0, cor0, ax0, sagD, corD, axD)</p>
+</div></blockquote>
+</dd>
+<dt>Returns</dt><dd><p>imCrop (sitk.Image)         : the cropped image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.utils.SimpleITKImageFromVTKTube">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.utils.</code><code class="sig-name descname">SimpleITKImageFromVTKTube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tube</span></em>, <em class="sig-param"><span class="n">SITKReferenceImage</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.utils.SimpleITKImageFromVTKTube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input: VTK tube, referenceImage (used for spacing, etc.)
+Output: SimpleITK image
+Note: Uses binary output (background 0, foreground 1)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.utils.ThresholdAndMeasureLungVolume">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.utils.</code><code class="sig-name descname">ThresholdAndMeasureLungVolume</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em>, <em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">u</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.utils.ThresholdAndMeasureLungVolume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Thresholds an image using upper and lower bounds in the intensity.
+Each non-connected component has the volume and perimeter/border ratio measured</p>
+<dl class="simple">
+<dt>Args</dt><dd><p>image (sitk.Image)  : the input image
+l (float)           : the lower threshold
+u (float)           : the upper threshold</p>
+</dd>
+<dt>Returns</dt><dd><p>NP (np.ndarray)     : a one-dimensional array of the number of pixels in each component
+PBR (np.ndarray)    : a one-dimensional array of the perimeter/border ratio for each component
+mask (sitk.Image)   : the connected component label map
+maxVals (np.ndarray): a one-dimensional array of the label map values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.utils.norm">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.utils.</code><code class="sig-name descname">norm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">mean</span></em>, <em class="sig-param"><span class="n">sd</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.utils.norm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.utils.res">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.utils.</code><code class="sig-name descname">res</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.utils.res" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.utils.tubeFromCOMList">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.utils.</code><code class="sig-name descname">tubeFromCOMList</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">COMList</span></em>, <em class="sig-param"><span class="n">radius</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.utils.tubeFromCOMList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input: image-space positions along the tube centreline.
+Output: VTK tube
+Note: positions do not have to be continuous - the tube is interpolated in real space</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.utils.vesselSplineGeneration">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.utils.</code><code class="sig-name descname">vesselSplineGeneration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">referenceImage</span></em>, <em class="sig-param"><span class="n">atlasSet</span></em>, <em class="sig-param"><span class="n">vesselNameList</span></em>, <em class="sig-param"><span class="n">vesselRadiusDict</span></em>, <em class="sig-param"><span class="n">stopConditionTypeDict</span></em>, <em class="sig-param"><span class="n">stopConditionValueDict</span></em>, <em class="sig-param"><span class="n">scanDirectionDict</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.utils.vesselSplineGeneration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.cardiac.utils.writeVTKTubeToFile">
+<code class="sig-prename descclassname">platipy.imaging.projects.cardiac.utils.</code><code class="sig-name descname">writeVTKTubeToFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tube</span></em>, <em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.utils.writeVTKTubeToFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input: VTK tube
+Output: exit success
+Note: format is XML VTP</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.projects.cardiac">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.projects.cardiac" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Phillip Chlap &amp; Rob Finnegan.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -99,15 +99,9 @@ class TaskStatus(Resource):
 class DicomLocationEndpoint(Resource):
 
     parser = reqparse.RequestParser()
-    parser.add_argument(
-        "name", required=True, help="Name to identify this Dicom location"
-    )
-    parser.add_argument(
-        "host", required=True, help="Dicom location host name or IP address"
-    )
-    parser.add_argument(
-        "port", type=int, required=True, help="The port of the Dicom location"
-    )
+    parser.add_argument("name", required=True, help="Name to identify this Dicom location")
+    parser.add_argument("host", required=True, help="Dicom location host name or IP address")
+    parser.add_argument("port", type=int, required=True, help="The port of the Dicom location")
     parser.add_argument("ae_title", help="AE Title of the Dicom location")
 
     def get(self):
@@ -150,9 +144,7 @@ class DataObjectsEndpoint(Resource):
 class DataObjectEndpoint(Resource):
 
     parser = reqparse.RequestParser()
-    parser.add_argument(
-        "dataset", required=True, help="Dataset ID to add Data Object to"
-    )
+    parser.add_argument("dataset", required=True, help="Dataset ID to add Data Object to")
     parser.add_argument(
         "type",
         choices=("DICOM", "FILE"),
@@ -167,12 +159,8 @@ class DataObjectEndpoint(Resource):
     parser.add_argument("seriesUID")
     parser.add_argument("meta_data")
     parser.add_argument("file_name")
-    parser.add_argument(
-        "file_data", type=werkzeug.datastructures.FileStorage, location="files"
-    )
-    parser.add_argument(
-        "parent", help="Data Object ID to which this data object should be linked"
-    )
+    parser.add_argument("file_data", type=werkzeug.datastructures.FileStorage, location="files")
+    parser.add_argument("parent", help="Data Object ID to which this data object should be linked")
 
     def get(self, dataobject_id):
 
@@ -202,9 +190,7 @@ class DataObjectEndpoint(Resource):
         # Get the parent dataset if one was given
         parent = None
         if args["parent"]:
-            parent = DataObject.query.filter_by(
-                dataset_id=ds.id, id=args["parent"]
-            ).first()
+            parent = DataObject.query.filter_by(dataset_id=ds.id, id=args["parent"]).first()
 
             if not parent:
                 return {"Error": "Parent Data Object not found"}, 404
@@ -394,9 +380,7 @@ class DataObjectDownloadEndpoint(Resource):
                 return {"Error": "File could not be found, perhaps it has expired"}, 404
 
             logger.info("Downloading file: {0}".format(f))
-            return send_from_directory(
-                os.path.dirname(f), os.path.basename(f), as_attachment=True
-            )
+            return send_from_directory(os.path.dirname(f), os.path.basename(f), as_attachment=True)
 
         return {"Error": "Data Object not found"}, 404
 
@@ -415,12 +399,9 @@ class DatasetEndpoint(Resource):
 
     parser = reqparse.RequestParser()
     parser.add_argument(
-        "from_dicom_location",
-        help="ID of DicomLocation from which to retrieve DICOM data",
+        "from_dicom_location", help="ID of DicomLocation from which to retrieve DICOM data",
     )
-    parser.add_argument(
-        "to_dicom_location", help="ID of DicomLocation the send output data to"
-    )
+    parser.add_argument("to_dicom_location", help="ID of DicomLocation the send output data to")
     parser.add_argument("timeout", type=int, default=24)
 
     def get(self, dataset_id):
@@ -492,18 +473,14 @@ class AlgorithmEndpoint(Resource):
 
         result = []
         for a in app.algorithms:
-            result.append(
-                {"name": a, "default_settings": app.algorithms[a].default_settings}
-            )
+            result.append({"name": a, "default_settings": app.algorithms[a].default_settings})
         return result
 
 
 class TriggerEndpoint(Resource):
 
     parser = reqparse.RequestParser()
-    parser.add_argument(
-        "algorithm", required=True, help="The name of the algorithm to trigger"
-    )
+    parser.add_argument("algorithm", required=True, help="The name of the algorithm to trigger")
     parser.add_argument(
         "dataset", required=True, help="The ID of the dataset to pass to the algorithm"
     )
@@ -518,11 +495,7 @@ class TriggerEndpoint(Resource):
 
         if not args["algorithm"] in app.algorithms:
             return (
-                {
-                    "Error": "No algorithm found with name: {0}".format(
-                        args["algorithm"]
-                    )
-                },
+                {"Error": "No algorithm found with name: {0}".format(args["algorithm"])},
                 404,
             )
 
@@ -568,17 +541,12 @@ api.add_resource(DatasetEndpoint, "/api/dataset", "/api/dataset/<string:dataset_
 api.add_resource(DatasetReadyEndpoint, "/api/dataset/ready/<string:dataset_id>")
 
 api.add_resource(DataObjectsEndpoint, "/api/dataobjects")
-api.add_resource(
-    DataObjectEndpoint, "/api/dataobject", "/api/dataobject/<string:dataobject_id>"
-)
-api.add_resource(
-    DataObjectDownloadEndpoint, "/api/dataobject/download/<string:dataobject_id>"
-)
+api.add_resource(DataObjectEndpoint, "/api/dataobject", "/api/dataobject/<string:dataobject_id>")
+api.add_resource(DataObjectDownloadEndpoint, "/api/dataobject/download/<string:dataobject_id>")
 
 api.add_resource(AlgorithmEndpoint, "/api/algorithm")
 
 api.add_resource(
-    DicomLocationEndpoint,
-    "/api/dicomlocation",
-    "/api/dicomlocation/<string:dicom_location_id>",
+    DicomLocationEndpoint, "/api/dicomlocation", "/api/dicomlocation/<string:dicom_location_id>",
 )
+

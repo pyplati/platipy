@@ -45,6 +45,23 @@ def get_external_mask(
 
     external_mask_components = sitk.ConnectedComponent(external_mask, True)
 
+    # Get the number of pixels that fall into each label map value
+    cts = np.bincount(sitk.GetArrayFromImage(external_mask_components).flatten())
+
+    # Keep only the largest 6 components for analysis
+    connected_component_values = cts.argsort()[-6:][::-1]
+
+    # Calculate metrics that describe segmentations
+    num_pix_list = np.zeros_like(connected_component_values, dtype=np.float32)
+    label_shape_analysis = sitk.LabelShapeStatisticsImageFilter()
+
+    for i, val in enumerate(connected_component_values):
+        single_connected_component_image = sitk.Equal(
+            external_mask_components, val.astype(np.float)
+        )
+        label_shape_analysis.Execute(single_connected_component_image)
+        num_pix_list[i] = label_shape_analysis.GetNumberOfPixels(True)
+
     # Second largest volume is most likely the body - you should check this!
     body_mask = sitk.Equal(sitk.RelabelComponent(external_mask_components), 1)
 
@@ -98,6 +115,9 @@ def generate_field_shift(
     # Define array
     # Used for image array manipulations
     mask_image_arr = sitk.GetArrayFromImage(mask_image)
+
+    # Units are in mm so convert to voxels
+    vector_shift = [x / y for x, y in zip(vector_shift, mask_image.GetSpacing())]
 
     # The template deformation field
     # Used to generate transforms
@@ -172,6 +192,11 @@ def generate_field_asymmetric_contract(
     # Used for image array manipulations
     mask_image_arr = sitk.GetArrayFromImage(mask_image)
 
+    # Units are in mm so convert to voxels
+    vector_asymmetric_contract = [
+        x / y for x, y in zip(vector_asymmetric_contract, mask_image.GetSpacing())
+    ]
+
     # The template deformation field
     # Used to generate transforms
     dvf_arr = np.zeros(mask_image_arr.shape + (3,))
@@ -186,6 +211,7 @@ def generate_field_asymmetric_contract(
     dvf_tfm = sitk.DisplacementFieldTransform(
         sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
     )
+
     mask_image_asymmetric_contract = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
     )
@@ -243,6 +269,11 @@ def generate_field_asymmetric_extend(
     # Used for image array manipulations
     mask_image_arr = sitk.GetArrayFromImage(mask_image)
 
+    # Units are in mm so convert to voxels
+    vector_asymmetric_extend = [
+        x / y for x, y in zip(vector_asymmetric_extend, mask_image.GetSpacing())
+    ]
+
     # The template deformation field
     # Used to generate transforms
     dvf_arr = np.zeros(mask_image_arr.shape + (3,))
@@ -255,6 +286,7 @@ def generate_field_asymmetric_extend(
     dvf_tfm = sitk.DisplacementFieldTransform(
         sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
     )
+
     mask_image_asymmetric_extend = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
     )
@@ -272,6 +304,7 @@ def generate_field_asymmetric_extend(
     dvf_tfm = sitk.DisplacementFieldTransform(
         sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
     )
+
     mask_image_asymmetric_extend = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
     )
@@ -307,7 +340,9 @@ def generate_field_expand(
         expand = (expand,) * 3
 
     if np.all(np.array(expand) <= 0):
-        mask_images_expand = sitk.BinaryErode(mask_image, list(np.abs(expand)))
+        mask_images_expand = sitk.BinaryErode(
+            mask_image, [int(x) for x in np.abs(expand)], sitk.sitkBox
+        )
     elif np.all(np.array(expand) >= 0):
         mask_images_expand = sitk.BinaryDilate(mask_image, expand)
     else:
@@ -340,6 +375,7 @@ def generate_field_expand(
     dvf_tfm = sitk.DisplacementFieldTransform(
         sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
     )
+
     mask_image_symmetric_expand = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
     )
@@ -357,6 +393,7 @@ def generate_field_expand(
 
 
 def generate_field_radial_bend(
+
     reference_image,
     body_mask,
     reference_point,

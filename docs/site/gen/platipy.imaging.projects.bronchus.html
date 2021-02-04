@@ -1,0 +1,329 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>platipy.imaging.projects.bronchus package &mdash; PlatiPy  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="PlatiPy  documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PlatiPy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">PlatiPy documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PlatiPy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>platipy.imaging.projects.bronchus package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/gen/platipy.imaging.projects.bronchus.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="platipy-imaging-projects-bronchus-package">
+<h1>platipy.imaging.projects.bronchus package<a class="headerlink" href="#platipy-imaging-projects-bronchus-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-platipy.imaging.projects.bronchus.bronchus">
+<span id="platipy-imaging-projects-bronchus-bronchus-module"></span><h2>platipy.imaging.projects.bronchus.bronchus module<a class="headerlink" href="#module-platipy.imaging.projects.bronchus.bronchus" title="Permalink to this headline">¶</a></h2>
+<p>Created on Wed Feb 21 16:39:27 2018</p>
+<p>Bronchus segmentation.  The superior extent of bronchus is around 4cm SUP from Carina (From first
+slice where two airways become visible).
+In this code I’m using 2cm as it’s easier to detect where the airways are getting wider</p>
+<p>Areas to improve: parameters could be improved (eg. the median filter, carina detection, etc). The
+GenLung_mask is based on old ITK code from a masters student.  I think we can replace this function
+by checking the top (sup) slice for an airhole and then connected thresholding.</p>
+<p>Code fails on two Liverpool cases:  13 (lungs appear in the sup slice) and 36 (the mask failed to
+generate - need to look at this)</p>
+<p>&#64;author: Jason Dowling (CSIRO)</p>
+<dl class="py function">
+<dt id="platipy.imaging.projects.bronchus.bronchus.fast_mask">
+<code class="sig-prename descclassname">platipy.imaging.projects.bronchus.bronchus.</code><code class="sig-name descname">fast_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">end</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.bronchus.bronchus.fast_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fast masking for area of a 3D volume .</p>
+<p>SimpleITK lacks iterators so voxels need to be set with SetPixel which is horribly slow.
+This code uses numpy arrays to reduce time for one volume from around one minute to about 0.5s</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>image</strong> – Input 3D binary image, start slice for masking (value=0), end slice for masking</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Masked image.  This may be in float, so it might need casting back to original pixel type.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.bronchus.bronchus.generate_airway_mask">
+<code class="sig-prename descclassname">platipy.imaging.projects.bronchus.bronchus.</code><code class="sig-name descname">generate_airway_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dest</span></em>, <em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">lung_mask</span></em>, <em class="sig-param"><span class="n">config_dict</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.bronchus.bronchus.generate_airway_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate final bronchus segmentation .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>image</strong> – path for CT image and mask destination</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.bronchus.bronchus.generate_lung_mask">
+<code class="sig-prename descclassname">platipy.imaging.projects.bronchus.bronchus.</code><code class="sig-name descname">generate_lung_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.bronchus.bronchus.generate_lung_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate initial airway mask (includes lungs).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>img</strong> – The SimpleITK CT image to segment the lungs in</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The mask containing the lung segmentation</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>lung_mask</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.projects.bronchus.bronchus.get_distance">
+<code class="sig-prename descclassname">platipy.imaging.projects.bronchus.bronchus.</code><code class="sig-name descname">get_distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a_mask</span></em>, <em class="sig-param"><span class="n">b_mask</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.bronchus.bronchus.get_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the nearest distance between two masks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a_mask</strong> – The first mask</p></li>
+<li><p><strong>b_mask</strong> – The second mask</p></li>
+<li><p><strong>dest</strong> – Working directory to output intermediate files</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.projects.bronchus.run">
+<span id="platipy-imaging-projects-bronchus-run-module"></span><h2>platipy.imaging.projects.bronchus.run module<a class="headerlink" href="#module-platipy.imaging.projects.bronchus.run" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.projects.bronchus.run.run_bronchus_segmentation">
+<code class="sig-prename descclassname">platipy.imaging.projects.bronchus.run.</code><code class="sig-name descname">run_bronchus_segmentation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_image</span></em>, <em class="sig-param"><span class="n">settings</span><span class="o">=</span><span class="default_value">{'algorithmSettings': {'distance_from_supu_slice_values': [3, 10, 20], 'expected_physical_size_range': [22000, 150000], 'extend_from_carina_mm': 40, 'fast_mode': True, 'lung_mask_hu_values': [- 750, - 775, - 800, - 825, - 850, - 900, - 700, - 950, - 650], 'minimum_tree_half_physical_size': 1000}, 'outputBronchusName': 'Auto_Bronchus', 'outputLungName': 'Auto_Lung'}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.bronchus.run.run_bronchus_segmentation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the Proximal Bronchial Tree segmentation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_image</strong> (<em>sitk.Image</em>) – SimpleITK image on which to perform the segmentation</p></li>
+<li><p><strong>settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Dictionary containing settings for algorithm.
+Defaults to BRONCHUS_SETTINGS_DEFAULTS.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary containing output of segmentation</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.projects.bronchus.service">
+<span id="platipy-imaging-projects-bronchus-service-module"></span><h2>platipy.imaging.projects.bronchus.service module<a class="headerlink" href="#module-platipy.imaging.projects.bronchus.service" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.projects.bronchus.service.bronchus_service">
+<code class="sig-prename descclassname">platipy.imaging.projects.bronchus.service.</code><code class="sig-name descname">bronchus_service</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_objects</span></em>, <em class="sig-param"><span class="n">working_dir</span></em>, <em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.bronchus.service.bronchus_service" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the platipy framework to provide bronchus segmentation.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.projects.bronchus">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.projects.bronchus" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Phillip Chlap &amp; Rob Finnegan.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
