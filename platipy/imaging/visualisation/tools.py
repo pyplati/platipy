@@ -798,7 +798,17 @@ class ImageVisualiser:
         image = self.__image
         nda = sitk.GetArrayFromImage(image)
 
-        (ax_size, cor_size, sag_size) = nda.shape
+        (ax_size, cor_size, sag_size) = nda.shape[:3]
+
+        try:
+            rgb_flag = nda.shape[3] == 3
+            print(
+                "Found a (z,y,x,3) dimensional array - assuming this is an RGB image."
+            )
+            nda /= nda.max()
+        except:
+            None
+
         sp_plane, _, sp_slice = image.GetSpacing()
         asp = (1.0 * sp_slice) / sp_plane
 

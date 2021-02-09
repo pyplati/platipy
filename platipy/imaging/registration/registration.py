@@ -18,6 +18,39 @@ import numpy as np
 import SimpleITK as sitk
 
 
+def convert_mask_to_distance_map(mask, squaredDistance=False, normalise=False):
+    raw_map = sitk.SignedMaurerDistanceMap(
+        mask,
+        insideIsPositive=True,
+        squaredDistance=squaredDistance,
+        useImageSpacing=True,
+    )
+
+    if normalise:
+        return raw_map / (sitk.GetArrayFromImage(raw_map).max())
+    else:
+        return raw_map
+
+
+def convert_mask_to_reg_structure(mask, expansion=1, scale=lambda x: x):
+    distance_map = sitk.Cast(
+        convert_mask_to_distance_map(mask, squaredDistance=False), sitk.sitkFloat64
+    )
+
+    inverted_distance_map = sitk.Threshold(
+        distance_map
+        + expansion * sitk.Cast(distance_map < (expansion), sitk.sitkFloat64),
+        lower=0,
+        upper=1000,
+    )
+
+    scaled_distance_map = inverted_distance_map / (
+        sitk.GetArrayViewFromImage(inverted_distance_map).max()
+    )
+
+    return scale(scaled_distance_map)
+
+
 def initial_registration_command_iteration(method):
     """
     Utility function to print information during initial (rigid, similarity, affine, translation) registration
@@ -641,7 +674,6 @@ def bspline_registration(
     initial_isotropic_smooth_scale=0,
     trace=False,
     ncores=8,
-    default_value=-1024,
     debug=False,
 ):
     """
@@ -833,4 +865,4 @@ def bspline_registration(
     registered_image = sitk.Cast(registered_image, moving_image_type)
 
     # Return outputs
-    return registered_image, output_transform, registration
+    return registered_image, output_transform
