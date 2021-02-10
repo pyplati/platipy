@@ -60,6 +60,36 @@ def get_patients_in_collection(collection):
     return patient_ids
 
 
+def get_lung_data(number_of_patients=1):
+    """Gets some images and structures from the LCTSC dataset in TCIA.
+
+    Keyword Arguments:
+        number_of_patients {int} -- The number of patients to fetch (default: {1})
+
+    Returns:
+        dict -- dictionary of patient ids as key and path to data as value
+    """
+
+    collection = "LCTSC"
+    patient_ids = get_patients_in_collection(collection)
+    return fetch_data(collection, patient_ids=patient_ids[0:number_of_patients])
+
+
+def get_hn_data(number_of_patients=1):
+    """Gets some images and structures from the Head-Neck-Radiomics-HN1 dataset in TCIA.
+
+    Keyword Arguments:
+        number_of_patients {int} -- The number of patients to fetch (default: {1})
+
+    Returns:
+        dict -- dictionary of patient ids as key and path to data as value
+    """
+
+    collection = "HEAD-NECK-RADIOMICS-HN1"
+    patient_ids = get_patients_in_collection(collection)
+    return fetch_data(collection, patient_ids=patient_ids[0:number_of_patients])
+
+
 def fetch_data(collection, patient_ids=None, output_directory=None):
     """Fetches data from TCIA from the dataset specified
 
