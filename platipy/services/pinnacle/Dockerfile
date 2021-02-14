@@ -1,8 +1,4 @@
-FROM platipy
-
-COPY requirements-pinnacle.txt requirements-pinnacle.txt
-
-RUN pip3 install -r requirements-pinnacle.txt
+FROM platipy/platipy
 
 COPY . .
 
