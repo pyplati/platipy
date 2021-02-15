@@ -24,8 +24,10 @@ A lot! A good place to start is by looking in the **examples** directory. There 
  
 A major part of this package is **visualisation**, and some examples are shown below!
 
+Overlay a deformation vector field on an image (shown in orthogonal slices):
+![Figure 1](assets/prostate_dir.png)
 
-![Figure 1](assets/prostate_dir.png){:height="328px" width="500px"}
+
 
 ## Contributing
 
