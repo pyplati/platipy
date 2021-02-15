@@ -25,7 +25,7 @@ A lot! A good place to start is by looking in the **examples** directory. There 
 A major part of this package is **visualisation**, and some examples are shown below!
 
 
-![Figure 1](assets/prostate_dir.png){:height="700px"}
+![Figure 1](assets/prostate_dir.png){:height="328px" width="500px"}
 
 ## Contributing
 
