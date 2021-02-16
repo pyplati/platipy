@@ -1,7 +1,6 @@
 # Cardiac Atlas Auto-Segmentation Service
 
-A Docker image is provided to quickly spin up the Cardiac Auto-segementation service. The following
-command can be used to start the Docker container:
+A Docker image is provided to quickly spin up the Cardiac auto-segmentation service. The following command can be used to start the Docker container:
 
 ```
 docker run -v ~/cardiac_data:/data -v ~/cardiac_atlas:/atlas -p 8008:8000 -p 7785:7777 -d --restart=always --name=cardiac_service platipy/platipy:cardiac
