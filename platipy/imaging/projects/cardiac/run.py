@@ -59,12 +59,12 @@ CARDIAC_SETTINGS_DEFAULTS = {
     "rigidSettings": {
         "initialReg": "Similarity",
         "options": {
-            "shrinkFactors": [16, 8, 4],
-            "smoothSigmas": [0, 0, 0],
-            "samplingRate": 0.75,
-            "defaultValue": -1024,
-            "numberOfIterations": 50,
-            "finalInterp": sitk.sitkBSpline,
+            "shrink_factors": [16, 8, 4],
+            "smooth_sigmas": [0, 0, 0],
+            "sampling_rate": 0.75,
+            "default_value": -1024,
+            "number_of_iterations": 50,
+            "final_interp": sitk.sitkBSpline,
             "metric": "mean_squares",
             "optimiser": "gradient_descent_line_search",
         },
@@ -105,7 +105,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "stopCondition": {"LANTDESCARTERY_SPLINE": "count"},
         "stopConditionValue": {"LANTDESCARTERY_SPLINE": 1},
     },
-    "returnAsCropped": False
+    "returnAsCropped": False,
 }
 
 
@@ -165,9 +165,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
         image = sitk.ReadImage(f"{atlas_path}/{atlas_image_format.format(atlas_id)}")
 
         structures = {
-            struct: sitk.ReadImage(
-                f"{atlas_path}/{atlas_label_format.format(atlas_id, struct)}"
-            )
+            struct: sitk.ReadImage(f"{atlas_path}/{atlas_label_format.format(atlas_id, struct)}")
             for struct in atlas_structures
         }
 
@@ -185,9 +183,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
             image = sitk.RegionOfInterest(image, size=size, index=index)
 
             final_volume = np.product(image.GetSize())
-            logger.info(
-                f"  > Volume reduced by factor {original_volume/final_volume:.2f}"
-            )
+            logger.info(f"  > Volume reduced by factor {original_volume/final_volume:.2f}")
 
             for struct in atlas_structures:
                 structures[struct] = sitk.RegionOfInterest(
@@ -207,12 +203,12 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     """
     # Settings
     quick_reg_settings = {
-        "shrinkFactors": [8],
-        "smoothSigmas": [0],
-        "samplingRate": 0.75,
-        "defaultValue": -1024,
-        "numberOfIterations": 25,
-        "finalInterp": 3,
+        "shrink_factors": [8],
+        "smooth_sigmas": [0],
+        "sampling_rate": 0.75,
+        "default_value": -1024,
+        "number_of_iterations": 25,
+        "final_interp": 3,
         "metric": "mean_squares",
         "optimiser": "gradient_descent_line_search",
     }
@@ -243,14 +239,11 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
 
         del reg_image
 
-    combined_image_extent = (
-        sum(registered_crop_images) / len(registered_crop_images) > -1000
-    )
+    combined_image_extent = sum(registered_crop_images) / len(registered_crop_images) > -1000
 
     shape_filter = sitk.LabelShapeStatisticsImageFilter()
     shape_filter.Execute(combined_image_extent)
     bounding_box = np.array(shape_filter.GetBoundingBox(1))
-
 
     """
     Crop image to region of interest (ROI)
@@ -260,7 +253,9 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     expansion = settings["autoCropSettings"]["expansion"]
     expansion_array = expansion * np.array(img.GetSpacing())
 
-    crop_box_size, crop_box_index = label_to_roi(img, combined_image_extent, expansion = expansion_array)
+    crop_box_size, crop_box_index = label_to_roi(
+        img, combined_image_extent, expansion=expansion_array
+    )
     img_crop = crop_to_roi(img, crop_box_size, crop_box_index)
     logger.info(
         f"Calculated crop box\n\
@@ -312,11 +307,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
         for struct in atlas_structures:
             input_struct = atlas_set[atlas_id]["Original"][struct]
             atlas_set[atlas_id]["RIR"][struct] = transform_propagation(
-                img_crop,
-                input_struct,
-                initial_tfm,
-                structure=True,
-                interp=sitk.sitkLinear,
+                img_crop, input_struct, initial_tfm, structure=True, interp=sitk.sitkLinear,
             )
 
     """
@@ -374,7 +365,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     # Compute weight maps
     # Here we use simple GWV as this minises the potentially negative influence of mis-registered atlases
     reference_structure = settings["IARSettings"]["referenceStructure"]
-    
+
     if reference_structure:
 
         smooth_distance_maps = settings["IARSettings"]["smoothDistanceMaps"]
@@ -384,7 +375,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
         outlier_factor = settings["IARSettings"]["outlierFactor"]
         min_best_atlases = settings["IARSettings"]["minBestAtlases"]
         project_on_sphere = settings["IARSettings"]["project_on_sphere"]
-        
+
         for atlas_id in atlas_id_list:
             atlas_image = atlas_set[atlas_id]["DIR"]["CT Image"]
             weight_map = compute_weight_map(img_crop, atlas_image, vote_type="global")
@@ -405,7 +396,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
         )
 
     else:
-        logger.info('IAR: No reference structure, skipping iterative atlas removal.')
+        logger.info("IAR: No reference structure, skipping iterative atlas removal.")
 
     """
     Step 4 - Vessel Splining
@@ -462,9 +453,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
 
         probability_map = combined_label_dict[structure_name]
 
-        optimal_threshold = settings["labelFusionSettings"]["optimalThreshold"][
-            structure_name
-        ]
+        optimal_threshold = settings["labelFusionSettings"]["optimalThreshold"][structure_name]
 
         binary_struct = process_probability_image(probability_map, optimal_threshold)
 
@@ -500,7 +489,6 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
             results[structure_name] = paste_img_binary
 
     if return_as_cropped:
-        results['CROP_IMAGE'] = img_crop
-
+        results["CROP_IMAGE"] = img_crop
 
     return results
