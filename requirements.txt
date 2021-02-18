@@ -1,21 +1,20 @@
-numpy
-pyyaml
-itk >= 5.0a1
-vtk
-SimpleITK
-scikit-image
-click
-pytest
-pydicom >= 2.0.0
-pynetdicom >= 1.5.0
-flask
-flask-restful
-flask-sqlalchemy
-celery < 5.0.0
-redis
-loguru
-psutil
-gunicorn
-requests
-pandas
-pymedphys >= 0.35.0
+numpy == 1.20.1
+pyyaml == 5.4.1
+itk == 5.1.2
+vtk == 9.0.1
+SimpleITK == 2.0.2
+scikit-image == 0.18.1
+click == 7.1.2
+pydicom == 2.1.2
+pynetdicom == 1.5.6
+flask == 1.1.2
+flask-restful == 0.3.8
+flask-sqlalchemy == 2.4.4
+celery == 4.4.7
+redis == 3.5.3
+loguru == 0.5.3
+psutil == 5.8.0
+gunicorn == 20.0.4
+requests == 2.25.1
+pandas == 1.2.2
+pymedphys == 0.35.0
