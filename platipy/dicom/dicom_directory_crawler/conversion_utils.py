@@ -976,7 +976,7 @@ def process_dicom_directory(
 
                             output_data_dict["DOSES"][output_name].append(dicom_file_data)
 
-        files_output[parent_data] = write_output_data_to_disk(
+        files_output[str(parent_data)] = write_output_data_to_disk(
             output_data_dict=output_data_dict,
             output_directory=output_directory,
             output_file_suffix=output_file_suffix,

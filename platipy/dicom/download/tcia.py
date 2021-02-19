@@ -243,8 +243,9 @@ def fetch_data(
 
         if nifti:
             logger.info(f"Converting data for {pid} to Nifti")
-            result["NIFTI"] = process_dicom_directory(
+            nifti_results = process_dicom_directory(
                 dicom_directory, output_directory=nifti_directory
             )
+            result[pid]["NIFTI"] = nifti_results[pid]
 
     return result
