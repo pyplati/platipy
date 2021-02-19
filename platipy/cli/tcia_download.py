@@ -65,7 +65,11 @@ logger.add(sys.stderr, level="DEBUG")
     "--output", "-o", required=False, type=click.Path(), help="Path to directory to store output"
 )
 def click_command(collection, patients, modalities, nifti, output):
-    """"""
+    """
+    This tool allows you to download data directly from The Cancer Imaging Archive (TCIA).
+
+    Data available on TCIA is listed here: https://www.cancerimagingarchive.net/collections/
+    """
 
     collections = get_collections()
     if not collection in collections:
