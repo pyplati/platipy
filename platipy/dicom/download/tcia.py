@@ -12,21 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import json
-import tempfile
 import zipfile
-import shutil
+import os
+
+from pathlib import Path
 
 import requests
 from loguru import logger
 
+from platipy.dicom.dicom_directory_crawler.conversion_utils import process_dicom_directory
+
 API_URL = "https://services.cancerimagingarchive.net/services/v4/TCIA"
 
 collection_endpoint = f"{API_URL}/query/getCollectionValues"
+modalities_endpoint = f"{API_URL}/query/getModalityValues"
 patient_endpoint = f"{API_URL}/query/getPatient"
 series_endpoint = f"{API_URL}/query/getSeries"
-download_series = f"{API_URL}/query/getImage"
+series_size_endpoint = f"{API_URL}/query/getSeriesSize"
+download_series_endpoint = f"{API_URL}/query/getImage"
+sop_uids_endpoint = f"{API_URL}/query/getSOPInstanceUIDs"
+download_image_endpoint = f"{API_URL}/query/getSingleImage"
 
 
 def get_collections():
@@ -60,6 +66,22 @@ def get_patients_in_collection(collection):
     return patient_ids
 
 
+def get_modalities_in_collection(collection):
+    """Get a list of object modalities in a TCIA collection
+
+    Args:
+        collection (str): TCIA collection
+
+    Returns:
+        list: List of modalities available in the collection
+    """
+
+    res = requests.get(modalities_endpoint, params={"Collection": collection})
+    modalities = [mod["Modality"] for mod in res.json()]
+
+    return modalities
+
+
 def get_lung_data(number_of_patients=1):
     """Gets some images and structures from the LCTSC dataset in TCIA.
 
@@ -72,7 +94,9 @@ def get_lung_data(number_of_patients=1):
 
     collection = "LCTSC"
     patient_ids = get_patients_in_collection(collection)
-    return fetch_data(collection, patient_ids=patient_ids[0:number_of_patients])
+    return fetch_data(
+        collection, patient_ids=patient_ids[0:number_of_patients], modalities=["CT", "RTSTRUCT"]
+    )
 
 
 def get_hn_data(number_of_patients=1):
@@ -87,16 +111,24 @@ def get_hn_data(number_of_patients=1):
 
     collection = "HEAD-NECK-RADIOMICS-HN1"
     patient_ids = get_patients_in_collection(collection)
-    return fetch_data(collection, patient_ids=patient_ids[0:number_of_patients])
+    return fetch_data(
+        collection, patient_ids=patient_ids[0:number_of_patients], modalities=["CT", "RTSTRUCT"]
+    )
 
 
-def fetch_data(collection, patient_ids=None, output_directory=None):
+def fetch_data(
+    collection, patient_ids=None, modalities=None, nifti=True, output_directory="./tcia"
+):
     """Fetches data from TCIA from the dataset specified
 
     Args:
         collection (str): The TCIA collection to fetch from
         patient_ids (list, optional): The patient IDs to fetch. If not set all patients are
-                                      fetched.
+                                      fetched
+        modalities (list, optional): A list of strings definiing the modalites to fetch. Will fetch
+                                     all modalities available if not specified.
+        nifti (bool, optional): Whether or not to convert the fetched DICOM to Nifti. Defaults to
+                                True
         output_directory (str): The directory in which to place fetched data
 
     Returns:
@@ -105,23 +137,39 @@ def fetch_data(collection, patient_ids=None, output_directory=None):
 
     result = {}
 
-    if not output_directory:
-        output_directory = os.path.join(os.path.dirname(__file__), "data", collection)
+    if isinstance(output_directory, str):
+        output_directory = Path(output_directory)
 
-    os.makedirs(output_directory, exist_ok=True)
+    output_directory = output_directory.joinpath(collection)
+    output_directory.mkdir(exist_ok=True, parents=True)
 
-    modalities = ["CT", "RTSTRUCT"]
+    modalities_available = get_modalities_in_collection(collection)
+    logger.debug(f"Modalities available: {modalities_available}")
+
+    if modalities is None:
+        logger.debug("Will fetch all modalities in collection")
+        modalities = modalities_available
+    else:
+        # Check that the user supplied modalities are all available, raise error if not
+        modalities_all_available = True
+        for modality in modalities:
+            if not modality in modalities_available:
+                modalities_all_available = False
+                logger.error(f"Modality not available in collection: {modality}")
+
+        if not modalities_all_available:
+            raise ValueError("Modalities aren't all available in collection")
 
     if not patient_ids:
         patient_ids = get_patients_in_collection(collection)
 
     for pid in patient_ids:
 
-        patient_directory = os.path.join(output_directory, pid)
-        result[pid] = patient_directory
-        if os.path.exists(patient_directory):
-            logger.debug(f"Path exists: {patient_directory}, won't fetch data")
-            continue
+        patient_directory = output_directory.joinpath(pid)
+        dicom_directory = patient_directory.joinpath("DICOM")
+        nifti_directory = patient_directory.joinpath("NIFTI")
+        result[pid] = {}
+        result[pid]["DICOM"] = {}
 
         logger.debug(f"Fetching data for Patient: {pid}")
 
@@ -131,15 +179,30 @@ def fetch_data(collection, patient_ids=None, output_directory=None):
                 params={"Collection": collection, "PatientID": pid, "Modality": modality},
             )
             series = json.loads(res.text)
-            series_fetched = {}
-            working_dir = tempfile.mkdtemp()
+
+            if not modality in result[pid]:
+                result[pid]["DICOM"][modality] = {}
 
             for obj in series:
 
-                save_path = os.path.join(working_dir, f"{pid}.zip")
+                series_uid = obj["SeriesInstanceUID"]
+
+                target_directory = dicom_directory.joinpath(series_uid)
+                result[pid]["DICOM"][modality][series_uid] = target_directory
+                if target_directory.exists():
+                    logger.warning(
+                        f"Series directory exists: {target_directory}, won't fetch data"
+                    )
+                    continue
+
+                logger.debug(f"Downloading Series: {series_uid}")
+
+                target_directory.mkdir(parents=True)
+
+                save_path = target_directory.joinpath(f"{pid}.zip")
 
                 response = requests.get(
-                    download_series,
+                    download_series_endpoint,
                     stream=True,
                     params={"SeriesInstanceUID": obj["SeriesInstanceUID"]},
                 )
@@ -147,18 +210,41 @@ def fetch_data(collection, patient_ids=None, output_directory=None):
                     for chunk in response.iter_content():
                         file_obj.write(chunk)
 
-                directory_to_extract_to = os.path.join(working_dir, pid, obj["Modality"])
                 with zipfile.ZipFile(save_path, "r") as zip_ref:
-                    zip_ref.extractall(directory_to_extract_to)
+                    zip_ref.extractall(target_directory)
 
-                series_fetched[obj["Modality"]] = directory_to_extract_to
+                os.remove(save_path)
 
-                shutil.copytree(
-                    directory_to_extract_to,
-                    os.path.join(patient_directory, "dicom", obj["Modality"]),
-                )
+                # response = requests.get(
+                #     sop_uids_endpoint,
+                #     params={"SeriesInstanceUID": series_uid},
+                # )
+                # sop_uids = [sid["SOPInstanceUID"] for sid in response.json()]
+                # instances_fetched = 0
 
-            # Remove the working files
-            shutil.rmtree(working_dir)
+                # for sop_uid in sop_uids:
+
+                #     target_file = target_directory.joinpath(f"{modality}.{sop_uid}.dcm")
+
+                #     response = requests.get(
+                #         download_image_endpoint,
+                #         stream=True,
+                #         params={
+                #             "SeriesInstanceUID": series_uid,
+                #             "SOPInstanceUID": sop_uid,
+                #         },
+                #     )
+
+                #     with open(target_file, "wb") as file_obj:
+                #         file_obj.write(response.content)
+
+                #     instances_fetched += 1
+                #     print("\r", f"{instances_fetched}/{len(sop_uids)}", end="")
+
+        if nifti:
+            logger.info(f"Converting data for {pid} to Nifti")
+            result["NIFTI"] = process_dicom_directory(
+                dicom_directory, output_directory=nifti_directory
+            )
 
     return result
