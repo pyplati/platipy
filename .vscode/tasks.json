@@ -5,7 +5,6 @@
     "tasks": [
         {
             "label": "Run Bronchus Segmentation Service (with auto-restart)",
-
             "type": "shell",
             "options": {
                 "cwd": "${workspaceFolder}/segmentation/bronchus",
@@ -66,7 +65,6 @@
                 "panel": "dedicated"
             }
         },
-
         {
             "label": "Refresh PlatiPy Docs",
             "type": "shell",
@@ -76,6 +74,7 @@
             "command": "sphinx-apidoc",
             "args": [
                 "../platipy",
+                "-f",
                 "-o",
                 "gen"
             ],
@@ -104,7 +103,5 @@
             },
             "problemMatcher": []
         }
-
-         
     ]
 }

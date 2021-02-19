@@ -154,14 +154,18 @@
 <span id="platipy-dicom-download-tcia-module"></span><h2>platipy.dicom.download.tcia module<a class="headerlink" href="#module-platipy.dicom.download.tcia" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="platipy.dicom.download.tcia.fetch_data">
-<code class="sig-prename descclassname">platipy.dicom.download.tcia.</code><code class="sig-name descname">fetch_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">collection</span></em>, <em class="sig-param"><span class="n">patient_ids</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">output_directory</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.download.tcia.fetch_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">platipy.dicom.download.tcia.</code><code class="sig-name descname">fetch_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">collection</span></em>, <em class="sig-param"><span class="n">patient_ids</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">modalities</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nifti</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">output_directory</span><span class="o">=</span><span class="default_value">'./tcia'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.download.tcia.fetch_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetches data from TCIA from the dataset specified</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>collection</strong> (<em>str</em>) – The TCIA collection to fetch from</p></li>
 <li><p><strong>patient_ids</strong> (<em>list</em><em>, </em><em>optional</em>) – The patient IDs to fetch. If not set all patients are
-fetched.</p></li>
+fetched</p></li>
+<li><p><strong>modalities</strong> (<em>list</em><em>, </em><em>optional</em>) – A list of strings definiing the modalites to fetch. Will fetch
+all modalities available if not specified.</p></li>
+<li><p><strong>nifti</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether or not to convert the fetched DICOM to Nifti. Defaults to
+True</p></li>
 <li><p><strong>output_directory</strong> (<em>str</em>) – The directory in which to place fetched data</p></li>
 </ul>
 </dd>
@@ -212,6 +216,23 @@ fetched.</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>dict – dictionary of patient ids as key and path to data as value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.dicom.download.tcia.get_modalities_in_collection">
+<code class="sig-prename descclassname">platipy.dicom.download.tcia.</code><code class="sig-name descname">get_modalities_in_collection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">collection</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.download.tcia.get_modalities_in_collection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of object modalities in a TCIA collection</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>collection</strong> (<em>str</em>) – TCIA collection</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of modalities available in the collection</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>

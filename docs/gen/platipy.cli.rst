@@ -60,6 +60,14 @@ platipy.cli.sort\_dicom\_from\_directory module
    :undoc-members:
    :show-inheritance:
 
+platipy.cli.tcia\_download module
+---------------------------------
+
+.. automodule:: platipy.cli.tcia_download
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Module contents
 ---------------

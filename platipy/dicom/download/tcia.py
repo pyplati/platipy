@@ -215,32 +215,6 @@ def fetch_data(
 
                 os.remove(save_path)
 
-                # response = requests.get(
-                #     sop_uids_endpoint,
-                #     params={"SeriesInstanceUID": series_uid},
-                # )
-                # sop_uids = [sid["SOPInstanceUID"] for sid in response.json()]
-                # instances_fetched = 0
-
-                # for sop_uid in sop_uids:
-
-                #     target_file = target_directory.joinpath(f"{modality}.{sop_uid}.dcm")
-
-                #     response = requests.get(
-                #         download_image_endpoint,
-                #         stream=True,
-                #         params={
-                #             "SeriesInstanceUID": series_uid,
-                #             "SOPInstanceUID": sop_uid,
-                #         },
-                #     )
-
-                #     with open(target_file, "wb") as file_obj:
-                #         file_obj.write(response.content)
-
-                #     instances_fetched += 1
-                #     print("\r", f"{instances_fetched}/{len(sop_uids)}", end="")
-
         if nifti:
             logger.info(f"Converting data for {pid} to Nifti")
             nifti_results = process_dicom_directory(
