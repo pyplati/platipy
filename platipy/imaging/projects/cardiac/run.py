@@ -55,7 +55,9 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "atlasLabelFormat": "Case_{0}/Structures/Case_{0}_{1}_CROP.nii.gz",
         "autoCropAtlas": True,
     },
-    "autoCropSettings": {"expansion": [2, 2, 2],},
+    "autoCropSettings": {
+        "expansion": [2, 2, 2],
+    },
     "rigidSettings": {
         "initialReg": "Similarity",
         "options": {
@@ -105,7 +107,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "stopCondition": {"LANTDESCARTERY_SPLINE": "count"},
         "stopConditionValue": {"LANTDESCARTERY_SPLINE": 1},
     },
-    "returnAsCropped": False
+    "returnAsCropped": False,
 }
 
 
@@ -207,12 +209,12 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     """
     # Settings
     quick_reg_settings = {
-        "shrinkFactors": [8],
-        "smoothSigmas": [0],
-        "samplingRate": 0.75,
-        "defaultValue": -1024,
-        "numberOfIterations": 25,
-        "finalInterp": 3,
+        "shrink_factors": [8],
+        "smooth_sigmas": [0],
+        "sampling_rate": 0.75,
+        "default_value": -1024,
+        "number_of_iterations": 25,
+        "final_interp": 3,
         "metric": "mean_squares",
         "optimiser": "gradient_descent_line_search",
     }
@@ -251,7 +253,6 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     shape_filter.Execute(combined_image_extent)
     bounding_box = np.array(shape_filter.GetBoundingBox(1))
 
-
     """
     Crop image to region of interest (ROI)
     --> Defined by images
@@ -260,7 +261,9 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     expansion = settings["autoCropSettings"]["expansion"]
     expansion_array = expansion * np.array(img.GetSpacing())
 
-    crop_box_size, crop_box_index = label_to_roi(img, combined_image_extent, expansion = expansion_array)
+    crop_box_size, crop_box_index = label_to_roi(
+        img, combined_image_extent, expansion=expansion_array
+    )
     img_crop = crop_to_roi(img, crop_box_size, crop_box_index)
     logger.info(
         f"Calculated crop box\n\
@@ -374,7 +377,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     # Compute weight maps
     # Here we use simple GWV as this minises the potentially negative influence of mis-registered atlases
     reference_structure = settings["IARSettings"]["referenceStructure"]
-    
+
     if reference_structure:
 
         smooth_distance_maps = settings["IARSettings"]["smoothDistanceMaps"]
@@ -384,7 +387,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
         outlier_factor = settings["IARSettings"]["outlierFactor"]
         min_best_atlases = settings["IARSettings"]["minBestAtlases"]
         project_on_sphere = settings["IARSettings"]["project_on_sphere"]
-        
+
         for atlas_id in atlas_id_list:
             atlas_image = atlas_set[atlas_id]["DIR"]["CT Image"]
             weight_map = compute_weight_map(img_crop, atlas_image, vote_type="global")
@@ -405,7 +408,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
         )
 
     else:
-        logger.info('IAR: No reference structure, skipping iterative atlas removal.')
+        logger.info("IAR: No reference structure, skipping iterative atlas removal.")
 
     """
     Step 4 - Vessel Splining
@@ -500,7 +503,6 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
             results[structure_name] = paste_img_binary
 
     if return_as_cropped:
-        results['CROP_IMAGE'] = img_crop
-
+        results["CROP_IMAGE"] = img_crop
 
     return results
