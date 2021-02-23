@@ -13,6 +13,29 @@ You can find the [PlatiPy documentation here](https://pyplati.github.io/platipy/
 - Python 3.6 or greater
 - See requirements.txt for required Python packages and requirements-dev.txt for librarites needed to contribute.
 
+## What can I do with ***platipy***?
+A lot! A good place to start is by looking in the **examples** directory. There are tools for:
+ - Linear transformation image registration (rigid, affine, etc.)
+ - Non-linear deformable image registration
+ - Atlas-based segmentation
+ - Synthetic deformation field generation
+ - DICOM tools (reading/writing, bulk conversion)
+ - Image label operations (comparison metrics, iterative atlas removal, label fusion)
+ 
+A major part of this package is **visualisation**, and some examples are shown below!
+
+Overlay a deformation vector field on an image (shown in orthogonal slices):
+
+![Figure 1](assets/prostate_dir.png)
+
+Overlay a scalar field on an image:
+
+![Figure 2](assets/prostate_tumour_p.png)
+
+Create a comparison image, with vector fields:
+
+![Figure 3](assets/hn_dvf_overlay.jpeg)
+
 ## Contributing
 
 ### Git

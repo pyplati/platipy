@@ -1,0 +1,275 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>platipy.imaging.augment package &mdash; PlatiPy  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="PlatiPy  documentation" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PlatiPy
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">PlatiPy documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PlatiPy</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>platipy.imaging.augment package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/gen/platipy.imaging.augment.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="platipy-imaging-augment-package">
+<h1>platipy.imaging.augment package<a class="headerlink" href="#platipy-imaging-augment-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-platipy.imaging.augment.defaug">
+<span id="platipy-imaging-augment-defaug-module"></span><h2>platipy.imaging.augment.defaug module<a class="headerlink" href="#module-platipy.imaging.augment.defaug" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="platipy.imaging.augment.defaug.ContractAugment">
+<em class="property">class </em><code class="sig-prename descclassname">platipy.imaging.augment.defaug.</code><code class="sig-name descname">ContractAugment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mask</span></em>, <em class="sig-param"><span class="n">vector_contract</span><span class="o">=</span><span class="default_value">10, 10, 10</span></em>, <em class="sig-param"><span class="n">gaussian_smooth</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">bone_mask</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.augment.defaug.ContractAugment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#platipy.imaging.augment.defaug.DeformableAugment" title="platipy.imaging.augment.defaug.DeformableAugment"><code class="xref py py-class docutils literal notranslate"><span class="pre">platipy.imaging.augment.defaug.DeformableAugment</span></code></a></p>
+<dl class="py method">
+<dt id="platipy.imaging.augment.defaug.ContractAugment.augment">
+<code class="sig-name descname">augment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.augment.defaug.ContractAugment.augment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="platipy.imaging.augment.defaug.DeformableAugment">
+<em class="property">class </em><code class="sig-prename descclassname">platipy.imaging.augment.defaug.</code><code class="sig-name descname">DeformableAugment</code><a class="headerlink" href="#platipy.imaging.augment.defaug.DeformableAugment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<dl class="py method">
+<dt id="platipy.imaging.augment.defaug.DeformableAugment.augment">
+<em class="property">abstract </em><code class="sig-name descname">augment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.augment.defaug.DeformableAugment.augment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="platipy.imaging.augment.defaug.ExpandAugment">
+<em class="property">class </em><code class="sig-prename descclassname">platipy.imaging.augment.defaug.</code><code class="sig-name descname">ExpandAugment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mask</span></em>, <em class="sig-param"><span class="n">vector_expand</span><span class="o">=</span><span class="default_value">10, 10, 10</span></em>, <em class="sig-param"><span class="n">gaussian_smooth</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">bone_mask</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.augment.defaug.ExpandAugment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#platipy.imaging.augment.defaug.DeformableAugment" title="platipy.imaging.augment.defaug.DeformableAugment"><code class="xref py py-class docutils literal notranslate"><span class="pre">platipy.imaging.augment.defaug.DeformableAugment</span></code></a></p>
+<dl class="py method">
+<dt id="platipy.imaging.augment.defaug.ExpandAugment.augment">
+<code class="sig-name descname">augment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.augment.defaug.ExpandAugment.augment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="platipy.imaging.augment.defaug.ShiftAugment">
+<em class="property">class </em><code class="sig-prename descclassname">platipy.imaging.augment.defaug.</code><code class="sig-name descname">ShiftAugment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mask</span></em>, <em class="sig-param"><span class="n">vector_shift</span><span class="o">=</span><span class="default_value">10, 10, 10</span></em>, <em class="sig-param"><span class="n">gaussian_smooth</span><span class="o">=</span><span class="default_value">5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.augment.defaug.ShiftAugment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#platipy.imaging.augment.defaug.DeformableAugment" title="platipy.imaging.augment.defaug.DeformableAugment"><code class="xref py py-class docutils literal notranslate"><span class="pre">platipy.imaging.augment.defaug.DeformableAugment</span></code></a></p>
+<dl class="py method">
+<dt id="platipy.imaging.augment.defaug.ShiftAugment.augment">
+<code class="sig-name descname">augment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.augment.defaug.ShiftAugment.augment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.augment.defaug.apply_augmentation">
+<code class="sig-prename descclassname">platipy.imaging.augment.defaug.</code><code class="sig-name descname">apply_augmentation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em>, <em class="sig-param"><span class="n">augmentation</span></em>, <em class="sig-param"><span class="n">masks</span><span class="o">=</span><span class="default_value">[]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.augment.defaug.apply_augmentation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="platipy.imaging.augment.defaug.generate_random_augmentation">
+<code class="sig-prename descclassname">platipy.imaging.augment.defaug.</code><code class="sig-name descname">generate_random_augmentation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ct_image</span></em>, <em class="sig-param"><span class="n">masks</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.augment.defaug.generate_random_augmentation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-platipy.imaging.augment">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.augment" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Phillip Chlap &amp; Rob Finnegan.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/language_data.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

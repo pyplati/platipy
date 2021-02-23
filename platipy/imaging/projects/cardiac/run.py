@@ -61,12 +61,12 @@ CARDIAC_SETTINGS_DEFAULTS = {
     "rigidSettings": {
         "initialReg": "Similarity",
         "options": {
-            "shrinkFactors": [16, 8, 4],
-            "smoothSigmas": [0, 0, 0],
-            "samplingRate": 0.75,
-            "defaultValue": -1024,
-            "numberOfIterations": 50,
-            "finalInterp": sitk.sitkBSpline,
+            "shrink_factors": [16, 8, 4],
+            "smooth_sigmas": [0, 0, 0],
+            "sampling_rate": 0.75,
+            "default_value": -1024,
+            "number_of_iterations": 50,
+            "final_interp": sitk.sitkBSpline,
             "metric": "mean_squares",
             "optimiser": "gradient_descent_line_search",
         },
@@ -167,9 +167,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
         image = sitk.ReadImage(f"{atlas_path}/{atlas_image_format.format(atlas_id)}")
 
         structures = {
-            struct: sitk.ReadImage(
-                f"{atlas_path}/{atlas_label_format.format(atlas_id, struct)}"
-            )
+            struct: sitk.ReadImage(f"{atlas_path}/{atlas_label_format.format(atlas_id, struct)}")
             for struct in atlas_structures
         }
 
@@ -187,9 +185,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
             image = sitk.RegionOfInterest(image, size=size, index=index)
 
             final_volume = np.product(image.GetSize())
-            logger.info(
-                f"  > Volume reduced by factor {original_volume/final_volume:.2f}"
-            )
+            logger.info(f"  > Volume reduced by factor {original_volume/final_volume:.2f}")
 
             for struct in atlas_structures:
                 structures[struct] = sitk.RegionOfInterest(
@@ -245,9 +241,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
 
         del reg_image
 
-    combined_image_extent = (
-        sum(registered_crop_images) / len(registered_crop_images) > -1000
-    )
+    combined_image_extent = sum(registered_crop_images) / len(registered_crop_images) > -1000
 
     shape_filter = sitk.LabelShapeStatisticsImageFilter()
     shape_filter.Execute(combined_image_extent)
@@ -315,11 +309,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
         for struct in atlas_structures:
             input_struct = atlas_set[atlas_id]["Original"][struct]
             atlas_set[atlas_id]["RIR"][struct] = transform_propagation(
-                img_crop,
-                input_struct,
-                initial_tfm,
-                structure=True,
-                interp=sitk.sitkLinear,
+                img_crop, input_struct, initial_tfm, structure=True, interp=sitk.sitkLinear,
             )
 
     """
@@ -465,9 +455,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
 
         probability_map = combined_label_dict[structure_name]
 
-        optimal_threshold = settings["labelFusionSettings"]["optimalThreshold"][
-            structure_name
-        ]
+        optimal_threshold = settings["labelFusionSettings"]["optimalThreshold"][structure_name]
 
         binary_struct = process_probability_image(probability_map, optimal_threshold)
 
