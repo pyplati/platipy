@@ -18,6 +18,17 @@ import SimpleITK as sitk
 
 
 def convert_mask_to_distance_map(mask, squared_distance=False, normalise=False):
+    """
+    Generate a distance map from a binary label.
+
+    Args:
+        mask ([SimpleITK.Image]): A binary label.
+        squared_distance (bool, optional): Option to use the squared distance. Defaults to False.
+        normalise (bool, optional): Normalise output to [0,1]. Defaults to False.
+
+    Returns:
+        [SimpleITK.Image]: The distance map as an image.
+    """
     raw_map = sitk.SignedMaurerDistanceMap(
         mask,
         insideIsPositive=True,
@@ -32,6 +43,24 @@ def convert_mask_to_distance_map(mask, squared_distance=False, normalise=False):
 
 
 def convert_mask_to_reg_structure(mask, expansion=1, scale=lambda x: x):
+    """
+    Generate a mask-like image to make structure-guided registration more
+    realistic via internal deformation within a binary mask.
+
+    Args:
+        mask ([SimpleITK.Image]): The binary label.
+        expansion (int, optional): For improved smoothness on the surface
+                                   (particularly complex structures) it will
+                                   often help to use some binary dilation. This
+                                   parameter defines the expansion in mm.
+                                   Defaults to 1.
+        scale ([function], optional): Defines scaling to the distance map.
+                                      For example: lambda x:sitk.Log(x).
+                                      Defaults to lambda x:x.
+
+    Returns:
+        [SimpleITK.Image]: [description]
+    """
     distance_map = sitk.Cast(
         convert_mask_to_distance_map(mask, squared_distance=False), sitk.sitkFloat64
     )
@@ -82,6 +111,20 @@ def control_point_spacing_distance_to_number(image, grid_spacing):
 
 
 def alignment_registration(fixed_image, moving_image, moments=True):
+    """
+    A simple registration procedure that can align images in a single step.
+    Uses the image centres-of-mass (and optionally second moments) to
+    estimate the shift (and rotation) needed for alignment.
+
+    Args:
+        fixed_image ([SimpleITK.Image]): The fixed (target/primary) image.
+        moving_image ([SimpleITK.Image]): The moving (secondary) image.
+        moments (bool, optional): Option to align images using the second moment. Defaults to True.
+
+    Returns:
+        [SimpleITK.Image]: The registered moving (secondary) image.
+        [SimleITK.Transform]: The linear transformation.
+    """
 
     moving_image_type = moving_image.GetPixelIDValue()
     fixed_image = sitk.Cast(fixed_image, sitk.sitkFloat32)
@@ -97,35 +140,74 @@ def alignment_registration(fixed_image, moving_image, moments=True):
 def initial_registration(
     fixed_image,
     moving_image,
-    moving_structure=False,
     fixed_structure=False,
-    options={
-        "shrink_factors": [8, 2, 1],
-        "smooth_sigmas": [4, 2, 0],
-        "sampling_rate": 0.1,
-        "final_interp": 3,
-        "metric": "mean_squares",
-        "optimiser": "gradient_descent",
-        "number_of_iterations": 50,
-    },
-    default_value=-1024,
-    trace=False,
+    moving_structure=False,
     reg_method="Similarity",
+    metric="mean_squares",
+    optimiser="gradient_descent",
+    shrink_factors=[8, 2, 1],
+    smooth_sigmas=[4, 2, 0],
+    sampling_rate=0.25,
+    ants_radius=3,
+    final_interp=2,
+    number_of_iterations=50,
+    default_value=-1000,
+    verbose=False,
 ):
     """
-    Rigid image registration using ITK
+    Initial linear registration between two images.
+    The images are not required to be in the same space.
+    There are several transforms available, with options for the metric and optimiser to be used.
+    Note the default_value, which should be set to match the image modality.
 
-    Args
-        fixed_image (sitk.Image) : the fixed image
-        moving_image (sitk.Image): the moving image, transformed to match fixed_image
-        options (dict)          : registration options
-        structure (bool)        : True if the image is a structure image
+    Args:
+        fixed_image ([SimpleITK.Image]): The fixed (target/primary) image.
+        moving_image ([SimpleITK.Image]): The moving (secondary) image.
+        fixed_structure (bool, optional): If defined, a binary SimpleITK.Image used to mask metric
+                                          evaluation for the moving image. Defaults to False.
+        moving_structure (bool, optional): If defined, a binary SimpleITK.Image used to mask metric
+                                           evaluation for the fixed image. Defaults to False.
+        reg_method (str, optional): The linear transformtation model to be used for image
+                                    registration.
+                                    Available options:
+                                     - translation
+                                     - rigid
+                                     - similarity
+                                     - affine
+                                     - scaleversor
+                                     - scaleskewversor
+                                    Defaults to "Similarity".
+        metric (str, optional): The metric to be optimised during image registration.
+                                Available options:
+                                 - correlation
+                                 - mean_squares
+                                 - mattes_mi
+                                 - joint_hist_mi
+                                 - ants (uses variable ants_radius)
+                                Defaults to "mean_squares".
+        optimiser (str, optional): The optimiser algorithm used for image registration.
+                                   Available options:
+                                    - lbfgsb
+                                      (limited-memory Broyden–Fletcher–Goldfarb–Shanno (bounded).)
+                                    - gradient_descent
+                                    - gradient_descent_line_search
+                                   Defaults to "gradient_descent".
+        shrink_factors (list, optional): The multi-resolution downsampling factors.
+                                         Defaults to [8, 2, 1].
+        smooth_sigmas (list, optional): The multi-resolution smoothing kernel scale (Gaussian).
+                                        Defaults to [4, 2, 0].
+        sampling_rate (float, optional): The fraction of voxels sampled during each iteration.
+                                         Defaults to 0.25.
+        ants_radius (int, optional): Used is the metric is set as "ants_radius". Defaults to 3.
+        final_interp (int, optional): The final interpolation order. Defaults to 2 (linear).
+        number_of_iterations (int, optional): Number of iterations in each multi-resolution step.
+                                              Defaults to 50.
+        default_value (int, optional): Default voxel value. Defaults to -1000.
+        verbose (bool, optional): Print image registration process information. Defaults to False.
 
-    Returns
-        registered_image (sitk.Image): the rigidly registered moving image
-        transform (transform        : the transform, can be used directly with
-                                      sitk.ResampleImageFilter
-
+    Returns:
+        [SimpleITK.Image]: The registered moving (secondary) image.
+        [SimleITK.Transform]: The linear transformation.
     """
 
     # Re-cast
@@ -133,15 +215,6 @@ def initial_registration(
 
     moving_image_type = moving_image.GetPixelIDValue()
     moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
-
-    # Get the options
-    shrink_factors = options["shrink_factors"]
-    smooth_sigmas = options["smooth_sigmas"]
-    sampling_rate = options["sampling_rate"]
-    final_interp = options["final_interp"]
-    metric = options["metric"]
-    optimiser = options["optimiser"]
-    number_of_iterations = options["number_of_iterations"]
 
     # Initialise using a VersorRigid3DTransform
     initial_transform = sitk.CenteredTransformInitializer(
@@ -165,11 +238,6 @@ def initial_registration(
     elif metric == "joint_hist_mi":
         registration.SetMetricAsJointHistogramMutualInformation()
     elif metric == "ants":
-        try:
-            ants_radius = options["ants_radius"]
-        except KeyError:
-            ants_radius = 3
-
         registration.SetMetricAsANTSNeighborhoodCorrelation(ants_radius)
     # to do: add the rest
 
@@ -203,7 +271,7 @@ def initial_registration(
     else:
         raise ValueError(
             "You have selected a registration method that does not exist.\n Please select from "
-            "Translation, Similarity, Affine, Rigid"
+            "Translation, Similarity, Affine, Rigid, ScaleVersor, ScaleSkewVersor"
         )
 
     if optimiser.lower() == "lbfgsb":
@@ -213,7 +281,7 @@ def initial_registration(
             maximumNumberOfCorrections=50,
             maximumNumberOfFunctionEvaluations=1024,
             costFunctionConvergenceFactor=1e7,
-            trace=trace,
+            trace=verbose,
         )
     elif optimiser.lower() == "exhaustive":
         """
@@ -232,7 +300,7 @@ def initial_registration(
             learningRate=1.0, numberOfIterations=number_of_iterations
         )
 
-    if trace:
+    if verbose:
         registration.AddCommand(
             sitk.sitkIterationEvent,
             lambda: initial_registration_command_iteration(registration),
@@ -259,51 +327,42 @@ def transform_propagation(
     moving_image,
     transform,
     structure=False,
-    default_value=-1024,
+    default_value=0,
     interp=sitk.sitkNearestNeighbor,
-    debug=False,
 ):
     """
     Transform propagation using ITK
 
     Args
-        fixed_image (sitk.Image)     : the fixed image
-        moving_image (sitk.Image)    : the moving image, to be propagated
-        transform (sitk.transform)  : the transformation; e.g. VersorRigid3DTransform,
-                                      AffineTransform
-        structure (bool)            : True if the image is a structure image
-        interp (int)                : the interpolation
-                                        sitk.sitkNearestNeighbor
-                                        sitk.sitkLinear
-                                        sitk.sitkBSpline
+        fixed_image (SimpleITK.Image): The fixed (primary, target) image
+        moving_image (SimpleITK.Image): The moving (secondary) image,
+                                        to which the transform is applied
+        transform (SimpleITK.Transform): The linear transformation
+        structure (bool, optional): True if the image is a binary (or multivalue) label
+        interp (int, optional): The interpolation order.
+                                Available options:
+                                    - SimpleITK.sitkNearestNeighbor
+                                    - SimpleITK.sitkLinear
+                                    - SimpleITK.sitkBSpline
+                                Defaults to SimpleITK.sitkNearestNeighbor
 
     Returns
-        registered_image (sitk.Image)        : the rigidly registered moving image
+        (SimpleITK.Image): The moving image after the transform is applied.
 
     """
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(fixed_image)
     resampler.SetTransform(transform)
-    resampler.SetInterpolator(interp)
+
     if structure:
-        resampler.SetDefaultPixelValue(0)
-    else:
-        resampler.SetDefaultPixelValue(default_value)
+        if interp != sitk.sitkNearestNeighbor:
+            raise ValueError("Structure interpolation should be nearest neighbour.")
+
+    resampler.SetDefaultPixelValue(default_value)
+    resampler.SetInterpolator(interp)
 
     output_image = resampler.Execute(moving_image)
-
-    if structure and interp > 1:
-        if debug:
-            print(
-                "Note: Higher order interpolation on binary mask - using 32-bit floating point "
-                "output"
-            )
-        output_image = sitk.Cast(output_image, sitk.sitkFloat32)
-
-        # Safe way to remove dodgy values that can cause issues later
-        output_image = sitk.Threshold(output_image, lower=1e-5, upper=100.0)
-    else:
-        output_image = sitk.Cast(output_image, moving_image.GetPixelID())
+    output_image = sitk.Cast(output_image, moving_image.GetPixelID())
 
     return output_image
 
@@ -317,7 +376,7 @@ def smooth_and_resample(
 ):
     """
     Args:
-        image: The image we want to resample.
+        image (SimpleITK.Image): The image we want to resample.
         shrink_factor: A number greater than one, such that the new image's size is
                        original_size/shrink_factor.
                        If isotropic_resample is True, this will instead define the voxel size (mm)
@@ -491,7 +550,7 @@ def fast_symmetric_forces_demons_registration(
     initial_displacement_field=None,
     smoothing_sigma_factor=1,
     smoothing_sigmas=False,
-    default_value=-1024,
+    default_value=-1000,
     ncores=1,
     structure=False,
     interp_order=2,
@@ -602,32 +661,40 @@ def apply_field(
     input_image,
     transform,
     structure=False,
-    default_value=-1024,
+    default_value=0,
     interp=sitk.sitkNearestNeighbor,
 ):
     """
     Transform a volume of structure with the given deformation field.
 
+
+
     Args
-        input_image (sitk.Image)        : the image to transform
-        transform (sitk.Transform)      : the transform to apply to the structure or mask
-        structure (bool)  : if true, the input will be treated as a struture, as a volume otherwise
-        interp (int)   : the type of interpolation to use, eg. sitk.sitkNearestNeighbor
+        input_image (SimpleITK.Image): The image, to which the transform is applied
+        transform (SimpleITK.Transform): The deformable transformation
+        structure (bool, optional): True if the image is a binary (or multivalue) label
+        interp (int, optional): The interpolation order.
+                                Available options:
+                                    - SimpleITK.sitkNearestNeighbor
+                                    - SimpleITK.sitkLinear
+                                    - SimpleITK.sitkBSpline
+                                Defaults to SimpleITK.sitkNearestNeighbor
 
     Returns
-        resampled_image (sitk.Image)    : the transformed image
+        (SimpleITK.Image): the transformed image
     """
     input_image_type = input_image.GetPixelIDValue()
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(input_image)
 
     if structure:
-        resampler.SetDefaultPixelValue(0)
-    else:
-        resampler.SetDefaultPixelValue(default_value)
+        if interp != sitk.sitkNearestNeighbor:
+            raise ValueError("Structure interpolation should be nearest neighbour.")
+
+    resampler.SetInterpolator(interp)
+    resampler.SetDefaultPixelValue(default_value)
 
     resampler.SetTransform(transform)
-    resampler.SetInterpolator(interp)
 
     resampled_image = resampler.Execute(sitk.Cast(input_image, sitk.sitkFloat32))
 
@@ -637,42 +704,84 @@ def apply_field(
 def bspline_registration(
     fixed_image,
     moving_image,
-    moving_structure=False,
     fixed_structure=False,
-    options={
-        "resolution_staging": [8, 4, 2],
-        "smooth_sigmas": [4, 2, 1],
-        "sampling_rate": 0.1,
-        "optimiser": "LBFGS",
-        "metric": "correlation",
-        "initial_grid_spacing": 64,
-        "grid_scale_factors": [1, 2, 4],
-        "interp_order": 3,
-        "default_value": -1024,
-        "number_of_iterations": 20,
-    },
+    moving_structure=False,
+    resolution_staging=[8, 4, 2],
+    smooth_sigmas=[4, 2, 1],
+    sampling_rate=0.1,
+    optimiser="LBFGS",
+    metric="mean_squares",
+    initial_grid_spacing=64,
+    grid_scale_factors=[1, 2, 4],
+    interp_order=3,
+    default_value=-1000,
+    number_of_iterations=20,
     isotropic_resample=False,
     initial_isotropic_size=1,
-    initial_isotropic_smooth_scale=0,
-    trace=False,
+    number_of_histogram_bins_mi=30,
+    verbose=False,
     ncores=8,
-    debug=False,
 ):
     """
     B-Spline image registration using ITK
 
     IMPORTANT - THIS IS UNDER ACTIVE DEVELOPMENT
 
-    Args
-        fixed_image (sitk.Image) : the fixed image
-        moving_image (sitk.Image): the moving image, transformed to match fixed_image
-        options (dict)          : registration options
-        structure (bool)        : True if the image is a structure image
+    Args:
+        fixed_image ([SimpleITK.Image]): The fixed (target/primary) image.
+        moving_image ([SimpleITK.Image]): The moving (secondary) image.
+        fixed_structure (bool, optional): If defined, a binary SimpleITK.Image used to mask metric
+                                          evaluation for the moving image. Defaults to False.
+        moving_structure (bool, optional): If defined, a binary SimpleITK.Image used to mask metric
+                                           evaluation for the fixed image. Defaults to False.
+        resolution_staging (list, optional): The multi-resolution downsampling factors.
+                                             Defaults to [8, 4, 2].
+        smooth_sigmas (list, optional): The multi-resolution smoothing kernel scale (Gaussian).
+                                        Defaults to [4, 2, 1].
+        sampling_rate (float, optional): The fraction of voxels sampled during each iteration.
+                                         Defaults to 0.1.
+        optimiser (str, optional): The optimiser algorithm used for image registration.
+                                   Available options:
+                                    - LBFSGS
+                                      (limited-memory Broyden–Fletcher–Goldfarb–Shanno (bounded).)
+                                    - LBFSG
+                                      (limited-memory Broyden–Fletcher–Goldfarb–Shanno
+                                      (unbounded).)
+                                    - CGLS (conjugate gradient line search)
+                                    - gradient_descent
+                                    - gradient_descent_line_search
+                                   Defaults to "LBFGS".
+        metric (str, optional): The metric to be optimised during image registration.
+                                Available options:
+                                 - correlation
+                                 - mean_squares
+                                 - demons
+                                 - mutual_information
+                                   (used with parameter number_of_histogram_bins_mi)
+                                Defaults to "mean_squares".
+        initial_grid_spacing (int, optional): Grid spacing of lower resolution stage (in mm).
+                                              Defaults to 64.
+        grid_scale_factors (list, optional): Factors to determine grid spacing at each
+                                             multiresolution stage.
+                                             Defaults to [1, 2, 4].
+        interp_order (int, optional): Interpolation order of final resampling.
+                                      Defaults to 3 (cubic).
+        default_value (int, optional): Default image value. Defaults to -1000.
+        number_of_iterations (int, optional): Number of iterations at each resolution stage.
+                                              Defaults to 20.
+        isotropic_resample (bool, optional): Flag whether to resample to isotropic resampling
+                                             prior to registration.
+                                             Defaults to False.
+        initial_isotropic_size (int, optional): Voxel size (in mm) of resampled isotropic image
+                                                (if used). Defaults to 1.
+        number_of_histogram_bins_mi (int, optional): Number of histogram bins used when calculating
+                                                     mutual information. Defaults to 30.
+        verbose (bool, optional): Print image registration process information. Defaults to False.
+        ncores (int, optional): Number of CPU cores used. Defaults to 8.
 
-    Returns
-        registered_image (sitk.Image): the rigidly registered moving image
-        transform (transform        : the transform, can be used directly with
-                                      sitk.ResampleImageFilter
+    Returns:
+        [SimpleITK.Image]: The registered moving (secondary) image.
+        [SimleITK.Transform]: The linear transformation.
 
     Notes:
      - smooth_sigmas are relative to resolution staging
@@ -680,18 +789,6 @@ def bspline_registration(
         scale of the Gaussian filter would be 2x4 = 8mm (i.e. 8x8x8 mm^3)
 
     """
-
-    # Get the settings
-    resolution_staging = options["resolution_staging"]
-    smooth_sigmas = options["smooth_sigmas"]
-    sampling_rate = options["sampling_rate"]
-    optimiser = options["optimiser"]
-    metric = options["metric"]
-    initial_grid_spacing = options["initial_grid_spacing"]
-    grid_scale_factors = options["grid_scale_factors"]
-    number_of_iterations = options["number_of_iterations"]
-    interp_order = options["interp_order"]
-    default_value = options["default_value"]
 
     # Re-cast input images
     fixed_image = sitk.Cast(fixed_image, sitk.sitkFloat32)
@@ -711,13 +808,13 @@ def bspline_registration(
         fixed_image = smooth_and_resample(
             fixed_image,
             initial_isotropic_size,
-            initial_isotropic_smooth_scale,
+            smoothing_sigma=0,
             isotropic_resample=True,
         )
         moving_image = smooth_and_resample(
             moving_image,
             initial_isotropic_size,
-            initial_isotropic_smooth_scale,
+            smoothing_sigma=0,
             isotropic_resample=True,
         )
 
@@ -733,16 +830,16 @@ def bspline_registration(
     registration.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
 
     # Choose optimiser
-    if optimiser == "LBFGSB":
+    if optimiser.lower() == "lbfgsb":
         registration.SetOptimizerAsLBFGSB(
             gradientConvergenceTolerance=1e-5,
             numberOfIterations=number_of_iterations,
             maximumNumberOfCorrections=5,
             maximumNumberOfFunctionEvaluations=1024,
             costFunctionConvergenceFactor=1e7,
-            trace=trace,
+            trace=verbose,
         )
-    elif optimiser == "LBFGS":
+    elif optimiser.lower() == "lbfgs":
         registration.SetOptimizerAsLBFGS2(
             numberOfIterations=number_of_iterations,
             solutionAccuracy=1e-2,
@@ -754,12 +851,12 @@ def bspline_registration(
             lineSearchMaximumStep=1e20,
             lineSearchAccuracy=0.01,
         )
-    elif optimiser == "CGLS":
+    elif optimiser.lower() == "cgls":
         registration.SetOptimizerAsConjugateGradientLineSearch(
             learningRate=0.05, numberOfIterations=number_of_iterations
         )
         registration.SetOptimizerScalesFromPhysicalShift()
-    elif optimiser == "GradientDescent":
+    elif optimiser.lower() == "gradient_descent":
         registration.SetOptimizerAsGradientDescent(
             learningRate=5.0,
             numberOfIterations=number_of_iterations,
@@ -767,7 +864,7 @@ def bspline_registration(
             convergenceWindowSize=10,
         )
         registration.SetOptimizerScalesFromPhysicalShift()
-    elif optimiser == "GradientDescentLineSearch":
+    elif optimiser.lower() == "gradient_descent_line_search":
         registration.SetOptimizerAsGradientDescentLineSearch(
             learningRate=1.0, numberOfIterations=number_of_iterations
         )
@@ -781,12 +878,8 @@ def bspline_registration(
     elif metric == "demons":
         registration.SetMetricAsDemons()
     elif metric == "mutual_information":
-        try:
-            number_of_histogram_bins = options["number_of_histogram_bins"]
-        except KeyError:
-            number_of_histogram_bins = 30
         registration.SetMetricAsMattesMutualInformation(
-            numberOfHistogramBins=number_of_histogram_bins
+            numberOfHistogramBins=number_of_histogram_bins_mi
         )
 
     registration.SetInterpolator(sitk.sitkLinear)
@@ -811,7 +904,7 @@ def bspline_registration(
         fixed_image, initial_grid_spacing
     )
 
-    if debug:
+    if verbose:
         print(f"Initial grid size: {transform_domain_mesh_size}")
 
     # Initialise transform
@@ -824,7 +917,7 @@ def bspline_registration(
     )
 
     # (Optionally) add iteration commands
-    if trace:
+    if verbose:
         registration.AddCommand(
             sitk.sitkIterationEvent,
             lambda: initial_registration_command_iteration(registration),
