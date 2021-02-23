@@ -6,7 +6,7 @@
         "--load-plugins=pylint_flask_sqlalchemy",
         "--max-line-length=99",
         "--disable=C0330",
-        "--disable=C0111",
+        "--disable=C0114",
         "--disable=W0102",
         "--disable=W0105",
         "--init-hook",

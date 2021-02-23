@@ -13,16 +13,15 @@
 # limitations under the License.
 
 
-import sys
 import numpy as np
 import SimpleITK as sitk
 
 
-def convert_mask_to_distance_map(mask, squaredDistance=False, normalise=False):
+def convert_mask_to_distance_map(mask, squared_distance=False, normalise=False):
     raw_map = sitk.SignedMaurerDistanceMap(
         mask,
         insideIsPositive=True,
-        squaredDistance=squaredDistance,
+        squaredDistance=squared_distance,
         useImageSpacing=True,
     )
 
@@ -34,12 +33,11 @@ def convert_mask_to_distance_map(mask, squaredDistance=False, normalise=False):
 
 def convert_mask_to_reg_structure(mask, expansion=1, scale=lambda x: x):
     distance_map = sitk.Cast(
-        convert_mask_to_distance_map(mask, squaredDistance=False), sitk.sitkFloat64
+        convert_mask_to_distance_map(mask, squared_distance=False), sitk.sitkFloat64
     )
 
     inverted_distance_map = sitk.Threshold(
-        distance_map
-        + expansion * sitk.Cast(distance_map < (expansion), sitk.sitkFloat64),
+        distance_map + expansion * sitk.Cast(distance_map < (expansion), sitk.sitkFloat64),
         lower=0,
         upper=1000,
     )
@@ -53,13 +51,10 @@ def convert_mask_to_reg_structure(mask, expansion=1, scale=lambda x: x):
 
 def initial_registration_command_iteration(method):
     """
-    Utility function to print information during initial (rigid, similarity, affine, translation) registration
+    Utility function to print information during initial (rigid, similarity, affine, translation)
+    registration
     """
-    print(
-        "{0:3} = {1:10.5f}".format(
-            method.GetOptimizerIteration(), method.GetMetricValue()
-        )
-    )
+    print("{0:3} = {1:10.5f}".format(method.GetOptimizerIteration(), method.GetMetricValue()))
 
 
 def deformable_registration_command_iteration(method):
@@ -73,9 +68,7 @@ def stage_iteration(method):
     """
     Utility function to print information during stage change in registration
     """
-    print(
-        f"Number of parameters = {method.GetInitialTransform().GetNumberOfParameters()}"
-    )
+    print(f"Number of parameters = {method.GetInitialTransform().GetNumberOfParameters()}")
 
 
 def control_point_spacing_distance_to_number(image, grid_spacing):
@@ -88,7 +81,8 @@ def control_point_spacing_distance_to_number(image, grid_spacing):
     return (number_points + 0.5).astype(int)
 
 
-def alignment_registration(fixed_image, moving_image, default_value=0, moments=True):
+def alignment_registration(fixed_image, moving_image, moments=True):
+
     moving_image_type = moving_image.GetPixelIDValue()
     fixed_image = sitk.Cast(fixed_image, sitk.sitkFloat32)
     moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
@@ -173,8 +167,9 @@ def initial_registration(
     elif metric == "ants":
         try:
             ants_radius = options["ants_radius"]
-        except:
+        except KeyError:
             ants_radius = 3
+
         registration.SetMetricAsANTSNeighborhoodCorrelation(ants_radius)
     # to do: add the rest
 
@@ -207,7 +202,8 @@ def initial_registration(
         registration.SetInitialTransform(sitk.ScaleSkewVersor3DTransform())
     else:
         raise ValueError(
-            "You have selected a registration method that does not exist.\n Please select from Translation, Similarity, Affine, Rigid"
+            "You have selected a registration method that does not exist.\n Please select from "
+            "Translation, Similarity, Affine, Rigid"
         )
 
     if optimiser.lower() == "lbfgsb":
@@ -299,7 +295,8 @@ def transform_propagation(
     if structure and interp > 1:
         if debug:
             print(
-                "Note: Higher order interpolation on binary mask - using 32-bit floating point output"
+                "Note: Higher order interpolation on binary mask - using 32-bit floating point "
+                "output"
             )
         output_image = sitk.Cast(output_image, sitk.sitkFloat32)
 
@@ -326,19 +323,16 @@ def smooth_and_resample(
                        If isotropic_resample is True, this will instead define the voxel size (mm)
         smoothing_sigma: Sigma for Gaussian smoothing, this is in physical (image spacing) units,
                          not pixels.
-        isotropic_resample: A flag that changes the behaviour to resample the image to isotropic voxels of size (shrink_factor)
+        isotropic_resample: A flag that changes the behaviour to resample the image to isotropic
+                            voxels of size (shrink_factor)
     Return:
         Image which is a result of smoothing the input and then resampling it using the given sigma
         and shrink factor.
     """
     if smoothing_sigma > 0:
         # smoothed_image = sitk.SmoothingRecursiveGaussian(image, smoothing_sigma)
-        maximumKernelWidth = int(
-            max([8 * smoothing_sigma * i for i in image.GetSpacing()])
-        )
-        smoothed_image = sitk.DiscreteGaussian(
-            image, smoothing_sigma ** 2, maximumKernelWidth
-        )
+        maximum_kernel_width = int(max([8 * smoothing_sigma * i for i in image.GetSpacing()]))
+        smoothed_image = sitk.DiscreteGaussian(image, smoothing_sigma ** 2, maximum_kernel_width)
     else:
         smoothed_image = image
 
@@ -346,27 +340,18 @@ def smooth_and_resample(
     original_size = image.GetSize()
 
     if isotropic_resample:
-        scale_factor = (
-            shrink_factor * np.ones_like(image.GetSize()) / np.array(image.GetSpacing())
-        )
-        new_size = [
-            int(sz / float(sf) + 0.5) for sz, sf in zip(original_size, scale_factor)
-        ]
+        scale_factor = shrink_factor * np.ones_like(image.GetSize()) / np.array(image.GetSpacing())
+        new_size = [int(sz / float(sf) + 0.5) for sz, sf in zip(original_size, scale_factor)]
 
     if not isotropic_resample:
-        if type(shrink_factor) == list:
-            new_size = [
-                int(sz / float(sf) + 0.5)
-                for sz, sf in zip(original_size, shrink_factor)
-            ]
+        if isinstance(shrink_factor, list):
+            new_size = [int(sz / float(sf) + 0.5) for sz, sf in zip(original_size, shrink_factor)]
         else:
             new_size = [int(sz / float(shrink_factor) + 0.5) for sz in original_size]
 
     new_spacing = [
         ((original_sz - 1) * original_spc) / (new_sz - 1)
-        for original_sz, original_spc, new_sz in zip(
-            original_size, original_spacing, new_size
-        )
+        for original_sz, original_spc, new_sz in zip(original_size, original_spacing, new_size)
     ]
 
     return sitk.Resample(
@@ -418,9 +403,7 @@ def multiscale_demons(
     fixed_images = []
     moving_images = []
 
-    for shrink_factor, smoothing_sigma in reversed(
-        list(zip(shrink_factors, smoothing_sigmas))
-    ):
+    for shrink_factor, smoothing_sigma in reversed(list(zip(shrink_factors, smoothing_sigmas))):
         fixed_images.append(
             smooth_and_resample(
                 fixed_image,
@@ -467,9 +450,7 @@ def multiscale_demons(
                 )
             initial_displacement_field.CopyInformation(fixed_images[-1])
     else:
-        initial_displacement_field = sitk.Resample(
-            initial_displacement_field, fixed_images[-1]
-        )
+        initial_displacement_field = sitk.Resample(initial_displacement_field, fixed_images[-1])
 
     # Run the registration.
     iters = iteration_staging[0]
@@ -527,7 +508,8 @@ def fast_symmetric_forces_demons_registration(
         resolution_staging (list[int])   : down-sampling factor for each resolution level
         iteration_staging (list[int])    : number of iterations for each resolution level
         isotropic_resample (bool)        : flag to request isotropic resampling of images, in which
-                                           case resolution_staging is used to define voxel size (mm) per level
+                                           case resolution_staging is used to define voxel size
+                                           (mm) per level
         initial_displacement_field (sitk.Image) : Initial displacement field to use
         ncores (int)                    : number of processing cores to use
         structure (bool)                : True if the image is a structure image
@@ -694,7 +676,8 @@ def bspline_registration(
 
     Notes:
      - smooth_sigmas are relative to resolution staging
-        e.g. for image spacing of 1x1x1 mm^3, with smooth sigma=2 and resolution_staging=4, the scale of the Gaussian filter would be 2x4 = 8mm (i.e. 8x8x8 mm^3)
+        e.g. for image spacing of 1x1x1 mm^3, with smooth sigma=2 and resolution_staging=4, the
+        scale of the Gaussian filter would be 2x4 = 8mm (i.e. 8x8x8 mm^3)
 
     """
 
@@ -800,7 +783,7 @@ def bspline_registration(
     elif metric == "mutual_information":
         try:
             number_of_histogram_bins = options["number_of_histogram_bins"]
-        except:
+        except KeyError:
             number_of_histogram_bins = 30
         registration.SetMetricAsMattesMutualInformation(
             numberOfHistogramBins=number_of_histogram_bins
@@ -809,7 +792,7 @@ def bspline_registration(
     registration.SetInterpolator(sitk.sitkLinear)
 
     # Set sampling
-    if type(sampling_rate) == float:
+    if isinstance(sampling_rate, float):
         registration.SetMetricSamplingPercentage(sampling_rate)
     elif type(sampling_rate) in [np.ndarray, list]:
         registration.SetMetricSamplingPercentagePerLevel(sampling_rate)
