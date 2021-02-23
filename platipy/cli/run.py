@@ -24,6 +24,7 @@ from platipy.cli import (
     nifti_to_rtstruct,
     rtstruct_to_nifti,
     nifti_to_series,
+    tcia_download,
 )
 
 tools = {
@@ -32,6 +33,7 @@ tools = {
     "nifti_to_rtstruct": nifti_to_rtstruct.click_command,
     "rtstruct_to_nifti": rtstruct_to_nifti.click_command,
     "nifti_to_series": nifti_to_series.click_command,
+    "tcia-download": tcia_download.click_command,
 }
 
 logger.remove()

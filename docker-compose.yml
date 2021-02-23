@@ -2,7 +2,7 @@ version: '3'
 
 services:
   platipy:
-    image: platipy
+    image: platipy/platipy
     ports:
       - "8001:8000"
       - "7777:7777"

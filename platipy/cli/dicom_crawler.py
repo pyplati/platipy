@@ -19,7 +19,9 @@ import click
 
 from loguru import logger
 
-from platipy.dicom.dicom_directory_crawler.conversion_utils import process_dicom_directory
+from platipy.dicom.dicom_directory_crawler.conversion_utils import (
+    process_dicom_directory,
+)
 
 logger.remove()
 logger.add(sys.stderr, level="DEBUG")
@@ -94,6 +96,14 @@ logger.add(sys.stderr, level="DEBUG")
     show_default=True,
     help="Use less verbose descriptions for DICOM images.",
 )
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Print more information while running.",
+)
 def click_command(
     input_dir,
     output_dir,
@@ -104,6 +114,7 @@ def click_command(
     overwrite,
     file_suffix,
     short_description,
+    verbose,
 ):
     """
     DICOM DIRECTORY CRAWLER
@@ -146,6 +157,8 @@ def click_command(
         output_directory=output_dir,
         output_file_suffix=file_suffix,
         overwrite_existing_files=overwrite,
+        write_to_disk=True,
+        verbose=verbose,
     )
 
     logger.info("########################")

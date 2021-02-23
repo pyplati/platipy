@@ -55,7 +55,9 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "atlasLabelFormat": "Case_{0}/Structures/Case_{0}_{1}_CROP.nii.gz",
         "autoCropAtlas": True,
     },
-    "autoCropSettings": {"expansion": [2, 2, 2],},
+    "autoCropSettings": {
+        "expansion": [2, 2, 2],
+    },
     "rigidSettings": {
         "initialReg": "Similarity",
         "options": {

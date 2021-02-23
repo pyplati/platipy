@@ -140,5 +140,4 @@ platipy/*/tests/data
 testing/
 converted/
 **/data
-**/dicom_output
-**/nifti_output
+**/tcia

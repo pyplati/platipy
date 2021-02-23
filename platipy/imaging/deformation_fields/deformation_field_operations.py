@@ -309,6 +309,8 @@ def generate_field_expand(
         [SimpleITK.Image]: The displacement vector field representing the expansion.
     """
 
+    registration_mask_original = convert_mask_to_reg_structure(mask_image_original)
+
     if bone_mask is not False:
         mask_image_original = mask_image + bone_mask
     else:
@@ -354,11 +356,9 @@ def generate_field_expand(
             mask_image_expand, np.abs(shrink_kernel).astype(int).tolist(), sitk.sitkBall
         )
 
-    if bone_mask is not False:
-        mask_image_expand = mask_image_expand + bone_mask
-
-    registration_mask_original = convert_mask_to_reg_structure(mask_image_original)
     registration_mask_expand = convert_mask_to_reg_structure(mask_image_expand)
+    if bone_mask is not False:
+        registration_mask_expand = registration_mask_expand + bone_mask
 
     # Use DIR to find the deformation
     _, _, dvf_template = fast_symmetric_forces_demons_registration(
