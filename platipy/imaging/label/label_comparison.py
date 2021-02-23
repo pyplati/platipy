@@ -25,145 +25,225 @@ Description:
 
 """
 
-from __future__ import print_function
-import os, sys
-
 import numpy as np
 import SimpleITK as sitk
 
 
-def compute_surface_metrics(imFixed, imMoving, verbose=False):
+def compute_surface_metrics(label_a, label_b, verbose=False):
+    """Compute surface distance metrics between two labels. Surface metrics computed are:
+    hausdorffDistance, meanSurfaceDistance, medianSurfaceDistance, maximumSurfaceDistance,
+    sigmaSurfaceDistance
+
+    Args:
+        label_a (sitk.Image): A mask to compare
+        label_b (sitk.Image): Another mask to compare
+        verbose (bool, optional): Whether to print verbose output. Defaults to False.
+
+    Returns:
+        dict: Dictionary object containing surface distance metrics
     """
-    HD, meanSurfDist, medianSurfDist, maxSurfDist, stdSurfDist
-    """
-    hausdorffDistance = sitk.HausdorffDistanceImageFilter()
-    hausdorffDistance.Execute(imFixed, imMoving)
-    HD = hausdorffDistance.GetHausdorffDistance()
 
-    meanSDList = []
-    maxSDList = []
-    stdSDList = []
-    medianSDList = []
-    numPoints = []
-    for (imA, imB) in ((imFixed, imMoving), (imMoving, imFixed)):
+    hausdorff_distance = sitk.HausdorffDistanceImageFilter()
+    hausdorff_distance.Execute(label_a, label_b)
+    hd = hausdorff_distance.GetHausdorffDistance()
 
-        labelIntensityStat = sitk.LabelIntensityStatisticsImageFilter()
-        referenceDistanceMap = sitk.Abs(sitk.SignedMaurerDistanceMap(imA, squaredDistance=False, useImageSpacing=True))
-        movingLabelContour = sitk.LabelContour(imB)
-        labelIntensityStat.Execute(movingLabelContour,referenceDistanceMap)
+    mean_sd_list = []
+    max_sd_list = []
+    std_sd_list = []
+    median_sd_list = []
+    num_points = []
+    for (la, lb) in ((label_a, label_b), (label_b, label_a)):
 
-        meanSDList.append(labelIntensityStat.GetMean(1))
-        maxSDList.append(labelIntensityStat.GetMaximum(1))
-        stdSDList.append(labelIntensityStat.GetStandardDeviation(1))
-        medianSDList.append(labelIntensityStat.GetMedian(1))
+        label_intensity_stat = sitk.LabelIntensityStatisticsImageFilter()
+        reference_distance_map = sitk.Abs(
+            sitk.SignedMaurerDistanceMap(la, squaredDistance=False, useImageSpacing=True)
+        )
+        moving_label_contour = sitk.LabelContour(lb)
+        label_intensity_stat.Execute(moving_label_contour, reference_distance_map)
 
-        numPoints.append(labelIntensityStat.GetNumberOfPixels(1))
+        mean_sd_list.append(label_intensity_stat.GetMean(1))
+        max_sd_list.append(label_intensity_stat.GetMaximum(1))
+        std_sd_list.append(label_intensity_stat.GetStandardDeviation(1))
+        median_sd_list.append(label_intensity_stat.GetMedian(1))
+
+        num_points.append(label_intensity_stat.GetNumberOfPixels(1))
 
     if verbose:
-        print("        Boundary points:  {0}  {1}".format(numPoints[0], numPoints[1]))
+        print("        Boundary points:  {0}  {1}".format(num_points[0], num_points[1]))
 
-    meanSurfDist = np.dot(meanSDList, numPoints)/np.sum(numPoints)
-    maxSurfDist = np.max(maxSDList)
-    stdSurfDist = np.sqrt( np.dot(numPoints,np.add(np.square(stdSDList), np.square(np.subtract(meanSDList,meanSurfDist)))) )
-    medianSurfDist = np.mean(medianSDList)
+    mean_surf_dist = np.dot(mean_sd_list, num_points) / np.sum(num_points)
+    max_surf_dist = np.max(max_sd_list)
+    std_surf_dist = np.sqrt(
+        np.dot(
+            num_points,
+            np.add(np.square(std_sd_list), np.square(np.subtract(mean_sd_list, mean_surf_dist))),
+        )
+    )
+    median_surf_dist = np.mean(median_sd_list)
 
-    resultDict = {}
-    resultDict['hausdorffDistance'] = HD
-    resultDict['meanSurfaceDistance'] = meanSurfDist
-    resultDict['medianSurfaceDistance'] = medianSurfDist
-    resultDict['maximumSurfaceDistance'] = maxSurfDist
-    resultDict['sigmaSurfaceDistance'] = stdSurfDist
+    result = {}
+    result["hausdorffDistance"] = hd
+    result["meanSurfaceDistance"] = mean_surf_dist
+    result["medianSurfaceDistance"] = median_surf_dist
+    result["maximumSurfaceDistance"] = max_surf_dist
+    result["sigmaSurfaceDistance"] = std_surf_dist
 
-    return resultDict
+    return result
 
-def compute_volume_metrics(imFixed, imMoving):
+
+def compute_volume_metrics(label_a, label_b):
+    """Compute volume metrics between two labels. Volume metrics computed are:
+    DSC, volumeOverlap fractionOverlap truePositiveFraction trueNegativeFraction
+    falsePositiveFraction falseNegativeFraction
+
+    Args:
+        label_a (sitk.Image): A mask to compare
+        label_b (sitk.Image): Another mask to compare
+
+    Returns:
+        dict: Dictionary object containing volume metrics
     """
-    DSC, VolOverlap, FracOverlap, TruePosFrac, TrueNegFrac, FalsePosFrac, FalseNegFrac
-    """
-    arrFixed = sitk.GetArrayFromImage(imFixed).astype(bool)
-    arrMoving = sitk.GetArrayFromImage(imMoving).astype(bool)
 
-    arrInter = arrFixed & arrMoving
-    arrUnion = arrFixed | arrMoving
+    arr_a = sitk.GetArrayFromImage(label_a).astype(bool)
+    arr_b = sitk.GetArrayFromImage(label_b).astype(bool)
 
-    voxVol = np.product(imFixed.GetSpacing())/1000. # Conversion to cm^3
+    arr_intersection = arr_a & arr_b
+    arr_union = arr_a | arr_b
+
+    voxel_volume = np.product(label_a.GetSpacing()) / 1000.0  # Conversion to cm^3
 
     # 2|A & B|/(|A|+|B|)
-    DSC =  (2.0*arrInter.sum())/(arrFixed.sum()+arrMoving.sum())
+    dsc = (2.0 * arr_intersection.sum()) / (arr_a.sum() + arr_b.sum())
 
     #  |A & B|/|A | B|
-    FracOverlap = arrInter.sum()/arrUnion.sum().astype(float)
-    VolOverlap = arrInter.sum() * voxVol
+    frac_overlap = arr_intersection.sum() / arr_union.sum().astype(float)
+    vol_overlap = arr_intersection.sum() * voxel_volume
 
-    TruePos = arrInter.sum()
-    TrueNeg = (np.invert(arrFixed) & np.invert(arrMoving)).sum()
-    FalsePos = arrMoving.sum()-TruePos
-    FalseNeg = arrFixed.sum()-TruePos
+    true_pos = arr_intersection.sum()
+    true_neg = (np.invert(arr_a) & np.invert(arr_b)).sum()
+    false_pos = arr_b.sum() - true_pos
+    false_neg = arr_a.sum() - true_pos
 
-    #
-    TruePosFrac = (1.0*TruePos)/(TruePos+FalseNeg)
-    TrueNegFrac = (1.0*TrueNeg)/(TrueNeg+FalsePos)
-    FalsePosFrac = (1.0*FalsePos)/(TrueNeg+FalsePos)
-    FalseNegFrac = (1.0*FalseNeg)/(TruePos+FalseNeg)
+    true_pos_frac = (1.0 * true_pos) / (true_pos + false_neg)
+    true_neg_frac = (1.0 * true_neg) / (true_neg + false_pos)
+    false_pos_frac = (1.0 * false_pos) / (true_neg + false_pos)
+    false_neg_frac = (1.0 * false_neg) / (true_pos + false_neg)
 
-    resultDict = {}
-    resultDict['DSC'] = DSC
-    resultDict['volumeOverlap'] = VolOverlap
-    resultDict['fractionOverlap'] = FracOverlap
-    resultDict['truePositiveFraction'] = TruePosFrac
-    resultDict['trueNegativeFraction'] = TrueNegFrac
-    resultDict['falsePositiveFraction'] = FalsePosFrac
-    resultDict['falseNegativeFraction'] = FalseNegFrac
+    result = {}
+    result["DSC"] = dsc
+    result["volumeOverlap"] = vol_overlap
+    result["fractionOverlap"] = frac_overlap
+    result["truePositiveFraction"] = true_pos_frac
+    result["trueNegativeFraction"] = true_neg_frac
+    result["falsePositiveFraction"] = false_pos_frac
+    result["falseNegativeFraction"] = false_neg_frac
 
-    return resultDict
+    return result
 
-def compute_metric_dsc(imA, imB):
-    arrA = sitk.GetArrayFromImage(imA).astype(bool)
-    arrB = sitk.GetArrayFromImage(imB).astype(bool)
-    return  2*((arrA & arrB).sum())/(arrA.sum()+arrB.sum())
 
-def compute_metric_specificity(imFixed, imMoving):
-    arrFixed = sitk.GetArrayFromImage(imFixed).astype(bool)
-    arrMoving = sitk.GetArrayFromImage(imMoving).astype(bool)
+def compute_metric_dsc(label_a, label_b):
+    """Compute the Dice Similarity Coefficient between two labels
 
-    arrInter = arrFixed & arrMoving
+    Args:
+        label_a (sitk.Image): A mask to compare
+        label_b (sitk.Image): Another mask to compare
 
-    TruePos = arrInter.sum()
-    TrueNeg = (np.invert(arrFixed) & np.invert(arrMoving)).sum()
-    FalsePos = arrMoving.sum()-TruePos
+    Returns:
+        float: The Dice Similarity Coefficient
+    """
 
-    return (1.0*TrueNeg)/(TrueNeg+FalsePos)
+    arr_a = sitk.GetArrayFromImage(label_a).astype(bool)
+    arr_b = sitk.GetArrayFromImage(label_b).astype(bool)
+    return 2 * ((arr_a & arr_b).sum()) / (arr_a.sum() + arr_b.sum())
 
-def compute_metric_sensitivity(imFixed, imMoving):
-    arrFixed = sitk.GetArrayFromImage(imFixed).astype(bool)
-    arrMoving = sitk.GetArrayFromImage(imMoving).astype(bool)
 
-    arrInter = arrFixed & arrMoving
+def compute_metric_specificity(label_a, label_b):
+    """Compute the specificity between two labels
 
-    TruePos = arrInter.sum()
-    FalseNeg = arrFixed.sum()-TruePos
+    Args:
+        label_a (sitk.Image): A mask to compare
+        label_b (sitk.Image): Another mask to compare
 
-    return (1.0*TruePos)/(TruePos+FalseNeg)
+    Returns:
+        float: The specificity between the two labels
+    """
 
-def compute_metric_masd(imFixed, imMoving):
-    meanSDList = []
-    numPoints = []
-    for (imA, imB) in ((imFixed, imMoving), (imMoving, imFixed)):
+    arr_a = sitk.GetArrayFromImage(label_a).astype(bool)
+    arr_b = sitk.GetArrayFromImage(label_b).astype(bool)
 
-        labelIntensityStat = sitk.LabelIntensityStatisticsImageFilter()
-        referenceDistanceMap = sitk.Abs(sitk.SignedMaurerDistanceMap(imA, squaredDistance=False, useImageSpacing=True))
-        movingLabelContour = sitk.LabelContour(imB)
-        labelIntensityStat.Execute(movingLabelContour,referenceDistanceMap)
+    arr_intersection = arr_a & arr_b
 
-        meanSDList.append(labelIntensityStat.GetMean(1))
-        numPoints.append(labelIntensityStat.GetNumberOfPixels(1))
+    true_pos = arr_intersection.sum()
+    true_neg = (np.invert(arr_a) & np.invert(arr_b)).sum()
+    false_pos = arr_b.sum() - true_pos
 
-    meanSurfDist = np.dot(meanSDList, numPoints)/np.sum(numPoints)
-    return meanSurfDist
+    return float((1.0 * true_neg) / (true_neg + false_pos))
 
-def compute_metric_hd(imFixed, imMoving, verbose=False):
-    hausdorffDistance = sitk.HausdorffDistanceImageFilter()
-    hausdorffDistance.Execute(imFixed, imMoving)
-    HD = hausdorffDistance.GetHausdorffDistance()
 
-    return HD
+def compute_metric_sensitivity(label_a, label_b):
+    """Compute the sensitivity between two labels
+
+    Args:
+        label_a (sitk.Image): A mask to compare
+        label_b (sitk.Image): Another mask to compare
+
+    Returns:
+        float: The sensitivity between the two labels
+    """
+
+    arr_a = sitk.GetArrayFromImage(label_a).astype(bool)
+    arr_b = sitk.GetArrayFromImage(label_b).astype(bool)
+
+    arr_intersection = arr_a & arr_b
+
+    true_pos = arr_intersection.sum()
+    false_neg = arr_a.sum() - true_pos
+
+    return float((1.0 * true_pos) / (true_pos + false_neg))
+
+
+def compute_metric_masd(label_a, label_b):
+    """Compute the mean absolute distance between two labels
+
+    Args:
+        label_a (sitk.Image): A mask to compare
+        label_b (sitk.Image): Another mask to compare
+
+    Returns:
+        float: The mean absolute surface distance
+    """
+
+    mean_sd_list = []
+    num_points = []
+    for (la, lb) in ((label_a, label_b), (label_b, label_a)):
+
+        label_intensity_stat = sitk.LabelIntensityStatisticsImageFilter()
+        reference_distance_map = sitk.Abs(
+            sitk.SignedMaurerDistanceMap(la, squaredDistance=False, useImageSpacing=True)
+        )
+        moving_label_contour = sitk.LabelContour(lb)
+        label_intensity_stat.Execute(moving_label_contour, reference_distance_map)
+
+        mean_sd_list.append(label_intensity_stat.GetMean(1))
+        num_points.append(label_intensity_stat.GetNumberOfPixels(1))
+
+    mean_surf_dist = np.dot(mean_sd_list, num_points) / np.sum(num_points)
+    return float(mean_surf_dist)
+
+
+def compute_metric_hd(label_a, label_b):
+    """Compute the Hausdorff distance between two labels
+
+    Args:
+        label_a (sitk.Image): A mask to compare
+        label_b (sitk.Image): Another mask to compare
+
+    Returns:
+        float: The maximum Hausdorff distance
+    """
+
+    hausdorff_distance = sitk.HausdorffDistanceImageFilter()
+    hausdorff_distance.Execute(label_a, label_b)
+    hausdorff_distance_value = hausdorff_distance.GetHausdorffDistance()
+
+    return hausdorff_distance_value

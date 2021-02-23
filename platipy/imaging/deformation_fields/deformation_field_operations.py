@@ -1,6 +1,17 @@
-"""
-Deformatoin field operations
-"""
+# Copyright 2020 University of New South Wales, University of Sydney, Ingham Institute
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 import SimpleITK as sitk
 import numpy as np
@@ -22,7 +33,9 @@ def get_bone_mask(image, lower_threshold=350, upper_threshold=3500, max_hole_siz
         image ([SimpleITK.Image]): The patient x-ray CT image to segment.
         lower_threshold (int, optional): Lower voxel value for threshold. Defaults to 350.
         upper_threshold (int, optional): Upper voxel value for threshold. Defaults to 3500.
-        max_hole_size (int | list | bool, optional): Maximum hole size to be filled in millimetres. Can be specified as a vector (z,y,x). Defaults to 5.
+        max_hole_size (int | list | bool, optional): Maximum hole size to be filled in millimetres.
+                                                     Can be specified as a vector (z,y,x). Defaults
+                                                     to 5.
 
     Returns:
         [SimpleITK.Image]: The binary bone mask.
@@ -49,11 +62,15 @@ def get_external_mask(
     Uses slice-wise convex hull generation.
 
     Args:
-        image ([SimpleITK.Image]): The patient x-ray CT image to segment. May work with other modalities with modified thresholds.
+        image ([SimpleITK.Image]): The patient x-ray CT image to segment. May work with other
+                                   modalities with modified thresholds.
         lower_threshold (int, optional): Lower voxel value for threshold. Defaults to -100.
         upper_threshold (int, optional): Upper voxel value for threshold. Defaults to 2500.
-        dilate (int | list | bool, optional): Dilation filter size applied to the binary mask. Can be specified as a vector (z,y,x). Defaults to 1.
-        max_hole_size (int  | list | bool, optional): Maximum hole size to be filled in millimetres. Can be specified as a vector (z,y,x). Defaults to False.
+        dilate (int | list | bool, optional): Dilation filter size applied to the binary mask. Can
+                                              be specified as a vector (z,y,x). Defaults to 1.
+        max_hole_size (int  | list | bool, optional): Maximum hole size to be filled in
+                                                      millimetres. Can be specified as a vector
+                                                      (z,y,x). Defaults to False.
 
     Returns:
         [SimpleITK.Image]: The binary external mask.
@@ -101,10 +118,12 @@ def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=
     Args:
         mask_image ([SimpleITK.Image]): The binary mask to shift.
         vector_shift (tuple, optional): The displacement vector applied to the entire binary mask.
-                                        Convention: (+/-, +/-, +/-) = (sup/inf, post/ant, left/right) shift.
+                                        Convention: (+/-, +/-, +/-) = (sup/inf, post/ant,
+                                        left/right) shift.
                                         Defined in millimetres.
                                         Defaults to (10, 10, 10).
-        gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the deformation vector field. Defaults to 5.
+        gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the
+                                                deformation vector field. Defaults to 5.
 
     Returns:
         [SimpleITK.Image]: The binary mask following the shift.
@@ -124,12 +143,8 @@ def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=
     # Copy image information
     dvf_template.CopyInformation(mask_image)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(
-        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
-    )
-    mask_image_shift = apply_field(
-        mask_image, transform=dvf_tfm, structure=True, interp=1
-    )
+    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
+    mask_image_shift = apply_field(mask_image, transform=dvf_tfm, structure=True, interp=1)
 
     dvf_template = sitk.Mask(dvf_template, mask_image | mask_image_shift)
 
@@ -141,12 +156,8 @@ def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=
 
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(
-        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
-    )
-    mask_image_shift = apply_field(
-        mask_image, transform=dvf_tfm, structure=True, interp=1
-    )
+    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
+    mask_image_shift = apply_field(mask_image, transform=dvf_tfm, structure=True, interp=1)
 
     return mask_image_shift, dvf_tfm, dvf_template
 
@@ -159,11 +170,14 @@ def generate_field_asymmetric_contract(
 
     Args:
         mask_image ([SimpleITK.Image]): The binary mask to contract.
-        vector_asymmetric_contract (tuple, optional): The contraction vector applied to the entire binary mask.
-                                                      Convention: (+/-, +/-, +/-) = (sup/inf, post/ant, left/right) border is contracted.
+        vector_asymmetric_contract (tuple, optional): The contraction vector applied to the entire
+                                                      binary mask.
+                                                      Convention: (+/-, +/-, +/-) = (sup/inf,
+                                                      post/ant, left/right) border is contracted.
                                                       Defined in millimetres.
                                                       Defaults to (10, 10, 10).
-        gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the deformation vector field. Defaults to 5.
+        gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the
+                                                deformation vector field. Defaults to 5.
 
     Returns:
         [SimpleITK.Image]: The binary mask following the contract.
@@ -185,9 +199,7 @@ def generate_field_asymmetric_contract(
 
     dvf_template = sitk.Mask(dvf_template, mask_image)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(
-        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
-    )
+    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
 
     mask_image_asymmetric_contract = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
@@ -201,9 +213,7 @@ def generate_field_asymmetric_contract(
 
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(
-        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
-    )
+    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
     mask_image_asymmetric_contract = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
     )
@@ -219,11 +229,14 @@ def generate_field_asymmetric_extend(
 
     Args:
         mask_image ([SimpleITK.Image]): The binary mask to extend.
-        vector_asymmetric_extend (tuple, optional): The extension vector applied to the entire binary mask.
-                                                    Convention: (+/-, +/-, +/-) = (sup/inf, post/ant, left/right) border is extended.
+        vector_asymmetric_extend (tuple, optional): The extension vector applied to the entire
+                                                    binary mask.
+                                                    Convention: (+/-, +/-, +/-) = (sup/inf,
+                                                    post/ant, left/right) border is extended.
                                                     Defined in millimetres.
                                                     Defaults to (10, 10, 10).
-        gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the deformation vector field. Defaults to 5.
+        gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the
+                                                deformation vector field. Defaults to 5.
 
     Returns:
         [SimpleITK.Image]: The binary mask following the extension.
@@ -243,9 +256,7 @@ def generate_field_asymmetric_extend(
     # Copy image information
     dvf_template.CopyInformation(mask_image)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(
-        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
-    )
+    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
 
     mask_image_asymmetric_extend = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
@@ -261,9 +272,7 @@ def generate_field_asymmetric_extend(
 
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(
-        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
-    )
+    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
 
     mask_image_asymmetric_extend = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
@@ -279,16 +288,20 @@ def generate_field_expand(
     gaussian_smooth=5,
 ):
     """
-    Expands a structure (defined using a binary mask) using a specified vector to define the dilation kernel.
+    Expands a structure (defined using a binary mask) using a specified vector to define the
+    dilation kernel.
 
     Args:
         mask_image ([SimpleITK.Image]): The binary mask to expand.
-        bone_mask ([SimpleITK.Image, optional]): A binary mask defining regions where we expect restricted deformations.
-        vector_asymmetric_extend (int |tuple, optional): The expansion vector applied to the entire binary mask.
+        bone_mask ([SimpleITK.Image, optional]): A binary mask defining regions where we expect
+                                                 restricted deformations.
+        vector_asymmetric_extend (int |tuple, optional): The expansion vector applied to the entire
+                                                         binary mask.
                                                     Convention: (z,y,x) size of expansion kernel.
                                                     Defined in millimetres.
                                                     Defaults to 3.
-        gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the deformation vector field. Defaults to 5.
+        gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the
+                                                deformation vector field. Defaults to 5.
 
     Returns:
         [SimpleITK.Image]: The binary mask following the expansion.
@@ -366,9 +379,7 @@ def generate_field_expand(
 
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(
-        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
-    )
+    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
 
     mask_image_symmetric_expand = apply_field(
         mask_image, transform=dvf_tfm, structure=True, interp=1
@@ -395,9 +406,16 @@ def generate_field_radial_bend(
         body_mask ([SimpleITK.Image]): A binary mask in which the deformation field will be defined
         reference_point ([tuple]): The point (z,y,x) about which the rotation field is defined.
         axis_of_rotation (tuple, optional): The axis of rotation (z,y,x). Defaults to [0, 0, -1].
-        scale (int, optional): The deformation vector length at each point will equal scale multiplied by the distance to that point from reference_point. Defaults to 1.
-        mask_bend_from_reference_point (tuple, optional): The dimension (z=axial, y=coronal, x=sagittal) and limit (inf/sup, post/ant, left/right) for masking the vector field, relative to the reference point. Defaults to ("z", "inf").
-        gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the deformation vector field. Defaults to 5.
+        scale (int, optional): The deformation vector length at each point will equal scale
+                              multiplied by the distance to that point from reference_point.
+                              Defaults to 1.
+        mask_bend_from_reference_point (tuple, optional): The dimension (z=axial, y=coronal,
+                                                          x=sagittal) and limit (inf/sup, post/ant,
+                                                          left/right) for masking the vector field,
+                                                          relative to the reference point. Defaults
+                                                          to ("z", "inf").
+        gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the
+                                                deformation vector field. Defaults to 5.
 
     Returns:
         [SimpleITK.Image]: The binary mask following the expansion.
@@ -450,9 +468,7 @@ def generate_field_radial_bend(
 
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
-    dvf_tfm = sitk.DisplacementFieldTransform(
-        sitk.Cast(dvf_template, sitk.sitkVectorFloat64)
-    )
+    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
     reference_image_bend = apply_field(
         reference_image,
         transform=dvf_tfm,
