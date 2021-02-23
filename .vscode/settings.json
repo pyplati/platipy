@@ -9,9 +9,10 @@
         "--disable=C0114",
         "--disable=W0102",
         "--disable=W0105",
+        "--variable-rgx=[a-z_][a-z0-9_]{1,30}$",
         "--init-hook",
         "import sys; sys.path.append('.')",
-        "--extension-pkg-whitelist=vtk"
+        "--extension-pkg-whitelist=vtk,itk"
     ],
     "python.formatting.blackArgs": [
         "--line-length",
