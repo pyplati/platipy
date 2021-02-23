@@ -7,6 +7,7 @@ scikit-image == 0.18.1
 click == 7.1.2
 pydicom == 2.1.2
 pynetdicom == 1.5.6
+ipywidgets == 7.6.3
 flask == 1.1.2
 flask-restful == 0.3.8
 flask-sqlalchemy == 2.4.4
