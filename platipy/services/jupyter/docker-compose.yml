@@ -2,7 +2,7 @@ version: '2'
 
 services:
   jupyter:
-    build: "."
+    image: platipy/platipy:jupyter
     restart: "no"
     ports:
      - "8080:8080"
