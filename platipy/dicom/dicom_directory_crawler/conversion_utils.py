@@ -265,9 +265,7 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
     return final_struct_name_sequence, structure_list
 
 
-def process_dicom_file_list(
-    dicom_file_list, parent_sorting_field="PatientName", verbose=False
-):
+def process_dicom_file_list(dicom_file_list, parent_sorting_field="PatientName", verbose=False):
 
     """
     Organise the DICOM files by the series UID
@@ -725,12 +723,11 @@ def process_dicom_directory(
     # Get all the DICOM files in the given directory
     root_path = pathlib.Path(dicom_directory)
     # Find files ending with .dcm, .dc3
-    dicom_file_list = (
-        list(root_path.glob("**/*.dcm"))
-        + list(root_path.glob("**/*.DCM*"))
-        + list(root_path.glob("**/*.dc3"))
-        + list(root_path.glob("**/*.DC3"))
-    )
+    dicom_file_list = [
+        p
+        for p in root_path.glob("**/*")
+        if p.name.lower().endswith(".dcm") or p.name.lower().endswith(".dc3")
+    ]
 
     if len(dicom_file_list) == 0:
         logger.info("No DICOM files found in input directory. Exiting now.")
@@ -751,7 +748,7 @@ def process_dicom_directory(
         logger.info("No valid DICOM files found. Ending.")
         return None
 
-    files_output = {}
+    output = {}
 
     for parent_data, dicom_series_dict in dicom_series_dict_parent.items():
         logger.info(f"Processing data for {parent_sorting_field} = {parent_data}.")
@@ -979,19 +976,17 @@ def process_dicom_directory(
                                     [output_data_dict["DOSES"][output_name]]
                                 )
 
-                            output_data_dict["DOSES"][output_name].append(
-                                dicom_file_data
-                            )
+                            output_data_dict["DOSES"][output_name].append(dicom_file_data)
 
         if write_to_disk:
-            files_output[str(parent_data)] = write_output_data_to_disk(
+            output[str(parent_data)] = write_output_data_to_disk(
                 output_data_dict=output_data_dict,
                 output_directory=output_directory,
                 output_file_suffix=output_file_suffix,
                 overwrite_existing_files=overwrite_existing_files,
             )
         else:
-            yield output_data_dict
+            output[str(parent_data)] = output_data_dict
 
     """
     TO DO!
@@ -999,4 +994,4 @@ def process_dicom_directory(
     Use in inner loop, reset output_data_dict
     """
 
-    return files_output
+    return output
