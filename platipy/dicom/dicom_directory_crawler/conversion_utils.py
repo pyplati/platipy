@@ -65,7 +65,7 @@ def get_dicom_info_from_description(dicom_object, return_extra=False):
                 series_description = ""
 
             combined_name = "_".join([protocol_name, sequence_name, series_description])
-            
+
             while "__" in combined_name:
                 combined_name = combined_name.replace("__", "_")
 
@@ -265,7 +265,9 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
     return final_struct_name_sequence, structure_list
 
 
-def process_dicom_file_list(dicom_file_list, parent_sorting_field="PatientName"):
+def process_dicom_file_list(
+    dicom_file_list, parent_sorting_field="PatientName", verbose=False
+):
 
     """
     Organise the DICOM files by the series UID
@@ -273,9 +275,16 @@ def process_dicom_file_list(dicom_file_list, parent_sorting_field="PatientName")
     dicom_series_dict_parent = {}
 
     for i, dicom_file in enumerate(sorted(dicom_file_list)):
-        logger.debug(f"  Sorting file {i}")
+        if verbose is True:
+            logger.debug(f"  Sorting file {i}")
 
         dicom_file = dicom_file.as_posix()
+
+        if "dicomdir" in dicom_file.lower():
+            logger.warning(
+                "DICOMDIR is not supported in this tool, images are read directly. Skipping."
+            )
+            continue
 
         dicom_object = pydicom.read_file(dicom_file, force=True)
 
@@ -296,11 +305,18 @@ def process_dicom_file_list(dicom_file_list, parent_sorting_field="PatientName")
 
 
 def process_dicom_series(
-    dicom_series_dict, series_uid, parent_sorting_field="PatientName", return_extra=True
+    dicom_series_dict,
+    series_uid,
+    parent_sorting_field="PatientName",
+    return_extra=True,
+    individual_file=False,
 ):
-
-    logger.info(f"  Processing series UID: {series_uid}")
-    dicom_file_list = dicom_series_dict[series_uid]
+    if not individual_file:
+        logger.info(f"  Processing series UID: {series_uid}")
+        dicom_file_list = dicom_series_dict[series_uid]
+    else:
+        logger.info(f"  Processing individual file: {individual_file}")
+        dicom_file_list = [individual_file]
 
     logger.info(f"  Number of DICOM files: {len(dicom_file_list)}")
 
@@ -347,7 +363,20 @@ def process_dicom_series(
         # Load as an primary image
 
         sorted_file_list = safe_sort_dicom_image_list(dicom_file_list)
-        image = sitk.ReadImage(sorted_file_list)
+        try:
+            image = sitk.ReadImage(sorted_file_list)
+        except:
+            logger.warning("  Could not read image into SimpleITK.")
+            logger.info("  Processing files individually.")
+
+            for dicom_file in dicom_file_list:
+                return process_dicom_series(
+                    dicom_series_dict,
+                    series_uid,
+                    parent_sorting_field=parent_sorting_field,
+                    return_extra=return_extra,
+                    individual_file=dicom_file,
+                )
 
         dicom_file_metadata = {
             "parent_sorting_data": parent_sorting_data,
@@ -365,7 +394,7 @@ def process_dicom_series(
         Here we check the sequence name, and split if necessary
         """
         if initial_dicom.Modality == "MR":
-            
+
             try:
                 sequence_names = np.unique(
                     [pydicom.read_file(x).SequenceName for x in dicom_file_list]
@@ -381,11 +410,13 @@ def process_dicom_series(
                         sequence_dict[var].append(dcm_name)
 
             except:
-                logger.warning(f"    MRI sequence name not found. The SeriesDescription will be used instead.")
-                
+                logger.warning(
+                    f"    MRI sequence name not found. The SeriesDescription will be used instead."
+                )
+
                 sequence_names = np.unique(
                     [pydicom.read_file(x).SeriesDescription for x in dicom_file_list]
-                ) 
+                )
 
                 sequence_dict = {}
                 for dcm_name in dicom_file_list:
@@ -396,7 +427,7 @@ def process_dicom_series(
                     else:
                         sequence_dict[var].append(dcm_name)
 
-            if initial_dicom.Manufacturer == "GE MEDICAL SYSTEMS" :
+            if initial_dicom.Manufacturer == "GE MEDICAL SYSTEMS":
                 # GE use the DICOM tag (0019, 10a2) [Raw data run number]
                 # in Diffusion weighted MRI sequences
                 # We need to separate this out to get the difference sequences
@@ -405,13 +436,18 @@ def process_dicom_series(
 
                     # num_sequences = int( (initial_dicom[(0x0025, 0x1007)]) / (initial_dicom[(0x0021, 0x104f)]) )
                     # number_of_images / images_per_seq
-                    num_images_per_seq = initial_dicom[(0x0021, 0x104f)].value
+                    num_images_per_seq = initial_dicom[(0x0021, 0x104F)].value
 
                     sequence_names = np.unique(
-                    [f"DWI_{str( ( pydicom.read_file(x)['InstanceNumber'].value - 1) // num_images_per_seq )}" for x in dicom_file_list]
-                    ) 
+                        [
+                            f"DWI_{str( ( pydicom.read_file(x)['InstanceNumber'].value - 1) // num_images_per_seq )}"
+                            for x in dicom_file_list
+                        ]
+                    )
 
-                    sequence_name_index_dict = {name:index for index,name in enumerate(sequence_names)}
+                    sequence_name_index_dict = {
+                        name: index for index, name in enumerate(sequence_names)
+                    }
 
                     sequence_dict = {}
                     for dcm_name in dicom_file_list:
@@ -424,7 +460,7 @@ def process_dicom_series(
                         else:
                             sequence_dict[var_to_index].append(dcm_name)
 
-                    sequence_names = sorted( sequence_dict.keys() )
+                    sequence_names = sorted(sequence_dict.keys())
 
             if np.alen(sequence_names) > 1:
                 logger.warning("  Two MR sequences were found under a single series UID.")
@@ -434,7 +470,7 @@ def process_dicom_series(
                 for sequence_name in sequence_names:
 
                     dicom_file_list_by_sequence = sequence_dict[sequence_name]
-                    
+
                     print(sequence_name, len(dicom_file_list_by_sequence))
 
                     sorted_file_list = safe_sort_dicom_image_list(dicom_file_list_by_sequence)
@@ -480,9 +516,9 @@ def process_dicom_series(
             # This retrieves the study UID
             # This might be useful, but would typically match the actual StudyInstanceUID in the
             # DICOM object
-            rt_referenced_series_item = referenced_frame_of_reference_item.RTReferencedStudySequence[
-                0
-            ]
+            rt_referenced_series_item = (
+                referenced_frame_of_reference_item.RTReferencedStudySequence[0]
+            )
 
             # Get the "RTReferencedSeriesSequence", first item
             # This retreives the actual referenced series UID, which we need to match imaging
@@ -501,9 +537,10 @@ def process_dicom_series(
 
             initial_dicom = pydicom.read_file(sorted_file_list[0], force=True)
 
-            structure_name_list, structure_image_list = transform_point_set_from_dicom_struct(
-                image, dicom_object
-            )
+            (
+                structure_name_list,
+                structure_image_list,
+            ) = transform_point_set_from_dicom_struct(image, dicom_object)
 
             dicom_file_metadata = {
                 "parent_sorting_data": parent_sorting_data,
@@ -568,6 +605,8 @@ def write_output_data_to_disk(
     filename_fields = [i for i in output_data_dict.keys() if i != "parent_sorting_data"]
     parent_sorting_data = output_data_dict["parent_sorting_data"]
 
+    files_written = {}
+
     """
     Write the the converted images to disk
 
@@ -582,6 +621,7 @@ def write_output_data_to_disk(
         logger.info(f"  Writing files for field: {field}")
         p = pathlib.Path(output_directory) / parent_sorting_data / field
         p.mkdir(parents=True, exist_ok=True)
+        files_written[field] = []
 
         for field_filename_base, field_list in output_data_dict[field].items():
             # Check if there is a list of images with matching names
@@ -611,6 +651,7 @@ def write_output_data_to_disk(
                         / field
                         / (field_filename + output_file_suffix)
                     )
+                    files_written[field].append(output_name)
 
                     if output_name.is_file():
                         logger.warning(f"  File exists: {output_name}")
@@ -648,6 +689,7 @@ def write_output_data_to_disk(
                     / field
                     / (field_filename + output_file_suffix)
                 )
+                files_written[field].append(output_name)
 
                 if output_name.is_file():
                     logger.warning(f"  File exists: {output_name}")
@@ -663,7 +705,7 @@ def write_output_data_to_disk(
 
                 sitk.WriteImage(file_to_write, output_name.as_posix())
 
-    return
+    return files_written
 
 
 def process_dicom_directory(
@@ -676,6 +718,8 @@ def process_dicom_directory(
     output_directory="./",
     output_file_suffix=".nii.gz",
     overwrite_existing_files=False,
+    write_to_disk=True,
+    verbose=False,
 ):
 
     # Get all the DICOM files in the given directory
@@ -700,8 +744,14 @@ def process_dicom_directory(
     #                                    {series_UID_2: [list_of_DICOM_files], ...
     #   ...     }
     dicom_series_dict_parent = process_dicom_file_list(
-        dicom_file_list, parent_sorting_field=parent_sorting_field
+        dicom_file_list, parent_sorting_field=parent_sorting_field, verbose=verbose
     )
+
+    if dicom_series_dict_parent is None:
+        logger.info("No valid DICOM files found. Ending.")
+        return None
+
+    files_output = {}
 
     for parent_data, dicom_series_dict in dicom_series_dict_parent.items():
         logger.info(f"Processing data for {parent_sorting_field} = {parent_data}.")
@@ -929,13 +979,24 @@ def process_dicom_directory(
                                     [output_data_dict["DOSES"][output_name]]
                                 )
 
-                            output_data_dict["DOSES"][output_name].append(dicom_file_data)
+                            output_data_dict["DOSES"][output_name].append(
+                                dicom_file_data
+                            )
 
-        write_output_data_to_disk(
-            output_data_dict=output_data_dict,
-            output_directory=output_directory,
-            output_file_suffix=output_file_suffix,
-            overwrite_existing_files=overwrite_existing_files,
-        )
+        if write_to_disk:
+            files_output[str(parent_data)] = write_output_data_to_disk(
+                output_data_dict=output_data_dict,
+                output_directory=output_directory,
+                output_file_suffix=output_file_suffix,
+                overwrite_existing_files=overwrite_existing_files,
+            )
+        else:
+            yield output_data_dict
 
-    return
+    """
+    TO DO!
+    Memory issue with output_data_dict
+    Use in inner loop, reset output_data_dict
+    """
+
+    return files_output

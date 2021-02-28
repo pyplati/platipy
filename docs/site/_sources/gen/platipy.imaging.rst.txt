@@ -8,6 +8,8 @@ Subpackages
    :maxdepth: 4
 
    platipy.imaging.atlas
+   platipy.imaging.augment
+   platipy.imaging.deformation_fields
    platipy.imaging.label
    platipy.imaging.projects
    platipy.imaging.registration
