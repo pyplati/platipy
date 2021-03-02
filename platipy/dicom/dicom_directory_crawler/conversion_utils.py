@@ -723,12 +723,11 @@ def process_dicom_directory(
     # Get all the DICOM files in the given directory
     root_path = pathlib.Path(dicom_directory)
     # Find files ending with .dcm, .dc3
-    dicom_file_list = (
-        list(root_path.glob("**/*.dcm"))
-        + list(root_path.glob("**/*.DCM*"))
-        + list(root_path.glob("**/*.dc3"))
-        + list(root_path.glob("**/*.DC3"))
-    )
+    dicom_file_list = [
+        p
+        for p in root_path.glob("**/*")
+        if p.name.lower().endswith(".dcm") or p.name.lower().endswith(".dc3")
+    ]
 
     if len(dicom_file_list) == 0:
         logger.info("No DICOM files found in input directory. Exiting now.")
