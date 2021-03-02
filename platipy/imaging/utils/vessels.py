@@ -31,9 +31,7 @@ def COMFromImageList(
 
         referenceImage = sitkImageList[0]
         referenceArray = sitk.GetArrayFromImage(referenceImage)
-        z, y = np.mgrid[
-            0 : referenceArray.shape[0] : 1, 0 : referenceArray.shape[1] : 1
-        ]
+        z, y = np.mgrid[0 : referenceArray.shape[0] : 1, 0 : referenceArray.shape[1] : 1]
 
         with np.errstate(divide="ignore", invalid="ignore"):
             for sitkImage in sitkImageList:
@@ -66,9 +64,7 @@ def COMFromImageList(
                     * np.array((np.sum(C, axis=0) > (conditionValue),) * 2).T
                 )
             else:
-                raise ValueError(
-                    "Invalid condition type, please select from 'area' or 'count'."
-                )
+                raise ValueError("Invalid condition type, please select from 'area' or 'count'.")
 
         pointArray = []
         for index, COM in enumerate(meanCOM):
@@ -92,9 +88,7 @@ def COMFromImageList(
 
         referenceImage = sitkImageList[0]
         referenceArray = sitk.GetArrayFromImage(referenceImage)
-        x, y = np.mgrid[
-            0 : referenceArray.shape[1] : 1, 0 : referenceArray.shape[2] : 1
-        ]
+        x, y = np.mgrid[0 : referenceArray.shape[1] : 1, 0 : referenceArray.shape[2] : 1]
 
         with np.errstate(divide="ignore", invalid="ignore"):
             for sitkImage in sitkImageList:
@@ -316,6 +310,7 @@ def vesselSplineGeneration(
     stopConditionValueDict,
     scanDirectionDict,
     debug=False,
+    atlas_label="DIR",
 ):
     """"""
     splinedVessels = {}
@@ -327,7 +322,7 @@ def vesselSplineGeneration(
 
         initial_image_direction = referenceImage.GetDirection()
 
-        imageList = [atlasSet[i]["DIR"][vesselName] for i in atlasSet.keys()]
+        imageList = [atlasSet[i][atlas_label][vesselName] for i in atlasSet.keys()]
         for im in imageList:
             im.SetDirection((1, 0, 0, 0, 1, 0, 0, 0, 1))
 
@@ -347,9 +342,7 @@ def vesselSplineGeneration(
 
         SITKReferenceImage = imageList[0]
 
-        vessel_delineation = SimpleITKImageFromVTKTube(
-            tube, SITKReferenceImage, debug=debug
-        )
+        vessel_delineation = SimpleITKImageFromVTKTube(tube, SITKReferenceImage, debug=debug)
 
         vessel_delineation.SetDirection(initial_image_direction)
 
