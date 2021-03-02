@@ -107,9 +107,7 @@ def evaluate_distance_to_reference(reference_volume, test_volume, resample_facto
 
     # compute the distance map from the test volume surface
     test_distance_map = sitk.Abs(
-        sitk.SignedMaurerDistanceMap(
-            test_volume, squaredDistance=False, useImageSpacing=True
-        )
+        sitk.SignedMaurerDistanceMap(test_volume, squaredDistance=False, useImageSpacing=True)
     )
 
     # get the distance from the test surface to the reference surface
@@ -133,9 +131,7 @@ def regrid_spherical_data(theta, phi, values, resolution):
     # Re-grid:
     #  Set up grid
     d_radian = resolution * np.pi / 180
-    p_long, p_lat = np.mgrid[
-        -np.pi : np.pi : d_radian, -np.pi / 2.0 : np.pi / 2.0 : d_radian
-    ]
+    p_long, p_lat = np.mgrid[-np.pi : np.pi : d_radian, -np.pi / 2.0 : np.pi / 2.0 : d_radian]
 
     # First pass - linear interpolation, works well but not for edges
     grid_values = griddata(
@@ -166,7 +162,7 @@ def run_iar(
     iteration=0,
     single_step=False,
     project_on_sphere=False,
-    label='DIR',
+    label="DIR",
 ):
     """
     Perform iterative atlas removal on the atlas_set
@@ -220,9 +216,7 @@ def run_iar(
         test_volume = process_probability_image(test_volume, 0.1)
 
         if project_on_sphere:
-            reference_volume = process_probability_image(
-                probability_label, threshold=0.999
-            )
+            reference_volume = process_probability_image(probability_label, threshold=0.999)
             # note: we use a threshold slightly below 1 to ensure the consensus (reference) volume is a suitable binary volume
 
             # Compute the reference distance map
@@ -237,15 +231,11 @@ def run_iar(
                 reference_distance_map, test_volume, reference_as_distance_map=True
             )
 
-            _, _, g_vals = regrid_spherical_data(
-                theta, phi, values, resolution=resolution
-            )
+            _, _, g_vals = regrid_spherical_data(theta, phi, values, resolution=resolution)
 
             g_val_list.append(g_vals)
         else:
-            reference_volume = process_probability_image(
-                probability_label, threshold=0.95
-            )
+            reference_volume = process_probability_image(probability_label, threshold=0.95)
             # note: we use a threshold slightly below 1 to ensure the consensus (reference) volume is a suitable binary volume
             # we have the flexibility to modify the reference volume when we do not use spherical projection
             # a larger surface means more evaluations and better statistics, so we prefer a lower threshold
@@ -274,9 +264,7 @@ def run_iar(
             g_val_std = np.std(g_val_list_test, axis=0)
 
             if np.any(g_val_std == 0):
-                logger.info(
-                    "    Std Dev zero count: {0}".format(np.sum(g_val_std == 0))
-                )
+                logger.info("    Std Dev zero count: {0}".format(np.sum(g_val_std == 0)))
                 g_val_std[g_val_std == 0] = g_val_std.mean()
 
             z_score_vals_array = (g_vals - g_val_mean) / g_val_std
@@ -304,16 +292,10 @@ def run_iar(
 
         logger.debug("      [{0}] Statistics of mZ-scores".format(test_id))
         logger.debug("        Min(Z)    = {0:.2f}".format(z_score_vals.min()))
-        logger.debug(
-            "        Q1(Z)     = {0:.2f}".format(np.percentile(z_score_vals, 25))
-        )
+        logger.debug("        Q1(Z)     = {0:.2f}".format(np.percentile(z_score_vals, 25)))
         logger.debug("        Mean(Z)   = {0:.2f}".format(z_score_vals.mean()))
-        logger.debug(
-            "        Median(Z) = {0:.2f}".format(np.percentile(z_score_vals, 50))
-        )
-        logger.debug(
-            "        Q3(Z)     = {0:.2f}".format(np.percentile(z_score_vals, 75))
-        )
+        logger.debug("        Median(Z) = {0:.2f}".format(np.percentile(z_score_vals, 50)))
+        logger.debug("        Q3(Z)     = {0:.2f}".format(np.percentile(z_score_vals, 75)))
         logger.debug("        Max(Z)    = {0:.2f}\n".format(z_score_vals.max()))
 
         # Calculate excess area from Gaussian: the Q-metric
@@ -327,9 +309,7 @@ def run_iar(
             z_diff = np.abs(z_density - z_ideal)
         except:
             logger.debug("IAR couldnt fit curve, estimating with sampled statistics.")
-            z_ideal = gaussian_curve(
-                bin_centers, a=1, m=z_density.mean(), s=z_density.std()
-            )
+            z_ideal = gaussian_curve(bin_centers, a=1, m=z_density.mean(), s=z_density.std())
             z_diff = np.abs(z_density - z_ideal)
 
         # Integrate to get the q_value
@@ -339,16 +319,15 @@ def run_iar(
     # Exclude (at most) the worst 3 atlases for outlier detection
     # With a minimum number, this helps provide more robust estimates at low numbers
     result_list = list(q_results.values())
+    result_list = [r for r in result_list if ~np.isnan(r) and np.isfinite(r)]
     best_results = np.sort(result_list)[: max([min_best_atlases, len(result_list) - 3])]
 
     if outlier_method.lower() == "iqr":
-        outlier_limit = np.percentile(
-            best_results, 75, axis=0
-        ) + n_factor * np.subtract(*np.percentile(best_results, [75, 25], axis=0))
-    elif outlier_method.lower() == "std":
-        outlier_limit = np.mean(best_results, axis=0) + n_factor * np.std(
-            best_results, axis=0
+        outlier_limit = np.percentile(best_results, 75, axis=0) + n_factor * np.subtract(
+            *np.percentile(best_results, [75, 25], axis=0)
         )
+    elif outlier_method.lower() == "std":
+        outlier_limit = np.mean(best_results, axis=0) + n_factor * np.std(best_results, axis=0)
     else:
         logger.error(" Error!")
         logger.error(" outlier_method must be one of: IQR, STD")
@@ -382,11 +361,7 @@ def run_iar(
 
     if len(keep_id_list) < len(remaining_id_list):
         logger.info("\n  Step {0} Complete".format(iteration))
-        logger.info(
-            "  Num. Removed = {0} --\n".format(
-                len(remaining_id_list) - len(keep_id_list)
-            )
-        )
+        logger.info("  Num. Removed = {0} --\n".format(len(remaining_id_list) - len(keep_id_list)))
 
         iteration += 1
         atlas_set_new = {i: atlas_set[i] for i in keep_id_list}
@@ -405,7 +380,7 @@ def run_iar(
             n_factor=n_factor,
             iteration=iteration,
             project_on_sphere=project_on_sphere,
-            label=label
+            label=label,
         )
 
     logger.info("  End point reached. Keeping:\n   {0}".format(keep_id_list))
