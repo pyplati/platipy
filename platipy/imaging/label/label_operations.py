@@ -12,37 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import itk
 import numpy as np
 import SimpleITK as sitk
-
-from platipy.imaging.utils.tools import sitk_to_itk, itk_to_sitk
-
-def morphological_interpolate(sitk_image, copy_info=True):
-    """
-    Performs morphological interpolation
-    See: https://github.com/KitwareMedical/ITKMorphologicalContourInterpolation
-
-    Useful for filling in gaps in contouring between slices
-    """
-
-    itk_image = sitk_to_itk(sitk_image, copy_info=copy_info)
-
-    output_type = itk.Image[itk.UC, 3]
-
-    f_cast = itk.CastImageFilter[itk_image, output_type].New()
-    f_cast.SetInput(itk_image)
-    img_cast = f_cast.GetOutput()
-
-    f_interpolator = itk.MorphologicalContourInterpolator.New()
-    f_interpolator.SetInput(img_cast)
-    f_interpolator.Update()
-
-    img_interpolated = f_interpolator.GetOutput()
-
-    sitk_img_interpolated = itk_to_sitk(img_interpolated)
-
-    return sitk_img_interpolated
 
 
 def process_probability_image(probability_image, threshold=0.5):
@@ -55,13 +26,10 @@ def process_probability_image(probability_image, threshold=0.5):
         probability_image = sitk.GetImageFromArray(probability_image)
 
     # Normalise probability map
-    probability_image = (
-        probability_image / sitk.GetArrayFromImage(probability_image).max()
-    )
+    probability_image = probability_image / sitk.GetArrayFromImage(probability_image).max()
 
     # Get the starting binary image
-    binary_image = sitk.BinaryThreshold(
-        probability_image, lowerThreshold=threshold)
+    binary_image = sitk.BinaryThreshold(probability_image, lowerThreshold=threshold)
 
     # Fill holes
     binary_image = sitk.BinaryFillhole(binary_image)
@@ -73,8 +41,7 @@ def process_probability_image(probability_image, threshold=0.5):
     label_shape_filter = sitk.LabelShapeStatisticsImageFilter()
     label_shape_filter.Execute(labelled_image)
     label_indices = label_shape_filter.GetLabels()
-    voxel_counts = [label_shape_filter.GetNumberOfPixels(
-        i) for i in label_indices]
+    voxel_counts = [label_shape_filter.GetNumberOfPixels(i) for i in label_indices]
     if voxel_counts == []:
         return binary_image
 

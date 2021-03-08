@@ -13,11 +13,9 @@
 # limitations under the License.
 
 
-import tempfile
-
+import os
 import SimpleITK as sitk
 import numpy as np
-import os
 
 from loguru import logger
 
@@ -37,7 +35,7 @@ from platipy.imaging.atlas.label_fusion import (
 
 from platipy.imaging.atlas.iterative_atlas_removal import run_iar
 
-from platipy.imaging.projects.cardiac.utils import vesselSplineGeneration
+from platipy.imaging.utils.vessels import vesselSplineGeneration
 
 from platipy.imaging.utils.tools import label_to_roi, crop_to_roi
 
@@ -217,7 +215,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
 
     registered_crop_images = []
 
-    logger.info(f"Running initial Translation tranform to crop image volume")
+    logger.info("Running initial Translation tranform to crop image volume")
 
     for atlas_id in atlas_id_list[: min([8, len(atlas_id_list)])]:
 
@@ -232,9 +230,9 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
             atlas_image,
             moving_structure=False,
             fixed_structure=False,
-            options=quick_reg_settings,
-            trace=False,
+            verbose=False,
             reg_method="Similarity",
+            **quick_reg_settings,
         )
 
         registered_crop_images.append(sitk.Cast(reg_image, sitk.sitkFloat32))
@@ -295,21 +293,25 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
             img_crop,
             atlas_image,
             moving_structure=atlas_struct,
-            options=rigid_options,
-            trace=trace,
+            verbose=trace,
             reg_method=initial_reg,
+            **rigid_options,
         )
 
         # Save in the atlas dict
         atlas_set[atlas_id]["RIR"]["CT Image"] = rigid_image
         atlas_set[atlas_id]["RIR"]["Transform"] = initial_tfm
 
-        # sitk.WriteImage(rigidImage, f'./RR_{atlas_id}.nii.gz')
+        sitk.WriteImage(rigid_image, f"./RR_{atlas_id}.nii.gz")
 
         for struct in atlas_structures:
             input_struct = atlas_set[atlas_id]["Original"][struct]
             atlas_set[atlas_id]["RIR"][struct] = transform_propagation(
-                img_crop, input_struct, initial_tfm, structure=True, interp=sitk.sitkLinear,
+                img_crop,
+                input_struct,
+                initial_tfm,
+                structure=True,
+                interp=sitk.sitkNearestNeighbor,
             )
 
     """
@@ -324,7 +326,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
     ncores = settings["deformableSettings"]["ncores"]
     trace = settings["deformableSettings"]["trace"]
 
-    logger.info(f"Running DIR to register atlas images")
+    logger.info("Running DIR to register atlas images")
 
     for atlas_id in atlas_id_list:
 
@@ -336,7 +338,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
 
         cleaned_img_crop = sitk.Mask(img_crop, atlas_image > -1023, outsideValue=-1024)
 
-        deform_image, deform_field = fast_symmetric_forces_demons_registration(
+        deform_image, deform_field, _ = fast_symmetric_forces_demons_registration(
             cleaned_img_crop,
             atlas_image,
             resolution_staging=resolution_staging,
@@ -344,19 +346,19 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
             isotropic_resample=isotropic_resample,
             smoothing_sigmas=smoothing_sigmas,
             ncores=ncores,
-            trace=trace,
+            verbose=trace,
         )
 
         # Save in the atlas dict
         atlas_set[atlas_id]["DIR"]["CT Image"] = deform_image
         atlas_set[atlas_id]["DIR"]["Transform"] = deform_field
 
-        # sitk.WriteImage(deformImage, f'./DIR_{atlas_id}.nii.gz')
+        sitk.WriteImage(deform_image, f"./DIR_{atlas_id}.nii.gz")
 
         for struct in atlas_structures:
             input_struct = atlas_set[atlas_id]["RIR"][struct]
             atlas_set[atlas_id]["DIR"][struct] = apply_field(
-                input_struct, deform_field, structure=True, interp=sitk.sitkLinear
+                input_struct, deform_field, structure=True, interp=sitk.sitkNearestNeighbor
             )
 
     """
@@ -365,7 +367,8 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
 
     """
     # Compute weight maps
-    # Here we use simple GWV as this minises the potentially negative influence of mis-registered atlases
+    # Here we use simple GWV as this minises the potentially negative influence of mis-registered
+    # atlases
     reference_structure = settings["IARSettings"]["referenceStructure"]
 
     if reference_structure:

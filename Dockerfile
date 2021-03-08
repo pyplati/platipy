@@ -1,11 +1,9 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
-RUN apt-get update; apt-get install -y python3.6-dev python3-pip redis-server libgl1-mesa-glx libsm6 libxext6 libxrender-dev git
+RUN apt-get update; apt-get install -y redis-server git python3-pip libgl1-mesa-glx libsm6 libxext6 libxrender-dev
 
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 1
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-RUN update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
-RUN python -m pip install --upgrade pip
+RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN ln -s /usr/bin/pip3 /usr/bin/pip
 
 WORKDIR /home/service
 
