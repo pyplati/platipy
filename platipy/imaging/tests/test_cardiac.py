@@ -85,9 +85,11 @@ def cardiac_data():
 
         mask = sitk.GetImageFromArray(mask_arr)
         mask.CopyInformation(ct)
+        mask = sitk.Cast(mask, sitk.sitkUInt8)
 
         submask = sitk.GetImageFromArray(submask_arr)
         submask.CopyInformation(ct)
+        submask = sitk.Cast(submask, sitk.sitkUInt8)
 
         data[case_id] = {"CT": ct, "WHOLEHEART": mask, "SUBSTRUCTURE": submask}
 
@@ -158,12 +160,13 @@ def test_cardiac_service(cardiac_data):
 
 
 def test_cardiac_structure_guided_service(cardiac_data):
-    """An end-to-end test to check that the cardiac structure guided service is running as expected"""
+    """
+    An end-to-end test to check that the cardiac structure guided service is running as expected
+    """
 
     with tempfile.TemporaryDirectory() as working_dir:
 
         working_path = Path(working_dir)
-        working_path = Path(".")
 
         # Save off data
         cases = list(cardiac_data.keys())
@@ -176,8 +179,13 @@ def test_cardiac_structure_guided_service(cardiac_data):
             )
             mask_path.parent.mkdir(parents=True, exist_ok=True)
 
+            substructure_path = working_path.joinpath(
+                f"Case_{case}", "Structures", f"Case_{case}_SUBSTRUCTURE_CROP.nii.gz"
+            )
+
             sitk.WriteImage(cardiac_data[case]["CT"], str(ct_path))
             sitk.WriteImage(cardiac_data[case]["WHOLEHEART"], str(mask_path))
+            sitk.WriteImage(cardiac_data[case]["SUBSTRUCTURE"], str(substructure_path))
 
         # Prepare algorithm settings
         test_settings = CARDIAC_STRUCTURE_GUIDED_SETTINGS_DEFAULTS
@@ -185,7 +193,8 @@ def test_cardiac_structure_guided_service(cardiac_data):
         test_settings["atlasSettings"]["atlasPath"] = str(working_path)
         test_settings["atlasSettings"]["atlasStructures"] = ["WHOLEHEART", "SUBSTRUCTURE"]
         test_settings["atlasSettings"]["autoCropAtlas"] = False
-        test_settings["deformableSettings"]["iterationStaging"] = [5, 5, 5]
+        test_settings["deformableSettingsImage"]["resolution_staging"] = [6, 3, 1.5]
+        test_settings["deformableSettingsImage"]["iteration_staging"] = [5, 5, 5]
         test_settings["IARSettings"]["referenceStructure"] = "WHOLEHEART"
         test_settings["labelFusionSettings"]["optimalThreshold"] = {
             "WHOLEHEART": 0.5,
@@ -193,13 +202,14 @@ def test_cardiac_structure_guided_service(cardiac_data):
         }
         test_settings["vesselSpliningSettings"]["vesselNameList"] = []
 
-        test_settings["rigidSettings"]["options"] = {
+        test_settings["rigidSettings"] = {
+            "reg_method": "Translation",
             "shrink_factors": [2, 1],
             "smooth_sigmas": [0, 0],
             "sampling_rate": 0.75,
-            "default_value": -1024,
+            "default_value": 0,
             "number_of_iterations": 5,
-            "final_interp": sitk.sitkBSpline,
+            "final_interp": sitk.sitkLinear,
             "metric": "mean_squares",
             "optimiser": "gradient_descent_line_search",
         }
@@ -211,12 +221,15 @@ def test_cardiac_structure_guided_service(cardiac_data):
 
         output = run_cardiac_segmentation_structure_guided(
             cardiac_data[infer_case]["CT"],
-            cardiac_data[case]["WHOLEHEART"],
+            cardiac_data[infer_case]["WHOLEHEART"],
             settings=test_settings,
         )
 
         # Check we have a WHOLEHEART structure
         assert "WHOLEHEART" in output
+
+        # Check we have a SUBSTRUCTURE structure
+        assert "SUBSTRUCTURE" in output
 
         # Check the result is similar to the GT
 
@@ -224,4 +237,12 @@ def test_cardiac_structure_guided_service(cardiac_data):
         auto_mask = output["WHOLEHEART"]
         gt_mask = sitk.Cast(cardiac_data[infer_case]["WHOLEHEART"], auto_mask.GetPixelID())
         label_overlap_filter.Execute(auto_mask, gt_mask)
-        assert label_overlap_filter.GetDiceCoefficient() > 0.99
+        print(label_overlap_filter.GetDiceCoefficient())
+        assert label_overlap_filter.GetDiceCoefficient() > 0.9
+
+        auto_mask = output["SUBSTRUCTURE"]
+        gt_mask = sitk.Cast(cardiac_data[infer_case]["SUBSTRUCTURE"], auto_mask.GetPixelID())
+        label_overlap_filter.Execute(auto_mask, gt_mask)
+        print(label_overlap_filter.GetDiceCoefficient())
+        assert 0
+        assert label_overlap_filter.GetDiceCoefficient() > 0.9

@@ -302,7 +302,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
         atlas_set[atlas_id]["RIR"]["CT Image"] = rigid_image
         atlas_set[atlas_id]["RIR"]["Transform"] = initial_tfm
 
-        sitk.WriteImage(rigid_image, f"./RR_{atlas_id}.nii.gz")
+        # sitk.WriteImage(rigid_image, f"./RR_{atlas_id}.nii.gz")
 
         for struct in atlas_structures:
             input_struct = atlas_set[atlas_id]["Original"][struct]
@@ -353,7 +353,7 @@ def run_cardiac_segmentation(img, settings=CARDIAC_SETTINGS_DEFAULTS):
         atlas_set[atlas_id]["DIR"]["CT Image"] = deform_image
         atlas_set[atlas_id]["DIR"]["Transform"] = deform_field
 
-        sitk.WriteImage(deform_image, f"./DIR_{atlas_id}.nii.gz")
+        # sitk.WriteImage(deform_image, f"./DIR_{atlas_id}.nii.gz")
 
         for struct in atlas_structures:
             input_struct = atlas_set[atlas_id]["RIR"][struct]
