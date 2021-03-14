@@ -3,14 +3,14 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open('requirements.txt', 'r') as fp:
+with open("requirements.txt", "r") as fp:
     requirements = list(filter(bool, (line.strip() for line in fp)))
 
 setuptools.setup(
     name="platipy",
     version="2020.1",
     author="Phillip Chlap & Robert Finnegan",
-    author_email="",
+    author_email="phillip.chlap@unsw.edu.au",
     description="Processing Library and Analysis Toolkit for Medical Imaging in Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -22,9 +22,10 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     entry_points={
-        'console_scripts': [
-            'platipy=platipy.cli.run:platipy_cli',
-        ]},
-    license='Apache 2.0 License',
+        "console_scripts": [
+            "platipy=platipy.cli.run:platipy_cli",
+        ]
+    },
+    license="Apache 2.0 License",
     install_requires=requirements,
 )
