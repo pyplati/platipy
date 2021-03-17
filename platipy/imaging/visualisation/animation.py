@@ -131,18 +131,30 @@ def generate_animation_from_image_sequence(
 
         if type(contour_list[0]) is not dict:
             plot_dict = {"_": contour_list[0]}
+            contour_labels = False
         else:
             plot_dict = contour_list[0]
+            contour_labels = True
 
         color_map = contour_cmap(np.linspace(0, 1, len(plot_dict)))
 
-        for index, contour in enumerate(plot_dict.values()):
+        for index, (contour_name, contour) in enumerate(plot_dict.items()):
 
             display_contours = ax.contour(
                 sitk.GetArrayFromImage(contour),
                 colors=[color_map[index]],
                 levels=[0],
                 linewidths=2,
+            )
+
+            display_contours.collections[0].set_label(contour_name)
+
+        if contour_labels:
+            approx_scaling = figure_size_in / (len(plot_dict.keys()))
+            ax.legend(
+                loc="upper left",
+                bbox_to_anchor=(0.05, 0.95),
+                fontsize=min([10, 16 * approx_scaling]),
             )
 
     if scalar_list is not False:
