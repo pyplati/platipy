@@ -32,6 +32,8 @@ import matplotlib.animation as animation
 from ipywidgets import interact, interactive, fixed, interact_manual
 import ipywidgets as widgets
 
+from platipy.imaging.visualisation.animation import project_onto_arbitrary_plane
+
 
 """
 This Python script comprises two contributions to the code base:
@@ -133,6 +135,7 @@ class ImageVisualiser:
         limits=None,
         colormap=plt.cm.Greys_r,
         origin="normal",
+        projection=False,
     ):
         self.__set_image(image)
         self.__contours = []
@@ -150,6 +153,7 @@ class ImageVisualiser:
         self.__limits = limits
         self.__colormap = colormap
         self.__origin = origin
+        self.__projection = projection
 
         self.clear()
 
@@ -757,12 +761,36 @@ class ImageVisualiser:
 
                 self.__cut = [slice_ax, slice_cor, slice_sag]
 
-            s_ax = self.return_slice("z", self.__cut[0])
-            s_cor = self.return_slice("y", self.__cut[1])
-            s_sag = self.return_slice("x", self.__cut[2])
+            if not self.__projection:
+                s_ax = self.return_slice("z", self.__cut[0])
+                s_cor = self.return_slice("y", self.__cut[1])
+                s_sag = self.return_slice("x", self.__cut[2])
+
+                ax_img = nda.__getitem__(s_ax)
+                cor_img = nda.__getitem__(s_cor)
+                sag_img = nda.__getitem__(s_sag)
+
+            else:
+                ax_img_proj = project_onto_arbitrary_plane(
+                    image, projection_axis=2, projection_name="mean", default_value=int(nda.min())
+                )
+                ax_img = sitk.GetArrayFromImage(ax_img_proj)
+                ax_img = (ax_img - ax_img.min()) / (ax_img.max() - ax_img.min())
+
+                cor_img_proj = project_onto_arbitrary_plane(
+                    image, projection_axis=1, projection_name="mean", default_value=int(nda.min())
+                )
+                cor_img = sitk.GetArrayFromImage(cor_img_proj)
+                cor_img = (cor_img - cor_img.min()) / (cor_img.max() - cor_img.min())
+
+                sag_img_proj = project_onto_arbitrary_plane(
+                    image, projection_axis=0, projection_name="mean", default_value=int(nda.min())
+                )
+                sag_img = sitk.GetArrayFromImage(sag_img_proj)
+                sag_img = (sag_img - sag_img.min()) / (sag_img.max() - sag_img.min())
 
             ax_view = ax_ax.imshow(
-                nda.__getitem__(s_ax),
+                ax_img,
                 aspect=1.0,
                 interpolation="none",
                 origin={"normal": "upper", "reversed": "lower"}[self.__origin],
@@ -770,7 +798,7 @@ class ImageVisualiser:
                 clim=(self.__window[0], self.__window[0] + self.__window[1]),
             )
             cor_view = ax_cor.imshow(
-                nda.__getitem__(s_cor),
+                cor_img,
                 origin="lower",
                 aspect=asp,
                 interpolation="none",
@@ -778,7 +806,7 @@ class ImageVisualiser:
                 clim=(self.__window[0], self.__window[0] + self.__window[1]),
             )
             sag_view = ax_sag.imshow(
-                nda.__getitem__(s_sag),
+                sag_img,
                 origin="lower",
                 aspect=asp,
                 interpolation="none",
@@ -842,9 +870,21 @@ class ImageVisualiser:
                 if not self.__cut:
                     self.__cut = int(ax_size / 2.0)
 
+            if not self.__projection:
+                disp_img = nda.__getitem__(s)
+            else:
+                disp_img_proj = project_onto_arbitrary_plane(
+                    image,
+                    projection_axis={"x": 0, "y": 1, "z": 2}[self.__axis],
+                    projection_name="mean",
+                    default_value=int(nda.min()),
+                )
+                disp_img = sitk.GetArrayFromImage(disp_img_proj)
+                disp_img = (disp_img - disp_img.min()) / (disp_img.max() - disp_img.min())
+
             s = self.return_slice(self.__axis, self.__cut)
             ax_indiv = ax.imshow(
-                nda.__getitem__(s),
+                disp_img,
                 aspect=asp,
                 interpolation="none",
                 origin=org,
@@ -1198,7 +1238,7 @@ class ImageVisualiser:
 
         for contour in self.__contours:
             contour_image_resampled = sitk.Resample(contour.image, self.__image)
-            plot_dict[contour.name] = sitk.GetArrayFromImage(contour_image_resampled)
+            plot_dict[contour.name] = contour_image_resampled
 
             if contour.color is not None:
                 color_dict[contour.name] = contour.color
@@ -1218,9 +1258,21 @@ class ImageVisualiser:
             s = self.return_slice(self.__axis, self.__cut)
 
             for index, c_name in enumerate(plot_dict.keys()):
+                if not self.__projection:
+                    contour_disp = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s)
+
+                else:
+                    contour_disp_proj = project_onto_arbitrary_plane(
+                        plot_dict[c_name],
+                        projection_axis={"x": 0, "y": 1, "z": 2}[self.__axis],
+                        projection_name="max",
+                        default_value=0,
+                    )
+                    contour_disp = sitk.GetArrayFromImage(contour_disp_proj)
+
                 try:
                     ax.contour(
-                        plot_dict[c_name].__getitem__(s),
+                        contour_disp,
                         colors=[color_dict[c_name]],
                         levels=[0],
                         # alpha=0.8,
@@ -1242,8 +1294,39 @@ class ImageVisualiser:
 
             for index, c_name in enumerate(plot_dict.keys()):
 
+                if not self.__projection:
+
+                    contour_ax = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_ax)
+                    contour_cor = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_cor)
+                    contour_sag = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_sag)
+
+                else:
+                    contour_ax_proj = project_onto_arbitrary_plane(
+                        plot_dict[c_name],
+                        projection_axis=2,
+                        projection_name="max",
+                        default_value=0,
+                    )
+                    contour_ax = sitk.GetArrayFromImage(contour_ax_proj)
+
+                    contour_cor_proj = project_onto_arbitrary_plane(
+                        plot_dict[c_name],
+                        projection_axis=1,
+                        projection_name="max",
+                        default_value=0,
+                    )
+                    contour_cor = sitk.GetArrayFromImage(contour_cor_proj)
+
+                    contour_sag_proj = project_onto_arbitrary_plane(
+                        plot_dict[c_name],
+                        projection_axis=0,
+                        projection_name="max",
+                        default_value=0,
+                    )
+                    contour_sag = sitk.GetArrayFromImage(contour_sag_proj)
+
                 temp = ax_ax.contour(
-                    plot_dict[c_name].__getitem__(s_ax),
+                    contour_ax,
                     levels=[0],
                     linewidths=linewidths,
                     colors=[color_dict[c_name]],
@@ -1252,14 +1335,14 @@ class ImageVisualiser:
                 temp.collections[0].set_label(c_name)
 
                 ax_cor.contour(
-                    plot_dict[c_name].__getitem__(s_cor),
+                    contour_cor,
                     levels=[0],
                     linewidths=linewidths,
                     colors=[color_dict[c_name]],
                     origin="lower",
                 )
                 ax_sag.contour(
-                    plot_dict[c_name].__getitem__(s_sag),
+                    contour_sag,
                     levels=[0],
                     linewidths=linewidths,
                     colors=[color_dict[c_name]],
