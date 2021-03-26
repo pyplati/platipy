@@ -164,6 +164,11 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
 
                         features.disableAllFeatures()
 
+                        # All features seem to be computed if all are disabled (possible
+                        # pyradiomics bug?). Skip if all features in a class are disabled.
+                        if len(settings["radiomics"][rad]) == 0:
+                            continue
+
                         for feature in settings["radiomics"][rad]:
                             try:
                                 features.enableFeatureByName(feature, True)
