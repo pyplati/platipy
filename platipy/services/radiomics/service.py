@@ -23,7 +23,7 @@ import pandas as pd
 from radiomics import firstorder, shape, glcm, glrlm, glszm, ngtdm, gldm, imageoperations
 from radiomics_custom import RadiomicsCustom
 
-from platipy.backend import app, DataObject, celery
+from platipy.backend import app, DataObject, celery  # pylint: disable=unused-import
 from platipy.backend.api import Resource, api
 
 AVAILABLE_RADIOMICS = {
@@ -167,7 +167,7 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
                         for feature in settings["radiomics"][rad]:
                             try:
                                 features.enableFeatureByName(feature, True)
-                            except:
+                            except LookupError:
                                 # Feature not available in this set
                                 logger.warning("Feature not found: {0}", feature)
 
@@ -180,8 +180,8 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
                         # Merge the results
                         df_contour = pd.concat([df_contour, df_feature_result], axis=1)
 
+                    df_contour[("", "Contour")] = contour_name
                     output_frame = pd.concat([output_frame, df_contour])
-                    output_frame[("", "Contour")] = contour_name
 
                     # Add the meta data for this contour if there is any
                     if child_obj.meta_data:
@@ -191,7 +191,7 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
 
                             output_frame[col_key] = child_obj.meta_data[key]
 
-                            if not col_key in meta_data_cols:
+                            if col_key not in meta_data_cols:
                                 meta_data_cols.append(col_key)
 
                 # Add Image Series Data Object's Meta Data to the table
@@ -212,7 +212,7 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
                     results = output_frame
                 else:
                     results = results.append(output_frame)
-        except Exception as exception:
+        except Exception as exception:  # pylint: disable=broad-except
             logger.error("An Error occurred while computing the Radiomics: {0}", exception)
 
     # Set the order of the columns output
