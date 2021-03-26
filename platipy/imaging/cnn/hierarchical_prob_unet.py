@@ -200,6 +200,7 @@ def ce_loss(logits, labels, mask=None, top_k_percentage=None, deterministic=Fals
     t_flat = torch.reshape(labels, (-1, num_classes))
     if mask is None:
         mask = torch.ones(t_flat.shape[0])
+        mask = mask.to(logits.device)
     else:
         assert (
             mask.shape.as_list()[:3] == labels.shape.as_list()[:3]
