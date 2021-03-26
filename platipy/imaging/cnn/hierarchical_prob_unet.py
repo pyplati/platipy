@@ -171,7 +171,9 @@ def _topk_mask(score, k):
     """
 
     _, indices = torch.topk(score, k)
-    return torch.scatter_add(torch.zeros(score.shape), 0, indices, torch.ones(k))
+    zeros = torch.zeros(score.shape).to(score.device)
+    ones = torch.ones(k).to(score.device)
+    return torch.scatter_add(zeros, 0, indices, ones)
 
 
 def ce_loss(logits, labels, mask=None, top_k_percentage=None, deterministic=False):
