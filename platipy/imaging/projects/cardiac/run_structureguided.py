@@ -13,11 +13,9 @@
 # limitations under the License.
 
 
-import tempfile
-
+import os
 import SimpleITK as sitk
 import numpy as np
-import os
 
 from loguru import logger
 
@@ -42,7 +40,7 @@ ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:
     ATLAS_PATH = os.environ["ATLAS_PATH"]
 
-CARDIAC_SETTINGS_DEFAULTS = {
+CARDIAC_STRUCTURE_GUIDED_SETTINGS_DEFAULTS = {
     "outputFormat": "Auto_{0}.nii.gz",
     "atlasSettings": {
         "atlasIdList": [
@@ -200,7 +198,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
 
 
 def run_cardiac_segmentation_structure_guided(
-    img, label_wholeheart, settings=CARDIAC_SETTINGS_DEFAULTS
+    img, label_wholeheart, settings=CARDIAC_STRUCTURE_GUIDED_SETTINGS_DEFAULTS
 ):
     """Runs the atlas-based cardiac segmentation
 
@@ -300,23 +298,10 @@ def run_cardiac_segmentation_structure_guided(
     - Potential expansion of the bounding box to ensure entire volume of interest is enclosed
     - Target image is cropped
     """
-    # Settings
-    quick_reg_settings = {
-        "shrink_factors": [8, 4],
-        "smooth_sigmas": [0, 0],
-        "sampling_rate": 0.75,
-        "default_value": 0,
-        "number_of_iterations": 25,
-        "final_interp": 2,
-        "metric": "mean_squares",
-        "optimiser": "gradient_descent_line_search",
-        "verbose": False,
-        "reg_method": "translation",
-    }
 
     registered_crop_images = []
 
-    logger.info(f"Running initial alignment tranform to crop image volume")
+    logger.info("Running initial alignment tranform to crop image volume")
 
     for atlas_id in atlas_id_list:  # [: min([10, len(atlas_id_list)])]:
 
@@ -325,14 +310,6 @@ def run_cardiac_segmentation_structure_guided(
         # Register the atlases
         atlas_set[atlas_id]["RIR"] = {}
         atlas_reg_structure = atlas_set[atlas_id]["Original"]["Reg_Structure"]
-
-        # reg_image, _ = initial_registration(
-        #     target_reg_structure,
-        #     atlas_reg_structure,
-        #     moving_structure=False,
-        #     fixed_structure=False,
-        #     **quick_reg_settings,
-        # )
 
         reg_image, _ = alignment_registration(
             target_reg_structure, atlas_reg_structure, moments=True
@@ -423,7 +400,7 @@ def run_cardiac_segmentation_structure_guided(
     # Settings
     dir_struct_options = settings["deformableSettingsStructureGuided"]
 
-    logger.info(f"Running DIR to register atlas images")
+    logger.info("Running DIR to register atlas images")
 
     for atlas_id in atlas_id_list:
 
@@ -433,7 +410,7 @@ def run_cardiac_segmentation_structure_guided(
         atlas_set[atlas_id]["DIR_STRUCT"] = {}
         atlas_reg_structure = atlas_set[atlas_id]["RIR"]["Reg_Structure"]
 
-        deform_reg_structure, deform_field = fast_symmetric_forces_demons_registration(
+        deform_reg_structure, deform_field, _ = fast_symmetric_forces_demons_registration(
             target_reg_structure, atlas_reg_structure, **dir_struct_options
         )
 
@@ -463,7 +440,7 @@ def run_cardiac_segmentation_structure_guided(
     # Settings
     dir_image_options = settings["deformableSettingsImage"]
 
-    logger.info(f"Running DIR to register atlas images")
+    logger.info("Running DIR to register atlas images")
 
     for atlas_id in atlas_id_list:
 
@@ -477,7 +454,7 @@ def run_cardiac_segmentation_structure_guided(
         )
         target_image = sitk.Mask(img_crop, label_crop)
 
-        deform_image, deform_field = fast_symmetric_forces_demons_registration(
+        deform_image, deform_field, _ = fast_symmetric_forces_demons_registration(
             target_image, atlas_image, **dir_image_options
         )
 
@@ -499,47 +476,6 @@ def run_cardiac_segmentation_structure_guided(
             atlas_set[atlas_id]["DIR_IMAGE"][struct] = apply_field(
                 input_struct, deform_field, default_value=0, interp=sitk.sitkNearestNeighbor
             )
-
-    """
-    Step 4 - Iterative atlas removal
-    - This is an automatic process that will attempt to remove inconsistent atlases from the entire set
-
-    """
-    # Compute weight maps
-    # Here we use simple GWV as this minises the potentially negative influence of mis-registered atlases
-    # reference_structure = settings["IARSettings"]["referenceStructure"]
-
-    # if reference_structure:
-
-    #     smooth_distance_maps = settings["IARSettings"]["smoothDistanceMaps"]
-    #     smooth_sigma = settings["IARSettings"]["smoothSigma"]
-    #     z_score_statistic = settings["IARSettings"]["zScoreStatistic"]
-    #     outlier_method = settings["IARSettings"]["outlierMethod"]
-    #     outlier_factor = settings["IARSettings"]["outlierFactor"]
-    #     min_best_atlases = settings["IARSettings"]["minBestAtlases"]
-    #     project_on_sphere = settings["IARSettings"]["project_on_sphere"]
-
-    #     for atlas_id in atlas_id_list:
-    #         atlas_image = atlas_set[atlas_id]["DIR"]["CT Image"]
-    #         weight_map = compute_weight_map(img_crop, atlas_image, vote_type="global")
-    #         atlas_set[atlas_id]["DIR"]["Weight Map"] = weight_map
-
-    #     atlas_set = run_iar(
-    #         atlas_set=atlas_set,
-    #         structure_name=reference_structure,
-    #         smooth_maps=smooth_distance_maps,
-    #         smooth_sigma=smooth_sigma,
-    #         z_score=z_score_statistic,
-    #         outlier_method=outlier_method,
-    #         min_best_atlases=min_best_atlases,
-    #         n_factor=outlier_factor,
-    #         iteration=0,
-    #         single_step=False,
-    #         project_on_sphere=project_on_sphere,
-    #     )
-
-    # else:
-    #     logger.info("IAR: No reference structure, skipping iterative atlas removal.")
 
     """
     Step 4 - Vessel Splining
