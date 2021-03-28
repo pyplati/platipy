@@ -359,12 +359,6 @@ class _HierarchicalCore(torch.nn.Module):
         """Forward pass to sample from the module as specified.
 
         Args:
-        inputs:
-        mean:
-        z_q:
-        Returns:
-
-        Args:
             inputs (torch.Tensor): A tensor of shape (b,c,h,w). When using the module as a prior
                                    the `inputs` tensor should be a batch of images. When using it
                                    as a posterior the tensor should be a (batched) concatentation
@@ -805,30 +799,30 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         for level, kl in kl_dict.items():
             summaries["kl_{}".format(level)] = kl
 
-            # Set up a regular ELBO objective.
-            if self._loss_kwargs["type"] == "elbo":
-                loss = rec_loss["sum"] + self._loss_kwargs["beta"] * kl_sum
-                summaries["elbo_loss"] = loss
+        # Set up a regular ELBO objective.
+        if self._loss_kwargs["type"] == "elbo":
+            loss = rec_loss["sum"] + self._loss_kwargs["beta"] * kl_sum
+            summaries["elbo_loss"] = loss
 
-            # TODO Still need to implement geco
-            # Set up a GECO objective (ELBO with a reconstruction constraint).
-            # elif self._loss_kwargs["type"] == "geco":
-            #     ma_rec_loss = self._moving_average(rec_loss["sum"])
-            #     mask_sum_per_instance = torch.sum(rec_loss["mask"], -1)
-            #     num_valid_pixels = torch.mean(mask_sum_per_instance)
-            #     reconstruction_threshold = self._loss_kwargs["kappa"] * num_valid_pixels
+        # TODO Still need to implement geco
+        # Set up a GECO objective (ELBO with a reconstruction constraint).
+        # elif self._loss_kwargs["type"] == "geco":
+        #     ma_rec_loss = self._moving_average(rec_loss["sum"])
+        #     mask_sum_per_instance = torch.sum(rec_loss["mask"], -1)
+        #     num_valid_pixels = torch.mean(mask_sum_per_instance)
+        #     reconstruction_threshold = self._loss_kwargs["kappa"] * num_valid_pixels
 
-            #     rec_constraint = ma_rec_loss - reconstruction_threshold
-            #     lagmul = self._lagmul(rec_constraint)
-            #     loss = lagmul * rec_constraint + kl_sum
+        #     rec_constraint = ma_rec_loss - reconstruction_threshold
+        #     lagmul = self._lagmul(rec_constraint)
+        #     loss = lagmul * rec_constraint + kl_sum
 
-            #     summaries["geco_loss"] = loss
-            #     summaries["ma_rec_loss_mean"] = ma_rec_loss / num_valid_pixels
-            #     summaries["num_valid_pixels"] = num_valid_pixels
-            #     summaries["lagmul"] = lagmul
-            else:
-                raise NotImplementedError(
-                    "Loss type {} not implemeted!".format(self._loss_kwargs["type"])
-                )
+        #     summaries["geco_loss"] = loss
+        #     summaries["ma_rec_loss_mean"] = ma_rec_loss / num_valid_pixels
+        #     summaries["num_valid_pixels"] = num_valid_pixels
+        #     summaries["lagmul"] = lagmul
+        else:
+            raise NotImplementedError(
+                "Loss type {} not implemeted!".format(self._loss_kwargs["type"])
+            )
 
         return dict(supervised_loss=loss, summaries=summaries)
