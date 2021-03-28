@@ -666,19 +666,18 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             seg (torch.Tensor): A tensor of shape (b, num_classes, h, w).
         """
 
-        inputs = (img, seg)
+        input_tensor = torch.cat([img, seg], axis=1)
 
-        if self._cache == inputs:
+        if self._cache == input_tensor:
             # No need to recompute
             return
 
-        input_tensor = torch.cat([img, seg], axis=1)
         self._q_sample = self._posterior(input_tensor, mean=False)
         self._q_sample_mean = self._posterior(input_tensor, mean=True)
         self._p_sample = self._prior(img, mean=False, z_q=None)
         self._p_sample_z_q = self._prior(img, z_q=self._q_sample["used_latents"])
         self._p_sample_z_q_mean = self._prior(img, z_q=self._q_sample_mean["used_latents"])
-        self._cache = inputs
+        self._cache = input_tensor
 
     def sample(self, img, mean=False, z_q=None):
         """Sample a segmentation from the prior, given an input image.
