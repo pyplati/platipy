@@ -229,6 +229,8 @@ def ce_loss(logits, labels, mask=None, top_k_percentage=None, deterministic=Fals
             # given by the normalized cross-entropy loss values. This is done by
             # adding Gumbel noise to the logarithmic normalized cross-entropy loss
             # (followed by choosing the top-k pixels).
+            sg = _sample_gumbel(norm_xe.shape)
+            sg = sg.to(logits.device)
             score = norm_xe.log() + _sample_gumbel(norm_xe.shape)
 
         score = score + mask.log()
