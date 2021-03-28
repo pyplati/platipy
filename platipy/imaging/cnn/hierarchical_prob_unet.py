@@ -141,8 +141,7 @@ def softmax_cross_entropy_with_logits(target, logits):
         torch.Tensor: Tensor containing the softmax cross entropy loss
     """
 
-    loss = torch.sum(-target * torch.nn.functional.log_softmax(logits, -1), -1)
-    return loss.mean()
+    return torch.sum(-target * torch.nn.functional.log_softmax(logits, -1), -1)
 
 
 def _sample_gumbel(shape):
@@ -238,8 +237,8 @@ def ce_loss(logits, labels, mask=None, top_k_percentage=None, deterministic=Fals
 
     # Calculate batch-averages for the sum and mean of the loss
     batch_size = labels.shape[0]
-    xe = torch.reshape(xe, (batch_size, -1))
-    mask = torch.reshape(mask, (batch_size, -1))
+    xe = torch.reshape(xe, (batch_size, int(xe.numel() / batch_size)))
+    mask = torch.reshape(mask, (batch_size, int(mask.numel() / batch_size)))
     ce_sum_per_instance = torch.sum(mask * xe, 1)
     ce_sum = torch.mean(ce_sum_per_instance, 0)
     ce_mean = torch.sum(mask * xe) / torch.sum(mask)
