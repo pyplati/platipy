@@ -48,7 +48,7 @@ class ResBlock(torch.nn.Module):
 
         super(ResBlock, self).__init__()
 
-        self._activation_fn = activation_fn(inplace=True)
+        self._activation_fn = activation_fn()
 
         # Set the number of intermediate channels that we compress to.
         if n_down_channels is None:
@@ -64,7 +64,7 @@ class ResBlock(torch.nn.Module):
             )
 
             if c < convs_per_block - 1:
-                layers.append(activation_fn(inplace=True))
+                layers.append(activation_fn())
 
             in_channels = n_down_channels
 
