@@ -231,7 +231,7 @@ def ce_loss(logits, labels, mask=None, top_k_percentage=None, deterministic=Fals
             # (followed by choosing the top-k pixels).
             sg = _sample_gumbel(norm_xe.shape)
             sg = sg.to(logits.device)
-            score = norm_xe.log() + _sample_gumbel(norm_xe.shape)
+            score = norm_xe.log() + sg
 
         score = score + mask.log()
         top_k_mask = _topk_mask(score, k_pixels)
