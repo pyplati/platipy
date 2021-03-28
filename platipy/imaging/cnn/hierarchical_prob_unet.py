@@ -668,7 +668,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         input_tensor = torch.cat([img, seg], axis=1)
 
-        if self._cache == input_tensor:
+        if not self._cache is None and torch.equal(self._cache, input_tensor):
             # No need to recompute
             return
 

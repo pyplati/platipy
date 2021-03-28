@@ -42,6 +42,7 @@ print(output.shape)
 output = hpunet.reconstruct(c, labels)
 print(output.shape)
 loss = hpunet.loss(c, labels)
+loss = hpunet.loss(c, labels)
 print(loss)
 
 
