@@ -18,7 +18,6 @@
 
 # pylint: disable=invalid-name
 
-import math
 import torch
 
 
@@ -125,135 +124,6 @@ def resize_down(input_features, scale=2):
         torch.Tensor: The downsized Tensor
     """
     return torch.nn.AvgPool2d(kernel_size=scale, stride=scale, padding=0)(input_features)
-
-
-def softmax_cross_entropy_with_logits(target, logits):
-    """Computes the softmax_cross_entropy_with_logits to replicate the equivalent function in
-    tensorflow.
-
-    From https://gist.github.com/tejaskhot/cf3d087ce4708c422e68b3b747494b9f
-
-    Args:
-        target (torch.Tensor): The target tensor
-        logits (torch.Tensor): Log probabilities
-
-    Returns:
-        torch.Tensor: Tensor containing the softmax cross entropy loss
-    """
-
-    return torch.sum(-target * torch.nn.functional.log_softmax(logits, -1), -1)
-
-
-def _sample_gumbel(shape):
-    """Transforms a uniform random variable to be standard Gumbel distributed.
-
-    Args:
-        shape (tuple): The shape of the data
-
-    Returns:
-        torch.Tensor: Standard Gumbel distribution
-    """
-
-    eps = 1e-20
-    return -torch.log(-torch.log(torch.rand(shape) + eps) + eps)
-
-
-def _topk_mask(score, k):
-    """Returns a mask for the top-k elements in score.
-
-    Args:
-        score (torch.Tensor): The tensor of score values
-        k (float): The value of k (0-1)
-
-    Returns:
-        torch.Tensor: The mask
-    """
-
-    _, indices = torch.topk(score, k)
-    zeros = torch.zeros(score.shape).to(score.device)
-    ones = torch.ones(k).to(score.device)
-    return torch.scatter_add(zeros, 0, indices, ones)
-
-
-def ce_loss(logits, labels, mask=None, top_k_percentage=None, deterministic=False):
-    """Computes the cross-entropy loss.
-    Optionally a mask and a top-k percentage for the used pixels can be specified.
-    The top-k mask can be produced deterministically or sampled.
-
-    Args:
-        logits (torch.Tensor): A tensor of shape (b,num_classes,h,w)
-        labels (torch.Tensor): A tensor of shape (b,num_classes,h,w)
-        mask (torch.Tensor, optional): None or a tensor of shape (b,h,w). Defaults to None.
-        top_k_percentage (float, optional): None or a float in (0.,1.]. If None, a standard
-                                            cross-entropy loss is calculated. Defaults to None.
-        deterministic (bool, optional): A Boolean indicating whether or not to produce the
-                                        prospective top-k mask deterministically. Defaults to
-                                        False.
-
-    Returns:
-        dict: A dictionary holding the mean and the pixelwise sum of the loss for the
-                batch as well as the employed loss mask.
-    """
-
-    num_classes = logits.shape[1]
-
-    # y_flat = torch.reshape(logits, (-1, num_classes))
-    # t_flat = torch.reshape(labels, (-1, num_classes))
-
-    # print(y_flat.shape)
-    # print(t_flat.shape)
-    # if mask is None:
-    #     mask = torch.ones(t_flat.shape[0])
-    #     mask = mask.to(logits.device)
-    # else:
-    #     assert (
-    #         mask.shape.as_list()[:3] == labels.shape.as_list()[:3]
-    #     ), "The loss mask shape differs from the target shape: {} vs. {}.".format(
-    #         mask.shape.as_list(), labels.shape.as_list()[:3]
-    #     )
-    #     mask = torch.reshape(mask, (-1,))
-
-    # n_pixels_in_batch = y_flat.shape[0]
-    criterion = torch.nn.BCEWithLogitsLoss(reduction="mean")
-    xe = criterion(input=logits, target=labels)
-
-    print(xe)
-    # xe = softmax_cross_entropy_with_logits(t_flat, y_flat)
-
-    # if top_k_percentage is not None:
-    #     assert 0.0 < top_k_percentage <= 1.0
-    #     k_pixels = math.floor(n_pixels_in_batch * top_k_percentage)
-
-    #     # stopgrad_xe = tf.stop_gradient(xe)
-    #     norm_xe = xe / xe.sum()
-
-    #     if deterministic:
-
-    #         score = norm_xe.log()
-    #     else:
-    #         # Use the Gumbel trick to sample the top-k pixels, equivalent to sampling
-    #         # from a categorical distribution over pixels whose probabilities are
-    #         # given by the normalized cross-entropy loss values. This is done by
-    #         # adding Gumbel noise to the logarithmic normalized cross-entropy loss
-    #         # (followed by choosing the top-k pixels).
-    #         sg = _sample_gumbel(norm_xe.shape)
-    #         sg = sg.to(logits.device)
-    #         score = norm_xe.log() + sg
-
-    #     score = score + mask.log()
-    #     top_k_mask = _topk_mask(score, k_pixels)
-    #     mask = mask * top_k_mask
-
-    # Calculate batch-averages for the sum and mean of the loss
-    # batch_size = labels.shape[0]
-    # xe = torch.reshape(xe, (batch_size, int(xe.numel() / batch_size)))
-    # mask = torch.reshape(mask, (batch_size, int(mask.numel() / batch_size)))
-    # ce_sum_per_instance = torch.sum(mask * xe, 1)
-    # ce_sum = torch.mean(ce_sum_per_instance, 0)
-    # ce_mean = torch.sum(mask * xe) / torch.sum(mask)
-    xe = torch.sum(xe)
-
-    return {"mean": ce_mean, "sum": ce_sum, "mask": mask}
 
 
 class _HierarchicalCore(torch.nn.Module):
@@ -634,8 +504,6 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         if loss_kwargs is None:
             self._loss_kwargs = {
                 "type": "elbo",
-                "top_k_percentage": 0.02,
-                "deterministic_top_k": False,
                 "kappa": 0.05,
                 "decay": 0.99,
                 "rate": 1e-2,
@@ -756,23 +624,15 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         return kl
 
-    def rec_loss(self, img, seg, mask=None, top_k_percentage=None, deterministic=True):
+    def rec_loss(self, img, seg):
         """Cross-entropy reconstruction loss employed in the ELBO-/ GECO-objective.
 
         Args:
             img (torch.Tensor): A tensor of shape (b, c, h, w).
             seg (torch.Tensor): A tensor of shape (b, num_classes, h, w).
-            mask (torch.Tensor, optional): A mask of shape (b, h, w) or None. If None no pixels are
-                                           masked in the loss. Defaults to None.
-            top_k_percentage (float, optional): None or a float in (0.,1.]. If None, a standard
-                                                cross-entropy loss is calculated. Defaults to None.
-            deterministic (bool, optional): A Boolean indicating whether or not to produce the
-                                            prospective top-k mask deterministically. Defaults to
-                                            True.
 
         Returns:
-            dict: A dictionary holding the mean and the pixelwise sum of the loss for the
-                  batch as well as the employed loss mask.
+            dict: A dictionary holding the mean and the pixelwise sum of the loss
         """
         reconstruction = self.reconstruct(img, seg, mean=False)
 
@@ -783,28 +643,21 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         return {"mean": reconstruction_loss_mean, "sum": reconstruction_loss_sum}
 
-        # return ce_loss(reconstruction, seg, mask, top_k_percentage, deterministic)
-
-    def loss(self, img, seg, mask=None):
+    def loss(self, img, seg):
         """The full training objective, either ELBO or GECO.
 
         Args:
             img (torch.Tensor): A tensor of shape (b, c, h, w).
             seg (torch.Tensor): A tensor of shape (b, num_classes, h, w).
-            mask (torch.Tensor, optional): A mask of shape (b, h, w) or None. If None no pixels are
-                                           masked in the loss. Defaults to None.
 
         Raises:
             NotImplementedError: Raised if loss function supplied isn't implemented yet.
 
         Returns:
-            dict: A dictionary holding the loss (with key 'loss') and the tensorboard summaries
-                  (with key 'summaries').
+            dict: A dictionary holding the loss (with key 'loss')
         """
         summaries = {}
-        top_k_percentage = self._loss_kwargs["top_k_percentage"]
-        deterministic = self._loss_kwargs["deterministic_top_k"]
-        rec_loss = self.rec_loss(img, seg, mask, top_k_percentage, deterministic)
+        rec_loss = self.rec_loss(img, seg)
 
         kl_dict = self.kl(img, seg)
         kl_sum = torch.sum(torch.stack([kl for _, kl in kl_dict.items()], axis=-1))
