@@ -28,7 +28,7 @@ down_channels_per_block = [int(i / 2) for i in default_channels_per_block]
 a = _HierarchicalCore([8, 6, 2], 1, channels_per_block, down_channels_per_block)
 b = ResBlock(1, 3, base_channels)
 d = ResBlock(3, 3, base_channels * 2)
-c = torch.rand([3, 1, 256, 256])
+c = torch.rand([3, 1, 128, 128])
 
 fg = torch.ones(c.shape)
 bg = torch.zeros(c.shape)

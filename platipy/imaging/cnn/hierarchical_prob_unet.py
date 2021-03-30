@@ -197,53 +197,61 @@ def ce_loss(logits, labels, mask=None, top_k_percentage=None, deterministic=Fals
 
     num_classes = logits.shape[1]
 
-    y_flat = torch.reshape(logits, (-1, num_classes))
-    t_flat = torch.reshape(labels, (-1, num_classes))
-    if mask is None:
-        mask = torch.ones(t_flat.shape[0])
-        mask = mask.to(logits.device)
-    else:
-        assert (
-            mask.shape.as_list()[:3] == labels.shape.as_list()[:3]
-        ), "The loss mask shape differs from the target shape: {} vs. {}.".format(
-            mask.shape.as_list(), labels.shape.as_list()[:3]
-        )
-        mask = torch.reshape(mask, (-1,), name="reshape_mask")
+    # y_flat = torch.reshape(logits, (-1, num_classes))
+    # t_flat = torch.reshape(labels, (-1, num_classes))
 
-    n_pixels_in_batch = y_flat.shape[0]
-    xe = softmax_cross_entropy_with_logits(t_flat, y_flat)
+    # print(y_flat.shape)
+    # print(t_flat.shape)
+    # if mask is None:
+    #     mask = torch.ones(t_flat.shape[0])
+    #     mask = mask.to(logits.device)
+    # else:
+    #     assert (
+    #         mask.shape.as_list()[:3] == labels.shape.as_list()[:3]
+    #     ), "The loss mask shape differs from the target shape: {} vs. {}.".format(
+    #         mask.shape.as_list(), labels.shape.as_list()[:3]
+    #     )
+    #     mask = torch.reshape(mask, (-1,))
 
-    if top_k_percentage is not None:
-        assert 0.0 < top_k_percentage <= 1.0
-        k_pixels = math.floor(n_pixels_in_batch * top_k_percentage)
+    # n_pixels_in_batch = y_flat.shape[0]
+    criterion = torch.nn.BCEWithLogitsLoss(reduction="mean")
+    xe = criterion(input=logits, target=labels)
 
-        # stopgrad_xe = tf.stop_gradient(xe)
-        norm_xe = xe / xe.sum()
+    print(xe)
+    # xe = softmax_cross_entropy_with_logits(t_flat, y_flat)
 
-        if deterministic:
+    # if top_k_percentage is not None:
+    #     assert 0.0 < top_k_percentage <= 1.0
+    #     k_pixels = math.floor(n_pixels_in_batch * top_k_percentage)
 
-            score = norm_xe.log()
-        else:
-            # Use the Gumbel trick to sample the top-k pixels, equivalent to sampling
-            # from a categorical distribution over pixels whose probabilities are
-            # given by the normalized cross-entropy loss values. This is done by
-            # adding Gumbel noise to the logarithmic normalized cross-entropy loss
-            # (followed by choosing the top-k pixels).
-            sg = _sample_gumbel(norm_xe.shape)
-            sg = sg.to(logits.device)
-            score = norm_xe.log() + sg
+    #     # stopgrad_xe = tf.stop_gradient(xe)
+    #     norm_xe = xe / xe.sum()
 
-        score = score + mask.log()
-        top_k_mask = _topk_mask(score, k_pixels)
-        mask = mask * top_k_mask
+    #     if deterministic:
+
+    #         score = norm_xe.log()
+    #     else:
+    #         # Use the Gumbel trick to sample the top-k pixels, equivalent to sampling
+    #         # from a categorical distribution over pixels whose probabilities are
+    #         # given by the normalized cross-entropy loss values. This is done by
+    #         # adding Gumbel noise to the logarithmic normalized cross-entropy loss
+    #         # (followed by choosing the top-k pixels).
+    #         sg = _sample_gumbel(norm_xe.shape)
+    #         sg = sg.to(logits.device)
+    #         score = norm_xe.log() + sg
+
+    #     score = score + mask.log()
+    #     top_k_mask = _topk_mask(score, k_pixels)
+    #     mask = mask * top_k_mask
 
     # Calculate batch-averages for the sum and mean of the loss
-    batch_size = labels.shape[0]
-    xe = torch.reshape(xe, (batch_size, int(xe.numel() / batch_size)))
-    mask = torch.reshape(mask, (batch_size, int(mask.numel() / batch_size)))
-    ce_sum_per_instance = torch.sum(mask * xe, 1)
-    ce_sum = torch.mean(ce_sum_per_instance, 0)
-    ce_mean = torch.sum(mask * xe) / torch.sum(mask)
+    # batch_size = labels.shape[0]
+    # xe = torch.reshape(xe, (batch_size, int(xe.numel() / batch_size)))
+    # mask = torch.reshape(mask, (batch_size, int(mask.numel() / batch_size)))
+    # ce_sum_per_instance = torch.sum(mask * xe, 1)
+    # ce_sum = torch.mean(ce_sum_per_instance, 0)
+    # ce_mean = torch.sum(mask * xe) / torch.sum(mask)
+    xe = torch.sum(xe)
 
     return {"mean": ce_mean, "sum": ce_sum, "mask": mask}
 
@@ -767,7 +775,15 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
                   batch as well as the employed loss mask.
         """
         reconstruction = self.reconstruct(img, seg, mean=False)
-        return ce_loss(reconstruction, seg, mask, top_k_percentage, deterministic)
+
+        criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
+        reconstruction_loss = criterion(input=reconstruction, target=seg)
+        reconstruction_loss_sum = torch.sum(reconstruction_loss)
+        reconstruction_loss_mean = torch.mean(reconstruction_loss)
+
+        return {"mean": reconstruction_loss_mean, "sum": reconstruction_loss_sum}
+
+        # return ce_loss(reconstruction, seg, mask, top_k_percentage, deterministic)
 
     def loss(self, img, seg, mask=None):
         """The full training objective, either ELBO or GECO.
