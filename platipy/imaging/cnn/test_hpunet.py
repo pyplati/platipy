@@ -29,20 +29,13 @@ latent_dims = [2]
 
 channels_per_block = default_channels_per_block
 down_channels_per_block = [int(i / 2) for i in default_channels_per_block]
-# a = _HierarchicalCore(latent_dims, 1, channels_per_block, down_channels_per_block)
-# b = ResBlock(1, 3, base_channels, ndims=3)
-# d = ResBlock(3, 3, base_channels * 2, ndims=3)
 c = torch.rand([3, 1, 32, 32])
 
 fg = torch.ones(c.shape)
 bg = torch.zeros(c.shape)
 labels = torch.cat([fg, bg], axis=1)
-# a(b)
-# print(a)
 
-hpunet = HierarchicalProbabilisticUnet(
-    ndims=2, channels_per_block=channels_per_block, latent_dims=[1]
-)
+hpunet = HierarchicalProbabilisticUnet(channels_per_block=channels_per_block, latent_dims=[1])
 output = hpunet.sample(c)
 print(output.shape)
 output = hpunet.reconstruct(c, labels)
@@ -60,10 +53,6 @@ _IMAGE_SHAPE = [_BATCH_SIZE] + [1] + _SPATIAL_SHAPE
 _BOTTLENECK_SIZE = _SPATIAL_SHAPE[0] // 2 ** (len(_CHANNELS_PER_BLOCK) - 1)
 _SEGMENTATION_SHAPE = [_BATCH_SIZE] + [_NUM_CLASSES] + _SPATIAL_SHAPE
 _LATENT_DIMS = [3, 2, 1]
-# _INITIALIZERS = {
-#     "w": tf.orthogonal_initializer(gain=1.0, seed=None),
-#     "b": tf.truncated_normal_initializer(stddev=0.001),
-# }
 
 
 def _get_placeholders():
@@ -78,7 +67,6 @@ def test_shape_of_sample():
         latent_dims=_LATENT_DIMS,
         channels_per_block=_CHANNELS_PER_BLOCK,
         num_classes=_NUM_CLASSES,
-        # initializers=_INITIALIZERS,
     )
     img, _ = _get_placeholders()
     sample = hpu_net.sample(img)
@@ -91,7 +79,6 @@ def test_shape_of_reconstruction():
         latent_dims=_LATENT_DIMS,
         channels_per_block=_CHANNELS_PER_BLOCK,
         num_classes=_NUM_CLASSES,
-        # initializers=_INITIALIZERS,
     )
     img, seg = _get_placeholders()
     reconstruction = hpu_net.reconstruct(img, seg)
@@ -103,7 +90,6 @@ def test_shapes_in_prior():
         latent_dims=_LATENT_DIMS,
         channels_per_block=_CHANNELS_PER_BLOCK,
         num_classes=_NUM_CLASSES,
-        # initializers=_INITIALIZERS,
     )
     img, _ = _get_placeholders()
     prior_out = hpu_net._prior(img)
@@ -151,7 +137,6 @@ def test_shape_of_kl():
         latent_dims=_LATENT_DIMS,
         channels_per_block=_CHANNELS_PER_BLOCK,
         num_classes=_NUM_CLASSES,
-        # initializers=_INITIALIZERS,
     )
     img, seg = _get_placeholders()
     kl_dict = hpu_net.kl(img, seg)

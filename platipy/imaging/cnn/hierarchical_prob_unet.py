@@ -22,6 +22,17 @@ import torch
 
 
 def conv_nd(ndims=2, **kwargs):
+    """Generate a 2D or 3D convolution
+
+    Args:
+        ndims (int, optional): 2 or 3 dimensions. Defaults to 2.
+
+    Raises:
+        NotImplementedError: Raised if ndims is not in 2 or 3 dimensions.
+
+    Returns:
+        torch.nn.Conv: The convolution.
+    """
 
     if ndims == 2:
         return torch.nn.Conv2d(**kwargs)
@@ -54,6 +65,7 @@ class ResBlock(torch.nn.Module):
                                                        to torch.nn.ReLU.
             convs_per_block (int, optional): The number of convolutions to perform within the
                                              block. Defaults to 3.
+            ndims (int,  optional): Specify whether to use 2 or 3 dimensions. Defaults to 2.
         """
 
         super(ResBlock, self).__init__()
@@ -198,6 +210,7 @@ class _HierarchicalCore(torch.nn.Module):
                                              layers. Defaults to 3.
             blocks_per_level (int, optional): An integer specifying the number of residual blocks
                                               per level. Defaults to 3.
+            ndims (int,  optional): Specify whether to use 2 or 3 dimensions. Defaults to 2.
         """
 
         super(_HierarchicalCore, self).__init__()
@@ -271,7 +284,7 @@ class _HierarchicalCore(torch.nn.Module):
                     )
                 )
                 decoder_in_channels = channels_per_block[::-1][level + 1]
-            print(channels_per_block[::-1][level + 1])
+
             self.decoder_layers.append(torch.nn.Sequential(*layer))
 
     def forward(self, inputs, mean=False, z_q=None):
@@ -400,6 +413,7 @@ class _StitchingDecoder(torch.nn.Module):
                                              layers. Defaults to 3.
             blocks_per_level (int, optional): An integer specifying the number of residual blocks
                                               per level. Defaults to 3.
+            ndims (int,  optional): Specify whether to use 2 or 3 dimensions. Defaults to 2.
         """
         super(_StitchingDecoder, self).__init__()
         self._latent_dims = latent_dims
@@ -436,10 +450,12 @@ class _StitchingDecoder(torch.nn.Module):
                         ndims=ndims,
                     )
                 )
+                decoder_in_channels = channels_per_block[::-1][level]
 
             self.decoder_layers.append(torch.nn.Sequential(*layer))
 
-        decoder_in_channels = channels_per_block[::-1][self._num_levels - 1]
+        if decoder_in_channels is None:
+            decoder_in_channels = channels_per_block[::-1][self._num_levels - 1]
 
         self.final_layer = conv_nd(
             ndims=ndims,
@@ -504,6 +520,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
                                               blocks per level. Defaults to 3.
             loss_kwargs (dict, optional): Dictionary of argument used by loss function.
                                           Defaults to None.
+            ndims (int,  optional): Specify whether to use 2 or 3 dimensions. Defaults to 2.
         """
         super(HierarchicalProbabilisticUnet, self).__init__()
 
