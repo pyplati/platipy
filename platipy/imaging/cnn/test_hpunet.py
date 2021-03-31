@@ -10,8 +10,8 @@ base_channels = 24
 default_channels_per_block = [
     base_channels,
     2 * base_channels,
-    4 * base_channels,
-    8 * base_channels,
+    # 4 * base_channels,
+    # 8 * base_channels,
     # 8 * base_channels,
     # 8 * base_channels,
     # 8 * base_channels,
@@ -23,12 +23,16 @@ default_channels_per_block = [
 #     4 * base_channels,
 #     8 * base_channels,
 # ]
+
+latent_dims = [8, 6, 2]
+latent_dims = [2]
+
 channels_per_block = default_channels_per_block
 down_channels_per_block = [int(i / 2) for i in default_channels_per_block]
-a = _HierarchicalCore([8, 6, 2], 1, channels_per_block, down_channels_per_block)
-b = ResBlock(1, 3, base_channels)
-d = ResBlock(3, 3, base_channels * 2)
-c = torch.rand([3, 1, 128, 128])
+# a = _HierarchicalCore(latent_dims, 1, channels_per_block, down_channels_per_block)
+# b = ResBlock(1, 3, base_channels, ndims=3)
+# d = ResBlock(3, 3, base_channels * 2, ndims=3)
+c = torch.rand([3, 1, 32, 32])
 
 fg = torch.ones(c.shape)
 bg = torch.zeros(c.shape)
@@ -36,7 +40,9 @@ labels = torch.cat([fg, bg], axis=1)
 # a(b)
 # print(a)
 
-hpunet = HierarchicalProbabilisticUnet()
+hpunet = HierarchicalProbabilisticUnet(
+    ndims=2, channels_per_block=channels_per_block, latent_dims=[1]
+)
 output = hpunet.sample(c)
 print(output.shape)
 output = hpunet.reconstruct(c, labels)

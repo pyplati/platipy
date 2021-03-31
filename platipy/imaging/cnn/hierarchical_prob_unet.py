@@ -21,6 +21,16 @@
 import torch
 
 
+def conv_nd(ndims=2, **kwargs):
+
+    if ndims == 2:
+        return torch.nn.Conv2d(**kwargs)
+    elif ndims == 3:
+        return torch.nn.Conv3d(**kwargs)
+
+    raise NotImplementedError("Only 2 or 3 dimensions are supported")
+
+
 class ResBlock(torch.nn.Module):
     """A residual block"""
 
@@ -31,6 +41,7 @@ class ResBlock(torch.nn.Module):
         n_down_channels=None,
         activation_fn=torch.nn.ReLU,
         convs_per_block=3,
+        ndims=2,
     ):
         """Create a residual block
 
@@ -57,8 +68,12 @@ class ResBlock(torch.nn.Module):
         in_channels = input_channels
         for c in range(convs_per_block):
             layers.append(
-                torch.nn.Conv2d(
-                    in_channels=in_channels, out_channels=n_down_channels, kernel_size=3, padding=1
+                conv_nd(
+                    ndims=ndims,
+                    in_channels=in_channels,
+                    out_channels=n_down_channels,
+                    kernel_size=3,
+                    padding=1,
                 )
             )
 
@@ -68,8 +83,12 @@ class ResBlock(torch.nn.Module):
             in_channels = n_down_channels
 
         if not n_down_channels == output_channels:
-            resize_outgoing = torch.nn.Conv2d(
-                in_channels=n_down_channels, out_channels=output_channels, kernel_size=1, padding=0
+            resize_outgoing = conv_nd(
+                ndims=ndims,
+                in_channels=n_down_channels,
+                out_channels=output_channels,
+                kernel_size=1,
+                padding=0,
             )
             layers.append(resize_outgoing)
 
@@ -78,8 +97,12 @@ class ResBlock(torch.nn.Module):
         self._resize_skip = None
 
         if not input_channels == output_channels:
-            self._resize_skip = torch.nn.Conv2d(
-                in_channels=input_channels, out_channels=output_channels, kernel_size=1, padding=0
+            self._resize_skip = conv_nd(
+                ndims=ndims,
+                in_channels=input_channels,
+                out_channels=output_channels,
+                kernel_size=1,
+                padding=0,
             )
 
     def forward(self, input_features):
@@ -107,10 +130,18 @@ def resize_up(input_features, scale=2):
     Returns:
         torch.Tensor: The upsized Tensor
     """
-    _, _, size_x, size_y = input_features.shape
-    new_size_x = int(round(size_x * scale))
-    new_size_y = int(round(size_y * scale))
-    return torch.nn.functional.interpolate(input_features, size=[new_size_x, new_size_y])
+
+    input_shape = input_features.shape
+    size_x = input_shape[2]
+    size_y = input_shape[3]
+
+    new_size = [int(round(size_x * scale)), int(round(size_y * scale))]
+
+    if len(input_shape) == 5:
+        size_z = input_shape[4]
+        new_size = new_size + [int(round(size_z * scale))]
+
+    return torch.nn.functional.interpolate(input_features, size=new_size)
 
 
 def resize_down(input_features, scale=2):
@@ -123,7 +154,10 @@ def resize_down(input_features, scale=2):
     Returns:
         torch.Tensor: The downsized Tensor
     """
-    return torch.nn.AvgPool2d(kernel_size=scale, stride=scale, padding=0)(input_features)
+    if input_features.ndim == 5:
+        return torch.nn.AvgPool3d(kernel_size=scale, stride=scale, padding=0)(input_features)
+    else:
+        return torch.nn.AvgPool2d(kernel_size=scale, stride=scale, padding=0)(input_features)
 
 
 class _HierarchicalCore(torch.nn.Module):
@@ -142,6 +176,7 @@ class _HierarchicalCore(torch.nn.Module):
         activation_fn=torch.nn.ReLU,
         convs_per_block=3,
         blocks_per_level=3,
+        ndims=2,
     ):
         """Initializes a HierarchicalCore.
 
@@ -195,6 +230,7 @@ class _HierarchicalCore(torch.nn.Module):
                         n_down_channels=self._down_channels_per_block[level],
                         activation_fn=self._activation_fn,
                         convs_per_block=self._convs_per_block,
+                        ndims=ndims,
                     )
                 )
                 in_channels = channels_per_block[level]
@@ -209,8 +245,12 @@ class _HierarchicalCore(torch.nn.Module):
 
             latent_dim = latent_dims[level]
 
-            mu_logsigma_block = torch.nn.Conv2d(
-                channels_per_block[::-1][level], 2 * latent_dim, kernel_size=1, padding=0
+            mu_logsigma_block = conv_nd(
+                ndims=ndims,
+                in_channels=channels_per_block[::-1][level],
+                out_channels=2 * latent_dim,
+                kernel_size=1,
+                padding=0,
             )
 
             self._mu_logsigma_blocks.append(mu_logsigma_block)
@@ -227,10 +267,11 @@ class _HierarchicalCore(torch.nn.Module):
                         n_down_channels=self._down_channels_per_block[::-1][level + 1],
                         activation_fn=self._activation_fn,
                         convs_per_block=self._convs_per_block,
+                        ndims=ndims,
                     )
                 )
                 decoder_in_channels = channels_per_block[::-1][level + 1]
-
+            print(channels_per_block[::-1][level + 1])
             self.decoder_layers.append(torch.nn.Sequential(*layer))
 
     def forward(self, inputs, mean=False, z_q=None):
@@ -335,6 +376,7 @@ class _StitchingDecoder(torch.nn.Module):
         activation_fn=torch.nn.ReLU,
         convs_per_block=3,
         blocks_per_level=3,
+        ndims=2,
     ):
         """Initializes a StichtingDecoder.
 
@@ -375,11 +417,13 @@ class _StitchingDecoder(torch.nn.Module):
         self._num_levels = len(self._channels_per_block)
 
         self.decoder_layers = torch.nn.ModuleList()
+        decoder_in_channels = None
         for level in range(self._start_level, self._num_levels, 1):
 
             decoder_in_channels = (
                 channels_per_block[::-1][level - 1] + channels_per_block[::-1][level]
             )
+
             layer = []
             for _ in range(self._blocks_per_level):
                 layer.append(
@@ -389,15 +433,21 @@ class _StitchingDecoder(torch.nn.Module):
                         n_down_channels=self._down_channels_per_block[::-1][level],
                         activation_fn=self._activation_fn,
                         convs_per_block=self._convs_per_block,
+                        ndims=ndims,
                     )
                 )
-                decoder_in_channels = channels_per_block[::-1][level]
 
             self.decoder_layers.append(torch.nn.Sequential(*layer))
 
-            self.final_layer = torch.nn.Conv2d(
-                decoder_in_channels, self._num_classes, kernel_size=1, padding=0
-            )
+        decoder_in_channels = channels_per_block[::-1][self._num_levels - 1]
+
+        self.final_layer = conv_nd(
+            ndims=ndims,
+            in_channels=decoder_in_channels,
+            out_channels=self._num_classes,
+            kernel_size=1,
+            padding=0,
+        )
 
     def forward(self, encoder_features, decoder_features):
         """Forward pass through the stiching decoder
@@ -434,6 +484,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         convs_per_block=3,
         blocks_per_level=3,
         loss_kwargs=None,
+        ndims=2,
     ):
         """Initialize the Hierarchical Probabilistic UNet
 
@@ -470,7 +521,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         if channels_per_block is None:
             channels_per_block = default_channels_per_block
         if down_channels_per_block is None:
-            down_channels_per_block = [int(i / 2) for i in default_channels_per_block]
+            down_channels_per_block = [int(i / 2) for i in channels_per_block]
 
         self._prior = _HierarchicalCore(
             input_channels=input_channels,
@@ -479,6 +530,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             down_channels_per_block=down_channels_per_block,
             convs_per_block=convs_per_block,
             blocks_per_level=blocks_per_level,
+            ndims=ndims,
         )
 
         self._posterior = _HierarchicalCore(
@@ -488,6 +540,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             down_channels_per_block=down_channels_per_block,
             convs_per_block=convs_per_block,
             blocks_per_level=blocks_per_level,
+            ndims=ndims,
         )
 
         self._f_comb = _StitchingDecoder(
@@ -497,6 +550,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             down_channels_per_block=down_channels_per_block,
             convs_per_block=convs_per_block,
             blocks_per_level=blocks_per_level,
+            ndims=ndims,
         )
 
         self._cache = None
