@@ -20,6 +20,7 @@
 
 import torch
 
+
 def truncated_normal_(tensor, mean=0, std=1):
     size = tensor.shape
     tmp = tensor.new_empty(size + (4,)).normal_()
@@ -38,6 +39,17 @@ def init_weights(m):
     ):
         torch.nn.init.kaiming_normal_(m.weight, mode="fan_in", nonlinearity="relu")
         truncated_normal_(m.bias, mean=0, std=0.001)
+
+
+def init_zeros(m):
+    if (
+        isinstance(m, torch.nn.Conv2d)
+        or isinstance(m, torch.nn.ConvTranspose2d)
+        or isinstance(m, torch.nn.Conv3d)
+        or isinstance(m, torch.nn.ConvTranspose3d)
+    ):
+        torch.nn.init.zeros_(m.weight)
+        truncated_normal_(m.bias, mean=0, std=0.1)
 
 
 def conv_nd(ndims=2, **kwargs):
@@ -310,7 +322,7 @@ class _HierarchicalCore(torch.nn.Module):
 
             self.decoder_layers.append(torch.nn.Sequential(*layer))
 
-        self._mu_logsigma_blocks.apply(init_weights)
+        self._mu_logsigma_blocks.apply(init_zeros)
         self.decoder_layers.apply(init_weights)
 
     def forward(self, inputs, mean=False, z_q=None):
