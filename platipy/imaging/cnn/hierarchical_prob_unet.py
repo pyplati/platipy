@@ -20,6 +20,25 @@
 
 import torch
 
+def truncated_normal_(tensor, mean=0, std=1):
+    size = tensor.shape
+    tmp = tensor.new_empty(size + (4,)).normal_()
+    valid = (tmp < 2) & (tmp > -2)
+    ind = valid.max(-1, keepdim=True)[1]
+    tensor.data.copy_(tmp.gather(-1, ind).squeeze(-1))
+    tensor.data.mul_(std).add_(mean)
+
+
+def init_weights(m):
+    if (
+        isinstance(m, torch.nn.Conv2d)
+        or isinstance(m, torch.nn.ConvTranspose2d)
+        or isinstance(m, torch.nn.Conv3d)
+        or isinstance(m, torch.nn.ConvTranspose3d)
+    ):
+        torch.nn.init.kaiming_normal_(m.weight, mode="fan_in", nonlinearity="relu")
+        truncated_normal_(m.bias, mean=0, std=0.001)
+
 
 def conv_nd(ndims=2, **kwargs):
     """Generate a 2D or 3D convolution
@@ -105,6 +124,7 @@ class ResBlock(torch.nn.Module):
             layers.append(resize_outgoing)
 
         self._layers = torch.nn.Sequential(*layers)
+        self._layers.apply(init_weights)
 
         self._resize_skip = None
 
@@ -116,6 +136,7 @@ class ResBlock(torch.nn.Module):
                 kernel_size=1,
                 padding=0,
             )
+            self._resize_skip.apply(init_weights)
 
     def forward(self, input_features):
 
@@ -250,6 +271,8 @@ class _HierarchicalCore(torch.nn.Module):
 
             self.encoder_layers.append(torch.nn.Sequential(*layer))
 
+        self.encoder_layers.apply(init_weights)
+
         # Iterate the ascending levels in the (truncated) U-Net decoder.
         self.decoder_layers = torch.nn.ModuleList()
         self._mu_logsigma_blocks = torch.nn.ModuleList()
@@ -286,6 +309,9 @@ class _HierarchicalCore(torch.nn.Module):
                 decoder_in_channels = channels_per_block[::-1][level + 1]
 
             self.decoder_layers.append(torch.nn.Sequential(*layer))
+
+        self._mu_logsigma_blocks.apply(init_weights)
+        self.decoder_layers.apply(init_weights)
 
     def forward(self, inputs, mean=False, z_q=None):
         """Forward pass to sample from the module as specified.
@@ -453,6 +479,7 @@ class _StitchingDecoder(torch.nn.Module):
                 decoder_in_channels = channels_per_block[::-1][level]
 
             self.decoder_layers.append(torch.nn.Sequential(*layer))
+        self.decoder_layers.apply(init_weights)
 
         if decoder_in_channels is None:
             decoder_in_channels = channels_per_block[::-1][self._num_levels - 1]
@@ -464,6 +491,7 @@ class _StitchingDecoder(torch.nn.Module):
             kernel_size=1,
             padding=0,
         )
+        self.final_layer.apply(init_weights)
 
     def forward(self, encoder_features, decoder_features):
         """Forward pass through the stiching decoder
