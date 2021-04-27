@@ -18,6 +18,7 @@ import SimpleITK as sitk
 
 from platipy.imaging.utils.tools import sitk_to_itk, itk_to_sitk
 
+
 def morphological_interpolate(sitk_image, copy_info=True):
     """
     Performs morphological interpolation
@@ -28,7 +29,7 @@ def morphological_interpolate(sitk_image, copy_info=True):
 
     itk_image = sitk_to_itk(sitk_image, copy_info=copy_info)
 
-    output_type = itk.Image[itk.UC, 3]
+    output_type = itk.Image[itk.US, 3]
 
     f_cast = itk.CastImageFilter[itk_image, output_type].New()
     f_cast.SetInput(itk_image)
@@ -60,8 +61,7 @@ def process_probability_image(probability_image, threshold=0.5):
     )
 
     # Get the starting binary image
-    binary_image = sitk.BinaryThreshold(
-        probability_image, lowerThreshold=threshold)
+    binary_image = sitk.BinaryThreshold(probability_image, lowerThreshold=threshold)
 
     # Fill holes
     binary_image = sitk.BinaryFillhole(binary_image)
@@ -73,8 +73,7 @@ def process_probability_image(probability_image, threshold=0.5):
     label_shape_filter = sitk.LabelShapeStatisticsImageFilter()
     label_shape_filter.Execute(labelled_image)
     label_indices = label_shape_filter.GetLabels()
-    voxel_counts = [label_shape_filter.GetNumberOfPixels(
-        i) for i in label_indices]
+    voxel_counts = [label_shape_filter.GetNumberOfPixels(i) for i in label_indices]
     if voxel_counts == []:
         return binary_image
 

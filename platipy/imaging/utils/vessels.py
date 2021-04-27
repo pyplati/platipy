@@ -314,6 +314,10 @@ def vesselSplineGeneration(
 ):
     """"""
     splinedVessels = {}
+
+    if isinstance(vesselNameList, str):
+        vesselNameList = [vesselNameList]
+
     for vesselName in vesselNameList:
 
         # We must set the image direction to identity

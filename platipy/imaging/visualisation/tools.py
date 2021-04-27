@@ -62,7 +62,7 @@ class VisualiseScalarOverlay:
         name,
         colormap=plt.cm.get_cmap("Spectral"),
         alpha=0.75,
-        min_value=0.1,
+        min_value=False,
         max_value=False,
         discrete_levels=False,
         mid_ticks=False,
@@ -291,7 +291,7 @@ class ImageVisualiser:
         name=None,
         colormap=plt.cm.get_cmap("Spectral"),
         alpha=0.75,
-        min_value=0.1,
+        min_value=False,
         max_value=False,
         discrete_levels=False,
         mid_ticks=False,
@@ -871,6 +871,7 @@ class ImageVisualiser:
                     self.__cut = int(ax_size / 2.0)
 
             if not self.__projection:
+                s = self.return_slice(self.__axis, self.__cut)
                 disp_img = nda.__getitem__(s)
             else:
                 disp_img_proj = project_onto_arbitrary_plane(
@@ -1372,12 +1373,16 @@ class ImageVisualiser:
             nda = sitk.GetArrayFromImage(scalar_image)
 
             alpha = scalar.alpha
-            sMin = scalar.min_value
 
             if scalar.max_value:
                 sMax = scalar.max_value
             else:
                 sMax = nda.max()
+
+            if scalar.min_value:
+                sMin = scalar.min_value
+            else:
+                sMin = nda.min()
 
             if scalar.discrete_levels:
                 colormap_name = scalar.colormap.name
@@ -1401,7 +1406,7 @@ class ImageVisualiser:
                     org = {"normal": "upper", "reversed": "lower"}[self.__origin]
                 else:
                     org = "lower"
-                ax_indiv = ax.imshow(
+                sp = ax_indiv = ax.imshow(
                     nda.__getitem__(s),
                     interpolation="none",
                     cmap=colormap,
@@ -1497,39 +1502,39 @@ class ImageVisualiser:
 
                     cbar = self.__figure.colorbar(ax_view, cax=cax, orientation="vertical")
 
-            if scalar.show_colorbar:
+                if scalar.show_colorbar:
 
-                cbar.set_label(scalar.name)
-                cbar.solids.set_alpha(1)
+                    cbar.set_label(scalar.name)
+                    cbar.solids.set_alpha(1)
 
-                if scalar.discrete_levels:
+                    if scalar.discrete_levels:
 
-                    if scalar.mid_ticks:
+                        if scalar.mid_ticks:
 
-                        delta_tick = (sMax - sMin) / scalar.discrete_levels
-                        cbar.set_ticks(
-                            np.linspace(
-                                sMin + delta_tick / 2,
-                                sMax - delta_tick / 2,
-                                scalar.discrete_levels,
+                            delta_tick = (sMax - sMin) / scalar.discrete_levels
+                            cbar.set_ticks(
+                                np.linspace(
+                                    sMin + delta_tick / 2,
+                                    sMax - delta_tick / 2,
+                                    scalar.discrete_levels,
+                                )
                             )
-                        )
-                        cbar.set_ticklabels(np.linspace(sMin, sMax, scalar.discrete_levels))
+                            cbar.set_ticklabels(np.linspace(sMin, sMax, scalar.discrete_levels))
 
-                    else:
-                        cbar.set_ticks(
-                            np.linspace(
-                                sMin,
-                                sMax,
-                                scalar.discrete_levels + 1,
+                        else:
+                            cbar.set_ticks(
+                                np.linspace(
+                                    sMin,
+                                    sMax,
+                                    scalar.discrete_levels + 1,
+                                )
                             )
-                        )
 
-                self.__scalar_view = {
-                    "ax_view": ax_view,
-                    "cor_view": cor_view,
-                    "sag_view": sag_view,
-                }
+                    self.__scalar_view = {
+                        "ax_view": ax_view,
+                        "cor_view": cor_view,
+                        "sag_view": sag_view,
+                    }
 
     def overlay_vector_field(self):
         """Overlay vector field onto existing figure"""
