@@ -18,6 +18,7 @@ from functools import reduce
 import numpy as np
 import SimpleITK as sitk
 
+
 def compute_weight_map(
     target_image,
     moving_image,
@@ -40,10 +41,8 @@ def compute_weight_map(
     if moving_image.GetPixelID() != 6:
         moving_image = sitk.Cast(moving_image, sitk.sitkFloat32)
 
-    square_difference_image = sitk.SquaredDifference(
-        target_image, moving_image)
-    square_difference_image = sitk.Cast(
-        square_difference_image, sitk.sitkFloat32)
+    square_difference_image = sitk.SquaredDifference(target_image, moving_image)
+    square_difference_image = sitk.Cast(square_difference_image, sitk.sitkFloat32)
 
     if vote_type.lower() == "unweighted":
         weight_map = target_image * 0.0 + 1.0
@@ -91,15 +90,12 @@ def combine_labels_staple(label_list_dict, threshold=1e-4):
     combined_label_dict = {}
 
     structure_name_list = [list(i.keys()) for i in label_list_dict.values()]
-    structure_name_list = np.unique(
-        [item for sublist in structure_name_list for item in sublist]
-    )
+    structure_name_list = np.unique([item for sublist in structure_name_list for item in sublist])
 
     for structure_name in structure_name_list:
         # Ensure all labels are binarised
         binary_labels = [
-            sitk.BinaryThreshold(
-                label_list_dict[i][structure_name], lowerThreshold=0.5)
+            sitk.BinaryThreshold(label_list_dict[i][structure_name], lowerThreshold=0.5)
             for i in label_list_dict
         ]
 
@@ -120,7 +116,7 @@ def combine_labels_staple(label_list_dict, threshold=1e-4):
     return combined_label_dict
 
 
-def combine_labels(atlas_set, structure_name, label='DIR', threshold=1e-4, smooth_sigma=1.0):
+def combine_labels(atlas_set, structure_name, label="DIR", threshold=1e-4, smooth_sigma=1.0):
     """
     Combine labels using weight maps
     """
@@ -159,13 +155,10 @@ def combine_labels(atlas_set, structure_name, label='DIR', threshold=1e-4, smoot
         ]
 
         # Combine all the weighted labels
-        combined_label = reduce(
-            lambda x, y: x + y, weighted_labels) / weight_sum_image
+        combined_label = reduce(lambda x, y: x + y, weighted_labels) / weight_sum_image
 
         # Smooth combined label
-        combined_label = sitk.DiscreteGaussian(
-            combined_label, smooth_sigma * smooth_sigma
-        )
+        combined_label = sitk.DiscreteGaussian(combined_label, smooth_sigma * smooth_sigma)
 
         # Normalise
         combined_label = sitk.RescaleIntensity(combined_label, 0, 1)
@@ -179,3 +172,39 @@ def combine_labels(atlas_set, structure_name, label='DIR', threshold=1e-4, smoot
         combined_label_dict[structure_name] = combined_label
 
     return combined_label_dict
+
+
+def process_probability_image(probability_image, threshold=0.5):
+    """
+    Generate a mask given a probability image, performing some basic post processing as well.
+    """
+
+    # Check type
+    if not isinstance(probability_image, sitk.Image):
+        probability_image = sitk.GetImageFromArray(probability_image)
+
+    # Normalise probability map
+    probability_image = probability_image / sitk.GetArrayFromImage(probability_image).max()
+
+    # Get the starting binary image
+    binary_image = sitk.BinaryThreshold(probability_image, lowerThreshold=threshold)
+
+    # Fill holes
+    binary_image = sitk.BinaryFillhole(binary_image)
+
+    # Apply the connected component filter
+    labelled_image = sitk.ConnectedComponent(binary_image)
+
+    # Measure the size of each connected component
+    label_shape_filter = sitk.LabelShapeStatisticsImageFilter()
+    label_shape_filter.Execute(labelled_image)
+    label_indices = label_shape_filter.GetLabels()
+    voxel_counts = [label_shape_filter.GetNumberOfPixels(i) for i in label_indices]
+    if voxel_counts == []:
+        return binary_image
+
+    # Select the largest region
+    largest_component_label = label_indices[np.argmax(voxel_counts)]
+    largest_component_image = labelled_image == largest_component_label
+
+    return sitk.Cast(largest_component_image, sitk.sitkUInt8)

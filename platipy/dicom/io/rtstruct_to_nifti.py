@@ -13,12 +13,13 @@
 # limitations under the License.
 
 from pathlib import Path
+
 import pydicom
 import numpy as np
 import SimpleITK as sitk
-from skimage.draw import polygon
 
 from loguru import logger
+from skimage.draw import polygon
 
 
 def read_dicom_image(dicom_path):

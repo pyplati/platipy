@@ -8,11 +8,11 @@
         "--disable=C0114",
         "--disable=W0102",
         "--disable=W0105",
-        "--variable-rgx=[a-z_][a-z0-9_]{0,30}$",
-        "--argument-rgx=[a-z_][a-z0-9_]{0,30}$",
+        "--variable-rgx=[a-z_][a-z0-9_]{0,40}$",
+        "--argument-rgx=[a-z_][a-z0-9_]{0,40}$",
         "--init-hook",
         "import sys; sys.path.append('.')",
-        "--extension-pkg-whitelist=vtk,itk"
+        "--ignored-modules=vtk",
     ],
     "python.formatting.blackArgs": [
         "--line-length",
@@ -27,5 +27,6 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "python.pythonPath": "/home/robbie/.pyenv/versions/3.8.8/envs/platipy/bin/python"
 }

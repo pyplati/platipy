@@ -22,39 +22,12 @@ import pytest
 import SimpleITK as sitk
 import numpy as np
 
+from platipy.imaging.generation.image import insert_sphere
+
 from platipy.imaging.projects.cardiac.run import (
     run_cardiac_segmentation,
     CARDIAC_SETTINGS_DEFAULTS,
 )
-from platipy.imaging.projects.cardiac.run_structureguided import (
-    run_cardiac_segmentation_structure_guided,
-    CARDIAC_STRUCTURE_GUIDED_SETTINGS_DEFAULTS,
-)
-
-
-def insert_sphere(arr, sp_radius=4, sp_centre=(0, 0, 0)):
-    """Insert a sphere into the give array
-
-    Args:
-        arr (np.array): Array in which to insert sphere
-        sp_radius (int, optional): The radius of the sphere. Defaults to 4.
-        sp_centre (tuple, optional): The position at which the sphere should be inserted. Defaults
-                                     to (0, 0, 0).
-
-    Returns:
-        np.array: An array with the sphere inserted
-    """
-
-    arr_copy = arr[:]
-
-    x, y, z = np.indices(arr.shape)
-
-    arr_copy[
-        (x - sp_centre[0]) ** 2 + (y - sp_centre[1]) ** 2 + (z - sp_centre[2]) ** 2
-        <= sp_radius ** 2
-    ] = 1
-
-    return arr_copy
 
 
 @pytest.fixture
@@ -120,16 +93,16 @@ def test_cardiac_service(cardiac_data):
 
         # Prepare algorithm settings
         test_settings = CARDIAC_SETTINGS_DEFAULTS
-        test_settings["atlasSettings"]["atlasIdList"] = cases[:-1]
-        test_settings["atlasSettings"]["atlasPath"] = str(working_path)
-        test_settings["atlasSettings"]["atlasStructures"] = ["WHOLEHEART"]
-        test_settings["atlasSettings"]["autoCropAtlas"] = False
-        test_settings["deformableSettings"]["iterationStaging"] = [5, 5, 5]
-        test_settings["IARSettings"]["referenceStructure"] = "WHOLEHEART"
-        test_settings["labelFusionSettings"]["optimalThreshold"] = {"WHOLEHEART": 0.5}
-        test_settings["vesselSpliningSettings"]["vesselNameList"] = []
+        test_settings["atlas_settings"]["atlas_id_list"] = cases[:-1]
+        test_settings["atlas_settings"]["atlas_path"] = str(working_path)
+        test_settings["atlas_settings"]["atlas_structures"] = ["WHOLEHEART"]
+        test_settings["atlas_settings"]["auto_crop_atlas"] = False
+        test_settings["deformable_registration_settings"]["iteration_staging"] = [5, 5, 5]
+        test_settings["iar_settings"]["reference_structure"] = None
+        test_settings["label_fusion_settings"]["optimal_threshold"] = {"WHOLEHEART": 0.5}
+        test_settings["vessel_spline_settings"]["vessel_name_list"] = []
 
-        test_settings["rigidSettings"]["options"] = {
+        test_settings["rigid_settings"] = {
             "shrink_factors": [2, 1],
             "smooth_sigmas": [0, 0],
             "sampling_rate": 0.75,
@@ -139,8 +112,6 @@ def test_cardiac_service(cardiac_data):
             "metric": "mean_squares",
             "optimiser": "gradient_descent_line_search",
         }
-
-        test_settings["IARSettings"]["referenceStructure"] = None
 
         # Run the service function.
         infer_case = cases[-1]
@@ -188,38 +159,37 @@ def test_cardiac_structure_guided_service(cardiac_data):
             sitk.WriteImage(cardiac_data[case]["SUBSTRUCTURE"], str(substructure_path))
 
         # Prepare algorithm settings
-        test_settings = CARDIAC_STRUCTURE_GUIDED_SETTINGS_DEFAULTS
-        test_settings["atlasSettings"]["atlasIdList"] = cases[:-1]
-        test_settings["atlasSettings"]["atlasPath"] = str(working_path)
-        test_settings["atlasSettings"]["atlasStructures"] = ["WHOLEHEART", "SUBSTRUCTURE"]
-        test_settings["atlasSettings"]["autoCropAtlas"] = False
-        test_settings["deformableSettingsImage"]["resolution_staging"] = [6, 3, 1.5]
-        test_settings["deformableSettingsImage"]["iteration_staging"] = [5, 5, 5]
-        test_settings["IARSettings"]["referenceStructure"] = "WHOLEHEART"
-        test_settings["labelFusionSettings"]["optimalThreshold"] = {
+        test_settings = CARDIAC_SETTINGS_DEFAULTS
+        test_settings["atlas_settings"]["atlas_id_list"] = cases[:-1]
+        test_settings["atlas_settings"]["atlas_path"] = str(working_path)
+        test_settings["atlas_settings"]["atlas_structures"] = ["WHOLEHEART", "SUBSTRUCTURE"]
+        test_settings["atlas_settings"]["auto_crop_atlas"] = False
+        test_settings["atlas_settings"]["guide_structure_name"] = "WHOLEHEART"
+        test_settings["deformable_registration_settings"]["iteration_staging"] = [5, 5, 5]
+        test_settings["structure_guided_registration_settings"]["iteration_staging"] = [5, 5, 5]
+        test_settings["structure_guided_registration_settings"]["resolution_staging"] = [6, 3, 1.5]
+        test_settings["iar_settings"]["reference_structure"] = None
+        test_settings["label_fusion_settings"]["optimal_threshold"] = {
             "WHOLEHEART": 0.5,
             "SUBSTRUCTURE": 0.5,
         }
-        test_settings["vesselSpliningSettings"]["vesselNameList"] = []
+        test_settings["vessel_spline_settings"]["vessel_name_list"] = []
 
-        test_settings["rigidSettings"] = {
-            "reg_method": "Translation",
+        test_settings["rigid_settings"] = {
             "shrink_factors": [2, 1],
             "smooth_sigmas": [0, 0],
             "sampling_rate": 0.75,
-            "default_value": 0,
+            "default_value": -1024,
             "number_of_iterations": 5,
-            "final_interp": sitk.sitkLinear,
+            "final_interp": sitk.sitkBSpline,
             "metric": "mean_squares",
             "optimiser": "gradient_descent_line_search",
         }
 
-        test_settings["IARSettings"]["referenceStructure"] = None
-
         # Run the service function.
         infer_case = cases[-1]
 
-        output = run_cardiac_segmentation_structure_guided(
+        output = run_cardiac_segmentation(
             cardiac_data[infer_case]["CT"],
             cardiac_data[infer_case]["WHOLEHEART"],
             settings=test_settings,
@@ -244,5 +214,4 @@ def test_cardiac_structure_guided_service(cardiac_data):
         gt_mask = sitk.Cast(cardiac_data[infer_case]["SUBSTRUCTURE"], auto_mask.GetPixelID())
         label_overlap_filter.Execute(auto_mask, gt_mask)
         print(label_overlap_filter.GetDiceCoefficient())
-        assert 0
         assert label_overlap_filter.GetDiceCoefficient() > 0.9

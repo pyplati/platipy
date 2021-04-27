@@ -13,102 +13,17 @@
 # limitations under the License.
 
 
-import SimpleITK as sitk
 import numpy as np
+import SimpleITK as sitk
 
-from skimage.morphology import convex_hull_image
-
-from platipy.imaging.registration.registration import (
-    apply_field,
-    fast_symmetric_forces_demons_registration,
+from platipy.imaging.registration.utils import (
+    apply_transform,
     convert_mask_to_reg_structure,
 )
 
-
-def get_bone_mask(image, lower_threshold=350, upper_threshold=3500, max_hole_size=5):
-    """
-    Automatically generate a binary mask of bones from a CT image.
-
-    Args:
-        image ([SimpleITK.Image]): The patient x-ray CT image to segment.
-        lower_threshold (int, optional): Lower voxel value for threshold. Defaults to 350.
-        upper_threshold (int, optional): Upper voxel value for threshold. Defaults to 3500.
-        max_hole_size (int | list | bool, optional): Maximum hole size to be filled in millimetres.
-                                                     Can be specified as a vector (z,y,x). Defaults
-                                                     to 5.
-
-    Returns:
-        [SimpleITK.Image]: The binary bone mask.
-    """
-
-    bone_mask = sitk.BinaryThreshold(
-        image, lowerThreshold=lower_threshold, upperThreshold=upper_threshold
-    )
-
-    if max_hole_size is not False:
-        if not hasattr(max_hole_size, "__iter__"):
-            max_hole_size = (max_hole_size,) * 3
-
-    bone_mask = sitk.BinaryMorphologicalClosing(bone_mask, max_hole_size)
-
-    return bone_mask
-
-
-def get_external_mask(
-    image, lower_threshold=-100, upper_threshold=2500, dilate=1, max_hole_size=False
-):
-    """
-    Automatically generate a binary mask of the patient external contour.
-    Uses slice-wise convex hull generation.
-
-    Args:
-        image ([SimpleITK.Image]): The patient x-ray CT image to segment. May work with other
-                                   modalities with modified thresholds.
-        lower_threshold (int, optional): Lower voxel value for threshold. Defaults to -100.
-        upper_threshold (int, optional): Upper voxel value for threshold. Defaults to 2500.
-        dilate (int | list | bool, optional): Dilation filter size applied to the binary mask. Can
-                                              be specified as a vector (z,y,x). Defaults to 1.
-        max_hole_size (int  | list | bool, optional): Maximum hole size to be filled in
-                                                      millimetres. Can be specified as a vector
-                                                      (z,y,x). Defaults to False.
-
-    Returns:
-        [SimpleITK.Image]: The binary external mask.
-    """
-
-    # Get all points inside the body
-    external_mask = sitk.BinaryThreshold(
-        image, lowerThreshold=lower_threshold, upperThreshold=upper_threshold
-    )
-
-    external_mask_components = sitk.ConnectedComponent(external_mask, True)
-
-    # Second largest volume is most likely the body - you should check this!
-    body_mask = sitk.Equal(sitk.RelabelComponent(external_mask_components), 1)
-
-    if dilate is not False:
-        if not hasattr(dilate, "__iter__"):
-            dilate = (dilate,) * 3
-        body_mask = sitk.BinaryDilate(body_mask, dilate)
-
-    if max_hole_size is not False:
-        if not hasattr(max_hole_size, "__iter__"):
-            max_hole_size = (max_hole_size,) * 3
-
-        body_mask = sitk.BinaryMorphologicalClosing(body_mask, max_hole_size)
-        body_mask = sitk.BinaryFillhole(body_mask, fullyConnected=True)
-
-    arr = sitk.GetArrayFromImage(body_mask)
-
-    convex_hull_slices = np.zeros_like(arr)
-
-    for index in np.arange(0, np.alen(arr)):
-        convex_hull_slices[index] = convex_hull_image(arr[index])
-
-    body_mask_hull = sitk.GetImageFromArray(convex_hull_slices)
-    body_mask_hull.CopyInformation(body_mask)
-
-    return body_mask_hull
+from platipy.imaging.registration.deformable import (
+    fast_symmetric_forces_demons_registration,
+)
 
 
 def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=5):
@@ -144,7 +59,9 @@ def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=
     dvf_template.CopyInformation(mask_image)
 
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
-    mask_image_shift = apply_field(mask_image, transform=dvf_tfm, structure=True, interp=1)
+    mask_image_shift = apply_transform(
+        mask_image, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
+    )
 
     dvf_template = sitk.Mask(dvf_template, mask_image | mask_image_shift)
 
@@ -157,7 +74,9 @@ def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
-    mask_image_shift = apply_field(mask_image, transform=dvf_tfm, structure=True, interp=1)
+    mask_image_shift = apply_transform(
+        mask_image, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
+    )
 
     return mask_image_shift, dvf_tfm, dvf_template
 
@@ -201,8 +120,8 @@ def generate_field_asymmetric_contract(
 
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
 
-    mask_image_asymmetric_contract = apply_field(
-        mask_image, transform=dvf_tfm, structure=True, interp=1
+    mask_image_asymmetric_contract = apply_transform(
+        mask_image, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
     )
 
     # smooth
@@ -214,8 +133,8 @@ def generate_field_asymmetric_contract(
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
-    mask_image_asymmetric_contract = apply_field(
-        mask_image, transform=dvf_tfm, structure=True, interp=1
+    mask_image_asymmetric_contract = apply_transform(
+        mask_image, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
     )
 
     return mask_image_asymmetric_contract, dvf_tfm, dvf_template
@@ -258,8 +177,8 @@ def generate_field_asymmetric_extend(
 
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
 
-    mask_image_asymmetric_extend = apply_field(
-        mask_image, transform=dvf_tfm, structure=True, interp=1
+    mask_image_asymmetric_extend = apply_transform(
+        mask_image, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
     )
 
     dvf_template = sitk.Mask(dvf_template, mask_image_asymmetric_extend)
@@ -274,25 +193,26 @@ def generate_field_asymmetric_extend(
 
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
 
-    mask_image_asymmetric_extend = apply_field(
-        mask_image, transform=dvf_tfm, structure=True, interp=1
+    mask_image_asymmetric_extend = apply_transform(
+        mask_image, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
     )
 
     return mask_image_asymmetric_extend, dvf_tfm, dvf_template
 
 
 def generate_field_expand(
-    mask_image,
+    mask,
     bone_mask=False,
     expand=3,
     gaussian_smooth=5,
+    use_internal_deformation=True,
 ):
     """
     Expands a structure (defined using a binary mask) using a specified vector to define the
     dilation kernel.
 
     Args:
-        mask_image ([SimpleITK.Image]): The binary mask to expand.
+        mask ([SimpleITK.Image]): The binary mask to expand.
         bone_mask ([SimpleITK.Image, optional]): A binary mask defining regions where we expect
                                                  restricted deformations.
         vector_asymmetric_extend (int |tuple, optional): The expansion vector applied to the entire
@@ -309,12 +229,10 @@ def generate_field_expand(
         [SimpleITK.Image]: The displacement vector field representing the expansion.
     """
 
-    registration_mask_original = convert_mask_to_reg_structure(mask_image_original)
-
     if bone_mask is not False:
-        mask_image_original = mask_image + bone_mask
+        mask_original = mask + bone_mask
     else:
-        mask_image_original = mask_image
+        mask_original = mask
 
     # Use binary erosion to create a smaller volume
     if not hasattr(expand, "__iter__"):
@@ -323,25 +241,21 @@ def generate_field_expand(
     expand = np.array(expand)
 
     # Convert voxels to millimetres
-    expand = expand / np.array(mask_image.GetSpacing()[::-1])
+    expand = expand / np.array(mask.GetSpacing()[::-1])
 
     # Re-order to (x,y,z)
     expand = expand[::-1]
-    # expand = [int(i / j) for i, j in zip(expand, mask_image.GetSpacing()[::-1])][::-1]
+    # expand = [int(i / j) for i, j in zip(expand, mask.GetSpacing()[::-1])][::-1]
 
     # If all negative: erode
     if np.all(np.array(expand) <= 0):
         print("All factors negative: shrinking only.")
-        mask_image_expand = sitk.BinaryErode(
-            mask_image, np.abs(expand).astype(int).tolist(), sitk.sitkBall
-        )
+        mask_expand = sitk.BinaryErode(mask, np.abs(expand).astype(int).tolist(), sitk.sitkBall)
 
     # If all positive: dilate
     elif np.all(np.array(expand) >= 0):
         print("All factors positive: expansion only.")
-        mask_image_expand = sitk.BinaryDilate(
-            mask_image, np.abs(expand).astype(int).tolist(), sitk.sitkBall
-        )
+        mask_expand = sitk.BinaryDilate(mask, np.abs(expand).astype(int).tolist(), sitk.sitkBall)
 
     # Otherwise: sequential operations
     else:
@@ -349,16 +263,23 @@ def generate_field_expand(
         expansion_kernel = expand * (expand > 0)
         shrink_kernel = expand * (expand < 0)
 
-        mask_image_expand = sitk.BinaryDilate(
-            mask_image, np.abs(expansion_kernel).astype(int).tolist(), sitk.sitkBall
+        mask_expand = sitk.BinaryDilate(
+            mask, np.abs(expansion_kernel).astype(int).tolist(), sitk.sitkBall
         )
-        mask_image_expand = sitk.BinaryErode(
-            mask_image_expand, np.abs(shrink_kernel).astype(int).tolist(), sitk.sitkBall
+        mask_expand = sitk.BinaryErode(
+            mask_expand, np.abs(shrink_kernel).astype(int).tolist(), sitk.sitkBall
         )
 
-    registration_mask_expand = convert_mask_to_reg_structure(mask_image_expand)
     if bone_mask is not False:
-        registration_mask_expand = registration_mask_expand + bone_mask
+        mask_expand = mask_expand + bone_mask
+
+    if use_internal_deformation:
+        registration_mask_original = convert_mask_to_reg_structure(mask_original)
+        registration_mask_expand = convert_mask_to_reg_structure(mask_expand)
+
+    else:
+        registration_mask_original = mask_original
+        registration_mask_expand = mask_expand
 
     # Use DIR to find the deformation
     _, _, dvf_template = fast_symmetric_forces_demons_registration(
@@ -368,7 +289,6 @@ def generate_field_expand(
         resolution_staging=[4, 2],
         iteration_staging=[10, 10],
         ncores=8,
-        return_field=True,
     )
 
     # smooth
@@ -381,11 +301,11 @@ def generate_field_expand(
 
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
 
-    mask_image_symmetric_expand = apply_field(
-        mask_image, transform=dvf_tfm, structure=True, interp=1
+    mask_symmetric_expand = apply_transform(
+        mask, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
     )
 
-    return mask_image_symmetric_expand, dvf_tfm, dvf_template
+    return mask_symmetric_expand, dvf_tfm, dvf_template
 
 
 def generate_field_radial_bend(
@@ -469,12 +389,11 @@ def generate_field_radial_bend(
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
-    reference_image_bend = apply_field(
+    reference_image_bend = apply_transform(
         reference_image,
         transform=dvf_tfm,
-        structure=False,
         default_value=int(sitk.GetArrayViewFromImage(reference_image).min()),
-        interp=2,
+        interpolator=sitk.sitkLinear,
     )
 
     return reference_image_bend, dvf_tfm, dvf_template

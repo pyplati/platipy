@@ -1,3 +1,18 @@
+# Copyright 2020 University of New South Wales, University of Sydney
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import re
 import sys
 
@@ -652,7 +667,7 @@ def write_output_data_to_disk(
             # This will depend on the name format chosen
             # If there is a list, we append an index as we write to disk
 
-            if type(field_list) == list:
+            if hasattr(field_list, "__iter__"):
                 # Iterate
                 for suffix, file_to_write in enumerate(field_list):
                     field_filename = field_filename_base + f"_{suffix}"
