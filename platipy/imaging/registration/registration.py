@@ -436,7 +436,6 @@ def multiscale_demons(
     smoothing_sigmas=None,
     iteration_staging=None,
     isotropic_resample=False,
-    return_field=False,
 ):
     """
     Run the given registration algorithm in a multiscale fashion. The original scale should not be
@@ -532,13 +531,7 @@ def multiscale_demons(
         initial_displacement_field, initial_displacement_field
     )
 
-    if return_field:
-        return (
-            sitk.DisplacementFieldTransform(initial_displacement_field),
-            output_displacement_field,
-        )
-    else:
-        return sitk.DisplacementFieldTransform(initial_displacement_field)
+    return sitk.DisplacementFieldTransform(initial_displacement_field), output_displacement_field
 
 
 def fast_symmetric_forces_demons_registration(
@@ -554,8 +547,7 @@ def fast_symmetric_forces_demons_registration(
     ncores=1,
     structure=False,
     interp_order=2,
-    trace=False,
-    return_field=False,
+    verbose=False,
 ):
     """
     Deformable image propagation using Fast Symmetric-Forces Demons
@@ -603,7 +595,7 @@ def fast_symmetric_forces_demons_registration(
     registration_method.SetStandardDeviations(1.5)
 
     # This allows monitoring of the progress
-    if trace:
+    if verbose:
         registration_method.AddCommand(
             sitk.sitkIterationEvent,
             lambda: deformable_registration_command_iteration(registration_method),
@@ -612,7 +604,7 @@ def fast_symmetric_forces_demons_registration(
     if not smoothing_sigmas:
         smoothing_sigmas = [i * smoothing_sigma_factor for i in resolution_staging]
 
-    output = multiscale_demons(
+    output_transform, deformation_field = multiscale_demons(
         registration_algorithm=registration_method,
         fixed_image=fixed_image,
         moving_image=moving_image,
@@ -621,13 +613,7 @@ def fast_symmetric_forces_demons_registration(
         iteration_staging=iteration_staging,
         isotropic_resample=isotropic_resample,
         initial_displacement_field=initial_displacement_field,
-        return_field=return_field,
     )
-
-    if return_field:
-        output_transform, deformation_field = output
-    else:
-        output_transform = output
 
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(fixed_image)
@@ -650,11 +636,8 @@ def fast_symmetric_forces_demons_registration(
     registered_image.CopyInformation(fixed_image)
     registered_image = sitk.Cast(registered_image, moving_image_type)
 
-    if return_field:
-        resampled_field = sitk.Resample(deformation_field, fixed_image)
-        return registered_image, output_transform, resampled_field
-    else:
-        return registered_image, output_transform
+    resampled_field = sitk.Resample(deformation_field, fixed_image)
+    return registered_image, output_transform, resampled_field
 
 
 def apply_field(

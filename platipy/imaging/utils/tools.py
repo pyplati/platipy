@@ -16,7 +16,6 @@
 """
 Various useful utility functions for atlas based segmentation algorithms.
 """
-import itk
 
 import numpy as np
 import SimpleITK as sitk
@@ -73,39 +72,6 @@ def gaussian_curve(x, a, m, s):
     return a * scipy_norm.pdf(x, loc=m, scale=s)
 
 
-def sitk_to_itk(sitk_image, copy_info=True):
-    """
-    Helper function to convert SimpleITK images to ITK images
-    """
-    sitk_arr = sitk.GetArrayFromImage(sitk_image)
-
-    itk_image = itk.GetImageFromArray(sitk_arr, is_vector=False)
-    if copy_info:
-        itk_image.SetOrigin(sitk_image.GetOrigin())
-        itk_image.SetSpacing(sitk_image.GetSpacing())
-        itk_image.SetDirection(
-            itk.GetMatrixFromArray(
-                np.reshape(np.array(sitk_image.GetDirection()), [3] * 2)
-            )
-        )
-
-    return itk_image
-
-
-def itk_to_sitk(itk_image):
-    """
-    Helper function to convert ITK images to SimpleITK images
-    """
-    sitk_image = sitk.GetImageFromArray(
-        itk.GetArrayFromImage(itk_image), isVector=False
-    )
-    sitk_image.SetOrigin(tuple(itk_image.GetOrigin()))
-    sitk_image.SetSpacing(tuple(itk_image.GetSpacing()))
-    sitk_image.SetDirection(itk.GetArrayFromMatrix(itk_image.GetDirection()).flatten())
-
-    return sitk_image
-
-
 def detect_holes(img, lower_threshold=-10000, upper_threshold=-400):
     """
     Detect all (air) holes in given image. Default threshold values given are defined for CT.
@@ -154,13 +120,11 @@ def get_external_mask(label_image, labels, kernel_radius=5):
     """
 
     bmcif = sitk.BinaryMorphologicalClosingImageFilter()
-    bmcif.SetKernelType(bmcif.Ball)
+    bmcif.SetKernelType(sitk.sitkBall)
     bmcif.SetKernelRadius(kernel_radius)
 
     # Save the largest as the external contour
-    external_mask = sitk.BinaryThreshold(
-        label_image, labels[0]["label"], labels[0]["label"]
-    )
+    external_mask = sitk.BinaryThreshold(label_image, labels[0]["label"], labels[0]["label"])
     external_mask = bmcif.Execute(external_mask)
 
     return external_mask
@@ -177,7 +141,7 @@ def get_lung_mask(label_image, labels, kernel_radius=2):
             return None
 
     bmcif = sitk.BinaryMorphologicalClosingImageFilter()
-    bmcif.SetKernelType(bmcif.Ball)
+    bmcif.SetKernelType(sitk.sitkBall)
     bmcif.SetKernelRadius(kernel_radius)
 
     # Save the 2nd largest as the lung mask
@@ -248,9 +212,7 @@ def get_crop_bounding_box(img, mask):
             bounding_box[3 + i] = bounding_box[3 + i] + bounding_box[i]
             bounding_box[i] = max(bounding_box[i], 0)
 
-        bounding_box[3 + i] = min(
-            bounding_box[3 + i], img.GetSize()[i] - bounding_box[i]
-        )
+        bounding_box[3 + i] = min(bounding_box[3 + i], img.GetSize()[i] - bounding_box[i])
 
     return bounding_box
 

@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import itk
 import numpy as np
 import SimpleITK as sitk
 
+<<<<<<< HEAD
 from platipy.imaging.utils.tools import sitk_to_itk, itk_to_sitk
 
 
@@ -45,6 +45,8 @@ def morphological_interpolate(sitk_image, copy_info=True):
 
     return sitk_img_interpolated
 
+=======
+>>>>>>> e67c6534b9a7e7878071d0711734fc2fcf8af84e
 
 def process_probability_image(probability_image, threshold=0.5):
     """
@@ -56,9 +58,7 @@ def process_probability_image(probability_image, threshold=0.5):
         probability_image = sitk.GetImageFromArray(probability_image)
 
     # Normalise probability map
-    probability_image = (
-        probability_image / sitk.GetArrayFromImage(probability_image).max()
-    )
+    probability_image = probability_image / sitk.GetArrayFromImage(probability_image).max()
 
     # Get the starting binary image
     binary_image = sitk.BinaryThreshold(probability_image, lowerThreshold=threshold)
