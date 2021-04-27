@@ -10,9 +10,7 @@ from skimage.draw import polygon
 from loguru import logger
 
 
-def get_dicom_info_from_description(
-    dicom_object, return_extra=False, sop_class_name="UNKNOWN"
-):
+def get_dicom_info_from_description(dicom_object, return_extra=False, sop_class_name="UNKNOWN"):
     """
     Attempts to return some information from a DICOM
     This is typically used for naming converted NIFTI files
@@ -25,9 +23,8 @@ def get_dicom_info_from_description(
         info (str): Some extracted information
     """
     try:
-        dicom_sop_class_uid = dicom_object.SOPClassUID
-        dicom_sop_class_name = pydicom._uid_dict.UID_dictionary[dicom_sop_class_uid][0]
-    except:
+        dicom_sop_class_name = dicom_object.SOPClassUID.name
+    except AttributeError:
         logger.warning(f"Could not find DICOM SOP Class UID, using {sop_class_name}.")
         dicom_sop_class_name = sop_class_name
 
@@ -45,7 +42,7 @@ def get_dicom_info_from_description(
 
                     if protocol_name != "":
                         return re.sub(r"[^\w]", "_", protocol_name).upper()
-                except:
+                except AttributeError:
                     logger.warning("    Could not find ProtocolName")
 
             return ""
@@ -54,21 +51,19 @@ def get_dicom_info_from_description(
             # Not much consistency, but we can get the protocol name
             try:
                 protocol_name = re.sub(r"[^\w]", "_", dicom_object.ProtocolName).upper()
-            except:
+            except AttributeError:
                 logger.warning("    Could not find ProtocolName")
                 protocol_name = ""
 
             try:
                 sequence_name = re.sub(r"[^\w]", "_", dicom_object.SequenceName).upper()
-            except:
+            except AttributeError:
                 logger.warning("    Could not find SequenceName")
                 sequence_name = ""
 
             try:
-                series_description = re.sub(
-                    r"[^\w]", "_", dicom_object.SeriesDescription
-                ).upper()
-            except:
+                series_description = re.sub(r"[^\w]", "_", dicom_object.SeriesDescription).upper()
+            except AttributeError:
                 logger.warning("    Could not find SequenceName")
                 series_description = ""
 
@@ -90,7 +85,7 @@ def get_dicom_info_from_description(
 
             try:
                 corrections = dicom_object.CorrectedImage
-            except:
+            except AttributeError:
                 corrections = "NONE"
 
             if "ATTN" in corrections:
@@ -146,9 +141,7 @@ def fix_missing_data(contour_data_list):
         logger.warning("    Missing values detected.")
         missing_values = np.where(contour_data == "")[0]
         if missing_values.shape[0] > 1:
-            logger.warning(
-                "    More than one value missing, fixing this isn't implemented yet..."
-            )
+            logger.warning("    More than one value missing, fixing this isn't implemented yet...")
         else:
             logger.warning("    Only one value missing.")
             missing_index = missing_values[0]
@@ -185,19 +178,30 @@ def fix_missing_data(contour_data_list):
     return contour_data
 
 
-def transform_point_set_from_dicom_struct(
-    dicom_image, dicom_struct, spacing_override=False
-):
+def transform_point_set_from_dicom_struct(image, dicom_struct, spacing_override=False):
+    """
+    This function is used to generate a binary mask from a set of vertices.
+    This allows us to convert from DICOM-RTStruct format to any imaging format.
 
+    Args:
+        image ([SimpleITK.Image]): The image, used to copy imaging information
+            (e.g. resolution, spacing)
+        dicom_struct ([pydicom.Dataset]): The DICOM-RTStruct file
+        spacing_override (bool | tuple, optional): Overwrite the spacing.
+            Set with (axial_spacing, coronal_spacing, sagittal spacing). Defaults to False.
+
+    Returns:
+        list, list : final_struct_name_sequence, structure_list
+    """
     if spacing_override:
-        current_spacing = list(dicom_image.GetSpacing())
+        current_spacing = list(image.GetSpacing())
         new_spacing = tuple(
             [
                 current_spacing[k] if spacing_override[k] == 0 else spacing_override[k]
                 for k in range(3)
             ]
         )
-        dicom_image.SetSpacing(new_spacing)
+        image.SetSpacing(new_spacing)
 
     struct_point_sequence = dicom_struct.ROIContourSequence
     struct_name_sequence = [
@@ -208,11 +212,9 @@ def transform_point_set_from_dicom_struct(
     final_struct_name_sequence = []
 
     for structIndex, structure_name in enumerate(struct_name_sequence):
-        image_blank = np.zeros(dicom_image.GetSize()[::-1], dtype=np.uint8)
+        image_blank = np.zeros(image.GetSize()[::-1], dtype=np.uint8)
         logger.info(
-            "    Converting structure {0} with name: {1}".format(
-                structIndex, structure_name
-            )
+            "    Converting structure {0} with name: {1}".format(structIndex, structure_name)
         )
 
         if structIndex >= len(struct_point_sequence):
@@ -220,9 +222,7 @@ def transform_point_set_from_dicom_struct(
             continue
 
         if not hasattr(struct_point_sequence[structIndex], "ContourSequence"):
-            logger.warning(
-                "    No contour sequence found for this structure, skipping."
-            )
+            logger.warning("    No contour sequence found for this structure, skipping.")
             continue
 
         if len(struct_point_sequence[structIndex].ContourSequence) == 0:
@@ -230,9 +230,7 @@ def transform_point_set_from_dicom_struct(
             continue
 
         if (
-            not struct_point_sequence[structIndex]
-            .ContourSequence[0]
-            .ContourGeometricType
+            not struct_point_sequence[structIndex].ContourSequence[0].ContourGeometricType
             == "CLOSED_PLANAR"
         ):
             logger.warning("    This is not a closed planar structure, skipping.")
@@ -250,10 +248,7 @@ def transform_point_set_from_dicom_struct(
             )
 
             point_arr = np.array(
-                [
-                    dicom_image.TransformPhysicalPointToIndex(i)
-                    for i in vertexArr_physical
-                ]
+                [image.TransformPhysicalPointToIndex(i) for i in vertexArr_physical]
             ).T
 
             [xVertexArr_image, yVertexArr_image] = point_arr[[0, 1]]
@@ -265,15 +260,13 @@ def transform_point_set_from_dicom_struct(
                 logger.error("    Slice index: {0}".format(zIndex))
                 quit()
 
-            if zIndex >= dicom_image.GetSize()[2]:
-                logger.warning(
-                    "    Slice index greater than image size. Skipping slice."
-                )
+            if zIndex >= image.GetSize()[2]:
+                logger.warning("    Slice index greater than image size. Skipping slice.")
                 logger.warning("    Structure:   {0}".format(structure_name))
                 logger.warning("    Slice index: {0}".format(zIndex))
                 continue
 
-            sliceArr = np.zeros(dicom_image.GetSize()[:2], dtype=np.uint8)
+            sliceArr = np.zeros(image.GetSize()[:2], dtype=np.uint8)
             filledIndicesX, filledIndicesY = polygon(
                 xVertexArr_image, yVertexArr_image, shape=sliceArr.shape
             )
@@ -281,7 +274,7 @@ def transform_point_set_from_dicom_struct(
             image_blank[zIndex] += sliceArr.T
 
         struct_image = sitk.GetImageFromArray(1 * (image_blank > 0))
-        struct_image.CopyInformation(dicom_image)
+        struct_image.CopyInformation(image)
         structure_list.append(sitk.Cast(struct_image, sitk.sitkUInt8))
         structure_name_clean = re.sub(r"[^\w]", "_", structure_name).upper()
         while "__" in structure_name_clean:
@@ -291,9 +284,7 @@ def transform_point_set_from_dicom_struct(
     return final_struct_name_sequence, structure_list
 
 
-def process_dicom_file_list(
-    dicom_file_list, parent_sorting_field="PatientName", verbose=False
-):
+def process_dicom_file_list(dicom_file_list, parent_sorting_field="PatientName", verbose=False):
 
     """
     Organise the DICOM files by the series UID
@@ -322,14 +313,10 @@ def process_dicom_file_list(
         series_uid = dicom_object.SeriesInstanceUID
 
         if series_uid not in dicom_series_dict_parent[parent_sorting_field_data].keys():
-            dicom_series_dict_parent[parent_sorting_field_data][series_uid] = [
-                dicom_file
-            ]
+            dicom_series_dict_parent[parent_sorting_field_data][series_uid] = [dicom_file]
 
         else:
-            dicom_series_dict_parent[parent_sorting_field_data][series_uid].append(
-                dicom_file
-            )
+            dicom_series_dict_parent[parent_sorting_field_data][series_uid].append(dicom_file)
 
     return dicom_series_dict_parent
 
@@ -362,7 +349,6 @@ def process_dicom_series(
         logger.error(
             f"Could not find any data in {parent_sorting_field}. This is very bad, the data cannot be sorted properly."
         )
-        logger.error(f"But I can help. ")
         """
         ! TO DO
         Implement a routine to let a user correlate a root directory with a name
@@ -370,20 +356,16 @@ def process_dicom_series(
         parent_sorting_data = "TEMP"
 
     try:
-        initial_dicom_sop_class_uid = initial_dicom.SOPClassUID
-        initial_dicom_sop_class_name = pydicom._uid_dict.UID_dictionary[
-            initial_dicom_sop_class_uid
-        ][0]
-        logger.info(f"  SOP Class name: {initial_dicom_sop_class_name}")
-    except:
+        initial_dicom_sop_class_name = initial_dicom.SOPClassUID.name
+    except AttributeError:
         logger.warning(
-            f"DICOM SOP class not found, using {initial_sop_class_name_default}."
+            f"Could not find DICOM SOP Class UID, using {initial_sop_class_name_default}."
         )
         initial_dicom_sop_class_name = initial_sop_class_name_default
 
     try:
         study_uid = initial_dicom.StudyInstanceUID
-    except:
+    except AttributeError:
         study_uid = "00001"
 
     """
@@ -408,7 +390,7 @@ def process_dicom_series(
 
         try:
             image = sitk.ReadImage(sorted_file_list)
-        except:
+        except RuntimeError:
             logger.warning("  Could not read image into SimpleITK.")
             logger.info("  Processing files individually.")
 
@@ -453,9 +435,9 @@ def process_dicom_series(
                     else:
                         sequence_dict[var].append(dcm_name)
 
-            except:
+            except AttributeError:
                 logger.warning(
-                    f"    MRI sequence name not found. The SeriesDescription will be used instead."
+                    "    MRI sequence name not found. The SeriesDescription will be used instead."
                 )
 
                 sequence_names = np.unique(
@@ -507,9 +489,7 @@ def process_dicom_series(
                     sequence_names = sorted(sequence_dict.keys())
 
             if np.alen(sequence_names) > 1:
-                logger.warning(
-                    "  Two MR sequences were found under a single series UID."
-                )
+                logger.warning("  Two MR sequences were found under a single series UID.")
                 logger.warning("  These will be split into separate images.")
 
                 # Split up the DICOM file list by sequence name
@@ -519,17 +499,9 @@ def process_dicom_series(
 
                     print(sequence_name, len(dicom_file_list_by_sequence))
 
-                    sorted_file_list = safe_sort_dicom_image_list(
-                        dicom_file_list_by_sequence
-                    )
+                    sorted_file_list = safe_sort_dicom_image_list(dicom_file_list_by_sequence)
 
                     initial_dicom = pydicom.read_file(sorted_file_list[0], force=True)
-                    image_desc = get_dicom_info_from_description(
-                        initial_dicom, return_extra=True
-                    )
-                    acq_date = initial_dicom.AcquisitionDate
-                    acq_num = initial_dicom.AcquisitionNumber
-                    series_num = initial_dicom.SeriesNumber
 
                     image_by_sequence = sitk.ReadImage(sorted_file_list)
 
@@ -560,9 +532,7 @@ def process_dicom_series(
             """
 
             # Get the "ReferencedFrameOfReferenceSequence", first item
-            referenced_frame_of_reference_item = (
-                dicom_object.ReferencedFrameOfReferenceSequence[0]
-            )
+            referenced_frame_of_reference_item = dicom_object.ReferencedFrameOfReferenceSequence[0]
 
             # Get the "RTReferencedStudySequence", first item
             # This retrieves the study UID
@@ -575,20 +545,16 @@ def process_dicom_series(
             # Get the "RTReferencedSeriesSequence", first item
             # This retreives the actual referenced series UID, which we need to match imaging
             # parameters
-            rt_referenced_series_again_item = (
-                rt_referenced_series_item.RTReferencedSeriesSequence[0]
-            )
+            rt_referenced_series_again_item = rt_referenced_series_item.RTReferencedSeriesSequence[
+                0
+            ]
 
             # Get the appropriate series instance UID
             image_series_uid = rt_referenced_series_again_item.SeriesInstanceUID
-            logger.info(
-                f"      Item {index}: Matched SeriesInstanceUID = {image_series_uid}"
-            )
+            logger.info(f"      Item {index}: Matched SeriesInstanceUID = {image_series_uid}")
 
             # Read in the corresponding image
-            sorted_file_list = safe_sort_dicom_image_list(
-                dicom_series_dict[image_series_uid]
-            )
+            sorted_file_list = safe_sort_dicom_image_list(dicom_series_dict[image_series_uid])
             image = sitk.ReadImage(sorted_file_list)
 
             initial_dicom = pydicom.read_file(sorted_file_list[0], force=True)
@@ -654,7 +620,9 @@ def write_output_data_to_disk(
     output_file_suffix=".nii.gz",
     overwrite_existing_files=False,
 ):
-
+    """
+    Write output to disk
+    """
     if output_data_dict is None:
         return
 
@@ -713,13 +681,11 @@ def write_output_data_to_disk(
                         logger.warning(f"  File exists: {output_name}")
 
                         if overwrite_existing_files:
-                            logger.warning(
-                                "f  You have selected to overwrite existing files."
-                            )
+                            logger.warning("  You have selected to overwrite existing files.")
 
                         else:
                             logger.info(
-                                f"  You have selected to NOT overwrite existing files. Continuing."
+                                "  You have selected to NOT overwrite existing files. Continuing."
                             )
                             continue
 
@@ -753,13 +719,11 @@ def write_output_data_to_disk(
                     logger.warning(f"  File exists: {output_name}")
 
                     if overwrite_existing_files:
-                        logger.warning(
-                            "f  You have selected to overwrite existing files."
-                        )
+                        logger.warning("  You have selected to overwrite existing files.")
 
                     else:
                         logger.info(
-                            f"  You have selected to NOT overwrite existing files. Continuing."
+                            "  You have selected to NOT overwrite existing files. Continuing."
                         )
                         continue
 
@@ -902,12 +866,10 @@ def process_dicom_directory(
                 if study_uid not in study_uid_dict.keys():
                     try:
                         study_uid_index = max(study_uid_dict.values()) + 1
-                    except:
+                    except AttributeError:
                         study_uid_index = 0
 
-                    logger.info(
-                        f"  Setting study instance UID index: {study_uid_index}"
-                    )
+                    logger.info(f"  Setting study instance UID index: {study_uid_index}")
 
                     study_uid_dict[study_uid] = study_uid_index
 
@@ -954,15 +916,13 @@ def process_dicom_directory(
                     ]
 
                 # Now exclude those that aren't derived from the DICOM header
-                dicom_header_tags = [
-                    i for i in all_naming_fields if i not in special_name_fields
-                ]
+                dicom_header_tags = [i for i in all_naming_fields if i not in special_name_fields]
 
                 naming_info_dict = {}
                 for dicom_field in dicom_header_tags:
                     try:
                         dicom_field_value = initial_dicom[dicom_field].value
-                    except:
+                    except AttributeError:
                         logger.warning(
                             f"  Could not find DICOM header {dicom_field}. Setting as 0 to "
                             f"preserve naming convention."
@@ -990,18 +950,14 @@ def process_dicom_directory(
                             output_data_dict["IMAGES"][output_name] = dicom_file_data
 
                         else:
-                            logger.info(
-                                "      An image with this name exists, appending."
-                            )
+                            logger.info("      An image with this name exists, appending.")
 
-                            if type(output_data_dict["IMAGES"][output_name]) != list:
+                            if hasattr(output_data_dict["IMAGES"][output_name], "__iter__"):
                                 output_data_dict["IMAGES"][output_name] = list(
                                     [output_data_dict["IMAGES"][output_name]]
                                 )
 
-                            output_data_dict["IMAGES"][output_name].append(
-                                dicom_file_data
-                            )
+                            output_data_dict["IMAGES"][output_name].append(dicom_file_data)
 
                 elif dicom_type == "STRUCTURES":
 
@@ -1019,33 +975,24 @@ def process_dicom_directory(
 
                         if "STRUCTURES" not in output_data_dict.keys():
                             # Make a new entry
-                            output_data_dict["STRUCTURES"] = {
-                                output_name: structure_image
-                            }
+                            output_data_dict["STRUCTURES"] = {output_name: structure_image}
 
                         else:
                             # First check if there is another structure of the same name
 
                             if output_name not in output_data_dict["STRUCTURES"].keys():
-                                output_data_dict["STRUCTURES"][
-                                    output_name
-                                ] = structure_image
+                                output_data_dict["STRUCTURES"][output_name] = structure_image
 
                             else:
-                                logger.info(
-                                    "      A structure with this name exists, appending."
-                                )
-                                if (
-                                    type(output_data_dict["STRUCTURES"][output_name])
-                                    != list
+                                logger.info("      A structure with this name exists, appending.")
+                                if hasattr(
+                                    output_data_dict["STRUCTURES"][output_name], "__iter__"
                                 ):
                                     output_data_dict["STRUCTURES"][output_name] = list(
                                         [output_data_dict["STRUCTURES"][output_name]]
                                     )
 
-                                output_data_dict["STRUCTURES"][output_name].append(
-                                    structure_image
-                                )
+                                output_data_dict["STRUCTURES"][output_name].append(structure_image)
 
                 elif dicom_type == "DOSES":
 
@@ -1066,18 +1013,14 @@ def process_dicom_directory(
                             output_data_dict["DOSES"][output_name] = dicom_file_data
 
                         else:
-                            logger.info(
-                                "      An image with this name exists, appending."
-                            )
+                            logger.info("      An image with this name exists, appending.")
 
-                            if type(output_data_dict["DOSES"][output_name]) != list:
+                            if hasattr(output_data_dict["DOSES"][output_name], "__iter__"):
                                 output_data_dict["DOSES"][output_name] = list(
                                     [output_data_dict["DOSES"][output_name]]
                                 )
 
-                            output_data_dict["DOSES"][output_name].append(
-                                dicom_file_data
-                            )
+                            output_data_dict["DOSES"][output_name].append(dicom_file_data)
 
         if write_to_disk:
             output[str(parent_data)] = write_output_data_to_disk(

@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This script was provided by Jason Dowling and written by Parnesh Raniga, CSIRO, Brisbane.
+
+
 from pathlib import Path
 import SimpleITK as sitk
 import numpy as np
