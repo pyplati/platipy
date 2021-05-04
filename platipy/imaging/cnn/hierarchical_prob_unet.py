@@ -340,7 +340,7 @@ class _HierarchicalCore(torch.nn.Module):
                                         latents of the scale are sampled. Defaults to False.
             std_devs_from_mean (float|list, optional): A float or list of floats describing how far
                                                        from the mean should be sampled. Only at
-                                                       scales where mean is True. Defaults to 0.                                                      if mean is True Defaults to None.
+                                                       scales where mean is True. Defaults to 0.
             z_q (list, optional): None or a list of tensors. If not None, z_q provides external
                                   latents to be used instead of sampling them. This is used to
                                   employ posterior latents in the prior during training. Therefore,
