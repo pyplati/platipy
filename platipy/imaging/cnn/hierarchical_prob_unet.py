@@ -325,7 +325,7 @@ class _HierarchicalCore(torch.nn.Module):
         self._mu_logsigma_blocks.apply(init_zeros)
         self.decoder_layers.apply(init_weights)
 
-    def forward(self, inputs, mean=False, z_q=None):
+    def forward(self, inputs, mean=False, std_devs_from_mean=0.0, z_q=None):
         """Forward pass to sample from the module as specified.
 
         Args:
@@ -338,6 +338,9 @@ class _HierarchicalCore(torch.nn.Module):
                                         latent scales. If a list, each bool therein specifies
                                         whether or not to use the scale's mean. If False, the
                                         latents of the scale are sampled. Defaults to False.
+            std_devs_from_mean (float|list, optional): A float or list of floats describing how far
+                                                       from the mean should be sampled. Only at
+                                                       scales where mean is True. Defaults to 0.                                                      if mean is True Defaults to None.
             z_q (list, optional): None or a list of tensors. If not None, z_q provides external
                                   latents to be used instead of sampling them. This is used to
                                   employ posterior latents in the prior during training. Therefore,
@@ -358,8 +361,16 @@ class _HierarchicalCore(torch.nn.Module):
         encoder_outputs = []
         num_levels = len(self._channels_per_block)
         num_latent_levels = len(self._latent_dims)
+
         if isinstance(mean, bool):
             mean = [mean] * self._num_latent_levels
+
+        if isinstance(std_devs_from_mean, int):
+            std_devs_from_mean = float(std_devs_from_mean)
+
+        if isinstance(std_devs_from_mean, float):
+            std_devs_from_mean = [std_devs_from_mean] * self._num_latent_levels
+
         distributions = []
         used_latents = []
 
@@ -390,7 +401,7 @@ class _HierarchicalCore(torch.nn.Module):
             if z_q is not None:
                 z = z_q[level]
             elif mean[level]:
-                z = dist.base_dist.loc
+                z = dist.base_dist.loc + (dist.base_dist.scale * std_devs_from_mean[level])
             else:
                 z = dist.sample()
 
