@@ -671,7 +671,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         self._p_sample_z_q_mean = self._prior(img, z_q=self._q_sample_mean["used_latents"])
         self._cache = input_tensor
 
-    def sample(self, img, mean=False, z_q=None):
+    def sample(self, img, mean=False, std_devs_from_mean=0.0, z_q=None):
         """Sample a segmentation from the prior, given an input image.
 
         Args:
@@ -681,6 +681,9 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
                                    scales. If a list, each bool therein specifies whether or not to
                                    use the scale's mean. If False, the latents of the scale are
                                    sampled. Defaults to False.
+            std_devs_from_mean (float|list, optional): A float or list of floats describing how far
+                                                       from the mean should be sampled. Only at
+                                                       scales where mean is True. Defaults to 0.
             z_q (list, optional): If not None, z_q provides external latents to be used instead of
                                   sampling them. This is used to employ posterior latents in the
                                   prior during training. Therefore, if z_q is not None, the value
@@ -692,7 +695,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             torch.Tensor: A segmentation tensor of shape (b, num_classes, h, w).
         """
 
-        prior_out = self._prior(img, mean, z_q)
+        prior_out = self._prior(img, mean, std_devs_from_mean, z_q)
         encoder_features = prior_out["encoder_features"]
         decoder_features = prior_out["decoder_features"]
         return self._f_comb(encoder_features, decoder_features)
