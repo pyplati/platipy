@@ -12,21 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from skimage.color import hsv2rgb
 from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
 
 import warnings
 
-import math
-import pathlib
 import numpy as np
 import SimpleITK as sitk
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import matplotlib.animation as animation
 
-from ipywidgets import interact, interactive, fixed, interact_manual
+from ipywidgets import interact, fixed, interact_manual
 import ipywidgets as widgets
 
 from platipy.imaging.visualisation.utils import (
@@ -610,6 +606,8 @@ class ImageVisualiser:
             nda /= nda.max()
         except ValueError:
             print("Problem converting RGB image to np.ndarray.")
+        except IndexError:
+            pass
 
         sp_plane, _, sp_slice = image.GetSpacing()
         asp = (1.0 * sp_slice) / sp_plane
