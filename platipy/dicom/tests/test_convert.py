@@ -14,15 +14,13 @@
 
 # pylint: disable=redefined-outer-name
 
-import os
+import tempfile
+from pathlib import Path
+
+import pytest
 import pydicom
 import numpy as np
-import pytest
-import tempfile
-
 import SimpleITK as sitk
-
-from pathlib import Path
 
 from platipy.imaging.tests.data import get_lung_dicom, get_lung_nifti
 from platipy.dicom.io.rtstruct_to_nifti import convert_rtstruct

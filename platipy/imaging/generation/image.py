@@ -33,8 +33,10 @@ def insert_sphere(arr, sp_radius=4, sp_centre=(0, 0, 0)):
 
     x, y, z = np.indices(arr.shape)
 
-    if hasattr(sp_radius, "__iter__"):
-        sp_radius_x, sp_radius_y, sp_radius_z = sp_radius
+    if not hasattr(sp_radius, "__iter__"):
+        sp_radius = [sp_radius] * 3
+
+    sp_radius_x, sp_radius_y, sp_radius_z = sp_radius
 
     arr_copy[
         ((x - sp_centre[0]) / sp_radius_x) ** 2
