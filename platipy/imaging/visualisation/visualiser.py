@@ -97,6 +97,7 @@ class VisualiseVectorOverlay:
         subsample=4,
         color_function="perpendicular",
         invert_field=True,
+        show_colorbar=True,
     ):
         self.image = image
         self.name = name
@@ -107,23 +108,26 @@ class VisualiseVectorOverlay:
         self.subsample = subsample
         self.color_function = color_function
         self.invert_field = invert_field
+        self.show_colorbar = show_colorbar
 
 
 class VisualiseComparisonOverlay:
     """Class to represent the visualiation of a comparison image"""
 
-    def __init__(self, image, color_rotation=0.35):
+    def __init__(self, image, name, color_rotation=0.35):
         self.image = image
+        self.name = name
         self.color_rotation = color_rotation
 
 
 class VisualiseBoundingBox:
     """Class to represent the visualiation of a bounding box"""
 
-    def __init__(self, bounding_box, name, color=None):
+    def __init__(self, bounding_box, name, color="r", linewidth=2):
         self.bounding_box = bounding_box
         self.name = name
         self.color = color
+        self.linewidth = linewidth
 
 
 class ImageVisualiser:
@@ -257,9 +261,12 @@ class ImageVisualiser:
         elif isinstance(contour, sitk.Image):
 
             # Use a default name if not specified
-            if not name:
+            if name is None:
                 name = "input"
                 self.__show_legend = False
+
+            else:
+                self.__show_legend = True
 
             visualise_contour = VisualiseContour(contour, name, color=color, linewidth=linewidth)
             self.__contours.append(visualise_contour)
@@ -361,6 +368,7 @@ class ImageVisualiser:
         arrow_width=1,
         subsample=4,
         color_function="perpendicular",
+        show_colorbar=True,
     ):
         """Overlay a vector field on to the existing image
 
@@ -403,6 +411,7 @@ class ImageVisualiser:
                 arrow_width=arrow_width,
                 subsample=subsample,
                 color_function=color_function,
+                show_colorbar=show_colorbar,
             )
             self.__vector_overlays.append(visualise_vector_field)
         else:
@@ -423,11 +432,6 @@ class ImageVisualiser:
 
         if isinstance(image, sitk.Image):
 
-            # Use a default name if not specified
-            if not name:
-                name = "input"
-                self.__show_legend = False
-
             visualise_comparison = VisualiseComparisonOverlay(
                 image, name, color_rotation=color_rotation
             )
@@ -436,7 +440,7 @@ class ImageVisualiser:
 
             raise ValueError("Image should be sitk.Image.")
 
-    def add_bounding_box(self, bounding_box, name=None, color=None):
+    def add_bounding_box(self, bounding_box, name=None, color="r", linewidth=2):
 
         self.__show_legend = True
 
@@ -452,18 +456,19 @@ class ImageVisualiser:
 
             for name in bounding_box:
                 visualise_bounding_box = VisualiseBoundingBox(
-                    bounding_box[name], name, color=color
+                    bounding_box[name], name=name, color=color, linewidth=linewidth
                 )
                 self.__bounding_boxes.append(visualise_bounding_box)
 
         elif isinstance(bounding_box, (list, tuple)):
 
             # Use a default name if not specified
-            if not name:
-                name = "input"
-                self.__show_legend = False
+            if name is None:
+                name = "Bounding box"
 
-            visualise_bounding_box = VisualiseBoundingBox(bounding_box, name, color=color)
+            visualise_bounding_box = VisualiseBoundingBox(
+                bounding_box, name=name, color=color, linewidth=linewidth
+            )
             self.__bounding_boxes.append(visualise_bounding_box)
 
         else:
@@ -488,6 +493,9 @@ class ImageVisualiser:
 
         if interact:
             self.interact_adjust_slice()
+
+        self.__figure.canvas.draw()
+        self.add_legend()
 
         return self.__figure
 
@@ -1113,7 +1121,7 @@ class ImageVisualiser:
             s_cor = return_slice("y", self.__cut[1])
             s_sag = return_slice("x", self.__cut[2])
 
-            for index, c_name in enumerate(plot_dict.keys()):
+            for c_name in plot_dict.keys():
 
                 if not self.__projection:
 
@@ -1170,29 +1178,14 @@ class ImageVisualiser:
                     origin="lower",
                 )
 
-            if self.__show_legend:
-                if len(self.__figure.axes) == 5:
-                    # There is a colorbar - right align instead
-                    approx_scaling = self.__figure_size / (len(plot_dict.keys()))
-                    ax.legend(
-                        loc="center right",
-                        bbox_to_anchor=(1.95, 0.5),
-                        fontsize=min([10, 16 * approx_scaling]),
-                    )
-                else:
-                    # Left align to axial slice
-                    approx_scaling = self.__figure_size / (len(plot_dict.keys()))
-                    ax.legend(
-                        loc="center left",
-                        bbox_to_anchor=(1.05, 0.5),
-                        fontsize=min([10, 16 * approx_scaling]),
-                    )
-
         else:
             raise ValueError('Axis is must be one of "x","y","z","ortho".')
 
     def overlay_scalar_field(self):
         """Overlay the scalar image onto the existing figure"""
+
+        if self.__projection and len(self.__scalar_overlays) > 0:
+            raise Warning("Scalar overlay is not implemented in projection mode.")
 
         for scalar_index, scalar in enumerate(self.__scalar_overlays):
 
@@ -1374,6 +1367,10 @@ class ImageVisualiser:
 
     def overlay_vector_field(self):
         """Overlay vector field onto existing figure"""
+
+        if self.__projection and len(self.__vector_overlays) > 0:
+            raise Warning("Vector overlay is not implemented in projection mode.")
+
         for vector_index, vector in enumerate(self.__vector_overlays):
 
             image = vector.image
@@ -1503,11 +1500,28 @@ class ImageVisualiser:
                     ax_box = ax_ax.get_position(original=False)
                     cbar_width = ax_box.width * 0.05  # 5% of axis width
 
+                    if len(self.__figure.axes) >= 5:
+                        # There is a colorbar, add a new one
+
+                        cbar_axes = self.__figure.axes[4:]
+
+                        cbar_axes_label_pos_list = [
+                            self.__figure.transFigure.inverted().transform(
+                                i.yaxis.get_label().get_position()
+                            )[0]
+                            for i in cbar_axes
+                        ]
+
+                        max_xpos = max(cbar_axes_label_pos_list)
+
+                        x_pos_legend = max_xpos + 0.025
+
+                    else:
+                        x_pos_legend = ax_box.x0 + 0.025
+
                     cax = self.__figure.add_axes(
                         (
-                            ax_box.x1
-                            + 0.02
-                            + (cbar_width + 0.1) * (vector_index + self.__scalar_overlays),
+                            x_pos_legend,
                             ax_box.y0,
                             cbar_width,
                             ax_box.height,
@@ -1515,8 +1529,9 @@ class ImageVisualiser:
                     )
 
                     cbar = self.__figure.colorbar(sp_vector, cax=cax, orientation="vertical")
+                    cbar.set_label(vector.name)
 
-    def overlay_bounding_boxes(self, color="r"):
+    def overlay_bounding_boxes(self):
         """Overlay bounding boxes onto existing figure
 
         Args:
@@ -1528,6 +1543,7 @@ class ImageVisualiser:
 
             if box.color:
                 color = box.color
+                linewidth = box.linewidth
 
             # Test types of axes
             axes = self.__figure.axes[:4]
@@ -1538,21 +1554,22 @@ class ImageVisualiser:
                     ax.plot(
                         [sag0, sag0, sag0 + sagD, sag0 + sagD, sag0],
                         [cor0, cor0 + corD, cor0 + corD, cor0, cor0],
-                        lw=2,
+                        lw=linewidth,
                         c=color,
+                        label=box.name,
                     )
                 if self.__axis == "y" or self.__axis == "cor":
                     ax.plot(
                         [sag0, sag0 + sagD, sag0 + sagD, sag0, sag0],
                         [ax0, ax0, ax0 + axD, ax0 + axD, ax0],
-                        lw=2,
+                        lw=linewidth,
                         c=color,
                     )
                 if self.__axis == "x" or self.__axis == "sag":
                     ax.plot(
                         [cor0, cor0 + corD, cor0 + corD, cor0, cor0],
                         [ax0, ax0, ax0 + axD, ax0 + axD, ax0],
-                        lw=2,
+                        lw=linewidth,
                         c=color,
                     )
 
@@ -1562,18 +1579,68 @@ class ImageVisualiser:
                 ax_ax.plot(
                     [sag0, sag0, sag0 + sagD, sag0 + sagD, sag0],
                     [cor0, cor0 + corD, cor0 + corD, cor0, cor0],
-                    lw=2,
+                    lw=linewidth,
                     c=color,
+                    label=box.name,
                 )
                 ax_cor.plot(
                     [sag0, sag0 + sagD, sag0 + sagD, sag0, sag0],
                     [ax0, ax0, ax0 + axD, ax0 + axD, ax0],
-                    lw=2,
+                    lw=linewidth,
                     c=color,
                 )
                 ax_sag.plot(
                     [cor0, cor0 + corD, cor0 + corD, cor0, cor0],
                     [ax0, ax0, ax0 + axD, ax0 + axD, ax0],
-                    lw=2,
+                    lw=linewidth,
                     c=color,
                 )
+
+    def add_legend(self):
+
+        if len(self.__figure.axes) >= 4:
+
+            ax_ax = self.__figure.axes[0]
+            ax_ax_position = ax_ax.get_position()
+            y_pos_legend = (ax_ax_position.ymax + ax_ax_position.ymin) / 2
+
+            if self.__show_legend:
+                if len(self.__figure.axes) >= 5:
+                    # There is a colorbar or more - right align instead
+
+                    cbar_axes = self.__figure.axes[4:]
+
+                    cbar_axes_label_pos_list = [
+                        self.__figure.transFigure.inverted().transform(
+                            i.yaxis.get_label().get_position()
+                        )[0]
+                        for i in cbar_axes
+                    ]
+
+                    max_xpos = max(cbar_axes_label_pos_list)
+
+                    x_pos_legend = max_xpos + 0.025
+
+                    approx_font_scaling = self.__figure_size / (
+                        len(self.__contours) + len(self.__bounding_boxes)
+                    )
+
+                    plt.figlegend(
+                        loc="center left",
+                        bbox_to_anchor=(x_pos_legend, y_pos_legend),
+                        fontsize=min([10, 16 * approx_font_scaling]),
+                    )
+                else:
+                    # Left align to axial slice
+                    ax_ax_position = ax_ax.get_position()
+                    x_pos_legend = ax_ax_position.xmax + 0.05
+
+                    approx_font_scaling = self.__figure_size / (
+                        len(self.__contours) + len(self.__bounding_boxes)
+                    )
+
+                    plt.figlegend(
+                        loc="center left",
+                        bbox_to_anchor=(x_pos_legend, y_pos_legend),
+                        fontsize=min([10, 16 * approx_font_scaling]),
+                    )

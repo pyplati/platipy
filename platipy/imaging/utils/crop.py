@@ -63,7 +63,7 @@ def get_crop_bounding_box(img, mask):
     return bounding_box
 
 
-def label_to_roi(label, expansion_mm=[0, 0, 0]):
+def label_to_roi(label, expansion_mm=[0, 0, 0], return_as_list=False):
     """Generates a region of interest (ROI), defined by a starting index (z,y,x)
     and size (s_z, s_y, s_x). This can be used to crop images/labels.
 
@@ -107,6 +107,9 @@ def label_to_roi(label, expansion_mm=[0, 0, 0]):
 
     crop_box_size = [int(i) for i in crop_box_size]
     crop_box_index = [int(i) for i in crop_box_index]
+
+    if return_as_list:
+        return crop_box_index + crop_box_size
 
     return crop_box_size, crop_box_index
 
