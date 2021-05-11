@@ -12,16 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import os
-import json
 import zipfile
 import tempfile
 import urllib
 from pathlib import Path
-
-import shutil
-import requests
 
 from loguru import logger
 
@@ -54,6 +48,7 @@ def get_lung_dicom(output_directory="./data"):
     download_and_extract_zip_file(zip_url, output_directory)
 
     return output_directory
+
 
 def get_lung_nifti(output_directory="./data"):
 
