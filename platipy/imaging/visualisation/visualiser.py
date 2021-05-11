@@ -12,18 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
-
 import warnings
+
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
 
 import numpy as np
 import SimpleITK as sitk
 
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+from loguru import logger
 
-from ipywidgets import interact, fixed, interact_manual
-import ipywidgets as widgets
+# from ipywidgets import interact
+# import ipywidgets as widgets
 
 from platipy.imaging.visualisation.utils import (
     return_slice,
@@ -112,8 +113,9 @@ class VisualiseVectorOverlay:
 class VisualiseComparisonOverlay:
     """Class to represent the visualiation of a comparison image"""
 
-    def __init__(self, image, color_rotation=0.35):
+    def __init__(self, image, name, color_rotation=0.35):
         self.image = image
+        self.name = name
         self.color_rotation = color_rotation
 
 
@@ -127,7 +129,8 @@ class VisualiseBoundingBox:
 
 
 class ImageVisualiser:
-    """Class to assist with visualising images and overlaying contours, scalars and bounding boxes."""
+    """Class to assist with visualising images and overlaying contours, scalars and bounding
+    boxes."""
 
     def __init__(
         self,
@@ -158,6 +161,9 @@ class ImageVisualiser:
         self.__colormap = colormap
         self.__origin = origin
         self.__projection = projection
+        self.__image_view = None
+        self.__scalar_view = None
+        self.__contour_color_base = None
 
         self.clear()
 
@@ -184,6 +190,12 @@ class ImageVisualiser:
         self.__vector_overlays = []
 
     def set_limits_from_label(self, label, expansion=[0, 0, 0]):
+        """Sets the limits of the axes to the bounds of the given label.
+
+        Args:
+            label (sitk.Image): The label around which to set the limits
+            expansion (list, optional): Expansion (in mm) around the label. Defaults to [0, 0, 0].
+        """
 
         (sag_size, cor_size, ax_size), (sag_0, cor_0, ax_0) = label_to_roi(
             label, expansion_mm=expansion
@@ -377,7 +389,8 @@ class ImageVisualiser:
             subsample (int, optional): Defines to subsampling ratio of displayed vectors.
                                        Defaults to 4.
             color_function (str, optional): Determines how vectors are colored. Options:
-                                            'perpendicular' - vectors colored by perpendicular value
+                                            'perpendicular' - vectors colored by perpendicular
+                                            value
                                             'magnitude' - vectors colored by magnitude.
 
         Raises:
@@ -437,6 +450,19 @@ class ImageVisualiser:
             raise ValueError("Image should be sitk.Image.")
 
     def add_bounding_box(self, bounding_box, name=None, color=None):
+        """Add a bounding box to draw.
+
+        Args:
+            bounding_box (dict|list): Dictionary of bounding boxes where list key is the name of
+                                      the bounding box.
+            name (list, optional): [description]. Defaults to None.
+            color (str|tuple|list, optional): The color to use when drawing the bounding box(es).
+                                              Defaults to None.
+
+        Raises:
+            ValueError: [description]
+            ValueError: [description]
+        """
 
         self.__show_legend = True
 
@@ -487,110 +513,110 @@ class ImageVisualiser:
         self.adjust_view()
 
         if interact:
-            self.interact_adjust_slice()
+            logger.warning("Interactive mode not yet implemented")
+            # self.interact_adjust_slice()
 
         return self.__figure
 
-    def precompute_array_slices(self):
-        None
+    # def precompute_array_slices(self):
+    #     pass
 
-    def interact_adjust_slice(self):
-        image = self.__image
-        nda = sitk.GetArrayViewFromImage(image)
-        (ax_size, cor_size, sag_size) = nda.shape[:3]
+    # def interact_adjust_slice(self):
+    #     image = self.__image
+    #     nda = sitk.GetArrayViewFromImage(image)
+    #     (ax_size, cor_size, sag_size) = nda.shape[:3]
 
-        image_view = self.__image_view
+    #     image_view = self.__image_view
 
-        if hasattr(self, "__scalar_view"):
-            use_scalar = True
-            scalar_view = self.__scalar_view
-            print(scalar_view)
-            scalar_image = self.__scalar_overlays[0]  # TO DO - generalsie
-            nda_scalar = sitk.GetArrayFromImage(scalar_image)
-        else:
-            use_scalar = False
+    #     if hasattr(self, "__scalar_view"):
+    #         use_scalar = True
+    #         scalar_view = self.__scalar_view
+    #         scalar_image = self.__scalar_overlays[0]  # TO DO - generalsie
+    #         nda_scalar = sitk.GetArrayFromImage(scalar_image)
+    #     else:
+    #         use_scalar = False
 
-        # ~10x speed-up by pre-contructing views
-        arr_slices_ax = {i: nda.__getitem__(return_slice("z", i)) for i in range(ax_size)}
-        arr_slices_cor = {i: nda.__getitem__(return_slice("y", i)) for i in range(cor_size)}
-        arr_slices_sag = {i: nda.__getitem__(return_slice("x", i)) for i in range(sag_size)}
+    #     # ~10x speed-up by pre-contructing views
+    #     arr_slices_ax = {i: nda.__getitem__(return_slice("z", i)) for i in range(ax_size)}
+    #     arr_slices_cor = {i: nda.__getitem__(return_slice("y", i)) for i in range(cor_size)}
+    #     arr_slices_sag = {i: nda.__getitem__(return_slice("x", i)) for i in range(sag_size)}
 
-        if use_scalar:
-            scalar_arr_slices_ax = {
-                i: nda_scalar.__getitem__(return_slice("z", i)) for i in range(ax_size)
-            }
-            scalar_arr_slices_cor = {
-                i: nda_scalar.__getitem__(return_slice("y", i)) for i in range(cor_size)
-            }
-            scalar_arr_slices_sag = {
-                i: nda_scalar.__getitem__(return_slice("x", i)) for i in range(sag_size)
-            }
+    #     if use_scalar:
+    #         scalar_arr_slices_ax = {
+    #             i: nda_scalar.__getitem__(return_slice("z", i)) for i in range(ax_size)
+    #         }
+    #         scalar_arr_slices_cor = {
+    #             i: nda_scalar.__getitem__(return_slice("y", i)) for i in range(cor_size)
+    #         }
+    #         scalar_arr_slices_sag = {
+    #             i: nda_scalar.__getitem__(return_slice("x", i)) for i in range(sag_size)
+    #         }
 
-        if self.__cut is None:
-            slice_ax = int(ax_size / 2.0)
-            slice_cor = int(cor_size / 2.0)
-            slice_sag = int(sag_size / 2.0)
+    #     if self.__cut is None:
+    #         slice_ax = int(ax_size / 2.0)
+    #         slice_cor = int(cor_size / 2.0)
+    #         slice_sag = int(sag_size / 2.0)
 
-            self.__cut = [slice_ax, slice_cor, slice_sag]
+    #         self.__cut = [slice_ax, slice_cor, slice_sag]
 
-        for view_name in image_view.keys():
-            if view_name == "ax_view":
+    #     for view_name in image_view.keys():
+    #         if view_name == "ax_view":
 
-                ax_view_image = image_view["ax_view"]
-                if use_scalar:
-                    ax_view_scalar = scalar_view["ax_view"]
+    #             ax_view_image = image_view["ax_view"]
+    #             if use_scalar:
+    #                 ax_view_scalar = scalar_view["ax_view"]
 
-                widget = widgets.IntSlider(min=0, max=ax_size, step=1, value=self.__cut[0])
+    #             widget = widgets.IntSlider(min=0, max=ax_size, step=1, value=self.__cut[0])
 
-                def f_adjust(axial_slice):
-                    ax_view_image.set_data(image_arr_slices_ax[axial_slice])
-                    if use_scalar:
-                        ax_view_scalar.set_data(scalar_arr_slices_ax[axial_slice])
-                    return
+    #             def f_adjust(axial_slice):
+    #                 ax_view_image.set_data(image_arr_slices_ax[axial_slice])
+    #                 if use_scalar:
+    #                     ax_view_scalar.set_data(scalar_arr_slices_ax[axial_slice])
+    #                 return
 
-                interact(f_adjust, axial_slice=widget)
+    #             interact(f_adjust, axial_slice=widget)
 
-            if view_name == "cor_view":
+    #         if view_name == "cor_view":
 
-                cor_view_image = image_view["cor_view"]
-                if use_scalar:
-                    cor_view_scalar = scalar_view["cor_view"]
+    #             cor_view_image = image_view["cor_view"]
+    #             if use_scalar:
+    #                 cor_view_scalar = scalar_view["cor_view"]
 
-                if self.__axis == "y" or self.__axis == "cor":
-                    coronal_cut_default = self.__cut
-                else:
-                    coronal_cut_default = self.__cut[1]
+    #             if self.__axis == "y" or self.__axis == "cor":
+    #                 coronal_cut_default = self.__cut
+    #             else:
+    #                 coronal_cut_default = self.__cut[1]
 
-                widget = widgets.IntSlider(min=0, max=cor_size, step=1, value=self.__cut[1])
+    #             widget = widgets.IntSlider(min=0, max=cor_size, step=1, value=self.__cut[1])
 
-                def f_adjust(coronal_slice):
-                    cor_view_image.set_data(image_arr_slices_cor[coronal_slice])
-                    if use_scalar:
-                        cor_view_scalar.set_data(scalar_arr_slices_cor[coronal_slice])
-                    return
+    #             def f_adjust(coronal_slice):
+    #                 cor_view_image.set_data(image_arr_slices_cor[coronal_slice])
+    #                 if use_scalar:
+    #                     cor_view_scalar.set_data(scalar_arr_slices_cor[coronal_slice])
+    #                 return
 
-                interact(f_adjust, coronal_slice=widget)
+    #             interact(f_adjust, coronal_slice=widget)
 
-            if view_name == "sag_view":
+    #         if view_name == "sag_view":
 
-                sag_view_image = image_view["sag_view"]
-                if use_scalar:
-                    sag_view_scalar = scalar_view["sag_view"]
+    #             sag_view_image = image_view["sag_view"]
+    #             if use_scalar:
+    #                 sag_view_scalar = scalar_view["sag_view"]
 
-                if self.__axis == "x" or self.__axis == "sag":
-                    sagittal_cut_default = self.__cut
-                else:
-                    sagittal_cut_default = self.__cut[2]
+    #             if self.__axis == "x" or self.__axis == "sag":
+    #                 sagittal_cut_default = self.__cut
+    #             else:
+    #                 sagittal_cut_default = self.__cut[2]
 
-                widget = widgets.IntSlider(min=0, max=sag_size, step=1, value=self.__cut[2])
+    #             widget = widgets.IntSlider(min=0, max=sag_size, step=1, value=self.__cut[2])
 
-                def f_adjust(sagittal_slice):
-                    sag_view_image.set_data(image_arr_slices_sag[sagittal_slice])
-                    if use_scalar:
-                        sag_view_scalar.set_data(scalar_arr_slices_sag[sagittal_slice])
-                    return
+    #             def f_adjust(sagittal_slice):
+    #                 sag_view_image.set_data(image_arr_slices_sag[sagittal_slice])
+    #                 if use_scalar:
+    #                     sag_view_scalar.set_data(scalar_arr_slices_sag[sagittal_slice])
+    #                 return
 
-                interact(f_adjust, sagittal_slice=widget)
+    #             interact(f_adjust, sagittal_slice=widget)
 
     def display_slice(self):
         """Display the configured image slice"""
@@ -601,11 +627,10 @@ class ImageVisualiser:
         (ax_size, cor_size, sag_size) = nda.shape[:3]
 
         try:
-            rgb_flag = nda.shape[3] == 3
-            print("Found a (z,y,x,3) dimensional array - assuming this is an RGB image.")
+            logger.info("Found a (z,y,x,3) dimensional array - assuming this is an RGB image.")
             nda /= nda.max()
         except ValueError:
-            print("Problem converting RGB image to np.ndarray.")
+            logger.warning("Problem converting RGB image to np.ndarray.")
         except IndexError:
             pass
 
@@ -707,7 +732,8 @@ class ImageVisualiser:
 
             if hasattr(self.__cut, "__iter__"):
                 warnings.warn(
-                    "You have selected a single axis and multiple slice locations, attempting to match."
+                    "You have selected a single axis and multiple slice locations, attempting to "
+                    "match."
                 )
                 self.__cut = self.__cut[{"x": 2, "y": 1, "z": 0}[self.__axis]]
 
@@ -881,7 +907,8 @@ class ImageVisualiser:
 
             if hasattr(self.__cut, "__iter__"):
                 warnings.warn(
-                    "You have selected a single axis and multiple slice locations, attempting to match."
+                    "You have selected a single axis and multiple slice locations, attempting to "
+                    "match."
                 )
                 self.__cut = self.__cut[{"x": 2, "y": 1, "z": 0}[self.__axis]]
 
@@ -1078,7 +1105,7 @@ class ImageVisualiser:
             ax = axes[0]
             s = return_slice(self.__axis, self.__cut)
 
-            for c_name in plot_dict.keys():
+            for c_name in plot_dict:
                 if not self.__projection:
                     contour_disp = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s)
 
@@ -1113,7 +1140,7 @@ class ImageVisualiser:
             s_cor = return_slice("y", self.__cut[1])
             s_sag = return_slice("x", self.__cut[2])
 
-            for index, c_name in enumerate(plot_dict.keys()):
+            for _, c_name in enumerate(plot_dict.keys()):
 
                 if not self.__projection:
 
@@ -1202,14 +1229,14 @@ class ImageVisualiser:
             alpha = scalar.alpha
 
             if scalar.max_value:
-                sMax = scalar.max_value
+                s_max = scalar.max_value
             else:
-                sMax = nda.max()
+                s_max = nda.max()
 
             if scalar.min_value:
-                sMin = scalar.min_value
+                s_min = scalar.min_value
             else:
-                sMin = nda.min()
+                s_min = nda.min()
 
             if scalar.discrete_levels:
                 colormap_name = scalar.colormap.name
@@ -1224,7 +1251,7 @@ class ImageVisualiser:
                 norm = None
 
             # nda = nda / nda.max()
-            nda = np.ma.masked_less_equal(nda, sMin)
+            nda = np.ma.masked_less_equal(nda, s_min)
 
             sp_plane, _, sp_slice = scalar_image.GetSpacing()
             asp = (1.0 * sp_slice) / sp_plane
@@ -1242,11 +1269,11 @@ class ImageVisualiser:
                     nda.__getitem__(s),
                     interpolation="none",
                     cmap=colormap,
-                    clim=(sMin, sMax),
+                    clim=(s_min, s_max),
                     aspect={"z": 1, "y": asp, "x": asp}[self.__axis],
                     origin=org,
-                    vmin=sMin,
-                    vmax=sMax,
+                    vmin=s_min,
+                    vmax=s_max,
                     alpha=alpha,
                     norm=norm,
                 )
@@ -1258,10 +1285,10 @@ class ImageVisualiser:
                     cbar.set_label(scalar.name)
                     cbar.solids.set_alpha(1)
                     if scalar.discrete_levels:
-                        cbar.set_ticks(np.linspace(sMin, sMax, scalar.discrete_levels + 1))
+                        cbar.set_ticks(np.linspace(s_min, s_max, scalar.discrete_levels + 1))
 
-                    fX, fY = self.__figure.get_size_inches()
-                    self.__figure.set_size_inches(fX * 1.15, fY)
+                    f_x, f_y = self.__figure.get_size_inches()
+                    self.__figure.set_size_inches(f_x * 1.15, f_y)
                     self.__figure.subplots_adjust(left=0, right=0.88, bottom=0, top=1)
 
                 if self.__axis == "z":
@@ -1276,45 +1303,45 @@ class ImageVisualiser:
             elif len(axes) == 4:
                 ax_ax, _, ax_cor, ax_sag = axes
 
-                sAx = return_slice("z", self.__cut[0])
-                sCor = return_slice("y", self.__cut[1])
-                sSag = return_slice("x", self.__cut[2])
+                s_ax = return_slice("z", self.__cut[0])
+                s_cor = return_slice("y", self.__cut[1])
+                s_sag = return_slice("x", self.__cut[2])
 
                 ax_view = ax_ax.imshow(
-                    nda.__getitem__(sAx),
+                    nda.__getitem__(s_ax),
                     interpolation="none",
                     cmap=colormap,
-                    clim=(sMin, sMax),
+                    clim=(s_min, s_max),
                     aspect=1,
                     origin={"normal": "upper", "reversed": "lower"}[self.__origin],
-                    vmin=sMin,
-                    vmax=sMax,
+                    vmin=s_min,
+                    vmax=s_max,
                     alpha=alpha,
                     norm=norm,
                 )
 
                 cor_view = ax_cor.imshow(
-                    nda.__getitem__(sCor),
+                    nda.__getitem__(s_cor),
                     interpolation="none",
                     cmap=colormap,
-                    clim=(sMin, sMax),
+                    clim=(s_min, s_max),
                     origin="lower",
                     aspect=asp,
-                    vmin=sMin,
-                    vmax=sMax,
+                    vmin=s_min,
+                    vmax=s_max,
                     alpha=alpha,
                     norm=norm,
                 )
 
                 sag_view = ax_sag.imshow(
-                    nda.__getitem__(sSag),
+                    nda.__getitem__(s_sag),
                     interpolation="none",
                     cmap=colormap,
-                    clim=(sMin, sMax),
+                    clim=(s_min, s_max),
                     origin="lower",
                     aspect=asp,
-                    vmin=sMin,
-                    vmax=sMax,
+                    vmin=s_min,
+                    vmax=s_max,
                     alpha=alpha,
                     norm=norm,
                 )
@@ -1347,21 +1374,21 @@ class ImageVisualiser:
 
                         if scalar.mid_ticks:
 
-                            delta_tick = (sMax - sMin) / scalar.discrete_levels
+                            delta_tick = (s_max - s_min) / scalar.discrete_levels
                             cbar.set_ticks(
                                 np.linspace(
-                                    sMin + delta_tick / 2,
-                                    sMax - delta_tick / 2,
+                                    s_min + delta_tick / 2,
+                                    s_max - delta_tick / 2,
                                     scalar.discrete_levels,
                                 )
                             )
-                            cbar.set_ticklabels(np.linspace(sMin, sMax, scalar.discrete_levels))
+                            cbar.set_ticklabels(np.linspace(s_min, s_max, scalar.discrete_levels))
 
                         else:
                             cbar.set_ticks(
                                 np.linspace(
-                                    sMin,
-                                    sMax,
+                                    s_min,
+                                    s_max,
                                     scalar.discrete_levels + 1,
                                 )
                             )
@@ -1388,9 +1415,6 @@ class ImageVisualiser:
 
             inverse_vector_image = image  # sitk.InvertDisplacementField(image)
             vector_nda = sitk.GetArrayFromImage(inverse_vector_image)
-
-            sp_plane, _, sp_slice = image.GetSpacing()
-            asp = (1.0 * sp_slice) / sp_plane
 
             # Test types of axes
             axes = self.__figure.axes
@@ -1448,11 +1472,9 @@ class ImageVisualiser:
                     cbar = self.__figure.colorbar(sp_vector, cax=cax, orientation="vertical")
                     cbar.set_label(vector.name)
                     cbar.solids.set_alpha(1)
-                    if vector.discrete_levels:
-                        cbar.set_ticks(np.linspace(sMin, sMax, vector.discrete_levels + 1))
 
-                    fX, fY = self.__figure.get_size_inches()
-                    self.__figure.set_size_inches(fX * 1.15, fY)
+                    f_x, f_y = self.__figure.get_size_inches()
+                    self.__figure.set_size_inches(f_x * 1.15, f_y)
                     self.__figure.subplots_adjust(left=0, right=0.88, bottom=0, top=1)
 
             elif len(axes) == 4:
@@ -1524,7 +1546,7 @@ class ImageVisualiser:
         """
 
         for box in self.__bounding_boxes:
-            sag0, cor0, ax0, sagD, corD, axD = box.bounding_box
+            sag_0, cor_0, ax_0, sag_d, cor_d, ax_d = box.bounding_box
 
             if box.color:
                 color = box.color
@@ -1536,22 +1558,22 @@ class ImageVisualiser:
 
                 if self.__axis == "z" or self.__axis == "ax":
                     ax.plot(
-                        [sag0, sag0, sag0 + sagD, sag0 + sagD, sag0],
-                        [cor0, cor0 + corD, cor0 + corD, cor0, cor0],
+                        [sag_0, sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0],
+                        [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0],
                         lw=2,
                         c=color,
                     )
                 if self.__axis == "y" or self.__axis == "cor":
                     ax.plot(
-                        [sag0, sag0 + sagD, sag0 + sagD, sag0, sag0],
-                        [ax0, ax0, ax0 + axD, ax0 + axD, ax0],
+                        [sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0, sag_0],
+                        [ax_0, ax_0, ax_0 + ax_d, ax_0 + ax_d, ax_0],
                         lw=2,
                         c=color,
                     )
                 if self.__axis == "x" or self.__axis == "sag":
                     ax.plot(
-                        [cor0, cor0 + corD, cor0 + corD, cor0, cor0],
-                        [ax0, ax0, ax0 + axD, ax0 + axD, ax0],
+                        [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0],
+                        [ax_0, ax_0, ax_0 + ax_d, ax_0 + ax_d, ax_0],
                         lw=2,
                         c=color,
                     )
@@ -1560,20 +1582,20 @@ class ImageVisualiser:
                 ax_ax, _, ax_cor, ax_sag = axes
 
                 ax_ax.plot(
-                    [sag0, sag0, sag0 + sagD, sag0 + sagD, sag0],
-                    [cor0, cor0 + corD, cor0 + corD, cor0, cor0],
+                    [sag_0, sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0],
+                    [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0],
                     lw=2,
                     c=color,
                 )
                 ax_cor.plot(
-                    [sag0, sag0 + sagD, sag0 + sagD, sag0, sag0],
-                    [ax0, ax0, ax0 + axD, ax0 + axD, ax0],
+                    [sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0, sag_0],
+                    [ax_0, ax_0, ax_0 + ax_d, ax_0 + ax_d, ax_0],
                     lw=2,
                     c=color,
                 )
                 ax_sag.plot(
-                    [cor0, cor0 + corD, cor0 + corD, cor0, cor0],
-                    [ax0, ax0, ax0 + axD, ax0 + axD, ax0],
+                    [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0],
+                    [ax_0, ax_0, ax_0 + ax_d, ax_0 + ax_d, ax_0],
                     lw=2,
                     c=color,
                 )
