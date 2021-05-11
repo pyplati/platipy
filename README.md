@@ -14,8 +14,10 @@ possible, mainly for guidance on getting started with using the tools.
     - [Requirements](#requirements)
     - [Installation](#installation)
     - [Documentation](#documentation)
-- [Command line utiities](#command-line-utilities)
-    - [DICOM conversion](#dicom-conversion)
+- [What can I do with PlatiPy?](#what-can-i-do-with-platipy)
+
+    - [Command line utiities](#command-line-utilities)
+        - [DICOM conversion](#dicom-conversion)
 - [License](#license)
 - [Links](#links)
 
@@ -28,11 +30,6 @@ possible, mainly for guidance on getting started with using the tools.
 - See requirements.txt for required Python packages and requirements-dev.txt for librarites needed to contribute.
 ### Documentation
 You can find the [PlatiPy documentation here](https://pyplati.github.io/platipy/).
-
-## Command line utilities
-
-### DICOM conversion 
-
 ## What can I do with ***platipy***?
 A lot! A good place to start is by looking in the **examples** directory. There are tools for:
  - Linear transformation image registration (rigid, affine, etc.)
@@ -55,6 +52,11 @@ Overlay a scalar field on an image:
 Create a comparison image, with vector fields:
 
 ![Figure 3](assets/hn_dvf_overlay.jpeg)
+
+
+### Command line utilities
+
+#### DICOM conversion 
 
 ## Contributing
 
