@@ -1176,7 +1176,7 @@ class ImageVisualiser:
                     approx_scaling = self.__figure_size / (len(plot_dict.keys()))
                     ax.legend(
                         loc="center right",
-                        bbox_to_anchor=(0.95, 0.5),
+                        bbox_to_anchor=(1.95, 0.5),
                         fontsize=min([10, 16 * approx_scaling]),
                     )
                 else:
