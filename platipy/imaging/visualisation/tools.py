@@ -18,10 +18,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
 
 import warnings
 
-import pathlib
-
 import math
-
+import pathlib
 import numpy as np
 import SimpleITK as sitk
 
@@ -33,6 +31,15 @@ from ipywidgets import interact, interactive, fixed, interact_manual
 import ipywidgets as widgets
 
 from platipy.imaging.visualisation.animation import project_onto_arbitrary_plane
+
+from platipy.imaging.visualisation import (
+    return_slice,
+    subsample_vector_field,
+    vector_image_grid,
+    reorientate_vector_field,
+    generate_comparison_colormix,
+    project_onto_arbitrary_plane,
+)
 
 
 """
@@ -67,6 +74,7 @@ class VisualiseScalarOverlay:
         discrete_levels=False,
         mid_ticks=False,
         show_colorbar=True,
+        norm=None,
     ):
         self.image = image
         self.name = name
@@ -77,6 +85,7 @@ class VisualiseScalarOverlay:
         self.discrete_levels = discrete_levels
         self.mid_ticks = mid_ticks
         self.show_colorbar = show_colorbar
+        self.norm = norm
 
 
 class VisualiseVectorOverlay:
@@ -181,34 +190,9 @@ class ImageVisualiser:
 
     def set_limits_from_label(self, label, expansion=[0, 0, 0], min_value=0):
 
-        label_stats_image_filter = sitk.LabelStatisticsImageFilter()
-        label_stats_image_filter.Execute(label, label > 0)
-        bounding_box = np.array(label_stats_image_filter.GetBoundingBox(1))
-
-        index = [bounding_box[x * 2] for x in range(3)]
-        size = [bounding_box[(x * 2) + 1] - bounding_box[x * 2] + 1 for x in range(3)]
-
-        if hasattr(expansion, "__iter__"):
-            expansion = np.array(expansion) / np.array(label.GetSpacing()[::-1])
-
-        else:
-            expansion = np.repeat(expansion, 3) / np.array(label.GetSpacing()[::-1])
-
-        expansion = np.array(expansion[::-1])
-
-        # Avoid starting outside the image
-        sag_0, cor_0, ax_0 = np.max([index - expansion, np.array([0, 0, 0])], axis=0)
-
-        # Avoid ending outside the image
-        sag_size, cor_size, ax_size = np.min(
-            [
-                np.array(label.GetSize()) - np.array([sag_0, cor_0, ax_0]),
-                np.array(size) + 2 * expansion,
-            ],
-            axis=0,
+        (sag_size, cor_size, ax_size), (sag_0, cor_0, ax_0) = label_to_roi(
+            label, expansion_mm=expansion
         )
-
-        # ax_0, cor_0, sag_0 = ax_0-
 
         if self.__axis == "ortho":
             self.__limits = [
@@ -227,7 +211,15 @@ class ImageVisualiser:
         if self.__axis == "z":
             self.__limits = [sag_0, sag_0 + sag_size, cor_0, cor_0 + cor_size]
 
-    def add_contour(self, contour, name=None, color=None, colorbase=plt.cm.rainbow, linewidth=2):
+    def add_contour(
+        self,
+        contour,
+        name=None,
+        color=None,
+        colorbase=plt.cm.rainbow,
+        linewidth=2,
+        show_legend=True,
+    ):
         """Add a contour as overlay
 
         Args:
@@ -244,7 +236,7 @@ class ImageVisualiser:
 
         if isinstance(contour, dict):
 
-            self.__show_legend = True
+            self.__show_legend = show_legend
 
             if not all(map(lambda i: isinstance(i, sitk.Image), contour.values())):
                 raise ValueError("When passing dict, all values must be of type SimpleITK.Image")
@@ -296,6 +288,7 @@ class ImageVisualiser:
         discrete_levels=False,
         mid_ticks=False,
         show_colorbar=True,
+        norm=None,
     ):
         """Overlay a scalar image on to the existing image
 
@@ -322,7 +315,7 @@ class ImageVisualiser:
                 raise ValueError("When passing dict, all values must be of type SimpleITK.Image")
 
             for name in scalar_image:
-                visualise_contour = VisualiseScalarOverlay(
+                visualise_scalar = VisualiseScalarOverlay(
                     scalar_image[name],
                     name,
                     colormap=colormap,
@@ -332,8 +325,9 @@ class ImageVisualiser:
                     discrete_levels=discrete_levels,
                     mid_ticks=mid_ticks,
                     show_colorbar=show_colorbar,
+                    norm=norm,
                 )
-                self.__scalar_overlays.append(visualise_contour)
+                self.__scalar_overlays.append(visualise_scalar)
 
         elif isinstance(scalar_image, sitk.Image):
 
@@ -342,7 +336,7 @@ class ImageVisualiser:
                 name = "input"
                 self.__show_legend = False
 
-            visualise_contour = VisualiseScalarOverlay(
+            visualise_scalar = VisualiseScalarOverlay(
                 scalar_image,
                 name,
                 colormap=colormap,
@@ -352,8 +346,9 @@ class ImageVisualiser:
                 discrete_levels=discrete_levels,
                 mid_ticks=mid_ticks,
                 show_colorbar=show_colorbar,
+                norm=norm,
             )
-            self.__scalar_overlays.append(visualise_contour)
+            self.__scalar_overlays.append(visualise_scalar)
         else:
 
             raise ValueError(
@@ -482,123 +477,6 @@ class ImageVisualiser:
                 "and list or tuple as value"
             )
 
-    def return_slice(self, axis, index):
-        """Prepares a slice tuple to use for extracting a slice for rendering
-
-        Args:
-            axis (str): One of "x", "y" or "z"
-            index (int): The index of the slice to fetch
-
-        Returns:
-            tuple: can be used to extract a slice
-        """
-
-        if axis == "x":
-            return (slice(None), slice(None), index)
-        if axis == "y":
-            return (slice(None), index, slice(None))
-        if axis == "z":
-            return (index, slice(None), slice(None))
-
-        return None
-
-    def subsample_vector_field(self, axis, cut, subsample=1):
-        """Prepares a slice tuple to use for extracting a slice for rendering
-
-        Args:
-            axis (str): One of "x", "y" or "z"
-            cut (int): The index of the image slice
-            subsample (int): the subsample factor
-
-        Returns:
-            tuple: can be used to extract a vector field slice
-        """
-        if hasattr(subsample, "__iter__"):
-            subsample_ax, subsample_cor, subsample_sag = subsample
-        else:
-            subsample_ax, subsample_cor, subsample_sag = (subsample,) * 3
-
-        if axis == "x":
-            return (
-                slice(None, None, subsample_ax),
-                slice(None, None, subsample_cor),
-                cut,
-            )
-        if axis == "y":
-            return (
-                slice(None, None, subsample_ax),
-                cut,
-                slice(None, None, subsample_sag),
-            )
-        if axis == "z":
-            return (
-                cut,
-                slice(None, None, subsample_cor),
-                slice(None, None, subsample_sag),
-            )
-        return None
-
-    def vector_image_grid(self, axis, vector_field_array, subsample=1):
-        """Prepares a grid for rendering a vector field on an image
-
-        Args:
-            axis (str): One of "x", "y" or "z"
-            vector_field_array (np.array): the vector field array
-            subsample (int): the subsample factor
-
-        Returns:
-            tuple: defines the 2 dimensional grid for displaying vectors
-        """
-        if hasattr(subsample, "__iter__"):
-            subsample_ax, subsample_cor, subsample_sag = subsample
-        else:
-            subsample_ax, subsample_cor, subsample_sag = (subsample,) * 3
-
-        if axis == "x":
-            return np.mgrid[
-                0 : vector_field_array.shape[1] : subsample_cor,
-                0 : vector_field_array.shape[0] : subsample_ax,
-            ]
-        if axis == "y":
-            return np.mgrid[
-                0 : vector_field_array.shape[2] : subsample_sag,
-                0 : vector_field_array.shape[0] : subsample_ax,
-            ]
-        if axis == "z":
-            return np.mgrid[
-                0 : vector_field_array.shape[2] : subsample_sag,
-                0 : vector_field_array.shape[1] : subsample_cor,
-            ]
-        return None
-
-    def reorientate_vector_field(self, axis, vector_ax, vector_cor, vector_sag, invert_field=True):
-        """Reorients vector field components for rendering
-        This is necessary after converting from sitk.Image to np.array
-
-        Args:
-            axis (str): One of "x", "y" or "z"
-            vector_ax (np.array): The first vector component (z)
-            vector_cor (np.array): The second vector component (y)
-            vector_sag (np.array): The third vector component (x)
-
-        Returns:
-            tuple: the re-oriented vector field components
-        """
-
-        if invert_field:
-            vector_ax = -vector_ax
-            vector_cor = -vector_cor
-            vector_sag = -vector_sag
-
-        if axis == "x":  # sagittal projection
-            return vector_cor, vector_ax, vector_sag
-        if axis == "y":  # coronal projection
-            return vector_sag, vector_ax, vector_cor
-        if axis == "z":  # axial projection
-            return vector_sag, -vector_cor, vector_ax
-
-        return None
-
     def show(self, interact=False):
         """Render the image with all overlays"""
         if len(self.__comparison_overlays) == 0:
@@ -638,19 +516,19 @@ class ImageVisualiser:
             use_scalar = False
 
         # ~10x speed-up by pre-contructing views
-        arr_slices_ax = {i: nda.__getitem__(self.return_slice("z", i)) for i in range(ax_size)}
-        arr_slices_cor = {i: nda.__getitem__(self.return_slice("y", i)) for i in range(cor_size)}
-        arr_slices_sag = {i: nda.__getitem__(self.return_slice("x", i)) for i in range(sag_size)}
+        arr_slices_ax = {i: nda.__getitem__(return_slice("z", i)) for i in range(ax_size)}
+        arr_slices_cor = {i: nda.__getitem__(return_slice("y", i)) for i in range(cor_size)}
+        arr_slices_sag = {i: nda.__getitem__(return_slice("x", i)) for i in range(sag_size)}
 
         if use_scalar:
             scalar_arr_slices_ax = {
-                i: nda_scalar.__getitem__(self.return_slice("z", i)) for i in range(ax_size)
+                i: nda_scalar.__getitem__(return_slice("z", i)) for i in range(ax_size)
             }
             scalar_arr_slices_cor = {
-                i: nda_scalar.__getitem__(self.return_slice("y", i)) for i in range(cor_size)
+                i: nda_scalar.__getitem__(return_slice("y", i)) for i in range(cor_size)
             }
             scalar_arr_slices_sag = {
-                i: nda_scalar.__getitem__(self.return_slice("x", i)) for i in range(sag_size)
+                i: nda_scalar.__getitem__(return_slice("x", i)) for i in range(sag_size)
             }
 
         if self.__cut is None:
@@ -762,9 +640,9 @@ class ImageVisualiser:
                 self.__cut = [slice_ax, slice_cor, slice_sag]
 
             if not self.__projection:
-                s_ax = self.return_slice("z", self.__cut[0])
-                s_cor = self.return_slice("y", self.__cut[1])
-                s_sag = self.return_slice("x", self.__cut[2])
+                s_ax = return_slice("z", self.__cut[0])
+                s_cor = return_slice("y", self.__cut[1])
+                s_sag = return_slice("x", self.__cut[2])
 
                 ax_img = nda.__getitem__(s_ax)
                 cor_img = nda.__getitem__(s_cor)
@@ -871,7 +749,7 @@ class ImageVisualiser:
                     self.__cut = int(ax_size / 2.0)
 
             if not self.__projection:
-                s = self.return_slice(self.__axis, self.__cut)
+                s = return_slice(self.__axis, self.__cut)
                 disp_img = nda.__getitem__(s)
             else:
                 disp_img_proj = project_onto_arbitrary_plane(
@@ -883,7 +761,7 @@ class ImageVisualiser:
                 disp_img = sitk.GetArrayFromImage(disp_img_proj)
                 disp_img = (disp_img - disp_img.min()) / (disp_img.max() - disp_img.min())
 
-            s = self.return_slice(self.__axis, self.__cut)
+            s = return_slice(self.__axis, self.__cut)
             ax_indiv = ax.imshow(
                 disp_img,
                 aspect=asp,
@@ -948,86 +826,47 @@ class ImageVisualiser:
 
                 self.__cut = [slice_ax, slice_cor, slice_sag]
 
-            s_ax = self.return_slice("z", self.__cut[0])
-            s_cor = self.return_slice("y", self.__cut[1])
-            s_sag = self.return_slice("x", self.__cut[2])
+            s_ax = return_slice("z", self.__cut[0])
+            s_cor = return_slice("y", self.__cut[1])
+            s_sag = return_slice("x", self.__cut[2])
 
-            nda_a = nda_original.__getitem__(s_ax)
-            nda_b = nda_new.__getitem__(s_ax)
-
-            nda_a_norm = (np.clip(nda_a, window[0], window[0] + window[1]) - window[0]) / (
-                window[1]
-            )
-            nda_b_norm = (np.clip(nda_b, window[0], window[0] + window[1]) - window[0]) / (
-                window[1]
-            )
-
-            nda_colour = np.stack(
-                [
-                    color_rotation * (nda_a_norm > nda_b_norm)
-                    + (0.5 + color_rotation) * (nda_a_norm <= nda_b_norm),
-                    np.abs(nda_a_norm - nda_b_norm),
-                    (nda_a_norm + nda_b_norm) / 2,
-                ],
-                axis=-1,
+            nda_colormix = generate_comparison_colormix(
+                [nda_original, nda_new],
+                arr_slice=s_cor,
+                window=window,
+                color_rotation=color_rotation,
             )
 
             ax_ax.imshow(
-                hsv2rgb(nda_colour),
+                nda_colormix,
                 aspect=1.0,
                 origin={"normal": "upper", "reversed": "lower"}[self.__origin],
                 interpolation="none",
             )
 
-            nda_a = nda_original.__getitem__(s_cor)
-            nda_b = nda_new.__getitem__(s_cor)
-
-            nda_a_norm = (np.clip(nda_a, window[0], window[0] + window[1]) - window[0]) / (
-                window[1]
-            )
-            nda_b_norm = (np.clip(nda_b, window[0], window[0] + window[1]) - window[0]) / (
-                window[1]
-            )
-
-            nda_colour = np.stack(
-                [
-                    color_rotation * (nda_a_norm > nda_b_norm)
-                    + (0.5 + color_rotation) * (nda_a_norm <= nda_b_norm),
-                    np.abs(nda_a_norm - nda_b_norm),
-                    (nda_a_norm + nda_b_norm) / 2,
-                ],
-                axis=-1,
+            nda_colormix = generate_comparison_colormix(
+                [nda_original, nda_new],
+                arr_slice=s_cor,
+                window=window,
+                color_rotation=color_rotation,
             )
 
             ax_cor.imshow(
-                hsv2rgb(nda_colour),
+                nda_colormix,
                 origin="lower",
                 aspect=asp,
                 interpolation="none",
             )
 
-            nda_a = nda_original.__getitem__(s_sag)
-            nda_b = nda_new.__getitem__(s_sag)
-
-            nda_a_norm = (np.clip(nda_a, window[0], window[0] + window[1]) - window[0]) / (
-                window[1]
-            )
-            nda_b_norm = (np.clip(nda_b, window[0], window[0] + window[1]) - window[0]) / (
-                window[1]
-            )
-
-            nda_colour = np.stack(
-                [
-                    color_rotation * (nda_a_norm > nda_b_norm)
-                    + (0.5 + color_rotation) * (nda_a_norm <= nda_b_norm),
-                    np.abs(nda_a_norm - nda_b_norm),
-                    (nda_a_norm + nda_b_norm) / 2,
-                ],
-                axis=-1,
+            nda_colormix = generate_comparison_colormix(
+                [nda_original, nda_new],
+                arr_slice=s_sag,
+                window=window,
+                color_rotation=color_rotation,
             )
 
             ax_sag.imshow(
-                hsv2rgb(nda_colour),
+                nda_colormix,
                 origin="lower",
                 aspect=asp,
                 interpolation="none",
@@ -1080,30 +919,14 @@ class ImageVisualiser:
                 if not self.__cut:
                     self.__cut = int(ax_size / 2.0)
 
-            s = self.return_slice(self.__axis, self.__cut)
+            s = return_slice(self.__axis, self.__cut)
 
-            nda_a = nda_original.__getitem__(s)
-            nda_b = nda_new.__getitem__(s)
-
-            nda_a_norm = (np.clip(nda_a, window[0], window[0] + window[1]) - window[0]) / (
-                window[1]
-            )
-            nda_b_norm = (np.clip(nda_b, window[0], window[0] + window[1]) - window[0]) / (
-                window[1]
-            )
-
-            nda_colour = np.stack(
-                [
-                    color_rotation * (nda_a_norm > nda_b_norm)
-                    + (0.5 + color_rotation) * (nda_a_norm <= nda_b_norm),
-                    np.abs(nda_a_norm - nda_b_norm),
-                    (nda_a_norm + nda_b_norm) / 2,
-                ],
-                axis=-1,
+            nda_colormix = generate_comparison_colormix(
+                [nda_original, nda_new], arr_slice=s, window=window, color_rotation=color_rotation
             )
 
             ax.imshow(
-                hsv2rgb(nda_colour),
+                nda_colormix,
                 aspect=asp,
                 interpolation="none",
                 origin=org,
@@ -1256,7 +1079,7 @@ class ImageVisualiser:
 
         if self.__axis in ["x", "y", "z"]:
             ax = axes[0]
-            s = self.return_slice(self.__axis, self.__cut)
+            s = return_slice(self.__axis, self.__cut)
 
             for index, c_name in enumerate(plot_dict.keys()):
                 if not self.__projection:
@@ -1289,9 +1112,9 @@ class ImageVisualiser:
 
             ax = ax_ax
 
-            s_ax = self.return_slice("z", self.__cut[0])
-            s_cor = self.return_slice("y", self.__cut[1])
-            s_sag = self.return_slice("x", self.__cut[2])
+            s_ax = return_slice("z", self.__cut[0])
+            s_cor = return_slice("y", self.__cut[1])
+            s_sag = return_slice("x", self.__cut[2])
 
             for index, c_name in enumerate(plot_dict.keys()):
 
@@ -1391,6 +1214,11 @@ class ImageVisualiser:
             else:
                 colormap = scalar.colormap
 
+            if scalar.norm:
+                norm = scalar.norm
+            else:
+                norm = None
+
             # nda = nda / nda.max()
             nda = np.ma.masked_less_equal(nda, sMin)
 
@@ -1401,7 +1229,7 @@ class ImageVisualiser:
             axes = self.__figure.axes[:4]
             if len(axes) < 4:
                 ax = axes[0]
-                s = self.return_slice(self.__axis, self.__cut)
+                s = return_slice(self.__axis, self.__cut)
                 if self.__axis == "z":
                     org = {"normal": "upper", "reversed": "lower"}[self.__origin]
                 else:
@@ -1416,6 +1244,7 @@ class ImageVisualiser:
                     vmin=sMin,
                     vmax=sMax,
                     alpha=alpha,
+                    norm=norm,
                 )
 
                 if scalar.show_colorbar:
@@ -1443,9 +1272,9 @@ class ImageVisualiser:
             elif len(axes) == 4:
                 ax_ax, _, ax_cor, ax_sag = axes
 
-                sAx = self.return_slice("z", self.__cut[0])
-                sCor = self.return_slice("y", self.__cut[1])
-                sSag = self.return_slice("x", self.__cut[2])
+                sAx = return_slice("z", self.__cut[0])
+                sCor = return_slice("y", self.__cut[1])
+                sSag = return_slice("x", self.__cut[2])
 
                 ax_view = ax_ax.imshow(
                     nda.__getitem__(sAx),
@@ -1457,6 +1286,7 @@ class ImageVisualiser:
                     vmin=sMin,
                     vmax=sMax,
                     alpha=alpha,
+                    norm=norm,
                 )
 
                 cor_view = ax_cor.imshow(
@@ -1469,6 +1299,7 @@ class ImageVisualiser:
                     vmin=sMin,
                     vmax=sMax,
                     alpha=alpha,
+                    norm=norm,
                 )
 
                 sag_view = ax_sag.imshow(
@@ -1481,6 +1312,7 @@ class ImageVisualiser:
                     vmin=sMin,
                     vmax=sMax,
                     alpha=alpha,
+                    norm=norm,
                 )
 
                 if scalar.show_colorbar:
@@ -1567,14 +1399,14 @@ class ImageVisualiser:
                                       single axis. Behaviour undefined in this situation."
                     )
 
-                slicer = self.subsample_vector_field(self.__axis, self.__cut, subsample)
+                slicer = subsample_vector_field(self.__axis, self.__cut, subsample)
                 vector_nda_slice = vector_nda.__getitem__(slicer)
 
                 vector_ax = vector_nda_slice[:, :, 2].T
                 vector_cor = vector_nda_slice[:, :, 1].T
                 vector_sag = vector_nda_slice[:, :, 0].T
 
-                (vector_plot_x, vector_plot_y, vector_plot_z,) = self.reorientate_vector_field(
+                (vector_plot_x, vector_plot_y, vector_plot_z,) = reorientate_vector_field(
                     self.__axis,
                     vector_ax,
                     vector_cor,
@@ -1582,7 +1414,7 @@ class ImageVisualiser:
                     invert_field=invert_field,
                 )
 
-                plot_x_loc, plot_y_loc = self.vector_image_grid(self.__axis, vector_nda, subsample)
+                plot_x_loc, plot_y_loc = vector_image_grid(self.__axis, vector_nda, subsample)
 
                 if color_function == "perpendicular":
                     vector_color = vector_plot_z
@@ -1622,7 +1454,7 @@ class ImageVisualiser:
                     (ax_ax, ax_cor, ax_sag), ("z", "y", "x"), self.__cut
                 ):
 
-                    slicer = self.subsample_vector_field(im_axis, im_cut, subsample)
+                    slicer = subsample_vector_field(im_axis, im_cut, subsample)
                     vector_nda_slice = vector_nda.__getitem__(slicer)
 
                     vector_ax = vector_nda_slice[:, :, 2].T
@@ -1633,9 +1465,9 @@ class ImageVisualiser:
                         vector_plot_x,
                         vector_plot_y,
                         vector_plot_z,
-                    ) = self.reorientate_vector_field(im_axis, vector_ax, vector_cor, vector_sag)
+                    ) = reorientate_vector_field(im_axis, vector_ax, vector_cor, vector_sag)
 
-                    plot_x_loc, plot_y_loc = self.vector_image_grid(im_axis, vector_nda, subsample)
+                    plot_x_loc, plot_y_loc = vector_image_grid(im_axis, vector_nda, subsample)
 
                     if color_function == "perpendicular":
                         vector_color = vector_plot_z

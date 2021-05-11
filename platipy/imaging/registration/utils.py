@@ -214,11 +214,13 @@ def smooth_and_resample(
     """
     if smoothing_sigma:
         if hasattr(smoothing_sigma, "__iter__"):
-            smoothing_variance = (i * i for i in smoothing_sigma)
+            smoothing_variance = [i * i for i in smoothing_sigma]
         else:
             smoothing_variance = (smoothing_sigma ** 2,) * 3
 
-        maximum_kernel_width = int(max([8 * smoothing_variance * i for i in image.GetSpacing()]))
+        maximum_kernel_width = int(
+            max([8 * j * i for i, j in zip(image.GetSpacing(), smoothing_variance)])
+        )
 
         image = sitk.DiscreteGaussian(image, smoothing_variance, maximum_kernel_width)
 
@@ -244,9 +246,7 @@ def smooth_and_resample(
             new_size = [int(sz / float(shrink_factor) + 0.5) for sz in original_size]
 
     else:
-        raise AttributeError(
-            "Function must be called with one of isotropic_voxel_size_mm or shrink_factor."
-        )
+        return image
 
     new_spacing = [
         ((size_o_i - 1) * spacing_o_i) / (size_n_i - 1)

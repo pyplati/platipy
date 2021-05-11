@@ -162,7 +162,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     # Settings
     atlas_path = settings["atlas_settings"]["atlas_path"]
     atlas_id_list = settings["atlas_settings"]["atlas_id_list"]
-    atlas_structures = settings["atlas_settings"]["atlas_structures"]
+    atlas_structure_list = settings["atlas_settings"]["atlas_structure_list"]
 
     atlas_image_format = settings["atlas_settings"]["atlas_image_format"]
     atlas_label_format = settings["atlas_settings"]["atlas_label_format"]
@@ -179,7 +179,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
         structures = {
             struct: sitk.ReadImage(f"{atlas_path}/{atlas_label_format.format(atlas_id, struct)}")
-            for struct in atlas_structures
+            for struct in atlas_structure_list
         }
 
         if crop_atlas_to_structures:
@@ -197,14 +197,14 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
             logger.info(f"  > Volume reduced by factor {original_volume/final_volume:.2f}")
 
-            for struct in atlas_structures:
+            for struct in atlas_structure_list:
                 structures[struct] = crop_to_roi(
                     structures[struct], size=crop_box_size, index=crop_box_index
                 )
 
         atlas_set[atlas_id]["Original"]["CT Image"] = image
 
-        for struct in atlas_structures:
+        for struct in atlas_structure_list:
             atlas_set[atlas_id]["Original"][struct] = structures[struct]
 
     """
@@ -333,7 +333,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
         # sitk.WriteImage(rigid_image, f"./RR_{atlas_id}.nii.gz")
 
-        for struct in atlas_structures:
+        for struct in atlas_structure_list:
             input_struct = atlas_set[atlas_id]["Original"][struct]
             atlas_set[atlas_id]["RIR"][struct] = apply_transform(
                 input_image=input_struct,
@@ -380,7 +380,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
             # sitk.WriteImage(deform_image, f"./DIR_STRUCT_{atlas_id}.nii.gz")
 
-            for struct in atlas_structures:
+            for struct in atlas_structure_list:
                 input_struct = atlas_set[atlas_id]["RIR"][struct]
                 atlas_set[atlas_id]["DIR_STRUCT"][struct] = apply_transform(
                     input_image=input_struct,
@@ -432,7 +432,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
             interpolator=sitk.sitkLinear,
         )
 
-        for struct in atlas_structures:
+        for struct in atlas_structure_list:
             input_struct = atlas_set[atlas_id][label][struct]
             atlas_set[atlas_id]["DIR"][struct] = apply_transform(
                 input_image=input_struct,
@@ -494,7 +494,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         )
         atlas_set[atlas_id]["DIR"]["Weight Map"] = weight_map
 
-    combined_label_dict = combine_labels(atlas_set, atlas_structures)
+    combined_label_dict = combine_labels(atlas_set, atlas_structure_list)
 
     """
     Step 6 - Paste the cropped structure into the original image space

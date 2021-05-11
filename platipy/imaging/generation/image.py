@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import numpy as np
+import SimpleITK as sitk
 
 
 def insert_sphere(arr, sp_radius=4, sp_centre=(0, 0, 0)):
@@ -32,9 +33,39 @@ def insert_sphere(arr, sp_radius=4, sp_centre=(0, 0, 0)):
 
     x, y, z = np.indices(arr.shape)
 
+    if hasattr(sp_radius, "__iter__"):
+        sp_radius_x, sp_radius_y, sp_radius_z = sp_radius
+
     arr_copy[
-        (x - sp_centre[0]) ** 2 + (y - sp_centre[1]) ** 2 + (z - sp_centre[2]) ** 2
-        <= sp_radius ** 2
+        ((x - sp_centre[0]) / sp_radius_x) ** 2
+        + ((y - sp_centre[1]) / sp_radius_y) ** 2
+        + ((z - sp_centre[2]) / sp_radius_z) ** 2
+        <= 1
     ] = 1
 
     return arr_copy
+
+
+def insert_sphere_image(image, sp_radius, sp_centre):
+    """Insert a sphere into a blank image with the same size as image
+
+    Args:
+        image (sitk.Image): Image in which to insert sphere
+        sp_radius (int, optional): The radius of the sphere. Defaults to 4.
+        sp_centre (tuple, optional): The position at which the sphere should be inserted. Defaults
+                                     to (0, 0, 0).
+
+    Returns:
+        np.array: An array with the sphere inserted
+    """
+
+    sp_radius_image = [sp_radius * i for i in image.GetSpacing()]
+
+    arr = sitk.GetArrayFromImage(image)
+
+    arr = insert_sphere(arr, sp_radius_image, sp_centre)
+
+    image_sphere = sitk.GetImageFromArray(arr)
+    image_sphere.CopyInformation(image)
+
+    return image_sphere
