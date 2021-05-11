@@ -73,6 +73,63 @@ def conv_nd(ndims=2, **kwargs):
     raise NotImplementedError("Only 2 or 3 dimensions are supported")
 
 
+class ExponentialMovingAverage(torch.nn.Module):
+    """Maintains an exponential moving average for a value.
+    Note this module uses debiasing by default. If you don't want this please use
+    an alternative implementation.
+    This module keeps track of a hidden exponential moving average that is
+    initialized as a vector of zeros which is then normalized to give the average.
+    This gives us a moving average which isn't biased towards either zero or the
+    initial value. Reference (https://arxiv.org/pdf/1412.6980.pdf)
+    Initially:
+        hidden_0 = 0
+    Then iteratively:
+        hidden_i = (hidden_{i-1} - value) * (1 - decay)
+        average_i = hidden_i / (1 - decay^i)
+    Attributes:
+      average: Variable holding average. Note that this is None until the first
+        value is passed.
+    """
+
+    def __init__(self, decay):
+        """Creates a debiased moving average module.
+        Args:
+          decay: The decay to use. Note values close to 1 result in a slow decay
+            whereas values close to 0 result in faster decay, tracking the input
+            values more closely.
+          name: Name of the module.
+        """
+        super(ExponentialMovingAverage, self).__init__()
+
+        self._decay = decay
+        self._counter = torch.Tensor(0, requires_grad=False)
+
+        self._hidden = None
+        self._average = None
+
+    def forward(self, value):
+        """Applies EMA to the value given."""
+
+        # Initialise if not already
+        if self._hidden is None:
+            self._hidden = torch.Tensor(torch.zeros(value.shape), requires_grad=False)
+            self._average = torch.Tensor(torch.zeros(value.shape), requires_grad=False)
+
+        # self._counter.assign_add(1)
+        self._counter += 1
+        counter = self._counter.type(value.type())
+        self._hidden -= (self._hidden - value) * (1 - self._decay)
+        self._average = self._hidden / (1.0 - torch.pow(self._decay, counter))
+
+        return self._average
+
+    def reset(self):
+        """Resets the EMA."""
+        self._counter = torch.zeros(self._contour.shape)
+        self._hidden = torch.zeros(self._hidden.shape)
+        self._average = torch.zeros(self._average.shape)
+
+
 class ResBlock(torch.nn.Module):
     """A residual block"""
 
@@ -634,11 +691,9 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         else:
             self._loss_kwargs = loss_kwargs
 
-        # if self._loss_kwargs["type"] == "geco":
-        #     self._moving_average = ExponentialMovingAverage(
-        #         model=self, decay=self._loss_kwargs["decay"]
-        #     )
-        #     self._lagmul = geco_utils.LagrangeMultiplier(rate=self._loss_kwargs["rate"])
+        if self._loss_kwargs["type"] == "geco":
+            self._moving_average = ExponentialMovingAverage(decay=self._loss_kwargs["decay"])
+            self._lagmul = geco_utils.LagrangeMultiplier(rate=self._loss_kwargs["rate"])
 
         self._q_sample = None
         self._q_sample_mean = None
@@ -798,22 +853,21 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             loss = rec_loss["sum"] + self._loss_kwargs["beta"] * kl_sum
             summaries["elbo_loss"] = loss
 
-        # TODO Still need to implement geco
         # Set up a GECO objective (ELBO with a reconstruction constraint).
-        # elif self._loss_kwargs["type"] == "geco":
-        #     ma_rec_loss = self._moving_average(rec_loss["sum"])
-        #     mask_sum_per_instance = torch.sum(rec_loss["mask"], -1)
-        #     num_valid_pixels = torch.mean(mask_sum_per_instance)
-        #     reconstruction_threshold = self._loss_kwargs["kappa"] * num_valid_pixels
+        elif self._loss_kwargs["type"] == "geco":
+            ma_rec_loss = self._moving_average(rec_loss["sum"])
+            mask_sum_per_instance = torch.sum(rec_loss["mask"], -1)
+            num_valid_pixels = torch.mean(mask_sum_per_instance)
+            reconstruction_threshold = self._loss_kwargs["kappa"] * num_valid_pixels
 
-        #     rec_constraint = ma_rec_loss - reconstruction_threshold
-        #     lagmul = self._lagmul(rec_constraint)
-        #     loss = lagmul * rec_constraint + kl_sum
+            rec_constraint = ma_rec_loss - reconstruction_threshold
+            lagmul = self._lagmul(rec_constraint)
+            loss = lagmul * rec_constraint + kl_sum
 
-        #     summaries["geco_loss"] = loss
-        #     summaries["ma_rec_loss_mean"] = ma_rec_loss / num_valid_pixels
-        #     summaries["num_valid_pixels"] = num_valid_pixels
-        #     summaries["lagmul"] = lagmul
+            summaries["geco_loss"] = loss
+            summaries["ma_rec_loss_mean"] = ma_rec_loss / num_valid_pixels
+            summaries["num_valid_pixels"] = num_valid_pixels
+            summaries["lagmul"] = lagmul
         else:
             raise NotImplementedError(
                 "Loss type {} not implemeted!".format(self._loss_kwargs["type"])
