@@ -75,7 +75,6 @@ def test_cardiac_service(cardiac_data):
     with tempfile.TemporaryDirectory() as working_dir:
 
         working_path = Path(working_dir)
-        working_path = Path(".")
 
         # Save off data
         cases = list(cardiac_data.keys())
@@ -207,11 +206,9 @@ def test_cardiac_structure_guided_service(cardiac_data):
         auto_mask = output["WHOLEHEART"]
         gt_mask = sitk.Cast(cardiac_data[infer_case]["WHOLEHEART"], auto_mask.GetPixelID())
         label_overlap_filter.Execute(auto_mask, gt_mask)
-        print(label_overlap_filter.GetDiceCoefficient())
         assert label_overlap_filter.GetDiceCoefficient() > 0.9
 
         auto_mask = output["SUBSTRUCTURE"]
         gt_mask = sitk.Cast(cardiac_data[infer_case]["SUBSTRUCTURE"], auto_mask.GetPixelID())
         label_overlap_filter.Execute(auto_mask, gt_mask)
-        print(label_overlap_filter.GetDiceCoefficient())
         assert label_overlap_filter.GetDiceCoefficient() > 0.9

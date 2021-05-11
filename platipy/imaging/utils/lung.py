@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy as np
 import SimpleITK as sitk
 
 
 def detect_holes(img, lower_threshold=-10000, upper_threshold=-400):
     """
     Detect all (air) holes in given image. Default threshold values given are defined for CT.
+
+    Args:
+        img (sitk.Image): The image in which to detect holes.
+        lower_threshold (int, optional): The lower threshold of intensities. Defaults to -10000.
+        upper_threshold (int, optional): The upper threshold of intensities. Defaults to -400.
 
     Returns:
         label_image: image containing labels of all holes detected
@@ -35,7 +39,7 @@ def detect_holes(img, lower_threshold=-10000, upper_threshold=-400):
 
     # Get connected components
     ccif = sitk.ConnectedComponentImageFilter()
-    label_image = ccif.Execute(holes, False)
+    label_image = ccif.Execute(holes)
 
     labels = []
 
@@ -59,8 +63,15 @@ def detect_holes(img, lower_threshold=-10000, upper_threshold=-400):
 
 
 def get_external_mask(label_image, labels, kernel_radius=5):
-    """
-    Gets the external mask based on the label image and labels generated using detect_holes
+    """Get a External mask given a label image and labels computed with detect_holes
+
+    Args:
+        label_image (sitk.Image): Label image from detect_holes
+        labels (list): List of labels from detect_holes
+        kernel_radius (int, optional): The width of the radius used by binary close. Defaults to 5.
+
+    Returns:
+        sitk.Image: External mask
     """
 
     bmcif = sitk.BinaryMorphologicalClosingImageFilter()
@@ -75,6 +86,16 @@ def get_external_mask(label_image, labels, kernel_radius=5):
 
 
 def get_lung_mask(label_image, labels, kernel_radius=2):
+    """Get a Lung mask given a label image and labels computed with detect_holes
+
+    Args:
+        label_image (sitk.Image): Label image from detect_holes
+        labels (list): List of labels from detect_holes
+        kernel_radius (int, optional): The width of the radius used by binary close. Defaults to 2.
+
+    Returns:
+        sitk.Image: Lung mask
+    """
 
     lung_idx = 1
     while labels[lung_idx]["flatness"] > 2:
@@ -97,8 +118,20 @@ def get_lung_mask(label_image, labels, kernel_radius=2):
     return lung_mask
 
 
-def fill_holes(img, label_image, external_mask, lung_mask):
-    # Fill all other holes
+def fill_holes(img, label_image, external_mask, lung_mask, fill_value=50):
+    """Returns the input image with all holes filled (except for the external and lung holes).
+
+    Args:
+        img (sitk.Image): The image to fill
+        label_image (sitk.Image): Label image from detect_holes
+        external_mask (sitk.Image): The external mask of the patient.
+        lung_mask (sitk.Image): The lung mask of the patient.
+        fill_value (int): The value to use to fill the holes. Defaults to 50.
+
+    Returns:
+        sitk.Image: The image with holes filled
+    """
+
     img_array = sitk.GetArrayFromImage(img)
 
     bdif = sitk.BinaryDilateImageFilter()
@@ -111,7 +144,7 @@ def fill_holes(img, label_image, external_mask, lung_mask):
     mask = bdif.Execute(mask)
 
     mask_array = sitk.GetArrayFromImage(mask)
-    img_array[mask_array == 1] = 50
+    img_array[mask_array == 1] = fill_value
 
     filled_img = sitk.GetImageFromArray(img_array)
     filled_img.CopyInformation(img)
