@@ -1452,8 +1452,8 @@ class ImageVisualiser:
                     self.__figure.set_size_inches(fX * 1.15, fY)
                     self.__figure.subplots_adjust(left=0, right=0.88, bottom=0, top=1)
 
-            elif len(axes) == 4:
-                ax_ax, _, ax_cor, ax_sag = axes
+            elif len(axes) >= 4:
+                ax_ax, _, ax_cor, ax_sag = axes[:4]
 
                 for plot_axes, im_axis, im_cut in zip(
                     (ax_ax, ax_cor, ax_sag), ("z", "y", "x"), self.__cut
