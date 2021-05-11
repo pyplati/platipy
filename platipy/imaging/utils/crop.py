@@ -21,48 +21,6 @@ import numpy as np
 import SimpleITK as sitk
 
 
-def get_crop_bounding_box(img, mask):
-
-    label_shape_analysis = sitk.LabelShapeStatisticsImageFilter()
-    label_shape_analysis.Execute(mask)
-    mask_box = label_shape_analysis.GetBoundingBox(True)
-
-    sag_padding = 50
-    cor_padding = 50
-    ax_padding = 30
-    ax_extent = 250
-
-    phys_bb_origin = list(mask.TransformIndexToPhysicalPoint(mask_box[0:3]))
-    phys_bb_origin[0] -= sag_padding
-    phys_bb_origin[1] -= cor_padding
-    phys_bb_origin[2] -= ax_extent - ax_padding
-    bb_origin = img.TransformPhysicalPointToIndex(phys_bb_origin)
-
-    phys_bb_size = [0, 0, 0]
-    bb_size = [0, 0, 0]
-    for i in range(3):
-        phys_bb_size[i] = mask_box[3 + i] * mask.GetSpacing()[i]
-        if i == 0:
-            phys_bb_size[i] += sag_padding * 2
-        if i == 1:
-            phys_bb_size[i] += cor_padding * 2
-        if i == 2:
-            phys_bb_size[i] = ax_extent + ax_padding * 2
-        bb_size[i] = phys_bb_size[i] / mask.GetSpacing()[i]
-
-    bounding_box = bb_origin + tuple(bb_size)
-    bounding_box = [int(i) for i in bounding_box]
-
-    for i in range(3):
-        if bounding_box[i] < 0:
-            bounding_box[3 + i] = bounding_box[3 + i] + bounding_box[i]
-            bounding_box[i] = max(bounding_box[i], 0)
-
-        bounding_box[3 + i] = min(bounding_box[3 + i], img.GetSize()[i] - bounding_box[i])
-
-    return bounding_box
-
-
 def label_to_roi(label, expansion_mm=[0, 0, 0], return_as_list=False):
     """Generates a region of interest (ROI), defined by a starting index (z,y,x)
     and size (s_z, s_y, s_x). This can be used to crop images/labels.

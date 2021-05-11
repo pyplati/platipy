@@ -125,6 +125,10 @@ class VisualiseBoundingBox:
     """Class to represent the visualiation of a bounding box"""
 
     def __init__(self, bounding_box, name, color="r", linewidth=2):
+
+        if isinstance(bounding_box, sitk.Image):
+            bounding_box = label_to_roi(bounding_box, return_as_list=True)
+
         self.bounding_box = bounding_box
         self.name = name
         self.color = color
@@ -456,15 +460,18 @@ class ImageVisualiser:
         """Add a bounding box to draw.
 
         Args:
-            bounding_box (dict|list): Dictionary of bounding boxes where list key is the name of
-                                      the bounding box.
-            name (list, optional): [description]. Defaults to None.
+            bounding_box (dict|list|tuple|sitk.Image): Dictionary of bounding boxes where list key
+                                    is the name of the bounding box. If list or tuple then pass
+                                    bounding box in format (x, y, z, w, h, d). If sitk.Image then
+                                    mask is assumed and bounding box around this mask is used.
+            name (list, optional): Name of this bounding box if bounding_box is list, tuple or
+                                   sitk.Image. Defaults to None.
             color (str|tuple|list, optional): The color to use when drawing the bounding box(es).
                                               Defaults to None.
+            linewidth (int, optional): The line width of the bounding box(es). Defaults to 2.
 
         Raises:
-            ValueError: [description]
-            ValueError: [description]
+            ValueError: Raised if input is not a list or tuple of length 6 or and sitk.Image.
         """
 
         self.__show_legend = True
@@ -473,7 +480,7 @@ class ImageVisualiser:
 
             if not all(
                 map(
-                    lambda i: isinstance(i, (list, tuple)) and len(i) == 6,
+                    lambda i: isinstance(i, (list, tuple, sitk.Image)) and len(i) == 6,
                     bounding_box.values(),
                 )
             ):
@@ -485,7 +492,7 @@ class ImageVisualiser:
                 )
                 self.__bounding_boxes.append(visualise_bounding_box)
 
-        elif isinstance(bounding_box, (list, tuple)):
+        elif isinstance(bounding_box, (list, tuple, sitk.Image)):
 
             # Use a default name if not specified
             if name is None:
@@ -634,7 +641,10 @@ class ImageVisualiser:
         (ax_size, cor_size, sag_size) = nda.shape[:3]
 
         try:
-            logger.info("Found a (z,y,x,3) dimensional array - assuming this is an RGB image.")
+            logger.info(
+                f"Found a (z,y,x,{nda.shape[3]}) dimensional array - assuming this is an RGB"
+                "image."
+            )
             nda /= nda.max()
         except ValueError:
             logger.warning("Problem converting RGB image to np.ndarray.")
@@ -1146,7 +1156,7 @@ class ImageVisualiser:
             s_ax = return_slice("z", self.__cut[0])
             s_cor = return_slice("y", self.__cut[1])
             s_sag = return_slice("x", self.__cut[2])
-            
+
             for _, c_name in enumerate(plot_dict.keys()):
 
                 if not self.__projection:
@@ -1397,7 +1407,7 @@ class ImageVisualiser:
         if self.__projection and len(self.__vector_overlays) > 0:
             raise Warning("Vector overlay is not implemented in projection mode.")
 
-        for vector_index, vector in enumerate(self.__vector_overlays):
+        for _, vector in enumerate(self.__vector_overlays):
 
             image = vector.image
             colormap = vector.colormap
@@ -1573,11 +1583,9 @@ class ImageVisualiser:
 
                 if self.__axis == "z" or self.__axis == "ax":
                     ax.plot(
-
                         [sag_0, sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0],
                         [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0],
                         lw=linewidth,
-
                         c=color,
                         label=box.name,
                     )
@@ -1620,6 +1628,7 @@ class ImageVisualiser:
                 )
 
     def add_legend(self):
+        """Add a legend to the visualisation"""
 
         if len(self.__figure.axes) >= 4:
 
