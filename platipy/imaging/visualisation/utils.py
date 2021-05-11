@@ -144,40 +144,96 @@ def reorientate_vector_field(axis, vector_ax, vector_cor, vector_sag, invert_fie
 
 def generate_comparison_colormix(image_list, arr_slice=None, window=(-250, 500), color_rotation=0.35):
 
+    #! TO DO - make this function take in more than two images
+    # Will need to use polar coordinates for HSV colorspace addition
 
-    if all( (isinstance(image, sitk.Image), for image in image_list) ):
-        if any (image.GetDimension() >= 3), for image in image_list) ) and arr_slice==None:
-            raise ValueError("Images cannot be 3D unless 'arr_slice' is specified.")
-            
-        else:
-            array_list = [sitk.GetArrayViewFromImage(image).__getitem__(arr_slice) for image in image_list]
+    if len(image_list) == 2:
+        if all( (isinstance(image, sitk.Image), for image in image_list) ):
+            if any (image.GetDimension() >= 3), for image in image_list) ) and arr_slice==None:
+                raise ValueError("Images cannot be 3D unless 'arr_slice' is specified.")
+                
+            else:
+                array_list = [sitk.GetArrayViewFromImage(image).__getitem__(arr_slice) for image in image_list]
 
-    elif all ( (isinstance(image, np.ndarray), for image in image_list) ):
-        if any (len(image.shape) >= 3), for image in image_list) ) and arr_slice==None:
-            raise ValueError("Images cannot be 3D unless 'arr_slice' is specified.")
+        elif all ( (isinstance(image, np.ndarray), for image in image_list) ):
+            if any (len(image.shape) >= 3), for image in image_list) ) and arr_slice==None:
+                raise ValueError("Images cannot be 3D unless 'arr_slice' is specified.")
 
-        else:
-            array_list = [image.__getitem__(arr_slice) for image in image_list]
+            else:
+                array_list = [image.__getitem__(arr_slice) for image in image_list]
 
-            nda_a = nda_original.__getitem__(s_ax)
-            nda_b = nda_new.__getitem__(s_ax)
+    else:
+        raise ValueError("'image_list' must be a list of two sitk.Image or np.ndarray.")
 
-            nda_a_norm = (np.clip(nda_a, window[0], window[0] + window[1]) - window[0]) / (
-                window[1]
-            )
-            nda_b_norm = (np.clip(nda_b, window[0], window[0] + window[1]) - window[0]) / (
-                window[1]
-            )
 
-            nda_color = np.stack(
-                [
-                    color_rotation * (nda_a_norm > nda_b_norm)
-                    + (0.5 + color_rotation) * (nda_a_norm <= nda_b_norm),
-                    np.abs(nda_a_norm - nda_b_norm),
-                    (nda_a_norm + nda_b_norm) / 2,
-                ],
-                axis=-1,
-            )
+    nda_a, nda_b = image_list
 
-            ax_ax.imshow(
-                hsv2rgb(nda_color),
+    nda_a_norm = (np.clip(nda_a, window[0], window[0] + window[1]) - window[0]) / (
+        window[1]
+    )
+    nda_b_norm = (np.clip(nda_b, window[0], window[0] + window[1]) - window[0]) / (
+        window[1]
+    )
+
+    nda_color = np.stack(
+        [
+            color_rotation * (nda_a_norm > nda_b_norm)
+            + (0.5 + color_rotation) * (nda_a_norm <= nda_b_norm),
+            np.abs(nda_a_norm - nda_b_norm),
+            (nda_a_norm + nda_b_norm) / 2,
+        ],
+        axis=-1,
+    )
+
+    return hsv2rgb(nda_color)
+
+def project_onto_arbitrary_plane(
+    image,
+    projection_name="mean",
+    projection_axis=0,
+    rotation_axis=[1, 0, 0],
+    rotation_angle=0,
+    default_value=-1000,
+    resample_interpolation=2,
+):
+
+    projection_dict = {
+        "sum": sitk.SumProjection,
+        "mean": sitk.MeanProjection,
+        "median": sitk.MedianProjection,
+        "std": sitk.StandardDeviationProjection,
+        "min": sitk.MinimumProjection,
+        "max": sitk.MaximumProjection,
+    }
+    projection_function = projection_dict[projection_name]
+
+    # Set centre as image centre
+    rotation_centre = image.TransformContinuousIndexToPhysicalPoint(
+        [(index - 1) / 2.0 for index in image.GetSize()]
+    )
+
+    # Define the transform, using predefined centre of rotation and given angle
+    rotation_transform = sitk.VersorRigid3DTransform()
+    rotation_transform.SetCenter(rotation_centre)
+    rotation_transform.SetRotation(rotation_axis, rotation_angle)
+
+    # Resample the image using the rotation transform
+    resampled_image = sitk.Resample(
+        image,
+        rotation_transform,
+        resample_interpolation,
+        default_value,
+        image.GetPixelID(),
+    )
+
+    # Project onto the given axis
+    proj_image = projection_function(resampled_image, projection_axis)
+
+    # Return this view
+    image_slice = {
+        0: proj_image[0, :, :],
+        1: proj_image[:, 0, :],
+        2: proj_image[:, :, 0],
+    }
+
+    return image_slice[projection_axis]
