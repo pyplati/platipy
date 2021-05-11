@@ -12,17 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from matplotlib import rcParams
 from skimage.color import hsv2rgb
-from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
 
-import warnings
-
-
-import math
-import pathlib
 import numpy as np
 import SimpleITK as sitk
+
 
 def return_slice(axis, index):
     """Prepares a slice tuple to use for extracting a slice for rendering
@@ -44,41 +38,42 @@ def return_slice(axis, index):
 
     return None
 
+
 def subsample_vector_field(axis, cut, subsample=1):
-"""Prepares a slice tuple to use for extracting a slice for rendering
+    """Prepares a slice tuple to use for extracting a slice for rendering
 
-Args:
-    axis (str): One of "x", "y" or "z"
-    cut (int): The index of the image slice
-    subsample (int): the subsample factor
+    Args:
+        axis (str): One of "x", "y" or "z"
+        cut (int): The index of the image slice
+        subsample (int): the subsample factor
 
-Returns:
-    tuple: can be used to extract a vector field slice
-"""
-if hasattr(subsample, "__iter__"):
-    subsample_ax, subsample_cor, subsample_sag = subsample
-else:
-    subsample_ax, subsample_cor, subsample_sag = (subsample,) * 3
+    Returns:
+        tuple: can be used to extract a vector field slice
+    """
+    if hasattr(subsample, "__iter__"):
+        subsample_ax, subsample_cor, subsample_sag = subsample
+    else:
+        subsample_ax, subsample_cor, subsample_sag = (subsample,) * 3
 
-if axis == "x":
-    return (
-        slice(None, None, subsample_ax),
-        slice(None, None, subsample_cor),
-        cut,
-    )
-if axis == "y":
-    return (
-        slice(None, None, subsample_ax),
-        cut,
-        slice(None, None, subsample_sag),
-    )
-if axis == "z":
-    return (
-        cut,
-        slice(None, None, subsample_cor),
-        slice(None, None, subsample_sag),
-    )
-return None
+    if axis == "x":
+        return (
+            slice(None, None, subsample_ax),
+            slice(None, None, subsample_cor),
+            cut,
+        )
+    if axis == "y":
+        return (
+            slice(None, None, subsample_ax),
+            cut,
+            slice(None, None, subsample_sag),
+        )
+    if axis == "z":
+        return (
+            cut,
+            slice(None, None, subsample_cor),
+            slice(None, None, subsample_sag),
+        )
+    return None
 
 
 def vector_image_grid(axis, vector_field_array, subsample=1):
@@ -114,6 +109,7 @@ def vector_image_grid(axis, vector_field_array, subsample=1):
         ]
     return None
 
+
 def reorientate_vector_field(axis, vector_ax, vector_cor, vector_sag, invert_field=True):
     """Reorients vector field components for rendering
     This is necessary after converting from sitk.Image to np.array
@@ -142,21 +138,27 @@ def reorientate_vector_field(axis, vector_ax, vector_cor, vector_sag, invert_fie
 
     return None
 
-def generate_comparison_colormix(image_list, arr_slice=None, window=(-250, 500), color_rotation=0.35):
+
+def generate_comparison_colormix(
+    image_list, arr_slice=None, window=(-250, 500), color_rotation=0.35
+):
 
     #! TO DO - make this function take in more than two images
     # Will need to use polar coordinates for HSV colorspace addition
 
     if len(image_list) == 2:
-        if all( (isinstance(image, sitk.Image), for image in image_list) ):
-            if any (image.GetDimension() >= 3), for image in image_list) ) and arr_slice==None:
+        if all([isinstance(image, sitk.Image) for image in image_list]):
+            if any([image.GetDimension() >= 3 for image in image_list]) and arr_slice is None:
                 raise ValueError("Images cannot be 3D unless 'arr_slice' is specified.")
-                
-            else:
-                array_list = [sitk.GetArrayViewFromImage(image).__getitem__(arr_slice) for image in image_list]
 
-        elif all ( (isinstance(image, np.ndarray), for image in image_list) ):
-            if any (len(image.shape) >= 3), for image in image_list) ) and arr_slice==None:
+            else:
+                array_list = [
+                    sitk.GetArrayViewFromImage(image).__getitem__(arr_slice)
+                    for image in image_list
+                ]
+
+        elif all([isinstance(image, np.ndarray) for image in image_list]):
+            if any([len(image.shape) >= 3 for image in image_list]) and arr_slice is None:
                 raise ValueError("Images cannot be 3D unless 'arr_slice' is specified.")
 
             else:
@@ -165,15 +167,10 @@ def generate_comparison_colormix(image_list, arr_slice=None, window=(-250, 500),
     else:
         raise ValueError("'image_list' must be a list of two sitk.Image or np.ndarray.")
 
+    nda_a, nda_b = array_list
 
-    nda_a, nda_b = image_list
-
-    nda_a_norm = (np.clip(nda_a, window[0], window[0] + window[1]) - window[0]) / (
-        window[1]
-    )
-    nda_b_norm = (np.clip(nda_b, window[0], window[0] + window[1]) - window[0]) / (
-        window[1]
-    )
+    nda_a_norm = (np.clip(nda_a, window[0], window[0] + window[1]) - window[0]) / (window[1])
+    nda_b_norm = (np.clip(nda_b, window[0], window[0] + window[1]) - window[0]) / (window[1])
 
     nda_color = np.stack(
         [
@@ -186,6 +183,7 @@ def generate_comparison_colormix(image_list, arr_slice=None, window=(-250, 500),
     )
 
     return hsv2rgb(nda_color)
+
 
 def project_onto_arbitrary_plane(
     image,
