@@ -32,7 +32,7 @@ generate - need to look at this)
 
 import SimpleITK as sitk
 
-from platipy.imaging.utils.tools import detect_holes, get_lung_mask
+from platipy.imaging.utils.lung import detect_holes, get_lung_mask
 
 
 def fast_mask(img, start, end):

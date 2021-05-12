@@ -12,16 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import os
-import json
 import zipfile
 import tempfile
 import urllib
 from pathlib import Path
-
-import shutil
-import requests
 
 from loguru import logger
 
@@ -44,7 +38,9 @@ def download_and_extract_zip_file(zip_url, output_directory):
             zip_ref.extractall(output_directory)
 
 
-def get_lung_dicom(output_directory="./data"):
+def get_lung_dicom(output_directory="./data/dicom"):
+
+    output_directory = Path(output_directory)
 
     if output_directory.exists():
         logger.debug(f"Output directory exists, stopping. {output_directory}")
@@ -55,7 +51,8 @@ def get_lung_dicom(output_directory="./data"):
 
     return output_directory
 
-def get_lung_nifti(output_directory="./data"):
+
+def get_lung_nifti(output_directory="./data/nifti"):
 
     output_directory = Path(output_directory)
 
