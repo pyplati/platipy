@@ -102,7 +102,6 @@ class ExponentialMovingAverage(torch.nn.Module):
 
         self._decay = decay
 
-        self.register_buffer("_counter", torch.zeros(1, requires_grad=False))
         self._counter = 1
         self.register_buffer("_hidden", torch.zeros(1, requires_grad=False))
 
