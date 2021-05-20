@@ -212,10 +212,10 @@ class Constraint(torch.nn.Module):
                 ).mean(0)
             value = value + (self.avg_value.unsqueeze(0) - value).detach()
         if self.relation in {"ge", "eq"}:
-            loss = self.bound.to(value.device) * numel *  - value
+            loss = self.bound.to(value.device) * numel * -value
         elif self.relation == "le":
             loss = value - self.bound.to(value.device) * numel
-        return loss * self.multiplier
+        return {"updated_loss": loss * self.multiplier, "multiplier": self.multiplier}
 
 
 class ResBlock(torch.nn.Module):
@@ -954,13 +954,14 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             # rec_constraint = ma_rec_loss - reconstruction_threshold
             # lagmul = self._lagmul()
 
-            #loss = (rec_loss["sum"] + kl_sum) * self._rec_constraint(rec_loss["sum"], img[0,0,:].numel())
+            # loss = (rec_loss["sum"] + kl_sum) * self._rec_constraint(rec_loss["sum"], img[0,0,:].numel())
 
-            loss = self._rec_constraint(rec_loss["sum"], img[0,0,:].numel()) + kl_sum
+            rec_loss_weighted = self._rec_constraint(rec_loss["sum"], img[0, 0, :].numel())
+            loss = rec_loss_weighted["updated_loss"] + kl_sum
             summaries["geco_loss"] = loss
             # summaries["ma_rec_loss_mean"] = ma_rec_loss / num_valid_pixels
             # summaries["num_valid_pixels"] = num_valid_pixels
-            # summaries["lagmul"] = lagmul
+            summaries["lagmul"] = rec_loss_weighted["multiplier"]
         else:
             raise NotImplementedError(
                 "Loss type {} not implemeted!".format(self._loss_kwargs["type"])
