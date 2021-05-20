@@ -108,9 +108,9 @@ class ExponentialMovingAverage(torch.nn.Module):
 
     def forward(self, value):
         """Applies EMA to the value given."""
-        self._counter += 1
+        self._counter = self._counter + 1
         counter = self._counter.type(value.type())
-        self._hidden -= (self._hidden - value) * (1 - self._decay)
+        self._hidden = self._hidden - (self._hidden - value) * (1 - self._decay)
         self._average = self._hidden / (1.0 - torch.pow(self._decay, counter))
 
         return self._average
@@ -135,7 +135,7 @@ class LagrangeMultiplier(torch.nn.Module):
         lag_multiplier = self._softplus(self._lambda_var) ** 2
         lag_multiplier.retain_grad()
         if lag_multiplier.grad:
-            lag_multiplier.grad *= self._rate
+            lag_multiplier.grad = lag_multiplier.grad * self._rate
 
         return lag_multiplier
 
