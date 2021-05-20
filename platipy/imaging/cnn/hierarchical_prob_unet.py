@@ -103,9 +103,13 @@ class ExponentialMovingAverage(torch.nn.Module):
 
         self._decay = decay
         self._counter = torch.zeros(1, requires_grad=False)
+        self.register_buffer("moving_avg_counter", self._counter)
 
         self._hidden = torch.zeros(1, requires_grad=False)
+        self.register_buffer("moving_avg_hidden", self._hidden)
+
         self._average = torch.zeros(1, requires_grad=False)
+        self.register_buffer("moving_avg_average", self._average)
 
     def forward(self, value):
         """Applies EMA to the value given."""
@@ -128,7 +132,8 @@ class LagrangeMultiplier(torch.nn.Module):
         super(LagrangeMultiplier, self).__init__()
         self._rate = rate
         self._softplus = torch.nn.Softplus()
-        self._lambda_var = torch.ones(1, requires_grad=True)
+        self._lambda_var = torch.nn.Parameter(torch.ones(1, requires_grad=True))
+        self.register_parameter("lagrange_multiplier", self._lambda_var)
 
     def forward(self):
 
