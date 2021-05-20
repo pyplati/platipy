@@ -102,20 +102,13 @@ class ExponentialMovingAverage(torch.nn.Module):
         super(ExponentialMovingAverage, self).__init__()
 
         self._decay = decay
-        self._counter = torch.nn.Parameter(torch.zeros(1, requires_grad=False))
+        self._counter = torch.zeros(1, requires_grad=False)
 
-        self._hidden = None
-        self._average = None
+        self._hidden = torch.zeros(1, requires_grad=False)
+        self._average = torch.zeros(1, requires_grad=False)
 
     def forward(self, value):
         """Applies EMA to the value given."""
-
-        # Initialise if not already
-        if self._hidden is None:
-            self._hidden = torch.nn.Parameter(torch.zeros(value.shape, requires_grad=False))
-            self._average = torch.nn.Parameter(torch.zeros(value.shape, requires_grad=False))
-
-        # self._counter.assign_add(1)
         self._counter += 1
         counter = self._counter.type(value.type())
         self._hidden -= (self._hidden - value) * (1 - self._decay)
@@ -135,12 +128,9 @@ class LagrangeMultiplier(torch.nn.Module):
         super(LagrangeMultiplier, self).__init__()
         self._rate = rate
         self._softplus = torch.nn.Softplus()
-        self._lambda_var = None
+        self._lambda_var = torch.ones(1, requires_grad=True)
 
-    def forward(self, value):
-
-        if not self._lambda_var:
-            self._lambda_var = torch.nn.Parameter(torch.ones(value.shape, requires_grad=True))
+    def forward(self):
 
         lag_multiplier = self._softplus(self._lambda_var) ** 2
         lag_multiplier.retain_grad()
@@ -713,7 +703,6 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         if self._loss_kwargs["type"] == "geco":
             self._moving_average = ExponentialMovingAverage(decay=self._loss_kwargs["decay"])
-            self._moving_average.to()
             self._lagmul = LagrangeMultiplier(rate=self._loss_kwargs["rate"])
 
         self._q_sample = None
@@ -884,7 +873,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             reconstruction_threshold = self._loss_kwargs["kappa"] * num_valid_pixels
 
             rec_constraint = ma_rec_loss - reconstruction_threshold
-            lagmul = self._lagmul(rec_constraint)
+            lagmul = self._lagmul()
             loss = lagmul * rec_constraint + kl_sum
 
             summaries["geco_loss"] = loss
