@@ -137,6 +137,87 @@ class LagrangeMultiplier(torch.nn.Module):
         return lag_multiplier
 
 
+# From https://github.com/eelcovdw/pytorch-constrained-opt/blob/master/constraint.py
+class Constraint(torch.nn.Module):
+    def __init__(
+        self,
+        bound,
+        relation,
+        name=None,
+        multiplier_act=torch.nn.functional.softplus,
+        alpha=0.0,
+        start_val=0.0,
+    ):
+        """
+        Adds a constraint to a loss function by turning the loss into a lagrangian.
+        Alpha is used for a moving average as described in [1].
+        Note that this is similar as using an optimizer with momentum.
+        [1] Rezende, Danilo Jimenez, and Fabio Viola.
+            "Taming vaes." arXiv preprint arXiv:1810.00597 (2018).
+        Args:
+            bound: Constraint bound.
+            relation (str): relation of constraint,
+                using naming convention from operator module (eq, le, ge).
+                Defaults to 'ge'.
+            name (str, optional): Constraint name
+            multiplier_act (optional): When using inequality relations,
+                an activation function is used to force the multiplier to be positive.
+                I've experimented with ReLU, abs and softplus, softplus seems the most stable.
+                Defaults to F.softplus.
+            alpha (float, optional): alpha of moving average, as in [1].
+                If alpha=0, no moving average is used.
+            start_val (float, optional): Start value of multiplier. If an activation function
+                is used the true start value might be different, because this is pre-activation.
+        """
+        super().__init__()
+        self.name = name
+        if isinstance(bound, (int, float)):
+            self.bound = torch.Tensor([bound])
+        elif isinstance(bound, list):
+            self.bound = torch.Tensor(bound)
+        else:
+            self.bound = bound
+
+        if relation in {"ge", "le", "eq"}:
+            self.relation = relation
+        else:
+            raise ValueError("Unknown relation: {}".format(relation))
+
+        if self.relation == "eq" and multiplier_act is not None:
+            print(
+                "WARNING using an activation that maps to R+ with an equality \
+                 constraint turns it into an inequality constraint"
+            )
+
+        self._multiplier = torch.nn.Parameter(torch.full((len(self.bound),), start_val))
+        self._act = multiplier_act
+
+        self.alpha = alpha
+        self.avg_value = None
+
+    @property
+    def multiplier(self):
+        if self._act is not None:
+            return self._act(self._multiplier)
+        return self._multiplier
+
+    def forward(self, value):
+        # Apply moving average, defined in [1]
+        if self.alpha > 0:
+            if self.avg_value is None:
+                self.avg_value = value.detach().mean(0)
+            else:
+                self.avg_value = (
+                    self.avg_value * self.alpha + value.detach() * (1 - self.alpha)
+                ).mean(0)
+            value = value + (self.avg_value.unsqueeze(0) - value).detach()
+        if self.relation in {"ge", "eq"}:
+            loss = self.bound.to(value.device) - value
+        elif self.relation == "le":
+            loss = value - self.bound.to(value.device)
+        return loss * self.multiplier
+
+
 class ResBlock(torch.nn.Module):
     """A residual block"""
 
@@ -699,8 +780,9 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             self._loss_kwargs = loss_kwargs
 
         if self._loss_kwargs["type"] == "geco":
-            self._moving_average = ExponentialMovingAverage(decay=self._loss_kwargs["decay"])
-            self._lagmul = LagrangeMultiplier(rate=self._loss_kwargs["rate"])
+            # self._moving_average = ExponentialMovingAverage(decay=self._loss_kwargs["decay"])
+            # self._lagmul = LagrangeMultiplier(rate=self._loss_kwargs["rate"])
+            self._rec_constraint = Constraint(0.02, "le", alpha=0.5)  # rec_loss <= 0.02
 
         self._q_sample = None
         self._q_sample_mean = None
@@ -864,19 +946,20 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         # Set up a GECO objective (ELBO with a reconstruction constraint).
         elif self._loss_kwargs["type"] == "geco":
-            ma_rec_loss = self._moving_average(rec_loss["sum"])
-            mask_sum_per_instance = torch.sum(rec_loss["mask"], -1)
-            num_valid_pixels = torch.mean(mask_sum_per_instance)
-            reconstruction_threshold = self._loss_kwargs["kappa"] * num_valid_pixels
+            # ma_rec_loss = self._moving_average(rec_loss["sum"])
+            # mask_sum_per_instance = torch.sum(rec_loss["mask"], -1)
+            # num_valid_pixels = torch.mean(mask_sum_per_instance)
+            # reconstruction_threshold = self._loss_kwargs["kappa"] * num_valid_pixels
 
-            rec_constraint = ma_rec_loss - reconstruction_threshold
-            lagmul = self._lagmul()
-            loss = lagmul * rec_constraint + kl_sum
+            # rec_constraint = ma_rec_loss - reconstruction_threshold
+            # lagmul = self._lagmul()
+
+            loss = (rec_loss["sum"] + kl_sum) * self._rec_constraint(rec_loss["sum"])
 
             summaries["geco_loss"] = loss
-            summaries["ma_rec_loss_mean"] = ma_rec_loss / num_valid_pixels
-            summaries["num_valid_pixels"] = num_valid_pixels
-            summaries["lagmul"] = lagmul
+            # summaries["ma_rec_loss_mean"] = ma_rec_loss / num_valid_pixels
+            # summaries["num_valid_pixels"] = num_valid_pixels
+            # summaries["lagmul"] = lagmul
         else:
             raise NotImplementedError(
                 "Loss type {} not implemeted!".format(self._loss_kwargs["type"])
