@@ -140,7 +140,7 @@ class LagrangeMultiplier(torch.nn.Module):
     def forward(self, value):
 
         if not self._lambda_var:
-            self._lambda_var = torch.ones(value.shape, requires_grad=True)
+            self._lambda_var = torch.nn.Parameter(torch.ones(value.shape, requires_grad=True))
 
         lag_multiplier = self._softplus(self._lambda_var) ** 2
         lag_multiplier.retain_grad()
@@ -713,6 +713,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         if self._loss_kwargs["type"] == "geco":
             self._moving_average = ExponentialMovingAverage(decay=self._loss_kwargs["decay"])
+            self._moving_average.to()
             self._lagmul = LagrangeMultiplier(rate=self._loss_kwargs["rate"])
 
         self._q_sample = None
