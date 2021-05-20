@@ -97,19 +97,14 @@ class ExponentialMovingAverage(torch.nn.Module):
           decay: The decay to use. Note values close to 1 result in a slow decay
             whereas values close to 0 result in faster decay, tracking the input
             values more closely.
-          name: Name of the module.
         """
         super(ExponentialMovingAverage, self).__init__()
 
         self._decay = decay
-        self._counter = torch.zeros(1, requires_grad=False)
-        self.register_buffer("moving_avg_counter", self._counter)
 
-        self._hidden = torch.zeros(1, requires_grad=False)
-        self.register_buffer("moving_avg_hidden", self._hidden)
-
-        self._average = torch.zeros(1, requires_grad=False)
-        self.register_buffer("moving_avg_average", self._average)
+        self.register_buffer("_counter", torch.zeros(1, requires_grad=False))
+        self.register_buffer("_hidden", torch.zeros(1, requires_grad=False))
+        self.register_buffer("_average", torch.zeros(1, requires_grad=False))
 
     def forward(self, value):
         """Applies EMA to the value given."""
