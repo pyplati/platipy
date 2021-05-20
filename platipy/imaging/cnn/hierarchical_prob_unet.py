@@ -478,7 +478,7 @@ class _HierarchicalCore(torch.nn.Module):
             if z_q is not None:
                 z = z_q[level]
             elif mean[level]:
-                z = dist.base_dist.loc + (dist.base_dist.scale * std_devs_from_mean[level])
+                z = dist.mean + (dist.base_dist.stddev * std_devs_from_mean[level])
             else:
                 z = dist.sample()
 
