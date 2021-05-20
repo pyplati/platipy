@@ -102,16 +102,15 @@ class ExponentialMovingAverage(torch.nn.Module):
 
         self._decay = decay
 
-        self._counter = 1
+        self.register_buffer("_counter", torch.zeros(1, requires_grad=False))
         self.register_buffer("_hidden", torch.zeros(1, requires_grad=False))
 
     def forward(self, value):
         """Applies EMA to the value given."""
-
-        self._counter += self._counter
+        self._counter = self._counter + 1
+        counter = self._counter.type(value.type())
         self._hidden = self._hidden - (self._hidden - value) * (1 - self._decay)
-
-        return self._hidden / (1.0 - torch.pow(self._decay, self._counter))
+        return self._hidden / (1.0 - torch.pow(self._decay, counter))
 
     def reset(self):
         """Resets the EMA."""
