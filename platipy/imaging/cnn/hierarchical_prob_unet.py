@@ -102,7 +102,7 @@ class ExponentialMovingAverage(torch.nn.Module):
         super(ExponentialMovingAverage, self).__init__()
 
         self._decay = decay
-        self._counter = torch.zeros(1, requires_grad=False)
+        self._counter = torch.nn.Parameter(torch.zeros(1, requires_grad=False))
 
         self._hidden = None
         self._average = None
@@ -112,8 +112,8 @@ class ExponentialMovingAverage(torch.nn.Module):
 
         # Initialise if not already
         if self._hidden is None:
-            self._hidden = torch.zeros(value.shape, requires_grad=False)
-            self._average = torch.zeros(value.shape, requires_grad=False)
+            self._hidden = torch.nn.Parameter(torch.zeros(value.shape, requires_grad=False))
+            self._average = torch.nn.Parameter(torch.zeros(value.shape, requires_grad=False))
 
         # self._counter.assign_add(1)
         self._counter += 1
