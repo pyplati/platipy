@@ -35,7 +35,19 @@ fg = torch.ones(c.shape)
 bg = torch.zeros(c.shape)
 labels = torch.cat([fg, bg], axis=1)
 
-hpunet = HierarchicalProbabilisticUnet(channels_per_block=channels_per_block, latent_dims=[1])
+hpunet = HierarchicalProbabilisticUnet(
+    channels_per_block=channels_per_block,
+    latent_dims=[1],
+    loss_kwargs={
+        "type": "geco",
+        "top_k_percentage": 0.02,
+        "deterministic_top_k": False,
+        "kappa": 0.05,
+        "decay": 0.99,
+        "rate": 1e-2,
+        "beta": 5,
+    },
+)
 output = hpunet.sample(c)
 print(output.shape)
 output = hpunet.reconstruct(c, labels)

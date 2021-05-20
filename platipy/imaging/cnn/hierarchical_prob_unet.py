@@ -102,7 +102,7 @@ class ExponentialMovingAverage(torch.nn.Module):
         super(ExponentialMovingAverage, self).__init__()
 
         self._decay = decay
-        self._counter = torch.Tensor(0, requires_grad=False)
+        self._counter = torch.zeros(1, requires_grad=False)
 
         self._hidden = None
         self._average = None
@@ -112,8 +112,8 @@ class ExponentialMovingAverage(torch.nn.Module):
 
         # Initialise if not already
         if self._hidden is None:
-            self._hidden = torch.Tensor(torch.zeros(value.shape), requires_grad=False)
-            self._average = torch.Tensor(torch.zeros(value.shape), requires_grad=False)
+            self._hidden = torch.zeros(value.shape, requires_grad=False)
+            self._average = torch.zeros(value.shape, requires_grad=False)
 
         # self._counter.assign_add(1)
         self._counter += 1
@@ -128,6 +128,26 @@ class ExponentialMovingAverage(torch.nn.Module):
         self._counter = torch.zeros(self._contour.shape)
         self._hidden = torch.zeros(self._hidden.shape)
         self._average = torch.zeros(self._average.shape)
+
+
+class LagrangeMultiplier(torch.nn.Module):
+    def __init__(self, rate):
+        super(LagrangeMultiplier, self).__init__()
+        self._rate = rate
+        self._softplus = torch.nn.Softplus()
+        self._lambda_var = None
+
+    def forward(self, value):
+
+        if not self._lambda_var:
+            self._lambda_var = torch.ones(value.shape, requires_grad=True)
+
+        lag_multiplier = self._softplus(self._lambda_var) ** 2
+        lag_multiplier.retain_grad()
+        if lag_multiplier.grad:
+            lag_multiplier.grad *= self._rate
+
+        return lag_multiplier
 
 
 class ResBlock(torch.nn.Module):
@@ -693,7 +713,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         if self._loss_kwargs["type"] == "geco":
             self._moving_average = ExponentialMovingAverage(decay=self._loss_kwargs["decay"])
-            self._lagmul = geco_utils.LagrangeMultiplier(rate=self._loss_kwargs["rate"])
+            self._lagmul = LagrangeMultiplier(rate=self._loss_kwargs["rate"])
 
         self._q_sample = None
         self._q_sample_mean = None
@@ -821,7 +841,9 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         reconstruction_loss_sum = torch.sum(reconstruction_loss)
         reconstruction_loss_mean = torch.mean(reconstruction_loss)
 
-        return {"mean": reconstruction_loss_mean, "sum": reconstruction_loss_sum}
+        mask = torch.ones(torch.numel(img))
+
+        return {"mean": reconstruction_loss_mean, "sum": reconstruction_loss_sum, "mask": mask}
 
     def loss(self, img, seg):
         """The full training objective, either ELBO or GECO.
