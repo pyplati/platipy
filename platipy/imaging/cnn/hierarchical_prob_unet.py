@@ -73,151 +73,6 @@ def conv_nd(ndims=2, **kwargs):
     raise NotImplementedError("Only 2 or 3 dimensions are supported")
 
 
-class ExponentialMovingAverage(torch.nn.Module):
-    """Maintains an exponential moving average for a value.
-    Note this module uses debiasing by default. If you don't want this please use
-    an alternative implementation.
-    This module keeps track of a hidden exponential moving average that is
-    initialized as a vector of zeros which is then normalized to give the average.
-    This gives us a moving average which isn't biased towards either zero or the
-    initial value. Reference (https://arxiv.org/pdf/1412.6980.pdf)
-    Initially:
-        hidden_0 = 0
-    Then iteratively:
-        hidden_i = (hidden_{i-1} - value) * (1 - decay)
-        average_i = hidden_i / (1 - decay^i)
-    Attributes:
-      average: Variable holding average. Note that this is None until the first
-        value is passed.
-    """
-
-    def __init__(self, decay):
-        """Creates a debiased moving average module.
-        Args:
-          decay: The decay to use. Note values close to 1 result in a slow decay
-            whereas values close to 0 result in faster decay, tracking the input
-            values more closely.
-        """
-        super(ExponentialMovingAverage, self).__init__()
-
-        self._decay = decay
-
-        self.register_buffer("_counter", torch.zeros(1, requires_grad=False))
-        self.register_buffer("_hidden", torch.zeros(1, requires_grad=False))
-
-    def forward(self, value):
-        """Applies EMA to the value given."""
-        self._counter = self._counter + 1
-        counter = self._counter.type(value.type())
-        self._hidden = self._hidden - (self._hidden - value) * (1 - self._decay)
-        return self._hidden / (1.0 - torch.pow(self._decay, counter))
-
-    def reset(self):
-        """Resets the EMA."""
-        self._counter = torch.zeros(self._contour.shape)
-        self._hidden = torch.zeros(self._hidden.shape)
-        self._average = torch.zeros(self._average.shape)
-
-
-class LagrangeMultiplier(torch.nn.Module):
-    def __init__(self, rate):
-        super(LagrangeMultiplier, self).__init__()
-        self._rate = rate
-        self._softplus = torch.nn.Softplus()
-        self._lambda_var = torch.nn.Parameter(torch.ones(1, requires_grad=True))
-        self.register_parameter("lagrange_multiplier", self._lambda_var)
-
-    def forward(self):
-
-        lag_multiplier = self._softplus(self._lambda_var) ** 2
-        lag_multiplier.retain_grad()
-        if lag_multiplier.grad:
-            lag_multiplier.grad = lag_multiplier.grad * self._rate
-
-        return lag_multiplier
-
-
-# From https://github.com/eelcovdw/pytorch-constrained-opt/blob/master/constraint.py
-class Constraint(torch.nn.Module):
-    def __init__(
-        self,
-        bound,
-        relation,
-        name=None,
-        multiplier_act=torch.nn.functional.softplus,
-        alpha=0.0,
-        start_val=0.0,
-    ):
-        """
-        Adds a constraint to a loss function by turning the loss into a lagrangian.
-        Alpha is used for a moving average as described in [1].
-        Note that this is similar as using an optimizer with momentum.
-        [1] Rezende, Danilo Jimenez, and Fabio Viola.
-            "Taming vaes." arXiv preprint arXiv:1810.00597 (2018).
-        Args:
-            bound: Constraint bound.
-            relation (str): relation of constraint,
-                using naming convention from operator module (eq, le, ge).
-                Defaults to 'ge'.
-            name (str, optional): Constraint name
-            multiplier_act (optional): When using inequality relations,
-                an activation function is used to force the multiplier to be positive.
-                I've experimented with ReLU, abs and softplus, softplus seems the most stable.
-                Defaults to F.softplus.
-            alpha (float, optional): alpha of moving average, as in [1].
-                If alpha=0, no moving average is used.
-            start_val (float, optional): Start value of multiplier. If an activation function
-                is used the true start value might be different, because this is pre-activation.
-        """
-        super().__init__()
-        self.name = name
-        if isinstance(bound, (int, float)):
-            self.bound = torch.Tensor([bound])
-        elif isinstance(bound, list):
-            self.bound = torch.Tensor(bound)
-        else:
-            self.bound = bound
-
-        if relation in {"ge", "le", "eq"}:
-            self.relation = relation
-        else:
-            raise ValueError("Unknown relation: {}".format(relation))
-
-        if self.relation == "eq" and multiplier_act is not None:
-            print(
-                "WARNING using an activation that maps to R+ with an equality \
-                 constraint turns it into an inequality constraint"
-            )
-
-        self._multiplier = torch.nn.Parameter(torch.full((len(self.bound),), start_val))
-        self._act = multiplier_act
-
-        self.alpha = alpha
-        self.avg_value = None
-
-    @property
-    def multiplier(self):
-        if self._act is not None:
-            return self._act(self._multiplier)
-        return self._multiplier
-
-    def forward(self, value, numel):
-        # Apply moving average, defined in [1]
-        if self.alpha > 0:
-            if self.avg_value is None:
-                self.avg_value = value.detach().mean(0)
-            else:
-                self.avg_value = (
-                    self.avg_value * self.alpha + value.detach() * (1 - self.alpha)
-                ).mean(0)
-            value = value + (self.avg_value.unsqueeze(0) - value).detach()
-        if self.relation in {"ge", "eq"}:
-            loss = self.bound.to(value.device) * numel * -value
-        elif self.relation == "le":
-            loss = value - self.bound.to(value.device) * numel
-        return {"updated_loss": loss * self.multiplier, "multiplier": self.multiplier}
-
-
 class ResBlock(torch.nn.Module):
     """A residual block"""
 
@@ -781,8 +636,9 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         if self._loss_kwargs["type"] == "geco":
             # self._moving_average = ExponentialMovingAverage(decay=self._loss_kwargs["decay"])
-            # self._lagmul = LagrangeMultiplier(rate=self._loss_kwargs["rate"])
-            self._rec_constraint = Constraint(0.02, "le", alpha=0.5)  # rec_loss <= 0.02
+            # self._geco_loss = GECOLoss(target_ratio, alpha=0.5)
+            self._ema = None
+            self.register_buffer("_multiplier", torch.zeros(1, requires_grad=False))
 
         self._q_sample = None
         self._q_sample_mean = None
@@ -947,21 +803,29 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         # Set up a GECO objective (ELBO with a reconstruction constraint).
         elif self._loss_kwargs["type"] == "geco":
             # ma_rec_loss = self._moving_average(rec_loss["sum"])
-            # mask_sum_per_instance = torch.sum(rec_loss["mask"], -1)
-            # num_valid_pixels = torch.mean(mask_sum_per_instance)
-            # reconstruction_threshold = self._loss_kwargs["kappa"] * num_valid_pixels
+            if self._ema is None:
+                self._ema = rec_loss["sum"].detach().mean(0)
+            else:
+                alpha = self._loss_kwargs["alpha"]
+                self._ema = (self._ema * alpha + rec_loss["sum"].detach() * (1 - alpha)).mean(0)
 
-            # rec_constraint = ma_rec_loss - reconstruction_threshold
-            # lagmul = self._lagmul()
+            mask_sum_per_instance = torch.sum(rec_loss["mask"], -1)
+            num_valid_pixels = torch.mean(mask_sum_per_instance)
+            reconstruction_threshold = self._loss_kwargs["kappa"] * num_valid_pixels
+            rec_constraint = self._ema - reconstruction_threshold
 
-            # loss = (rec_loss["sum"] + kl_sum) * self._rec_constraint(rec_loss["sum"], img[0,0,:].numel())
+            speed = 1
+            if rec_constraint > 0:
+                speed = 2
+            self._multiplier = (torch.exp(speed * rec_constraint) * self._multiplier).clamp(
+                1e-5, 1e5
+            )
+            loss = rec_loss["sum"] * self._multiplier + self._loss_kwargs["beta"] * kl_sum
 
-            rec_loss_weighted = self._rec_constraint(rec_loss["sum"], img[0, 0, :].numel())
-            loss = rec_loss_weighted["updated_loss"] + kl_sum
             summaries["geco_loss"] = loss
             # summaries["ma_rec_loss_mean"] = ma_rec_loss / num_valid_pixels
-            # summaries["num_valid_pixels"] = num_valid_pixels
-            summaries["lagmul"] = rec_loss_weighted["multiplier"]
+            summaries["num_valid_pixels"] = num_valid_pixels
+            summaries["lagmul"] = self._multiplier
         else:
             raise NotImplementedError(
                 "Loss type {} not implemeted!".format(self._loss_kwargs["type"])
