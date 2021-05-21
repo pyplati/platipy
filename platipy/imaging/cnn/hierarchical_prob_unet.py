@@ -954,8 +954,9 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             # rec_constraint = ma_rec_loss - reconstruction_threshold
             # lagmul = self._lagmul()
 
-            loss = (rec_loss["sum"] + kl_sum) * self._rec_constraint(rec_loss["sum"], seg.numel())
+            #loss = (rec_loss["sum"] + kl_sum) * self._rec_constraint(rec_loss["sum"], img[0,0,:].numel())
 
+            loss = self._rec_constraint(rec_loss["sum"], img[0,0,:].numel()) + kl_sum
             summaries["geco_loss"] = loss
             # summaries["ma_rec_loss_mean"] = ma_rec_loss / num_valid_pixels
             # summaries["num_valid_pixels"] = num_valid_pixels
