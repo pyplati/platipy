@@ -813,13 +813,10 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             num_valid_pixels = torch.mean(mask_sum_per_instance)
             reconstruction_threshold = self._loss_kwargs["kappa"] * num_valid_pixels
             rec_constraint = self._ema - reconstruction_threshold
-
             speed = 1
             if rec_constraint > 0:
                 speed = 2
-            self._multiplier = (torch.exp(speed * rec_constraint) * self._multiplier).clamp(
-                1e-5, 1e5
-            )
+            self._multiplier = (speed * rec_constraint * self._multiplier).clamp(1e-5, 1e5)
             loss = rec_loss["sum"] * self._multiplier + self._loss_kwargs["beta"] * kl_sum
 
             summaries["geco_loss"] = loss
