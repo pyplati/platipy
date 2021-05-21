@@ -806,8 +806,8 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             if self._ema is None:
                 self._ema = rec_loss["sum"].detach().mean(0)
             else:
-                alpha = self._loss_kwargs["alpha"]
-                self._ema = (self._ema * alpha + rec_loss["sum"].detach() * (1 - alpha)).mean(0)
+                # alpha = self._loss_kwargs["alpha"]
+                self._ema = (self._ema * 0.5 + rec_loss["sum"].detach() * (1 - 0.5)).mean(0)
 
             mask_sum_per_instance = torch.sum(rec_loss["mask"], -1)
             num_valid_pixels = torch.mean(mask_sum_per_instance)
