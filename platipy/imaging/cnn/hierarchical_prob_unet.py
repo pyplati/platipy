@@ -201,7 +201,7 @@ class Constraint(torch.nn.Module):
             return self._act(self._multiplier)
         return self._multiplier
 
-    def forward(self, value):
+    def forward(self, value, numel):
         # Apply moving average, defined in [1]
         if self.alpha > 0:
             if self.avg_value is None:
@@ -212,9 +212,9 @@ class Constraint(torch.nn.Module):
                 ).mean(0)
             value = value + (self.avg_value.unsqueeze(0) - value).detach()
         if self.relation in {"ge", "eq"}:
-            loss = self.bound.to(value.device) - value
+            loss = self.bound.to(value.device) * numel *  - value
         elif self.relation == "le":
-            loss = value - self.bound.to(value.device)
+            loss = value - self.bound.to(value.device) * numel
         return loss * self.multiplier
 
 
@@ -954,7 +954,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             # rec_constraint = ma_rec_loss - reconstruction_threshold
             # lagmul = self._lagmul()
 
-            loss = (rec_loss["sum"] + kl_sum) * self._rec_constraint(rec_loss["sum"])
+            loss = (rec_loss["sum"] + kl_sum) * self._rec_constraint(rec_loss["sum"], seg.numel())
 
             summaries["geco_loss"] = loss
             # summaries["ma_rec_loss_mean"] = ma_rec_loss / num_valid_pixels
