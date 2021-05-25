@@ -39,9 +39,9 @@ def insert_sphere(arr, sp_radius=4, sp_centre=(0, 0, 0)):
     sp_radius_x, sp_radius_y, sp_radius_z = sp_radius
 
     arr_copy[
-        ((x - sp_centre[0]) / sp_radius_x) ** 2
-        + ((y - sp_centre[1]) / sp_radius_y) ** 2
-        + ((z - sp_centre[2]) / sp_radius_z) ** 2
+        ((x - sp_centre[0]) / sp_radius_x) ** 2.0
+        + ((y - sp_centre[1]) / sp_radius_y) ** 2.0
+        + ((z - sp_centre[2]) / sp_radius_z) ** 2.0
         <= 1
     ] = 1
 
@@ -53,7 +53,7 @@ def insert_sphere_image(image, sp_radius, sp_centre):
 
     Args:
         image (sitk.Image): Image in which to insert sphere
-        sp_radius (int, optional): The radius of the sphere. Defaults to 4.
+        sp_radius (int | list, optional): The radius of the sphere. Can also be defined as a vector. Defaults to 4.
         sp_centre (tuple, optional): The position at which the sphere should be inserted. Defaults
                                      to (0, 0, 0).
 
@@ -61,7 +61,10 @@ def insert_sphere_image(image, sp_radius, sp_centre):
         np.array: An array with the sphere inserted
     """
 
-    sp_radius_image = [sp_radius * i for i in image.GetSpacing()]
+    if not hasattr(sp_radius, "__iter__"):
+        sp_radius = [sp_radius] * 3
+
+    sp_radius_image = [i / j for i, j in zip(sp_radius, image.GetSpacing()[::-1])]
 
     arr = sitk.GetArrayFromImage(image)
 

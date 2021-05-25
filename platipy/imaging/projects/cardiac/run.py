@@ -118,6 +118,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "stop_condition_value_dict": {"LANTDESCARTERY_SPLINE": 1},
     },
     "return_as_cropped": False,
+    "return_additional_probability_dict": True,
 }
 
 
@@ -135,6 +136,10 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
     results = {}
     return_as_cropped = settings["return_as_cropped"]
+    return_additional_probability_dict = settings["return_additional_probability_dict"]
+
+    if return_additional_probability_dict:
+        results_prob = {}
 
     """
     Initialisation - Read in atlases
@@ -269,12 +274,12 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
         img_crop = crop_to_roi(img, crop_box_size, crop_box_index)
 
-        logger.info(
-            f"Calculated crop box\n\
-                    {crop_box_index}\n\
-                    {crop_box_size}\n\n\
-                    Volume reduced by factor {np.product(img.GetSize())/np.product(crop_box_size)}"
-        )
+    logger.info(
+        f"Calculated crop box\n\
+                {crop_box_index}\n\
+                {crop_box_size}\n\n\
+                Volume reduced by factor {np.product(img.GetSize())/np.product(crop_box_size)}"
+    )
 
     """
     Step 2 - Rigid registration of target images
@@ -501,6 +506,8 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     """
 
     template_img_binary = sitk.Cast((img * 0), sitk.sitkUInt8)
+    if return_additional_probability_dict:
+        template_img_prob = sitk.Cast((img * 0), sitk.sitkFloat64)
 
     vote_structures = settings["label_fusion_settings"]["optimal_threshold"].keys()
 
@@ -515,22 +522,8 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         if return_as_cropped:
             results[structure_name] = binary_struct
 
-        else:
-            paste_binary_img = sitk.Paste(
-                template_img_binary,
-                binary_struct,
-                binary_struct.GetSize(),
-                (0, 0, 0),
-                crop_box_index,
-            )
-
-            results[structure_name] = paste_binary_img
-
-    for structure_name in vessel_spline_settings["vessel_name_list"]:
-        binary_struct = segmented_vessel_dict[structure_name]
-
-        if return_as_cropped:
-            results[structure_name] = binary_struct
+            if return_additional_probability_dict:
+                results_prob[structure_name] = probability_map
 
         else:
             paste_img_binary = sitk.Paste(
@@ -543,7 +536,57 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
             results[structure_name] = paste_img_binary
 
+            if return_additional_probability_dict:
+                paste_prob_img = sitk.Paste(
+                    template_img_prob,
+                    probability_map,
+                    probability_map.GetSize(),
+                    (0, 0, 0),
+                    crop_box_index,
+                )
+                results_prob[structure_name] = paste_prob_img
+
+    for structure_name in vessel_spline_settings["vessel_name_list"]:
+        binary_struct = segmented_vessel_dict[structure_name]
+
+        if return_as_cropped:
+            results[structure_name] = binary_struct
+
+            if return_additional_probability_dict:
+                results_prob[structure_name] = [
+                    atlas_set[atlas_id]["DIR"][structure_name]
+                    for atlas_id in list(atlas_set.keys())
+                ]
+
+        else:
+            paste_img_binary = sitk.Paste(
+                template_img_binary,
+                binary_struct,
+                binary_struct.GetSize(),
+                (0, 0, 0),
+                crop_box_index,
+            )
+
+            results[structure_name] = paste_img_binary
+
+            if return_additional_probability_dict:
+                vessel_list = []
+                for atlas_id in list(atlas_set.keys()):
+                    paste_img_binary = sitk.Paste(
+                        template_img_binary,
+                        atlas_set[atlas_id]["DIR"][structure_name],
+                        atlas_set[atlas_id]["DIR"][structure_name].GetSize(),
+                        (0, 0, 0),
+                        crop_box_index,
+                    )
+                    vessel_list.append(paste_img_binary)
+
+                results_prob[structure_name] = vessel_list
+
     if return_as_cropped:
         results["CROP_IMAGE"] = img_crop
+
+    if return_additional_probability_dict:
+        return results, results_prob
 
     return results

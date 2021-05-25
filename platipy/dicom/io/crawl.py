@@ -667,7 +667,7 @@ def write_output_data_to_disk(
             # This will depend on the name format chosen
             # If there is a list, we append an index as we write to disk
 
-            if hasattr(field_list, "__iter__"):
+            if isinstance(field_list, (tuple, list)):
                 # Iterate
                 for suffix, file_to_write in enumerate(field_list):
                     field_filename = field_filename_base + f"_{suffix}"
@@ -680,10 +680,6 @@ def write_output_data_to_disk(
                         field_filename = field_filename[:-1]
 
                     # Save image!
-                    """
-                    ! TO DO
-                    Use pathlib, and perform some checks so we don"t overwrite anything!
-                    """
                     output_name = (
                         pathlib.Path(output_directory)
                         / parent_sorting_data
@@ -882,7 +878,9 @@ def process_dicom_directory(
                     try:
                         study_uid_index = max(study_uid_dict.values()) + 1
                     except AttributeError:
-                        study_uid_index = 0
+                        study_uid_index = 0  # Study UID dict might not exist
+                    except ValueError:
+                        study_uid_index = 0  # Study UID dict might be empty
 
                     logger.info(f"  Setting study instance UID index: {study_uid_index}")
 

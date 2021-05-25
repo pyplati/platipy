@@ -220,7 +220,7 @@ def run_iar(
 
             z_ideal = gaussian_curve(bin_centers, *popt)
             z_diff = np.abs(z_density - z_ideal)
-        except RuntimeError:
+        except (RuntimeError, ValueError):
             logger.debug("IAR couldnt fit curve, estimating with sampled statistics.")
             z_ideal = gaussian_curve(bin_centers, a=1, m=z_density.mean(), s=z_density.std())
             z_diff = np.abs(z_density - z_ideal)
