@@ -52,14 +52,6 @@ platipy.cli.segmentation module
    :undoc-members:
    :show-inheritance:
 
-platipy.cli.sort\_dicom\_from\_directory module
------------------------------------------------
-
-.. automodule:: platipy.cli.sort_dicom_from_directory
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 platipy.cli.tcia\_download module
 ---------------------------------
 

@@ -17,6 +17,99 @@ from skimage.color import hsv2rgb
 import numpy as np
 import SimpleITK as sitk
 
+import matplotlib.pyplot as plt
+
+from platipy.imaging.utils.crop import label_to_roi
+
+
+class VisualiseContour:
+    """Class to represent the visualiation of a contour"""
+
+    def __init__(self, image, name, color=None, linewidth=2):
+        self.image = image
+        self.name = name
+        self.color = color
+        self.linewidth = linewidth
+
+
+class VisualiseScalarOverlay:
+    """Class to represent the visualiation of a scalar overlay"""
+
+    def __init__(
+        self,
+        image,
+        name,
+        colormap=plt.cm.get_cmap("Spectral"),
+        alpha=0.75,
+        min_value=False,
+        max_value=False,
+        discrete_levels=False,
+        mid_ticks=False,
+        show_colorbar=True,
+        norm=None,
+    ):
+        self.image = image
+        self.name = name
+        self.colormap = colormap
+        self.alpha = alpha
+        self.min_value = min_value
+        self.max_value = max_value
+        self.discrete_levels = discrete_levels
+        self.mid_ticks = mid_ticks
+        self.show_colorbar = show_colorbar
+        self.norm = norm
+
+
+class VisualiseVectorOverlay:
+    """Class to represent the visualiation of a vector overlay"""
+
+    def __init__(
+        self,
+        image,
+        name,
+        colormap=plt.cm.get_cmap("Spectral"),
+        alpha=0.75,
+        arrow_scale=0.25,
+        arrow_width=1,
+        subsample=4,
+        color_function="perpendicular",
+        invert_field=True,
+        show_colorbar=True,
+    ):
+        self.image = image
+        self.name = name
+        self.colormap = colormap
+        self.alpha = alpha
+        self.arrow_scale = arrow_scale
+        self.arrow_width = arrow_width
+        self.subsample = subsample
+        self.color_function = color_function
+        self.invert_field = invert_field
+        self.show_colorbar = show_colorbar
+
+
+class VisualiseComparisonOverlay:
+    """Class to represent the visualiation of a comparison image"""
+
+    def __init__(self, image, name, color_rotation=0.35):
+        self.image = image
+        self.name = name
+        self.color_rotation = color_rotation
+
+
+class VisualiseBoundingBox:
+    """Class to represent the visualiation of a bounding box"""
+
+    def __init__(self, bounding_box, name, color="r", linewidth=2):
+
+        if isinstance(bounding_box, sitk.Image):
+            bounding_box = label_to_roi(bounding_box, return_as_list=True)
+
+        self.bounding_box = bounding_box
+        self.name = name
+        self.color = color
+        self.linewidth = linewidth
+
 
 def return_slice(axis, index):
     """Prepares a slice tuple to use for extracting a slice for rendering

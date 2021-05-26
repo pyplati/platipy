@@ -1,169 +1,159 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
 
-
-<!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>platipy.backend package &mdash; PlatiPy  documentation</title>
-  
-
-  
-  
-
-  
-
-  
-  
+    <meta name="generator" content="sphinx-3.0.3, furo 2021.04.11.beta34"/>
+        <title>platipy.backend package - PlatiPy documentation</title>
+      <link rel="stylesheet" href="../_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
+    <link rel="stylesheet" href="../_static/pygments.css">
+    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="../_static/pygments_dark.css">
     
 
+
+<style>
+  :root {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
   
-
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
+    }
+  }
+
+  /* For allowing end-user-specific overrides */
+  .override-light {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
   
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  }
+  .override-dark {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="PlatiPy  documentation" href="../index.html"/> 
-
-  
-  <script src="../_static/js/modernizr.min.js"></script>
-
-</head>
-
-<body class="wy-body-for-nav" role="document">
-
-   
-  <div class="wy-grid-for-nav">
-
+  }
+</style><link rel="stylesheet" href="../_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
+  <body dir="">
     
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z"/>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="20" y2="12" />
+      <line x1="6" y1="18" x2="20" y2="18" />
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+</svg>
 
-          
-            <a href="../index.html" class="icon icon-home"> PlatiPy
-          
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
 
-          
-          </a>
 
-          
-            
-            
-          
 
-          
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-                <p class="caption"><span class="caption-text">Contents:</span></p>
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">PlatiPy  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  
+  <span class="sidebar-brand-text">PlatiPy  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html">
+  <input class="sidebar-search" placeholder=Search name="q">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p><span class="caption-text">Introduction</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">PlatiPy documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+</ul>
+<p><span class="caption-text">Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../visualiser.html">Image Visualiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registration.html">Registration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Tools</a></li>
+</ul>
+<p><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_examples/visualise.html">Visualise Images</a></li>
 </ul>
 
-            
-          
-        </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">PlatiPy</a>
-        
-      </nav>
-
-
-      
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
-  <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html">Docs</a> &raquo;</li>
-        
-      <li>platipy.backend package</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
-        
-            
-            <a href="../_sources/gen/platipy.backend.rst.txt" rel="nofollow"> View page source</a>
-          
-        
-      </li>
-    
-  </ul>
-
-  
-  <hr/>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-            
-  <div class="section" id="platipy-backend-package">
+</div>
+      </div>
+      
+    </div>
+  </aside>
+  <main class="main">
+    <div class="content">
+      <article role="main">
+        <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        </label>
+        <section id="platipy-backend-package">
 <h1>platipy.backend package<a class="headerlink" href="#platipy-backend-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="subpackages">
+<section id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="platipy.backend.sample.html">platipy.backend.sample package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="platipy.backend.sample.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="platipy.backend.sample.html#module-platipy.backend.sample.sample">platipy.backend.sample.sample module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="platipy.backend.sample.html#platipy-backend-sample-sample-module">platipy.backend.sample.sample module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="platipy.backend.sample.html#module-platipy.backend.sample">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </div>
-</div>
-<div class="section" id="submodules">
+</section>
+<section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="module-platipy.backend.api">
+</section>
+<section id="module-platipy.backend.api">
 <span id="platipy-backend-api-module"></span><h2>platipy.backend.api module<a class="headerlink" href="#module-platipy.backend.api" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="platipy.backend.api.AlgorithmEndpoint">
@@ -173,24 +163,19 @@
 <dt id="platipy.backend.api.AlgorithmEndpoint.endpoint">
 <code class="sig-name descname">endpoint</code><em class="property"> = 'algorithmendpoint'</em><a class="headerlink" href="#platipy.backend.api.AlgorithmEndpoint.endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.AlgorithmEndpoint.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.AlgorithmEndpoint.get" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.AlgorithmEndpoint.mediatypes">
 <code class="sig-name descname">mediatypes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.AlgorithmEndpoint.mediatypes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.AlgorithmEndpoint.methods">
 <code class="sig-name descname">methods</code><em class="property"> = {'GET'}</em><a class="headerlink" href="#platipy.backend.api.AlgorithmEndpoint.methods" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.api.CustomConfig">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.api.</code><code class="sig-name descname">CustomConfig</code><a class="headerlink" href="#platipy.backend.api.CustomConfig" title="Permalink to this definition">¶</a></dt>
@@ -199,9 +184,7 @@
 <dt id="platipy.backend.api.CustomConfig.RESTFUL_JSON">
 <code class="sig-name descname">RESTFUL_JSON</code><em class="property"> = {'cls': &lt;class 'platipy.backend.models.AlchemyEncoder'&gt;, 'indent': 2, 'separators': (', ', ': ')}</em><a class="headerlink" href="#platipy.backend.api.CustomConfig.RESTFUL_JSON" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.api.DataObjectDownloadEndpoint">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.api.</code><code class="sig-name descname">DataObjectDownloadEndpoint</code><a class="headerlink" href="#platipy.backend.api.DataObjectDownloadEndpoint" title="Permalink to this definition">¶</a></dt>
@@ -210,30 +193,24 @@
 <dt id="platipy.backend.api.DataObjectDownloadEndpoint.endpoint">
 <code class="sig-name descname">endpoint</code><em class="property"> = 'dataobjectdownloadendpoint'</em><a class="headerlink" href="#platipy.backend.api.DataObjectDownloadEndpoint.endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DataObjectDownloadEndpoint.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataobject_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DataObjectDownloadEndpoint.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the file for the given dataobject</p>
 </dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DataObjectDownloadEndpoint.mediatypes">
 <code class="sig-name descname">mediatypes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DataObjectDownloadEndpoint.mediatypes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DataObjectDownloadEndpoint.methods">
 <code class="sig-name descname">methods</code><em class="property"> = {'GET'}</em><a class="headerlink" href="#platipy.backend.api.DataObjectDownloadEndpoint.methods" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DataObjectDownloadEndpoint.parser">
 <code class="sig-name descname">parser</code><em class="property"> = &lt;flask_restful.reqparse.RequestParser object&gt;</em><a class="headerlink" href="#platipy.backend.api.DataObjectDownloadEndpoint.parser" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.api.DataObjectEndpoint">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.api.</code><code class="sig-name descname">DataObjectEndpoint</code><a class="headerlink" href="#platipy.backend.api.DataObjectEndpoint" title="Permalink to this definition">¶</a></dt>
@@ -242,39 +219,31 @@
 <dt id="platipy.backend.api.DataObjectEndpoint.delete">
 <code class="sig-name descname">delete</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataobject_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DataObjectEndpoint.delete" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DataObjectEndpoint.endpoint">
 <code class="sig-name descname">endpoint</code><em class="property"> = 'dataobjectendpoint'</em><a class="headerlink" href="#platipy.backend.api.DataObjectEndpoint.endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DataObjectEndpoint.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataobject_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DataObjectEndpoint.get" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DataObjectEndpoint.mediatypes">
 <code class="sig-name descname">mediatypes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DataObjectEndpoint.mediatypes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DataObjectEndpoint.methods">
 <code class="sig-name descname">methods</code><em class="property"> = {'DELETE', 'GET', 'POST'}</em><a class="headerlink" href="#platipy.backend.api.DataObjectEndpoint.methods" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DataObjectEndpoint.parser">
 <code class="sig-name descname">parser</code><em class="property"> = &lt;flask_restful.reqparse.RequestParser object&gt;</em><a class="headerlink" href="#platipy.backend.api.DataObjectEndpoint.parser" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DataObjectEndpoint.post">
 <code class="sig-name descname">post</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DataObjectEndpoint.post" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.api.DataObjectsEndpoint">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.api.</code><code class="sig-name descname">DataObjectsEndpoint</code><a class="headerlink" href="#platipy.backend.api.DataObjectsEndpoint" title="Permalink to this definition">¶</a></dt>
@@ -283,24 +252,19 @@
 <dt id="platipy.backend.api.DataObjectsEndpoint.endpoint">
 <code class="sig-name descname">endpoint</code><em class="property"> = 'dataobjectsendpoint'</em><a class="headerlink" href="#platipy.backend.api.DataObjectsEndpoint.endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DataObjectsEndpoint.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DataObjectsEndpoint.get" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DataObjectsEndpoint.mediatypes">
 <code class="sig-name descname">mediatypes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DataObjectsEndpoint.mediatypes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DataObjectsEndpoint.methods">
 <code class="sig-name descname">methods</code><em class="property"> = {'GET'}</em><a class="headerlink" href="#platipy.backend.api.DataObjectsEndpoint.methods" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.api.DatasetEndpoint">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.api.</code><code class="sig-name descname">DatasetEndpoint</code><a class="headerlink" href="#platipy.backend.api.DatasetEndpoint" title="Permalink to this definition">¶</a></dt>
@@ -309,34 +273,27 @@
 <dt id="platipy.backend.api.DatasetEndpoint.endpoint">
 <code class="sig-name descname">endpoint</code><em class="property"> = 'datasetendpoint'</em><a class="headerlink" href="#platipy.backend.api.DatasetEndpoint.endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DatasetEndpoint.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataset_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DatasetEndpoint.get" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DatasetEndpoint.mediatypes">
 <code class="sig-name descname">mediatypes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DatasetEndpoint.mediatypes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DatasetEndpoint.methods">
 <code class="sig-name descname">methods</code><em class="property"> = {'GET', 'POST'}</em><a class="headerlink" href="#platipy.backend.api.DatasetEndpoint.methods" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DatasetEndpoint.parser">
 <code class="sig-name descname">parser</code><em class="property"> = &lt;flask_restful.reqparse.RequestParser object&gt;</em><a class="headerlink" href="#platipy.backend.api.DatasetEndpoint.parser" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DatasetEndpoint.post">
 <code class="sig-name descname">post</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DatasetEndpoint.post" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.api.DatasetReadyEndpoint">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.api.</code><code class="sig-name descname">DatasetReadyEndpoint</code><a class="headerlink" href="#platipy.backend.api.DatasetReadyEndpoint" title="Permalink to this definition">¶</a></dt>
@@ -345,29 +302,23 @@
 <dt id="platipy.backend.api.DatasetReadyEndpoint.endpoint">
 <code class="sig-name descname">endpoint</code><em class="property"> = 'datasetreadyendpoint'</em><a class="headerlink" href="#platipy.backend.api.DatasetReadyEndpoint.endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DatasetReadyEndpoint.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataset_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DatasetReadyEndpoint.get" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DatasetReadyEndpoint.mediatypes">
 <code class="sig-name descname">mediatypes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DatasetReadyEndpoint.mediatypes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DatasetReadyEndpoint.methods">
 <code class="sig-name descname">methods</code><em class="property"> = {'GET'}</em><a class="headerlink" href="#platipy.backend.api.DatasetReadyEndpoint.methods" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DatasetReadyEndpoint.parser">
 <code class="sig-name descname">parser</code><em class="property"> = &lt;flask_restful.reqparse.RequestParser object&gt;</em><a class="headerlink" href="#platipy.backend.api.DatasetReadyEndpoint.parser" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.api.DatasetsEndpoint">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.api.</code><code class="sig-name descname">DatasetsEndpoint</code><a class="headerlink" href="#platipy.backend.api.DatasetsEndpoint" title="Permalink to this definition">¶</a></dt>
@@ -376,24 +327,19 @@
 <dt id="platipy.backend.api.DatasetsEndpoint.endpoint">
 <code class="sig-name descname">endpoint</code><em class="property"> = 'datasetsendpoint'</em><a class="headerlink" href="#platipy.backend.api.DatasetsEndpoint.endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DatasetsEndpoint.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DatasetsEndpoint.get" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DatasetsEndpoint.mediatypes">
 <code class="sig-name descname">mediatypes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DatasetsEndpoint.mediatypes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DatasetsEndpoint.methods">
 <code class="sig-name descname">methods</code><em class="property"> = {'GET'}</em><a class="headerlink" href="#platipy.backend.api.DatasetsEndpoint.methods" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.api.DicomLocationEndpoint">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.api.</code><code class="sig-name descname">DicomLocationEndpoint</code><a class="headerlink" href="#platipy.backend.api.DicomLocationEndpoint" title="Permalink to this definition">¶</a></dt>
@@ -402,34 +348,27 @@
 <dt id="platipy.backend.api.DicomLocationEndpoint.endpoint">
 <code class="sig-name descname">endpoint</code><em class="property"> = 'dicomlocationendpoint'</em><a class="headerlink" href="#platipy.backend.api.DicomLocationEndpoint.endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DicomLocationEndpoint.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DicomLocationEndpoint.get" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DicomLocationEndpoint.mediatypes">
 <code class="sig-name descname">mediatypes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DicomLocationEndpoint.mediatypes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DicomLocationEndpoint.methods">
 <code class="sig-name descname">methods</code><em class="property"> = {'GET', 'POST'}</em><a class="headerlink" href="#platipy.backend.api.DicomLocationEndpoint.methods" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.DicomLocationEndpoint.parser">
 <code class="sig-name descname">parser</code><em class="property"> = &lt;flask_restful.reqparse.RequestParser object&gt;</em><a class="headerlink" href="#platipy.backend.api.DicomLocationEndpoint.parser" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.DicomLocationEndpoint.post">
 <code class="sig-name descname">post</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.DicomLocationEndpoint.post" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.api.Resource">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.api.</code><code class="sig-name descname">Resource</code><a class="headerlink" href="#platipy.backend.api.Resource" title="Permalink to this definition">¶</a></dt>
@@ -438,9 +377,7 @@
 <dt id="platipy.backend.api.Resource.method_decorators">
 <code class="sig-name descname">method_decorators</code><em class="property"> = [&lt;function authenticate&gt;]</em><a class="headerlink" href="#platipy.backend.api.Resource.method_decorators" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.api.TaskStatus">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.api.</code><code class="sig-name descname">TaskStatus</code><a class="headerlink" href="#platipy.backend.api.TaskStatus" title="Permalink to this definition">¶</a></dt>
@@ -449,25 +386,20 @@
 <dt id="platipy.backend.api.TaskStatus.endpoint">
 <code class="sig-name descname">endpoint</code><em class="property"> = 'taskstatus'</em><a class="headerlink" href="#platipy.backend.api.TaskStatus.endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.TaskStatus.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.TaskStatus.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the status of a task given the ID</p>
 </dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.TaskStatus.mediatypes">
 <code class="sig-name descname">mediatypes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.TaskStatus.mediatypes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.TaskStatus.methods">
 <code class="sig-name descname">methods</code><em class="property"> = {'GET'}</em><a class="headerlink" href="#platipy.backend.api.TaskStatus.methods" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.api.TriggerEndpoint">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.api.</code><code class="sig-name descname">TriggerEndpoint</code><a class="headerlink" href="#platipy.backend.api.TriggerEndpoint" title="Permalink to this definition">¶</a></dt>
@@ -476,36 +408,29 @@
 <dt id="platipy.backend.api.TriggerEndpoint.endpoint">
 <code class="sig-name descname">endpoint</code><em class="property"> = 'triggerendpoint'</em><a class="headerlink" href="#platipy.backend.api.TriggerEndpoint.endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.TriggerEndpoint.mediatypes">
 <code class="sig-name descname">mediatypes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.TriggerEndpoint.mediatypes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.TriggerEndpoint.methods">
 <code class="sig-name descname">methods</code><em class="property"> = {'POST'}</em><a class="headerlink" href="#platipy.backend.api.TriggerEndpoint.methods" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.api.TriggerEndpoint.parser">
 <code class="sig-name descname">parser</code><em class="property"> = &lt;flask_restful.reqparse.RequestParser object&gt;</em><a class="headerlink" href="#platipy.backend.api.TriggerEndpoint.parser" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.api.TriggerEndpoint.post">
 <code class="sig-name descname">post</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.TriggerEndpoint.post" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py function">
 <dt id="platipy.backend.api.authenticate">
 <code class="sig-prename descclassname">platipy.backend.api.</code><code class="sig-name descname">authenticate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.api.authenticate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-</div>
-<div class="section" id="module-platipy.backend.application">
+</section>
+<section id="module-platipy.backend.application">
 <span id="platipy-backend-application-module"></span><h2>platipy.backend.application module<a class="headerlink" href="#module-platipy.backend.application" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="platipy.backend.application.Algorithm">
@@ -515,9 +440,7 @@
 <dt id="platipy.backend.application.Algorithm.settings_to_json">
 <code class="sig-name descname">settings_to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.application.Algorithm.settings_to_json" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.application.FlaskApp">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.application.</code><code class="sig-name descname">FlaskApp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">import_name</span></em>, <em class="sig-param"><span class="n">static_url_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">static_folder</span><span class="o">=</span><span class="default_value">'static'</span></em>, <em class="sig-param"><span class="n">static_host</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">host_matching</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">subdomain_matching</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">template_folder</span><span class="o">=</span><span class="default_value">'templates'</span></em>, <em class="sig-param"><span class="n">instance_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">instance_relative_config</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">root_path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.application.FlaskApp" title="Permalink to this definition">¶</a></dt>
@@ -527,37 +450,30 @@
 <dt id="platipy.backend.application.FlaskApp.algorithms">
 <code class="sig-name descname">algorithms</code><em class="property"> = {}</em><a class="headerlink" href="#platipy.backend.application.FlaskApp.algorithms" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.application.FlaskApp.api">
 <code class="sig-name descname">api</code><em class="property"> = None</em><a class="headerlink" href="#platipy.backend.application.FlaskApp.api" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.application.FlaskApp.beat_started">
 <code class="sig-name descname">beat_started</code><em class="property"> = False</em><a class="headerlink" href="#platipy.backend.application.FlaskApp.beat_started" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.application.FlaskApp.celery_started">
 <code class="sig-name descname">celery_started</code><em class="property"> = False</em><a class="headerlink" href="#platipy.backend.application.FlaskApp.celery_started" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.application.FlaskApp.dicom_listener_aetitle">
 <code class="sig-name descname">dicom_listener_aetitle</code><em class="property"> = 'PLATIPY_SERVICE'</em><a class="headerlink" href="#platipy.backend.application.FlaskApp.dicom_listener_aetitle" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.application.FlaskApp.dicom_listener_port">
 <code class="sig-name descname">dicom_listener_port</code><em class="property"> = 7777</em><a class="headerlink" href="#platipy.backend.application.FlaskApp.dicom_listener_port" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.application.FlaskApp.register">
 <code class="sig-name descname">register</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">default_settings</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.application.FlaskApp.register" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.application.FlaskApp.run">
 <code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">host</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">port</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dicom_listener_port</span><span class="o">=</span><span class="default_value">7777</span></em>, <em class="sig-param"><span class="n">dicom_listener_aetitle</span><span class="o">=</span><span class="default_value">'PLATIPY_SERVICE'</span></em>, <em class="sig-param"><span class="n">load_dotenv</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">options</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.application.FlaskApp.run" title="Permalink to this definition">¶</a></dt>
@@ -617,27 +533,22 @@ environment variables will override <code class="xref py py-attr docutils litera
 variable.</p>
 </div>
 </dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.application.FlaskApp.run_beat">
 <code class="sig-name descname">run_beat</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.application.FlaskApp.run_beat" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.application.FlaskApp.run_celery">
 <code class="sig-name descname">run_celery</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.application.FlaskApp.run_celery" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.application.FlaskApp.run_dicom_listener">
 <code class="sig-name descname">run_dicom_listener</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">listen_port</span></em>, <em class="sig-param"><span class="n">listen_ae_title</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.application.FlaskApp.run_dicom_listener" title="Permalink to this definition">¶</a></dt>
 <dd><p>Background task that listens at a specific port for incoming dicom series</p>
 </dd></dl>
-
 </dd></dl>
-
-</div>
-<div class="section" id="module-platipy.backend.client">
+</section>
+<section id="module-platipy.backend.client">
 <span id="platipy-backend-client-module"></span><h2>platipy.backend.client module<a class="headerlink" href="#module-platipy.backend.client" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="platipy.backend.client.PlatiPyClient">
@@ -670,7 +581,6 @@ variable.</p>
 </dd>
 </dl>
 </dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.client.PlatiPyClient.add_dataset">
 <code class="sig-name descname">add_dataset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">from_dicom_location</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">to_dicom_location</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.client.PlatiPyClient.add_dataset" title="Permalink to this definition">¶</a></dt>
@@ -692,7 +602,6 @@ variable.</p>
 </dd>
 </dl>
 </dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.client.PlatiPyClient.add_dicom_location">
 <code class="sig-name descname">add_dicom_location</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">host</span></em>, <em class="sig-param"><span class="n">port</span></em>, <em class="sig-param"><span class="n">ae_title</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.client.PlatiPyClient.add_dicom_location" title="Permalink to this definition">¶</a></dt>
@@ -713,7 +622,6 @@ variable.</p>
 </dd>
 </dl>
 </dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.client.PlatiPyClient.download_output_objects">
 <code class="sig-name descname">download_output_objects</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataset</span></em>, <em class="sig-param"><span class="n">output_path</span><span class="o">=</span><span class="default_value">'.'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.client.PlatiPyClient.download_output_objects" title="Permalink to this definition">¶</a></dt>
@@ -727,7 +635,6 @@ variable.</p>
 </dd>
 </dl>
 </dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.client.PlatiPyClient.get_dataset">
 <code class="sig-name descname">get_dataset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataset</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.client.PlatiPyClient.get_dataset" title="Permalink to this definition">¶</a></dt>
@@ -741,7 +648,6 @@ variable.</p>
 </dd>
 </dl>
 </dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.client.PlatiPyClient.get_dataset_ready">
 <code class="sig-name descname">get_dataset_ready</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataset</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.client.PlatiPyClient.get_dataset_ready" title="Permalink to this definition">¶</a></dt>
@@ -755,7 +661,6 @@ variable.</p>
 </dd>
 </dl>
 </dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.client.PlatiPyClient.get_default_settings">
 <code class="sig-name descname">get_default_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.client.PlatiPyClient.get_default_settings" title="Permalink to this definition">¶</a></dt>
@@ -766,7 +671,6 @@ variable.</p>
 </dd>
 </dl>
 </dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.client.PlatiPyClient.get_dicom_location">
 <code class="sig-name descname">get_dicom_location</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.client.PlatiPyClient.get_dicom_location" title="Permalink to this definition">¶</a></dt>
@@ -780,7 +684,6 @@ variable.</p>
 </dd>
 </dl>
 </dd></dl>
-
 <dl class="py method">
 <dt id="platipy.backend.client.PlatiPyClient.run_algorithm">
 <code class="sig-name descname">run_algorithm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dataset</span></em>, <em class="sig-param"><span class="n">config</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.client.PlatiPyClient.run_algorithm" title="Permalink to this definition">¶</a></dt>
@@ -794,11 +697,9 @@ variable.</p>
 </dd>
 </dl>
 </dd></dl>
-
 </dd></dl>
-
-</div>
-<div class="section" id="module-platipy.backend.manage">
+</section>
+<section id="module-platipy.backend.manage">
 <span id="platipy-backend-manage-module"></span><h2>platipy.backend.manage module<a class="headerlink" href="#module-platipy.backend.manage" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="platipy.backend.manage.add_api_key">
@@ -806,37 +707,31 @@ variable.</p>
 <dd><p>Add a new API Key with the given name</p>
 <p>name: Name of the API Key</p>
 </dd></dl>
-
 <dl class="py function">
 <dt id="platipy.backend.manage.create_db">
 <code class="sig-prename descclassname">platipy.backend.manage.</code><code class="sig-name descname">create_db</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.manage.create_db" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create the Database used by the framework</p>
 </dd></dl>
-
-</div>
-<div class="section" id="module-platipy.backend.models">
+</section>
+<section id="module-platipy.backend.models">
 <span id="platipy-backend-models-module"></span><h2>platipy.backend.models module<a class="headerlink" href="#module-platipy.backend.models" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="platipy.backend.models.APIKey">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.models.</code><code class="sig-name descname">APIKey</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.models.APIKey" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
 <dl class="py attribute">
 <dt id="platipy.backend.models.APIKey.is_admin">
 <code class="sig-name descname">is_admin</code><a class="headerlink" href="#platipy.backend.models.APIKey.is_admin" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.APIKey.key">
 <code class="sig-name descname">key</code><a class="headerlink" href="#platipy.backend.models.APIKey.key" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.APIKey.name">
 <code class="sig-name descname">name</code><a class="headerlink" href="#platipy.backend.models.APIKey.name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.models.AlchemyEncoder">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.models.</code><code class="sig-name descname">AlchemyEncoder</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">skipkeys</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ensure_ascii</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">check_circular</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">allow_nan</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">sort_keys</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">indent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">separators</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">default</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.models.AlchemyEncoder" title="Permalink to this definition">¶</a></dt>
@@ -861,283 +756,244 @@ implement default like this:</p>
 </pre></div>
 </div>
 </dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.models.DataObject">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.models.</code><code class="sig-name descname">DataObject</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.models.DataObject" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.children">
 <code class="sig-name descname">children</code><a class="headerlink" href="#platipy.backend.models.DataObject.children" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.dataset">
 <code class="sig-name descname">dataset</code><a class="headerlink" href="#platipy.backend.models.DataObject.dataset" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.dataset_id">
 <code class="sig-name descname">dataset_id</code><a class="headerlink" href="#platipy.backend.models.DataObject.dataset_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.id">
 <code class="sig-name descname">id</code><a class="headerlink" href="#platipy.backend.models.DataObject.id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.is_fetched">
 <code class="sig-name descname">is_fetched</code><a class="headerlink" href="#platipy.backend.models.DataObject.is_fetched" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.is_input">
 <code class="sig-name descname">is_input</code><a class="headerlink" href="#platipy.backend.models.DataObject.is_input" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.is_sent">
 <code class="sig-name descname">is_sent</code><a class="headerlink" href="#platipy.backend.models.DataObject.is_sent" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.meta_data">
 <code class="sig-name descname">meta_data</code><a class="headerlink" href="#platipy.backend.models.DataObject.meta_data" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.parent">
 <code class="sig-name descname">parent</code><a class="headerlink" href="#platipy.backend.models.DataObject.parent" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.parent_id">
 <code class="sig-name descname">parent_id</code><a class="headerlink" href="#platipy.backend.models.DataObject.parent_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.path">
 <code class="sig-name descname">path</code><a class="headerlink" href="#platipy.backend.models.DataObject.path" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.series_instance_uid">
 <code class="sig-name descname">series_instance_uid</code><a class="headerlink" href="#platipy.backend.models.DataObject.series_instance_uid" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.status">
 <code class="sig-name descname">status</code><a class="headerlink" href="#platipy.backend.models.DataObject.status" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.timestamp">
 <code class="sig-name descname">timestamp</code><a class="headerlink" href="#platipy.backend.models.DataObject.timestamp" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DataObject.type">
 <code class="sig-name descname">type</code><a class="headerlink" href="#platipy.backend.models.DataObject.type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.models.Dataset">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.models.</code><code class="sig-name descname">Dataset</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.models.Dataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
 <dl class="py attribute">
 <dt id="platipy.backend.models.Dataset.from_dicom_location">
 <code class="sig-name descname">from_dicom_location</code><a class="headerlink" href="#platipy.backend.models.Dataset.from_dicom_location" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.Dataset.from_dicom_location_id">
 <code class="sig-name descname">from_dicom_location_id</code><a class="headerlink" href="#platipy.backend.models.Dataset.from_dicom_location_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.Dataset.id">
 <code class="sig-name descname">id</code><a class="headerlink" href="#platipy.backend.models.Dataset.id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.Dataset.input_data_objects">
 <code class="sig-name descname">input_data_objects</code><a class="headerlink" href="#platipy.backend.models.Dataset.input_data_objects" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.Dataset.output_data_objects">
 <code class="sig-name descname">output_data_objects</code><a class="headerlink" href="#platipy.backend.models.Dataset.output_data_objects" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.Dataset.owner_key">
 <code class="sig-name descname">owner_key</code><a class="headerlink" href="#platipy.backend.models.Dataset.owner_key" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.Dataset.timeout">
 <code class="sig-name descname">timeout</code><a class="headerlink" href="#platipy.backend.models.Dataset.timeout" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.Dataset.timestamp">
 <code class="sig-name descname">timestamp</code><a class="headerlink" href="#platipy.backend.models.Dataset.timestamp" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.Dataset.to_dicom_location">
 <code class="sig-name descname">to_dicom_location</code><a class="headerlink" href="#platipy.backend.models.Dataset.to_dicom_location" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.Dataset.to_dicom_location_id">
 <code class="sig-name descname">to_dicom_location_id</code><a class="headerlink" href="#platipy.backend.models.Dataset.to_dicom_location_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py class">
 <dt id="platipy.backend.models.DicomLocation">
 <em class="property">class </em><code class="sig-prename descclassname">platipy.backend.models.</code><code class="sig-name descname">DicomLocation</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.models.DicomLocation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
 <dl class="py attribute">
 <dt id="platipy.backend.models.DicomLocation.ae_title">
 <code class="sig-name descname">ae_title</code><a class="headerlink" href="#platipy.backend.models.DicomLocation.ae_title" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DicomLocation.host">
 <code class="sig-name descname">host</code><a class="headerlink" href="#platipy.backend.models.DicomLocation.host" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DicomLocation.id">
 <code class="sig-name descname">id</code><a class="headerlink" href="#platipy.backend.models.DicomLocation.id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DicomLocation.name">
 <code class="sig-name descname">name</code><a class="headerlink" href="#platipy.backend.models.DicomLocation.name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DicomLocation.owner_key">
 <code class="sig-name descname">owner_key</code><a class="headerlink" href="#platipy.backend.models.DicomLocation.owner_key" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py attribute">
 <dt id="platipy.backend.models.DicomLocation.port">
 <code class="sig-name descname">port</code><a class="headerlink" href="#platipy.backend.models.DicomLocation.port" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 </dd></dl>
-
 <dl class="py function">
 <dt id="platipy.backend.models.default_timeout">
 <code class="sig-prename descclassname">platipy.backend.models.</code><code class="sig-name descname">default_timeout</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.models.default_timeout" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-</div>
-<div class="section" id="module-platipy.backend.tasks">
+</section>
+<section id="module-platipy.backend.tasks">
 <span id="platipy-backend-tasks-module"></span><h2>platipy.backend.tasks module<a class="headerlink" href="#module-platipy.backend.tasks" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="module-platipy.backend.views">
+</section>
+<section id="module-platipy.backend.views">
 <span id="platipy-backend-views-module"></span><h2>platipy.backend.views module<a class="headerlink" href="#module-platipy.backend.views" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="platipy.backend.views.add_endpoint">
 <code class="sig-prename descclassname">platipy.backend.views.</code><code class="sig-name descname">add_endpoint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.views.add_endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py function">
 <dt id="platipy.backend.views.dashboard">
 <code class="sig-prename descclassname">platipy.backend.views.</code><code class="sig-name descname">dashboard</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.views.dashboard" title="Permalink to this definition">¶</a></dt>
 <dd><p>Entry point to the dashboard of the application</p>
 </dd></dl>
-
 <dl class="py function">
 <dt id="platipy.backend.views.fetch_log">
 <code class="sig-prename descclassname">platipy.backend.views.</code><code class="sig-name descname">fetch_log</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.views.fetch_log" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py function">
 <dt id="platipy.backend.views.fetch_status">
 <code class="sig-prename descclassname">platipy.backend.views.</code><code class="sig-name descname">fetch_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.views.fetch_status" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
 <dl class="py function">
 <dt id="platipy.backend.views.view_endpoint">
 <code class="sig-prename descclassname">platipy.backend.views.</code><code class="sig-name descname">view_endpoint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.backend.views.view_endpoint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-</div>
-<div class="section" id="module-platipy.backend">
+</section>
+<section id="module-platipy.backend">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.backend" title="Permalink to this headline">¶</a></h2>
-</div>
-</div>
+</section>
+</section>
 
+      </article>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
 
-           </div>
+        <div class="related-information">
+              Copyright &#169; 2021, Phillip Chlap &amp; Rob Finnegan
+            |
+            <a class="muted-link" href="../_sources/gen/platipy.backend.rst.txt"
+               rel="nofollow">
+              Show Source
+            </a>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">platipy.backend package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-platipy.backend.api">platipy.backend.api module</a></li>
+<li><a class="reference internal" href="#module-platipy.backend.application">platipy.backend.application module</a></li>
+<li><a class="reference internal" href="#module-platipy.backend.client">platipy.backend.client module</a></li>
+<li><a class="reference internal" href="#module-platipy.backend.manage">platipy.backend.manage module</a></li>
+<li><a class="reference internal" href="#module-platipy.backend.models">platipy.backend.models module</a></li>
+<li><a class="reference internal" href="#module-platipy.backend.tasks">platipy.backend.tasks module</a></li>
+<li><a class="reference internal" href="#module-platipy.backend.views">platipy.backend.views module</a></li>
+<li><a class="reference internal" href="#module-platipy.backend">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
           </div>
-          <footer>
-  
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 2020, Phillip Chlap &amp; Rob Finnegan.
-
-    </p>
-  </div> 
-
-</footer>
-
         </div>
       </div>
-
-    </section>
-
-  </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="../_static/language_data.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
-
-</body>
+      
+      
+    </aside>
+  </main>
+</div>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <script src="../_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
 </html>

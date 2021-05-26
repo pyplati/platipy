@@ -4,50 +4,26 @@ platipy.imaging.visualisation package
 Submodules
 ----------
 
-platipy.imaging.visualisation.Python3DMesh module
--------------------------------------------------
+platipy.imaging.visualisation.animation module
+----------------------------------------------
 
-.. automodule:: platipy.imaging.visualisation.Python3DMesh
+.. automodule:: platipy.imaging.visualisation.animation
    :members:
    :undoc-members:
    :show-inheritance:
 
-platipy.imaging.visualisation.VesselSurfaces\-Auto module
----------------------------------------------------------
-
-.. automodule:: platipy.imaging.visualisation.VesselSurfaces-Auto
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-platipy.imaging.visualisation.crosshairs module
------------------------------------------------
-
-.. automodule:: platipy.imaging.visualisation.crosshairs
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-platipy.imaging.visualisation.surface\_operations module
---------------------------------------------------------
-
-.. automodule:: platipy.imaging.visualisation.surface_operations
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-platipy.imaging.visualisation.tools module
+platipy.imaging.visualisation.utils module
 ------------------------------------------
 
-.. automodule:: platipy.imaging.visualisation.tools
+.. automodule:: platipy.imaging.visualisation.utils
    :members:
    :undoc-members:
    :show-inheritance:
 
-platipy.imaging.visualisation.vis\_tools module
+platipy.imaging.visualisation.visualiser module
 -----------------------------------------------
 
-.. automodule:: platipy.imaging.visualisation.vis_tools
+.. automodule:: platipy.imaging.visualisation.visualiser
    :members:
    :undoc-members:
    :show-inheritance:

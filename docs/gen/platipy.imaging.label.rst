@@ -4,18 +4,42 @@ platipy.imaging.label package
 Submodules
 ----------
 
-platipy.imaging.label.label\_comparison module
-----------------------------------------------
+platipy.imaging.label.comparison module
+---------------------------------------
 
-.. automodule:: platipy.imaging.label.label_comparison
+.. automodule:: platipy.imaging.label.comparison
    :members:
    :undoc-members:
    :show-inheritance:
 
-platipy.imaging.label.label\_operations module
-----------------------------------------------
+platipy.imaging.label.fusion module
+-----------------------------------
 
-.. automodule:: platipy.imaging.label.label_operations
+.. automodule:: platipy.imaging.label.fusion
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+platipy.imaging.label.iar module
+--------------------------------
+
+.. automodule:: platipy.imaging.label.iar
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+platipy.imaging.label.projection module
+---------------------------------------
+
+.. automodule:: platipy.imaging.label.projection
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+platipy.imaging.label.utils module
+----------------------------------
+
+.. automodule:: platipy.imaging.label.utils
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,10 +1,6 @@
-
+#####################
 Command Line Tools
-==================
-
-.. contents::
-    :local:
-    :backlinks: entry
+#####################
 
 .. click:: platipy.cli.dicom_crawler:click_command
    :prog: dicom_crawler

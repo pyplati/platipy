@@ -12,46 +12,82 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from matplotlib import rcParams
-
+import tempfile
 import pathlib
+import shutil
+
+import imageio
 
 import numpy as np
 import SimpleITK as sitk
 
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import matplotlib.animation as animation
+from matplotlib.animation import FileMovieWriter
 
-from platipy.imaging.visualisation.utils import project_onto_arbitrary_plane
+
+class FileWriter(FileMovieWriter):
+    """Class to write image frames for animation"""
+
+    supported_formats = ["png"]
+
+    # pylint: disable=arguments-differ, attribute-defined-outside-init
+    def setup(self, fig, dpi, frame_prefix):
+        super().setup(fig, dpi, frame_prefix)
+        self.fname_format_str = "%s%%d.%s"
+        self.temp_prefix, self.frame_format = self.outfile.split(".")
+
+    def grab_frame(self, **savefig_kwargs):
+
+        with self._frame_sink() as myframesink:
+            self.fig.savefig(myframesink, format="png", dpi=self.dpi, **savefig_kwargs)
+
+    def finish(self):
+        self._frame_sink().close()
 
 
 def generate_animation_from_image_sequence(
     image_list,
     output_file="animation.gif",
     fps=10,
-    contour_list=False,
-    scalar_list=False,
+    contour_list=None,
+    scalar_list=None,
     figure_size_in=6,
-    image_cmap=plt.cm.Greys_r,
-    contour_cmap=plt.cm.jet,
-    scalar_cmap=plt.cm.magma,
+    image_cmap=plt.cm.get_cmap("Greys_r"),
+    contour_cmap=plt.cm.get_cmap("jet"),
+    scalar_cmap=plt.cm.get_cmap("magma"),
     image_window=[-1000, 800],
-    scalar_min=False,
-    scalar_max=False,
+    scalar_min=None,
+    scalar_max=None,
     scalar_alpha=0.5,
     image_origin="lower",
 ):
+    """Make a GIF animation from the list of images supplied
 
-    # We need to check for ImageMagick
-    # There may be other tools that can be used
-    rcParams["animation.convert_path"] = r"/usr/bin/convert"
-    convert_path = pathlib.Path(rcParams["animation.convert_path"])
+    Args:
+        image_list (list): List of 2D sitk.Image's to render
+        output_file (str, optional): Path to output GIF file. Defaults to "animation.gif".
+        fps (int, optional): Frames per second. Defaults to 10.
+        contour_list (list, optional): List of contours to overlay. Defaults to None.
+        scalar_list (list, optional): List of scalars to overlay. Defaults to None.
+        figure_size_in (int, optional): Size of figure. Defaults to 6.
+        image_cmap ([type], optional): Colormap for image. Defaults to plt.cm.get_cmap("Greys_r").
+        contour_cmap ([type], optional): Colormap for contours. Defaults to plt.cm.get_cmap("jet").
+        scalar_cmap ([type], optional): Colormap for scalars. Defaults to plt.cm.get_cmap("magma").
+        image_window (list, optional): Window for image. Defaults to [-1000, 800].
+        scalar_min (float, optional): Minimum value for scalar. Defaults to None.
+        scalar_max (float, optional): Maximum value for scalar. Defaults to None.
+        scalar_alpha (float, optional): Alpha value for scalar. Defaults to 0.5.
+        image_origin (str, optional): Origin of image. Defaults to "lower".
 
-    if not convert_path.exists():
-        raise RuntimeError("To use this function you need ImageMagick.")
+    Raises:
+        ValueError: Raised if image list does not contain sitk.Image's
 
-    if type(image_list[0]) is not sitk.Image:
+    Returns:
+        matplotlib.animation.FuncAnimation: The animation object
+    """
+
+    if not isinstance(image_list[0], sitk.Image):
         raise ValueError("Each image must be a SimplITK image (sitk.Image).")
 
     # Get the image information
@@ -77,9 +113,9 @@ def generate_animation_from_image_sequence(
 
     # We now deal with the contours
     # These can be given as a list of sitk.Image objects or a list of dicts {"name":sitk.Image}
-    if contour_list is not False:
+    if contour_list:
 
-        if type(contour_list[0]) is not dict:
+        if isinstance(contour_list[0], sitk.Image):
             plot_dict = {"_": contour_list[0]}
             contour_labels = False
         else:
@@ -107,11 +143,11 @@ def generate_animation_from_image_sequence(
                 fontsize=min([10, 16 * approx_scaling]),
             )
 
-    if scalar_list is not False:
+    if scalar_list:
 
-        if scalar_min is False:
+        if not scalar_min:
             scalar_min = np.min([sitk.GetArrayFromImage(i) for i in scalar_list])
-        if scalar_max is False:
+        if not scalar_max:
             scalar_max = np.max([sitk.GetArrayFromImage(i) for i in scalar_list])
 
         display_scalar = ax.imshow(
@@ -137,13 +173,13 @@ def generate_animation_from_image_sequence(
         display_image.set_data(nda)
 
         # TO DO - add in code for scalar overlay
-        if contour_list is not False:
+        if contour_list:
             try:
                 ax.collections = []
             except ValueError:
                 pass
 
-            if type(contour_list[i]) is not dict:
+            if not isinstance(contour_list[i], dict):
                 plot_dict = {"_": contour_list[i]}
             else:
                 plot_dict = contour_list[i]
@@ -152,21 +188,21 @@ def generate_animation_from_image_sequence(
 
             for index, contour in enumerate(plot_dict.values()):
 
-                display_contours = ax.contour(
+                ax.contour(
                     sitk.GetArrayFromImage(contour),
                     colors=[color_map[index]],
                     levels=[0],
                     linewidths=2,
                 )
 
-        if scalar_list is not False:
+        if scalar_list:
             nda = sitk.GetArrayFromImage(scalar_list[i])
             display_scalar.set_data(np.ma.masked_outside(nda, scalar_min, scalar_max))
 
         return (display_image,)
 
     # create animation using the animate() function with no repeat
-    myAnimation = animation.FuncAnimation(
+    animation_result = animation.FuncAnimation(
         fig,
         animate,
         frames=np.arange(0, len(image_list), 1),
@@ -175,7 +211,23 @@ def generate_animation_from_image_sequence(
         repeat=False,
     )
 
-    # save animation at 30 frames per second
-    myAnimation.save(output_file, writer="imagemagick", fps=fps)
+    # Save animation
+    tmp_path = tempfile.mkdtemp()
+    animation_result.save(f"{tmp_path}/tmp.format", writer=FileWriter())
 
-    return myAnimation
+    # Save the GIF
+    images = []
+    for filename in pathlib.Path(tmp_path).glob("tmp*.png"):
+
+        try:
+            images.append(imageio.imread(filename))
+        except RuntimeError:
+            # Skip frames which are corrupt
+            pass
+
+    imageio.mimsave(output_file, images, fps=fps)
+
+    # Clean up
+    shutil.rmtree(tmp_path)
+
+    return animation_result
