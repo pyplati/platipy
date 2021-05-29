@@ -88,6 +88,7 @@ class AxisAlignedConvGaussian(torch.nn.Module):
         # This is a multivariate normal with diagonal covariance matrix sigma
         # https://github.com/pytorch/pytorch/pull/11178
         dist = Independent(Normal(loc=mu, scale=torch.exp(log_sigma)), 1)
+
         return dist
 
 
@@ -193,6 +194,9 @@ class ProbabilisticUnet(torch.nn.Module):
             if use_mean:
                 z_prior = self.prior_latent_space.base_dist.loc
             elif not sample_x_stddev_from_mean is None:
+                if isinstance(sample_x_stddev_from_mean, list):
+                    sample_x_stddev_from_mean = torch.Tensor(sample_x_stddev_from_mean)
+                    sample_x_stddev_from_mean = sample_x_stddev_from_mean.to(self.prior_latent_space.base_dist.stddev.device)
                 z_prior = self.prior_latent_space.base_dist.loc + (
                     self.prior_latent_space.base_dist.scale * sample_x_stddev_from_mean
                 )
@@ -256,4 +260,6 @@ class ProbabilisticUnet(torch.nn.Module):
         reconstruction_loss = torch.sum(reconstruction_loss)
         # mean_reconstruction_loss = torch.mean(reconstruction_loss)
 
-        return -(reconstruction_loss + self.beta * kl_div)
+        return {"loss": -(reconstruction_loss + self.beta * kl_div),
+                "rec_loss": reconstruction_loss,
+                "kl_div": kl_div}
