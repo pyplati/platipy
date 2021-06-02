@@ -40,6 +40,8 @@ from platipy.imaging.utils.vessel import vessel_spline_generation
 
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
+from platipy.imaging.generation.mask import extend_mask
+
 ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:
     ATLAS_PATH = os.environ["ATLAS_PATH"]
@@ -54,6 +56,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "crop_atlas_to_structures": False,
         "crop_atlas_expansion_mm": (10, 10, 10),
         "guide_structure_name": "WHOLEHEART",
+        "superior_extension": 30,
     },
     "auto_crop_target_image_settings": {
         "expansion_mm": [2, 2, 2],
@@ -231,7 +234,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         img_crop = crop_to_roi(img, crop_box_size, crop_box_index)
 
         guide_structure = crop_to_roi(guide_structure, crop_box_size, crop_box_index)
-        target_reg_structure = convert_mask_to_reg_structure(guide_structure)
+        target_reg_structure = convert_mask_to_reg_structure(guide_structure, expansion=0)
 
     else:
         quick_reg_settings = {
@@ -303,7 +306,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
             guide_structure_name = settings["atlas_settings"]["guide_structure_name"]
             target_reg_image = target_reg_structure
             atlas_reg_image = convert_mask_to_reg_structure(
-                atlas_set[atlas_id]["Original"][guide_structure_name]
+                atlas_set[atlas_id]["Original"][guide_structure_name], expansion=0
             )
 
         else:
@@ -322,6 +325,21 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         if guide_structure:
             atlas_set[atlas_id]["RIR"]["Reg Mask"] = apply_transform(
                 input_image=atlas_reg_image,
+                reference_image=img_crop,
+                transform=initial_tfm,
+                default_value=0,
+                interpolator=sitk.sitkNearestNeighbor,
+            )
+
+            expanded_atlas_guide_structure = extend_mask(
+                atlas_set[atlas_id]["Original"][guide_structure_name],
+                direction=("ax", "sup"),
+                extension_mm=settings["atlas_settings"]["superior_extension"],
+                interior_mm_shape=settings["atlas_settings"]["superior_extension"] / 2,
+            )
+
+            atlas_set[atlas_id]["RIR"][guide_structure_name + "EXPANDED"] = apply_transform(
+                input_image=expanded_atlas_guide_structure,
                 reference_image=img_crop,
                 transform=initial_tfm,
                 default_value=0,
@@ -383,6 +401,14 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
                 interpolator=sitk.sitkLinear,
             )
 
+            atlas_set[atlas_id]["DIR_STRUCT"][guide_structure_name + "EXPANDED"] = apply_transform(
+                input_image=atlas_set[atlas_id]["RIR"][guide_structure_name + "EXPANDED"],
+                reference_image=img_crop,
+                transform=struct_guided_tfm,
+                default_value=0,
+                interpolator=sitk.sitkNearestNeighbor,
+            )
+
             # sitk.WriteImage(deform_image, f"./DIR_STRUCT_{atlas_id}.nii.gz")
 
             for struct in atlas_structure_list:
@@ -399,7 +425,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     # Settings
     deformable_registration_settings = settings["deformable_registration_settings"]
 
-    logger.info("Running DIR to register atlas images")
+    logger.info("Running DIR to refine atlas image registration")
 
     for atlas_id in atlas_id_list:
 
@@ -408,13 +434,31 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         # Register the atlases
         atlas_set[atlas_id]["DIR"] = {}
 
-        if guide_structure:
-            target_reg_image = target_reg_structure
-            atlas_reg_image = atlas_set[atlas_id]["DIR_STRUCT"]["Reg Mask"]
+        atlas_reg_image = atlas_set[atlas_id]["DIR_STRUCT"]["CT Image"]
+        target_reg_image = img_crop
 
-        else:
-            atlas_reg_image = atlas_set[atlas_id]["RIR"]["CT Image"]
-            target_reg_image = sitk.Mask(img_crop, atlas_reg_image > -1000, outsideValue=-1000)
+        if guide_structure:
+            expanded_atlas_mask = atlas_set[atlas_id]["DIR_STRUCT"][
+                guide_structure_name + "EXPANDED"
+            ]
+            expanded_target_mask = extend_mask(
+                guide_structure,
+                direction=("ax", "sup"),
+                extension_mm=settings["atlas_settings"]["superior_extension"],
+                interior_mm_shape=settings["atlas_settings"]["superior_extension"] / 2,
+            )
+
+            combined_mask = sitk.Maximum(expanded_atlas_mask, expanded_target_mask)
+
+            atlas_reg_image = sitk.Mask(atlas_reg_image, combined_mask, outsideValue=-1000)
+            atlas_reg_image = sitk.Mask(
+                atlas_reg_image, atlas_reg_image > -400, outsideValue=-1000
+            )
+
+            target_reg_image = sitk.Mask(target_reg_image, combined_mask, outsideValue=-1000)
+            target_reg_image = sitk.Mask(
+                target_reg_image, atlas_reg_image > -400, outsideValue=-1000
+            )
 
         deform_image, dir_tfm, _ = fast_symmetric_forces_demons_registration(
             target_reg_image,
