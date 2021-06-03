@@ -175,13 +175,13 @@ def displaySlice(
             nda.__getitem__(sAx),
             aspect=1.0,
             interpolation=None,
-            origin={'normal':'upper','reversed':'lower'}[origin]
+            origin={"normal": "upper", "reversed": "lower"}[origin],
             cmap=cmap,
             clim=(window[0], window[0] + window[1]),
         )
         imCor = axCor.imshow(
             nda.__getitem__(sCor),
-            origin={'normal':'lower', 'reversed':'upper'}[origin],
+            origin={"normal": "lower", "reversed": "upper"}[origin],
             aspect=asp,
             interpolation=None,
             cmap=cmap,
@@ -189,7 +189,7 @@ def displaySlice(
         )
         imSag = axSag.imshow(
             nda.__getitem__(sSag),
-            origin={'normal':'lower', 'reversed':'upper'}[origin],
+            origin={"normal": "lower", "reversed": "upper"}[origin],
             aspect=asp,
             interpolation=None,
             cmap=cmap,
@@ -212,14 +212,14 @@ def displaySlice(
         if axis == "x" or axis == "sag":
             fSize = (figSize, figSize * (asp * AxSize) / (1.0 * CorSize))
             fig, ax = plt.subplots(1, 1, figsize=(fSize))
-            org = {'normal':'lower', 'reversed':'upper'}[origin]
+            org = {"normal": "lower", "reversed": "upper"}[origin]
             if not cut:
                 cut = int(SagSize / 2.0)
 
         if axis == "y" or axis == "cor":
             fSize = (figSize, figSize * (asp * AxSize) / (1.0 * SagSize))
             fig, ax = plt.subplots(1, 1, figsize=(fSize))
-            org = {'normal':'lower', 'reversed':'upper'}[origin]
+            org = {"normal": "lower", "reversed": "upper"}[origin]
             if not cut:
                 cut = int(CorSize / 2.0)
 
@@ -227,7 +227,7 @@ def displaySlice(
             asp = 1
             fSize = (figSize, figSize * (asp * CorSize) / (1.0 * SagSize))
             fig, ax = plt.subplots(1, 1, figsize=(fSize))
-            org = {'normal':'upper','reversed':'lower'}[origin]
+            org = {"normal": "upper", "reversed": "lower"}[origin]
             if not cut:
                 cut = int(AxSize / 2.0)
 
@@ -275,12 +275,8 @@ def displayComparisonSlice(
     spPlane, _, spSlice = im_a.GetSpacing()
     asp = (1.0 * spSlice) / spPlane
 
-    nda_a_norm = (np.clip(nda_a, window[0], window[1]) - window[0]) / (
-        window[1] - window[0]
-    )
-    nda_b_norm = (np.clip(nda_b, window[0], window[1]) - window[0]) / (
-        window[1] - window[0]
-    )
+    nda_a_norm = (np.clip(nda_a, window[0], window[1]) - window[0]) / (window[1] - window[0])
+    nda_b_norm = (np.clip(nda_b, window[0], window[1]) - window[0]) / (window[1] - window[0])
 
     nda_colour = np.stack(
         [
@@ -325,12 +321,8 @@ def displayComparisonSlice(
         nda_colour_sag = hsv2rgb(nda_colour.__getitem__(sSag))
 
         imAx = axAx.imshow(nda_colour_ax, aspect=1.0, interpolation=None)
-        imCor = axCor.imshow(
-            nda_colour_cor, origin="lower", aspect=asp, interpolation=None
-        )
-        imSag = axSag.imshow(
-            nda_colour_sag, origin="lower", aspect=asp, interpolation=None
-        )
+        imCor = axCor.imshow(nda_colour_cor, origin="lower", aspect=asp, interpolation=None)
+        imSag = axSag.imshow(nda_colour_sag, origin="lower", aspect=asp, interpolation=None)
 
         axAx.axis("off")
         axCor.axis("off")
@@ -377,9 +369,7 @@ def displayComparisonSlice(
     return fig, axis, cut
 
 
-def overlayContour(
-    contour_input, fig, axis, cut, use_legend=True, color_base=plt.cm.Blues
-):
+def overlayContour(contour_input, fig, axis, cut, use_legend=True, color_base=plt.cm.Blues):
 
     # Check input type
     if type(contour_input) == sitk.Image:
@@ -393,9 +383,7 @@ def overlayContour(
             colors = color_base(np.linspace(0, 1, len(contour_input.keys())))
 
         else:
-            raise ValueError(
-                "If passing a dictionary, all values must be of type SimpleITK.Image"
-            )
+            raise ValueError("If passing a dictionary, all values must be of type SimpleITK.Image")
 
     else:
         raise ValueError(
