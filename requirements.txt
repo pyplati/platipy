@@ -5,7 +5,6 @@ scikit-image == 0.17.2
 click == 7.1.2
 pydicom == 2.1.2
 pynetdicom == 1.5.7
-ipywidgets == 7.6.3
 flask == 1.1.2
 flask-restful == 0.3.8
 flask-sqlalchemy == 2.4.4
@@ -18,3 +17,4 @@ requests == 2.25.1
 pandas == 1.1.5
 pymedphys == 0.37.1
 rt_utils == 1.1.4
+ipywidgets == 7.6.3
