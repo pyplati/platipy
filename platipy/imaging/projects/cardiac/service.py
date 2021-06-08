@@ -29,11 +29,6 @@ from platipy.imaging.projects.cardiac.run import (
     run_cardiac_segmentation,
 )
 
-from platipy.imaging.projects.cardiac.run_structureguided import (
-    CARDIAC_STRUCTURE_GUIDED_SETTINGS_DEFAULTS,
-    run_cardiac_segmentation_structure_guided,
-)
-
 
 @app.register("Cardiac Segmentation", default_settings=CARDIAC_SETTINGS_DEFAULTS)
 def cardiac_service(data_objects, working_dir, settings):
@@ -55,7 +50,7 @@ def cardiac_service(data_objects, working_dir, settings):
 
         img = sitk.ReadImage(load_path)
 
-        results = run_cardiac_segmentation(img, settings)
+        results, _ = run_cardiac_segmentation(img, settings=settings)
 
         # Save resulting masks and add to output for service
         for output in results:
@@ -91,7 +86,7 @@ def cardiac_service(data_objects, working_dir, settings):
 
 @app.register(
     "Cardiac Structure Guided Segmentation",
-    default_settings=CARDIAC_STRUCTURE_GUIDED_SETTINGS_DEFAULTS,
+    default_settings=CARDIAC_SETTINGS_DEFAULTS,
 )
 def cardiac_structure_guided_service(data_objects, working_dir, settings):
     """Runs the structure guided cardiac segmentation service"""
@@ -120,7 +115,7 @@ def cardiac_structure_guided_service(data_objects, working_dir, settings):
 
         wholeheart = sitk.ReadImage(data_object.children[0].path)
 
-        results = run_cardiac_segmentation_structure_guided(img, wholeheart, settings)
+        results = run_cardiac_segmentation(img, wholeheart, settings)
 
         # Save resulting masks and add to output for service
         for output in results:

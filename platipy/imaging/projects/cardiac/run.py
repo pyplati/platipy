@@ -42,6 +42,8 @@ from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
 from platipy.imaging.generation.mask import extend_mask
 
+from platipy.imaging.label.utils import binary_encode_structure_list
+
 ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:
     ATLAS_PATH = os.environ["ATLAS_PATH"]
@@ -121,7 +123,6 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "stop_condition_value_dict": {"LANTDESCARTERY_SPLINE": 1},
     },
     "return_as_cropped": False,
-    "return_additional_probability_dict": False,
 }
 
 
@@ -138,11 +139,9 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     """
 
     results = {}
-    return_as_cropped = settings["return_as_cropped"]
-    return_additional_probability_dict = settings["return_additional_probability_dict"]
+    results_prob = {}
 
-    if return_additional_probability_dict:
-        results_prob = {}
+    return_as_cropped = settings["return_as_cropped"]
 
     """
     Initialisation - Read in atlases
@@ -434,7 +433,12 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         # Register the atlases
         atlas_set[atlas_id]["DIR"] = {}
 
-        atlas_reg_image = atlas_set[atlas_id]["DIR_STRUCT"]["CT Image"]
+        if guide_structure:
+            label = "DIR_STRUCT"
+        else:
+            label = "RIR"
+
+        atlas_reg_image = atlas_set[atlas_id][label]["CT Image"]
         target_reg_image = img_crop
 
         if guide_structure:
@@ -468,11 +472,6 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
         # Save in the atlas dict
         atlas_set[atlas_id]["DIR"]["Transform"] = dir_tfm
-
-        if guide_structure:
-            label = "DIR_STRUCT"
-        else:
-            label = "RIR"
 
         atlas_set[atlas_id]["DIR"]["CT Image"] = apply_transform(
             input_image=atlas_set[atlas_id][label]["CT Image"],
@@ -550,8 +549,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     """
 
     template_img_binary = sitk.Cast((img * 0), sitk.sitkUInt8)
-    if return_additional_probability_dict:
-        template_img_prob = sitk.Cast((img * 0), sitk.sitkFloat64)
+    template_img_prob = sitk.Cast((img * 0), sitk.sitkFloat64)
 
     vote_structures = settings["label_fusion_settings"]["optimal_threshold"].keys()
 
@@ -620,12 +618,9 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
                 )
                 vessel_list.append(paste_img_binary)
 
-            # iterate over vessel list and construct prime-multiplied image
-            vessel_img_prime = 2 * vessel_list[0]
-            for prime, vessel in zip([], vessel_list[1:]):
-                vessel_img_prime = vessel_img_prime
-
-            results_prob[structure_name] = vessel_list
+            # Encode list of vessels
+            encoded_vessels = binary_encode_structure_list(vessel_list)
+            results_prob[structure_name] = encoded_vessels
 
     if return_as_cropped:
         results["CROP_IMAGE"] = img_crop

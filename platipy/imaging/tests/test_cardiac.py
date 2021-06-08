@@ -119,7 +119,9 @@ def test_cardiac_service(cardiac_data):
         # Run the service function.
         infer_case = cases[-1]
 
-        output = run_cardiac_segmentation(cardiac_data[infer_case]["CT"], settings=test_settings)
+        output, _ = run_cardiac_segmentation(
+            cardiac_data[infer_case]["CT"], settings=test_settings
+        )
 
         # Check we have a WHOLEHEART structure
         assert "WHOLEHEART" in output
@@ -196,12 +198,11 @@ def test_cardiac_structure_guided_service(cardiac_data):
         # Run the service function.
         infer_case = cases[-1]
 
-        output = run_cardiac_segmentation(
+        output, _ = run_cardiac_segmentation(
             cardiac_data[infer_case]["CT"],
             cardiac_data[infer_case]["WHOLEHEART"],
             settings=test_settings,
         )
-        print(output)
         # Check we have a WHOLEHEART structure
         assert "WHOLEHEART" in output
 

@@ -109,7 +109,7 @@ def test_animation_visualisation(nifti_data):
 
     imlist = [img[:, :, x] for x in range(0, img.GetSize()[2], 10)]
     with tempfile.NamedTemporaryFile("w", suffix=".gif") as output_file:
-        generate_animation_from_image_sequence(imlist, output_file=output_file.name)
+        _ = generate_animation_from_image_sequence(imlist, output_file=output_file.name)
 
         # Check that a GIF file has been generated
         with open(output_file.name, "rb") as f:
