@@ -32,7 +32,8 @@ generate - need to look at this)
 
 import SimpleITK as sitk
 
-from platipy.imaging.utils.tools import detect_holes, get_lung_mask
+from platipy.imaging.utils.lung import detect_holes, get_lung_mask
+
 
 def fast_mask(img, start, end):
     """Fast masking for area of a 3D volume .
@@ -202,18 +203,12 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
             label_slice = lung_mask[
                 :,
                 :,
-                z_size
-                - distance_from_sup_slice
-                - 10 : z_size
-                - distance_from_sup_slice,
+                z_size - distance_from_sup_slice - 10 : z_size - distance_from_sup_slice,
             ]  # works for both cases 22 and 17
             img_slice = img[
                 :,
                 :,
-                z_size
-                - distance_from_sup_slice
-                - 10 : z_size
-                - distance_from_sup_slice,
+                z_size - distance_from_sup_slice - 10 : z_size - distance_from_sup_slice,
             ]
 
             connected = connected_component.Execute(label_slice)
@@ -229,16 +224,12 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                     label_shape.GetElongation(label) > max_elong
                     and label_shape.GetPhysicalSize(label) > 2000
                 ):
-                    centre = img.TransformPhysicalPointToIndex(
-                        label_shape.GetCentroid(label)
-                    )
+                    centre = img.TransformPhysicalPointToIndex(label_shape.GetCentroid(label))
                     max_elong = label_shape.GetElongation(label)
                     airway_open = [int(centre[0]), int(centre[1]), int(centre[2])]
 
             # just check the opening is at the right location
-            centroid_mask_val = lung_mask.GetPixel(
-                airway_open[0], airway_open[1], airway_open[2]
-            )
+            centroid_mask_val = lung_mask.GetPixel(airway_open[0], airway_open[1], airway_open[2])
 
             if centroid_mask_val == 0:
                 print(
@@ -252,9 +243,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
             print("*Airway opening: " + str(airway_open))
             print(
                 "*Voxel HU at opening: "
-                + str(
-                    lung_mask.GetPixel(airway_open[0], airway_open[1], airway_open[2])
-                )
+                + str(lung_mask.GetPixel(airway_open[0], airway_open[1], airway_open[2]))
             )
 
             for lung_mask_hu in lung_mask_hu_values:
@@ -262,15 +251,12 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                 print("--------------------------------------------")
                 print("Extracting airways.  Iteration: " + str(loop_count))
                 print("*Lung Mask HU: " + str(lung_mask_hu))
-                print(
-                    "*Slices from sup for airway opening: "
-                    + str(distance_from_sup_slice)
-                )
+                print("*Slices from sup for airway opening: " + str(distance_from_sup_slice))
                 if k == 1:
                     print("*Mask median smoothing on")
                 loop_count += 1
 
-                connected_threshold_filter.SetSeed(airway_open)
+                connected_threshold_filter.SetSeedList([airway_open])
                 connected_threshold_filter.SetLower(-2000)
                 connected_threshold_filter.SetUpper(lung_mask_hu)
                 result = connected_threshold_filter.Execute(img)
@@ -323,10 +309,7 @@ def generate_airway_mask(dest, img, lung_mask, config_dict=None):
                 # ) / 2
                 # size_sim = abs(airway_mask_physical_size - target_size)
 
-                if (
-                    airway_mask_physical_size > best_result_sim
-                    and this_processed_correctly
-                ):
+                if airway_mask_physical_size > best_result_sim and this_processed_correctly:
                     best_result_sim = airway_mask_physical_size
                     best_result = result
                     best_lung_mask_hu = lung_mask_hu

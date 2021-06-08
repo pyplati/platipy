@@ -17,7 +17,7 @@ import click
 
 import SimpleITK as sitk
 
-from platipy.dicom.nifti_to_series.convert import convert_nifti_to_dicom_series
+from platipy.dicom.io.nifti_to_series import convert_nifti_to_dicom_series
 
 
 @click.command()

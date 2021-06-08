@@ -1,18 +1,35 @@
-# PlatiPy (Processing Library and Analysis Toolkit for Medical Imaging in Python)
+# PlatiPy 
+### Processing Library and Analysis Toolkit for Medical Imaging in Python
 
-This library contains tools and scripts used for image processing and analysis of medical images.
-The code makes use of ITK and VTK and is written in Python. Jupyter notebooks are provided where
+PlatiPy is a library of **amazing** tools for image processing and analysis - designed specifically for medical imaging! 
+
+PlatiPy was motivated by the need for ...
+
+PlatiPy is written in :snake: Python, and uses SimpleITK, VTK, and standard Python libraries. Jupyter notebooks are provided where
 possible, mainly for guidance on getting started with using the tools.
 
-## Getting Started
+## Table of content
 
-You can find the [PlatiPy documentation here](https://pyplati.github.io/platipy/).
+- [Getting started](#getting-started)
+    - [Requirements](#requirements)
+    - [Installation](#installation)
+    - [Documentation](#documentation)
+- [What can I do with PlatiPy?](#what-can-i-do-with-platipy)
 
+    - [Command line utiities](#command-line-utilities)
+        - [DICOM conversion](#dicom-conversion)
+- [License](#license)
+- [Links](#links)
+
+## Getting started
 ### Requirements
-
 - Python 3.6 or greater
 - See requirements.txt for required Python packages and requirements-dev.txt for librarites needed to contribute.
-
+### Installation
+- Python 3.6 or greater
+- See requirements.txt for required Python packages and requirements-dev.txt for librarites needed to contribute.
+### Documentation
+You can find the [PlatiPy documentation here](https://pyplati.github.io/platipy/).
 ## What can I do with ***platipy***?
 A lot! A good place to start is by looking in the **examples** directory. There are tools for:
  - Linear transformation image registration (rigid, affine, etc.)
@@ -35,6 +52,11 @@ Overlay a scalar field on an image:
 Create a comparison image, with vector fields:
 
 ![Figure 3](assets/hn_dvf_overlay.jpeg)
+
+
+### Command line utilities
+
+#### DICOM conversion 
 
 ## Contributing
 

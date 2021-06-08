@@ -14,145 +14,210 @@
 
 # pylint: disable=redefined-outer-name
 
-import os
 import tempfile
+from pathlib import Path
 
 import pytest
 
 import SimpleITK as sitk
+import numpy as np
 
-from platipy.imaging.tests.pull_data import fetch_data
+from platipy.imaging.generation.image import insert_sphere
 
-# os.environ["ATLAS_PATH"] = os.path.join(os.path.dirname(__file__), "data", "lung")
-
-from platipy.imaging.projects.cardiac.service import (
-    cardiac_service,
+from platipy.imaging.projects.cardiac.run import (
+    run_cardiac_segmentation,
     CARDIAC_SETTINGS_DEFAULTS,
 )
-from platipy.backend.models import DataObject
 
 
 @pytest.fixture
 def cardiac_data():
-    """Gets the data needed for the cardiac tests
+    """Generates the data needed for the cardiac tests
 
     Returns:
         dict -- Data for cardiac test
     """
-    return fetch_data(
-        "LCTSC",
-        patient_ids=[
-            "LCTSC-Train-S1-001",
-            "LCTSC-Train-S1-002",
-            "LCTSC-Train-S1-003",
-            "LCTSC-Train-S1-004",
-            "LCTSC-Train-S1-005",
-        ],
-    )
+
+    # Generate 5 pseudo CT images and the wholeheart masks
+    data = {}
+    for i in range(5):
+
+        case_id = str(i + 1).zfill(3)
+
+        ct_arr = np.ones((60, 128, 128)) * -1000
+        mask_arr = np.zeros((60, 128, 128))
+        submask_arr = np.zeros((60, 128, 128))
+
+        ct_arr = insert_sphere(ct_arr, sp_radius=25, sp_centre=(30 + i, 64 + i, 64))
+        mask_arr = insert_sphere(mask_arr, sp_radius=25, sp_centre=(30 + i, 64 + i, 64))
+        submask_arr = insert_sphere(submask_arr, sp_radius=5, sp_centre=(30 + i, 60 + i, 60))
+
+        ct = sitk.GetImageFromArray(ct_arr)
+        ct.SetSpacing((0.9 + i * 0.01, 0.9 + i * 0.01, 2.5 + i * 0.01))
+        ct.SetOrigin((320, -52, 60))
+
+        mask = sitk.GetImageFromArray(mask_arr)
+        mask.CopyInformation(ct)
+        mask = sitk.Cast(mask, sitk.sitkUInt8)
+
+        submask = sitk.GetImageFromArray(submask_arr)
+        submask.CopyInformation(ct)
+        submask = sitk.Cast(submask, sitk.sitkUInt8)
+
+        data[case_id] = {"CT": ct, "WHOLEHEART": mask, "SUBSTRUCTURE": submask}
+
+    return data
 
 
 def test_cardiac_service(cardiac_data):
-    """An end-to-end test to check that the cardiac service is running as expected
-    """
+    """An end-to-end test to check that the cardiac service is running as expected"""
 
-    working_dir = tempfile.mkdtemp()
+    with tempfile.TemporaryDirectory() as working_dir:
 
-    patient_ids = list(cardiac_data.keys())
+        working_path = Path(working_dir)
 
-    # Create a data object to be segmented
-    data_object = DataObject()
-    data_object.id = 1
-    data_object.path = os.path.join(cardiac_data[patient_ids[4]], "CT.nii.gz")
-    data_object.type = "FILE"
-    atlas_cases = list(cardiac_data.keys())[:4]
+        # Save off data
+        cases = list(cardiac_data.keys())
+        for case in cardiac_data:
 
-    atlas_dir = tempfile.mkdtemp()
-    for atlas_case in atlas_cases:
+            ct_path = working_path.joinpath(f"Case_{case}", "Images", f"Case_{case}_CROP.nii.gz")
+            ct_path.parent.mkdir(parents=True, exist_ok=True)
+            mask_path = working_path.joinpath(
+                f"Case_{case}", "Structures", f"Case_{case}_WHOLEHEART_CROP.nii.gz"
+            )
+            mask_path.parent.mkdir(parents=True, exist_ok=True)
 
-        atlas_case_dir = os.path.join(atlas_dir, atlas_case)
-        os.makedirs(atlas_case_dir)
+            sitk.WriteImage(cardiac_data[case]["CT"], str(ct_path))
+            sitk.WriteImage(cardiac_data[case]["WHOLEHEART"], str(mask_path))
 
-        ct_image_file = os.path.join(cardiac_data[atlas_case], "CT.nii.gz")
-        image = sitk.ReadImage(ct_image_file)
+        # Prepare algorithm settings
+        test_settings = CARDIAC_SETTINGS_DEFAULTS
+        test_settings["atlas_settings"]["atlas_id_list"] = cases[:-1]
+        test_settings["atlas_settings"]["atlas_path"] = str(working_path)
+        test_settings["atlas_settings"]["atlas_structure_list"] = ["WHOLEHEART"]
+        test_settings["atlas_settings"]["auto_crop_atlas"] = False
+        test_settings["deformable_registration_settings"]["iteration_staging"] = [5, 5, 5]
+        test_settings["iar_settings"]["reference_structure"] = None
+        test_settings["label_fusion_settings"]["optimal_threshold"] = {"WHOLEHEART": 0.5}
+        test_settings["vessel_spline_settings"]["vessel_name_list"] = []
+        test_settings["vessel_spline_settings"]["vessel_radius_mm_dict"] = {}
+        test_settings["vessel_spline_settings"]["scan_direction_dict"] = {}
+        test_settings["vessel_spline_settings"]["stop_condition_type_dict"] = {}
+        test_settings["vessel_spline_settings"]["stop_condition_value_dict"] = {}
 
-        left_lung_file = os.path.join(cardiac_data[atlas_case], "Struct_Lung_L.nii.gz")
-        right_lung_file = os.path.join(cardiac_data[atlas_case], "Struct_Lung_R.nii.gz")
-        left_lung = sitk.ReadImage(left_lung_file)
-        right_lung = sitk.ReadImage(right_lung_file)
+        test_settings["rigid_settings"] = {
+            "shrink_factors": [2, 1],
+            "smooth_sigmas": [0, 0],
+            "sampling_rate": 0.75,
+            "default_value": -1024,
+            "number_of_iterations": 5,
+            "final_interp": sitk.sitkBSpline,
+            "metric": "mean_squares",
+            "optimiser": "gradient_descent_line_search",
+        }
 
-        lungs = left_lung + right_lung
+        # Run the service function.
+        infer_case = cases[-1]
 
-        label_stats_image_filter = sitk.LabelStatisticsImageFilter()
-        label_stats_image_filter.Execute(image, lungs)
-        bounding_box = list(label_stats_image_filter.GetBoundingBox(1))
-        index = [bounding_box[x * 2] for x in range(3)]
-        size = [bounding_box[(x * 2) + 1] - bounding_box[x * 2] for x in range(3)]
+        output, _ = run_cardiac_segmentation(
+            cardiac_data[infer_case]["CT"], settings=test_settings
+        )
 
-        cropped_image = sitk.RegionOfInterest(image, size=size, index=index)
+        # Check we have a WHOLEHEART structure
+        assert "WHOLEHEART" in output
 
-        sitk.WriteImage(cropped_image, os.path.join(atlas_case_dir, "CT.nii.gz"))
-
-        for struct in os.listdir(cardiac_data[atlas_case]):
-
-            if not struct.startswith("Struct_"):
-                continue
-
-            mask = sitk.ReadImage(os.path.join(cardiac_data[atlas_case], struct))
-
-            cropped_mask = sitk.RegionOfInterest(mask, size=size, index=index)
-
-            sitk.WriteImage(cropped_mask, os.path.join(atlas_case_dir, struct))
-
-    test_settings = CARDIAC_SETTINGS_DEFAULTS
-    test_settings["atlasSettings"]["atlasIdList"] = [
-        os.path.basename(patient_ids[0]),
-        os.path.basename(patient_ids[1]),
-        os.path.basename(patient_ids[2]),
-    ]
-
-    test_settings["atlasSettings"]["atlasPath"] = atlas_dir
-    test_settings["atlasSettings"]["atlasStructures"] = ["Heart", "Lung_L", "Lung_R"]
-    test_settings["atlasSettings"]["atlasIdList"] = atlas_cases
-    test_settings["atlasSettings"]["atlasImageFormat"] = "{0}/CT.nii.gz"
-    test_settings["atlasSettings"]["atlasLabelFormat"] = "{0}/Struct_{1}.nii.gz"
-
-    # Run the DIR a bit more than default
-    test_settings["deformableSettings"]["iterationStaging"] = [15, 15, 15]
-
-    # Run the IAR using the heart
-    test_settings["IARSettings"]["referenceStructure"] = "Heart"
-
-    # Set the threshold
-    test_settings["labelFusionSettings"]["optimalThreshold"] = {
-        "Heart": 0.5,
-        "Lung_L": 0.5,
-        "Lung_R": 0.5,
-    }
-
-    # No vessels
-    test_settings["vesselSpliningSettings"]["vesselNameList"] = []
-
-    # Run the service function
-    results = cardiac_service([data_object], working_dir, CARDIAC_SETTINGS_DEFAULTS)
-
-    # Should have returned three output objects (Heart, Lung_L, Lung_R)
-    assert len(results) == 3
-
-    # Check the results are somewhat similar to the ground truth for
-    # this case. We don't expect good results here since the settings
-    # are set so low for this to run relatively quickly
-    for result in results:
-
-        auto_file = result.path
-        auto_mask = sitk.ReadImage(auto_file)
-        struct = os.path.basename(auto_file)
-
-        gt_file = os.path.join(cardiac_data[patient_ids[4]], f"Struct_{struct}")
-        gt_mask = sitk.ReadImage(gt_file)
+        # Check the result is similar to the GT
 
         label_overlap_filter = sitk.LabelOverlapMeasuresImageFilter()
+        auto_mask = output["WHOLEHEART"]
+        gt_mask = sitk.Cast(cardiac_data[infer_case]["WHOLEHEART"], auto_mask.GetPixelID())
         label_overlap_filter.Execute(auto_mask, gt_mask)
-        print(f"{struct}: {label_overlap_filter.GetDiceCoefficient()}")
+        assert label_overlap_filter.GetDiceCoefficient() > 0.99
 
-        # Let's just check that the DSC is resonable (> 0.8)
-        assert label_overlap_filter.GetDiceCoefficient() > 0.8
+
+def test_cardiac_structure_guided_service(cardiac_data):
+    """
+    An end-to-end test to check that the cardiac structure guided service is running as expected
+    """
+
+    with tempfile.TemporaryDirectory() as working_dir:
+
+        working_path = Path(working_dir)
+
+        # Save off data
+        cases = list(cardiac_data.keys())
+        for case in cardiac_data:
+
+            ct_path = working_path.joinpath(f"Case_{case}", "Images", f"Case_{case}_CROP.nii.gz")
+            ct_path.parent.mkdir(parents=True, exist_ok=True)
+            mask_path = working_path.joinpath(
+                f"Case_{case}", "Structures", f"Case_{case}_WHOLEHEART_CROP.nii.gz"
+            )
+            mask_path.parent.mkdir(parents=True, exist_ok=True)
+
+            substructure_path = working_path.joinpath(
+                f"Case_{case}", "Structures", f"Case_{case}_SUBSTRUCTURE_CROP.nii.gz"
+            )
+
+            sitk.WriteImage(cardiac_data[case]["CT"], str(ct_path))
+            sitk.WriteImage(cardiac_data[case]["WHOLEHEART"], str(mask_path))
+            sitk.WriteImage(cardiac_data[case]["SUBSTRUCTURE"], str(substructure_path))
+
+        # Prepare algorithm settings
+        test_settings = CARDIAC_SETTINGS_DEFAULTS
+        test_settings["atlas_settings"]["atlas_id_list"] = cases[:-1]
+        test_settings["atlas_settings"]["atlas_path"] = str(working_path)
+        test_settings["atlas_settings"]["atlas_structure_list"] = ["WHOLEHEART", "SUBSTRUCTURE"]
+        test_settings["atlas_settings"]["auto_crop_atlas"] = False
+        test_settings["atlas_settings"]["guide_structure_name"] = "WHOLEHEART"
+        test_settings["deformable_registration_settings"]["iteration_staging"] = [5, 5, 5]
+        test_settings["structure_guided_registration_settings"]["iteration_staging"] = [5, 5, 5]
+        test_settings["structure_guided_registration_settings"]["resolution_staging"] = [6, 3, 1.5]
+        test_settings["iar_settings"]["reference_structure"] = None
+        test_settings["label_fusion_settings"]["optimal_threshold"] = {
+            "WHOLEHEART": 0.5,
+            "SUBSTRUCTURE": 0.5,
+        }
+        test_settings["vessel_spline_settings"]["vessel_name_list"] = []
+        test_settings["vessel_spline_settings"]["vessel_radius_mm_dict"] = {}
+        test_settings["vessel_spline_settings"]["scan_direction_dict"] = {}
+        test_settings["vessel_spline_settings"]["stop_condition_type_dict"] = {}
+        test_settings["vessel_spline_settings"]["stop_condition_value_dict"] = {}
+
+        test_settings["rigid_settings"] = {
+            "shrink_factors": [2, 1],
+            "smooth_sigmas": [0, 0],
+            "sampling_rate": 0.75,
+            "default_value": -1024,
+            "number_of_iterations": 5,
+            "final_interp": sitk.sitkBSpline,
+            "metric": "mean_squares",
+            "optimiser": "gradient_descent_line_search",
+        }
+
+        # Run the service function.
+        infer_case = cases[-1]
+
+        output, _ = run_cardiac_segmentation(
+            cardiac_data[infer_case]["CT"],
+            cardiac_data[infer_case]["WHOLEHEART"],
+            settings=test_settings,
+        )
+        # Check we have a WHOLEHEART structure
+        assert "WHOLEHEART" in output
+
+        # Check we have a SUBSTRUCTURE structure
+        assert "SUBSTRUCTURE" in output
+
+        # Check the result is similar to the GT
+
+        label_overlap_filter = sitk.LabelOverlapMeasuresImageFilter()
+        auto_mask = output["WHOLEHEART"]
+        gt_mask = sitk.Cast(cardiac_data[infer_case]["WHOLEHEART"], auto_mask.GetPixelID())
+        label_overlap_filter.Execute(auto_mask, gt_mask)
+        assert label_overlap_filter.GetDiceCoefficient() > 0.9
+
+        auto_mask = output["SUBSTRUCTURE"]
+        gt_mask = sitk.Cast(cardiac_data[infer_case]["SUBSTRUCTURE"], auto_mask.GetPixelID())
+        label_overlap_filter.Execute(auto_mask, gt_mask)
+        assert label_overlap_filter.GetDiceCoefficient() > 0.9

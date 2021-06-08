@@ -41,6 +41,7 @@ logger.add(sys.stderr, level="DEBUG")
 
 
 def platipy_cli():
+    """Run the PlatiPy Command Line Interface"""
     if len(sys.argv) == 1 or not sys.argv[1] in tools:
         print("")
         print("  PlatiPy CLI (Command Line Interface)")

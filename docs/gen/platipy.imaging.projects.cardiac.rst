@@ -20,14 +20,6 @@ platipy.imaging.projects.cardiac.service module
    :undoc-members:
    :show-inheritance:
 
-platipy.imaging.projects.cardiac.utils module
----------------------------------------------
-
-.. automodule:: platipy.imaging.projects.cardiac.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 
 Module contents
 ---------------

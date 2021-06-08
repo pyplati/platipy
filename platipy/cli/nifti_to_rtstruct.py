@@ -14,7 +14,7 @@
 
 import click
 
-from platipy.dicom.nifti_to_rtstruct.convert import convert_nifti
+from platipy.dicom.io.nifti_to_rtstruct import convert_nifti
 
 
 @click.command()
@@ -24,22 +24,14 @@ from platipy.dicom.nifti_to_rtstruct.convert import convert_nifti
     required=True,
     help="Reference DICOM file from which header tags will be copied",
 )
-@click.option(
-    "--debug",
-    default=False,
-    is_flag=True,
-    help="Whether intermediate debug info is written",
-)
-@click.option(
-    "--mask", "-m", multiple=True, required=True, help="Mask pairs with name,filename"
-)
+@click.option("--mask", "-m", multiple=True, required=True, help="Mask pairs with name,filename")
 @click.option("--out_rt_filename", "-o", required=True, help="Name of RT struct output")
-def click_command(dcm_file, debug, mask, out_rt_filename):
+def click_command(dcm_file, mask, out_rt_filename):
     """
     Convert Nifti masks to Dicom RTStruct
     """
 
-    convert_nifti(dcm_file, mask, out_rt_filename, debug=debug)
+    convert_nifti(dcm_file, mask, out_rt_filename)
 
 
 if __name__ == "__main__":
