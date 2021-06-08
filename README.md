@@ -3,7 +3,7 @@
 
 PlatiPy is a library of **amazing** tools for image processing and analysis - designed specifically for medical imaging! 
 
-PlatiPy was motivated by the need for ...
+PlatiPy was motivated by the need for a simple way to use, visualise, process, and analyse medical images.
 
 PlatiPy is written in :snake: Python, and uses SimpleITK, VTK, and standard Python libraries. Jupyter notebooks are provided where
 possible, mainly for guidance on getting started with using the tools.
@@ -113,4 +113,4 @@ from the root directory of the toolbox.
 ## Authors
 
 * **Phillip Chlap** - [phillip.chlap@unsw.edu.au](phillip.chlap@unsw.edu.au)
-* **Robert Finnegan** - [rfin5459@uni.sydney.edu.au](rfin5459@uni.sydney.edu.au)
+* **Robert Finnegan** - [robert.finnegan@sydney.edu.au](robert.finnegan@sydney.edu.au)
