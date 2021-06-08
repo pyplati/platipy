@@ -1,290 +1,194 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Getting Started" href="getting_started.html" />
 
-
-<!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>PlatiPy documentation &mdash; PlatiPy  documentation</title>
-  
-
-  
-  
-
-  
-
-  
-  
+    <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
+        <title>Home - PlatiPy documentation</title>
+      <link rel="stylesheet" href="_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
+    <link rel="stylesheet" href="_static/pygments.css">
+    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="_static/pygments_dark.css">
     
 
+
+<style>
+  :root {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
   
-
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
+    }
+  }
+
+  /* For allowing end-user-specific overrides */
+  .override-light {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
   
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  }
+  .override-dark {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
   
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="PlatiPy  documentation" href="#"/> 
-
-  
-  <script src="_static/js/modernizr.min.js"></script>
-
-</head>
-
-<body class="wy-body-for-nav" role="document">
-
-   
-  <div class="wy-grid-for-nav">
-
+  }
+</style><link rel="stylesheet" href="_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
+  <body dir="">
     
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
-          
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z"/>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="20" y2="12" />
+      <line x1="6" y1="18" x2="20" y2="18" />
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+</svg>
 
-          
-            <a href="#" class="icon icon-home"> PlatiPy
-          
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
 
-          
-          </a>
 
-          
-            
-            
-          
 
-          
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="#"><div class="brand">PlatiPy  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
+  
+  
+  <span class="sidebar-brand-text">PlatiPy  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html">
+  <input class="sidebar-search" placeholder=Search name="q">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+</ul>
+<p><span class="caption-text">Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="visualiser.html">Image Visualiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="registration.html">Registration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Tools</a></li>
+</ul>
+<p><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="_examples/visualise.html">Visualise Images</a></li>
+</ul>
+
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-                <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">PlatiPy documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#command-line-interface-cli">Command Line Interface (CLI)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#python">Python</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#jupyter-notebooks">Jupyter Notebooks</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-reference">Module Reference</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#links">Links</a></li>
-</ul>
-</li>
-</ul>
-
-            
-          
-        </div>
+</div>
       </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">PlatiPy</a>
-        
-      </nav>
-
-
-      
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
-  <ul class="wy-breadcrumbs">
-    
-      <li><a href="#">Docs</a> &raquo;</li>
-        
-      <li>PlatiPy documentation</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
-        
-            
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
-          
-        
-      </li>
-    
-  </ul>
-
-  
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-            
-  <div class="section" id="platipy-documentation">
+    </div>
+  </aside>
+  <main class="main">
+    <div class="content">
+      <article role="main">
+        <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        </label>
+        <section id="platipy-documentation">
 <h1>PlatiPy documentation<a class="headerlink" href="#platipy-documentation" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">PlatiPy documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#command-line-interface-cli">Command Line Interface (CLI)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#python">Python</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#links">Links</a></li>
-</ul>
-</li>
-</ul>
-</div>
 <p>PlatiPy is a <strong>P</strong>rocessing <strong>L</strong>ibrary and <strong>A</strong>nalysis <strong>T</strong>oolkit for Medical
 <strong>I</strong>maging in <strong>Py</strong>thon. It contains a collections of tools and scripts useful for processing
 and analysis of medical images.</p>
 <p>Generally these tools are accesible via a Command Line Interface or by calling them in a Python
 script directly. Examples are provided in Jupyter Notebooks to demonstrate how to use them from
 within Python code.</p>
-<div class="section" id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>Currently this repository is not available in the official Python repositories. However, you can
-install it with pip using the following command:</p>
-<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">git+git://github.com/pyplati/platipy</span></code></p>
-<p>If you have already installed the library, you can install the latest updates using:</p>
-<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">git+git://github.com/pyplati/platipy</span></code></p>
+<div class="toctree-wrapper compound">
 </div>
-<div class="section" id="getting-started">
-<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="command-line-interface-cli">
-<h3>Command Line Interface (CLI)<a class="headerlink" href="#command-line-interface-cli" title="Permalink to this headline">¶</a></h3>
-<p>Once you have installed PlatiPy, the <code class="docutils literal notranslate"><span class="pre">platipy</span></code> command should be available in your environment.
-Try the following command to check that is is working:</p>
-<p><code class="docutils literal notranslate"><span class="pre">platipy</span> <span class="pre">--help</span></code></p>
-<p>This lists the different tools which are available via the command line interface. Learn more about
-these tools and how to use them here: <a class="reference internal" href="cli.html"><span class="doc">here</span></a>.</p>
+<div class="toctree-wrapper compound">
 </div>
-<div class="section" id="python">
-<h3>Python<a class="headerlink" href="#python" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="jupyter-notebooks">
-<h4>Jupyter Notebooks<a class="headerlink" href="#jupyter-notebooks" title="Permalink to this headline">¶</a></h4>
-<p>The following Jupyter Notebooks are provided to demonstrate how to use some of the PlatiPy
-functionality from your Python code:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/pyplati/platipy/blob/master/platipy/dicom/nifti_to_rtstruct/convert_sample.ipynb">Nifti to RTStruct</a></p></li>
-<li><p><a class="reference external" href="https://github.com/pyplati/platipy/blob/master/platipy/dicom/rtstruct_to_nifti/convert_sample.ipynb">RTStruct to Nifti</a></p></li>
-<li><p><a class="reference external" href="https://github.com/pyplati/platipy/blob/master/platipy/imaging/visualisation/examples/visualise_segmentation.ipynb">Visualise Segmentation</a></p></li>
-</ul>
+<div class="toctree-wrapper compound">
 </div>
-<div class="section" id="module-reference">
-<h4>Module Reference<a class="headerlink" href="#module-reference" title="Permalink to this headline">¶</a></h4>
-<p>You can find more detailed documentation on how to use the different classes and functions found in
-PlatiPy <a class="reference internal" href="gen/modules.html"><span class="doc">here</span></a>.</p>
-</div>
-</div>
-</div>
-<div class="section" id="links">
-<h2>Links<a class="headerlink" href="#links" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li><p><a class="reference internal" href="cli.html"><span class="doc">Command Line Tools</span></a></p></li>
-<li><p><a class="reference internal" href="gen/modules.html"><span class="doc">PlatiPy Modules</span></a></p></li>
-</ul>
-</div>
-</div>
+</section>
 
-
-           </div>
-          </div>
-          <footer>
-  
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>
-        &copy; Copyright 2020, Phillip Chlap &amp; Rob Finnegan.
-
-    </p>
-  </div> 
-
-</footer>
-
+      </article>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="getting_started.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Getting Started</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          
         </div>
-      </div>
 
-    </section>
-
-  </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="_static/language_data.js"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
-      jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
-      });
-  </script>
-   
-
-</body>
+        <div class="related-information">
+              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+            |
+            <a class="muted-link" href="_sources/index.rst.txt"
+               rel="nofollow">
+              Show Source
+            </a>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </main>
+</div>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
 </html>

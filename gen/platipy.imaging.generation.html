@@ -1,0 +1,573 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
+
+    <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
+        <title>platipy.imaging.generation package - PlatiPy documentation</title>
+      <link rel="stylesheet" href="../_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
+    <link rel="stylesheet" href="../_static/pygments.css">
+    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="../_static/pygments_dark.css">
+    
+
+
+<style>
+  :root {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+
+  /* For allowing end-user-specific overrides */
+  .override-light {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  .override-dark {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+</style><link rel="stylesheet" href="../_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
+  <body dir="">
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z"/>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="20" y2="12" />
+      <line x1="6" y1="18" x2="20" y2="18" />
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">PlatiPy  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  
+  <span class="sidebar-brand-text">PlatiPy  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html">
+  <input class="sidebar-search" placeholder=Search name="q">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+</ul>
+<p><span class="caption-text">Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../visualiser.html">Image Visualiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registration.html">Registration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Tools</a></li>
+</ul>
+<p><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_examples/visualise.html">Visualise Images</a></li>
+</ul>
+
+</div>
+</div>
+      </div>
+      
+    </div>
+  </aside>
+  <main class="main">
+    <div class="content">
+      <article role="main">
+        <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        </label>
+        <section id="platipy-imaging-generation-package">
+<h1>platipy.imaging.generation package<a class="headerlink" href="#platipy-imaging-generation-package" title="Permalink to this headline">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="module-platipy.imaging.generation.augment">
+<span id="platipy-imaging-generation-augment-module"></span><h2>platipy.imaging.generation.augment module<a class="headerlink" href="#module-platipy.imaging.generation.augment" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="platipy.imaging.generation.augment.ContractAugment">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.augment.</span></code><code class="sig-name descname"><span class="pre">ContractAugment</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_contract</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bone_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.augment.ContractAugment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#platipy.imaging.generation.augment.DeformableAugment" title="platipy.imaging.generation.augment.DeformableAugment"><code class="xref py py-class docutils literal notranslate"><span class="pre">platipy.imaging.generation.augment.DeformableAugment</span></code></a></p>
+<dl class="py method">
+<dt id="platipy.imaging.generation.augment.ContractAugment.augment">
+<code class="sig-name descname"><span class="pre">augment</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.augment.ContractAugment.augment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt id="platipy.imaging.generation.augment.DeformableAugment">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.augment.</span></code><code class="sig-name descname"><span class="pre">DeformableAugment</span></code><a class="headerlink" href="#platipy.imaging.generation.augment.DeformableAugment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<dl class="py method">
+<dt id="platipy.imaging.generation.augment.DeformableAugment.augment">
+<em class="property"><span class="pre">abstract</span> </em><code class="sig-name descname"><span class="pre">augment</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.augment.DeformableAugment.augment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt id="platipy.imaging.generation.augment.ExpandAugment">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.augment.</span></code><code class="sig-name descname"><span class="pre">ExpandAugment</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_expand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bone_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.augment.ExpandAugment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#platipy.imaging.generation.augment.DeformableAugment" title="platipy.imaging.generation.augment.DeformableAugment"><code class="xref py py-class docutils literal notranslate"><span class="pre">platipy.imaging.generation.augment.DeformableAugment</span></code></a></p>
+<dl class="py method">
+<dt id="platipy.imaging.generation.augment.ExpandAugment.augment">
+<code class="sig-name descname"><span class="pre">augment</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.augment.ExpandAugment.augment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt id="platipy.imaging.generation.augment.ShiftAugment">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.augment.</span></code><code class="sig-name descname"><span class="pre">ShiftAugment</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.augment.ShiftAugment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#platipy.imaging.generation.augment.DeformableAugment" title="platipy.imaging.generation.augment.DeformableAugment"><code class="xref py py-class docutils literal notranslate"><span class="pre">platipy.imaging.generation.augment.DeformableAugment</span></code></a></p>
+<dl class="py method">
+<dt id="platipy.imaging.generation.augment.ShiftAugment.augment">
+<code class="sig-name descname"><span class="pre">augment</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.augment.ShiftAugment.augment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.generation.augment.apply_augmentation">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.augment.</span></code><code class="sig-name descname"><span class="pre">apply_augmentation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augmentation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.augment.apply_augmentation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.generation.augment.generate_random_augmentation">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.augment.</span></code><code class="sig-name descname"><span class="pre">generate_random_augmentation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ct_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.augment.generate_random_augmentation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</section>
+<section id="module-platipy.imaging.generation.dvf">
+<span id="platipy-imaging-generation-dvf-module"></span><h2>platipy.imaging.generation.dvf module<a class="headerlink" href="#module-platipy.imaging.generation.dvf" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.generation.dvf.generate_field_asymmetric_contract">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.dvf.</span></code><code class="sig-name descname"><span class="pre">generate_field_asymmetric_contract</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_asymmetric_contract</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.dvf.generate_field_asymmetric_contract" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contracts a structure (defined using a binary mask) using a specified vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The binary mask to contract.</p></li>
+<li><p><strong>vector_asymmetric_contract</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The contraction vector applied to the entire
+binary mask.
+Convention: (+/-, +/-, +/-) = (sup/inf,
+post/ant, left/right) border is contracted.
+Defined in millimetres.
+Defaults to (10, 10, 10).</p></li>
+<li><p><strong>gaussian_smooth</strong> (<em>int | list</em><em>, </em><em>optional</em>) – Scale of a Gaussian kernel used to smooth the
+deformation vector field. Defaults to 5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The binary mask following the contract.
+[SimpleITK.DisplacementFieldTransform]: The transform representing the contract.
+[SimpleITK.Image]: The displacement vector field representing the contract.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>[SimpleITK.Image]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.generation.dvf.generate_field_asymmetric_extend">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.dvf.</span></code><code class="sig-name descname"><span class="pre">generate_field_asymmetric_extend</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_asymmetric_extend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.dvf.generate_field_asymmetric_extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extends a structure (defined using a binary mask) using a specified vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The binary mask to extend.</p></li>
+<li><p><strong>vector_asymmetric_extend</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The extension vector applied to the entire
+binary mask.
+Convention: (+/-, +/-, +/-) = (sup/inf,
+post/ant, left/right) border is extended.
+Defined in millimetres.
+Defaults to (10, 10, 10).</p></li>
+<li><p><strong>gaussian_smooth</strong> (<em>int | list</em><em>, </em><em>optional</em>) – Scale of a Gaussian kernel used to smooth the
+deformation vector field. Defaults to 5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The binary mask following the extension.
+[SimpleITK.DisplacementFieldTransform]: The transform representing the extension.
+[SimpleITK.Image]: The displacement vector field representing the extension.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>[SimpleITK.Image]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.generation.dvf.generate_field_expand">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.dvf.</span></code><code class="sig-name descname"><span class="pre">generate_field_expand</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bone_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_internal_deformation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.dvf.generate_field_expand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expands a structure (defined using a binary mask) using a specified vector to define the
+dilation kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The binary mask to expand.</p></li>
+<li><p><strong>bone_mask</strong> (<em>[</em><em>SimpleITK.Image</em><em>, </em><em>optional</em><em>]</em>) – A binary mask defining regions where we expect
+restricted deformations.</p></li>
+<li><p><strong>vector_asymmetric_extend</strong> (int <a href="#id1"><span class="problematic" id="id2">|</span></a>tuple, optional) – <dl class="simple">
+<dt>The expansion vector applied to the entire</dt><dd><p>binary mask.</p>
+</dd>
+</dl>
+<p>Convention: (z,y,x) size of expansion kernel.
+Defined in millimetres.
+Defaults to 3.</p>
+</p></li>
+<li><p><strong>gaussian_smooth</strong> (<em>int | list</em><em>, </em><em>optional</em>) – Scale of a Gaussian kernel used to smooth the
+deformation vector field. Defaults to 5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The binary mask following the expansion.
+[SimpleITK.DisplacementFieldTransform]: The transform representing the expansion.
+[SimpleITK.Image]: The displacement vector field representing the expansion.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>[SimpleITK.Image]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.generation.dvf.generate_field_radial_bend">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.dvf.</span></code><code class="sig-name descname"><span class="pre">generate_field_radial_bend</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">body_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_of_rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">-</span> <span class="pre">1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_bend_from_reference_point</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('z',</span> <span class="pre">'inf')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.dvf.generate_field_radial_bend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a synthetic field characterised by radial bending.
+Typically, this field would be used to simulate a moving head and so masking is important.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The image to be deformed.</p></li>
+<li><p><strong>body_mask</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – A binary mask in which the deformation field will be defined</p></li>
+<li><p><strong>reference_point</strong> (<em>[</em><em>tuple</em><em>]</em>) – The point (z,y,x) about which the rotation field is defined.</p></li>
+<li><p><strong>axis_of_rotation</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The axis of rotation (z,y,x). Defaults to [0, 0, -1].</p></li>
+<li><p><strong>scale</strong> (<em>int</em><em>, </em><em>optional</em>) – The deformation vector length at each point will equal scale
+multiplied by the distance to that point from reference_point.
+Defaults to 1.</p></li>
+<li><p><strong>mask_bend_from_reference_point</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The dimension (z=axial, y=coronal,
+x=sagittal) and limit (inf/sup, post/ant,
+left/right) for masking the vector field,
+relative to the reference point. Defaults
+to (“z”, “inf”).</p></li>
+<li><p><strong>gaussian_smooth</strong> (<em>int | list</em><em>, </em><em>optional</em>) – Scale of a Gaussian kernel used to smooth the
+deformation vector field. Defaults to 5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The binary mask following the expansion.
+[SimpleITK.DisplacementFieldTransform]: The transform representing the expansion.
+[SimpleITK.Image]: The displacement vector field representing the expansion.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>[SimpleITK.Image]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.generation.dvf.generate_field_shift">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.dvf.</span></code><code class="sig-name descname"><span class="pre">generate_field_shift</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.dvf.generate_field_shift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shifts (moves) a structure defined using a binary mask.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The binary mask to shift.</p></li>
+<li><p><strong>vector_shift</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The displacement vector applied to the entire binary mask.
+Convention: (+/-, +/-, +/-) = (sup/inf, post/ant,
+left/right) shift.
+Defined in millimetres.
+Defaults to (10, 10, 10).</p></li>
+<li><p><strong>gaussian_smooth</strong> (<em>int | list</em><em>, </em><em>optional</em>) – Scale of a Gaussian kernel used to smooth the
+deformation vector field. Defaults to 5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The binary mask following the shift.
+[SimpleITK.DisplacementFieldTransform]: The transform representing the shift.
+[SimpleITK.Image]: The displacement vector field representing the shift.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>[SimpleITK.Image]</p>
+</dd>
+</dl>
+</dd></dl>
+</section>
+<section id="module-platipy.imaging.generation.image">
+<span id="platipy-imaging-generation-image-module"></span><h2>platipy.imaging.generation.image module<a class="headerlink" href="#module-platipy.imaging.generation.image" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.generation.image.insert_cylinder">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.image.</span></code><code class="sig-name descname"><span class="pre">insert_cylinder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cyl_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cyl_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cyl_centre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.image.insert_cylinder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a cylinder into the given array.
+The cylinder vertical extent is +/- 0.5 * height</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arr</strong> (<em>np.ndarray</em>) – The array into which the cylinder is inserted</p></li>
+<li><p><strong>cyl_radius</strong> (<em>int</em><em>, </em><em>optional</em>) – Cylinder radius. Defaults to 4.</p></li>
+<li><p><strong>cyl_height</strong> (<em>int</em><em>, </em><em>optional</em>) – Cylinder height. Defaults to 2.</p></li>
+<li><p><strong>cyl_centre</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Cylinder centre. Defaults to (0, 0, 0).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The original array with a cylinder (value 1)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.generation.image.insert_cylinder_image">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.image.</span></code><code class="sig-name descname"><span class="pre">insert_cylinder_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cyl_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(5,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cyl_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cyl_centre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.image.insert_cylinder_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a cylinder into an image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>SimpleITK.Image</em>) – </p></li>
+<li><p><strong>cyl_radius</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Cylinder radius, can be defined as a single value
+or a tuple (will generate an ellipsoid). Defaults to (5,5).</p></li>
+<li><p><strong>cyl_height</strong> (<em>int</em><em>, </em><em>optional</em>) – Cylinder height. Defaults to 10.</p></li>
+<li><p><strong>cyl_centre</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Cylinder centre. Defaults to (0,0,0).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Image with cylinder inserted</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>SimpleITK.Image</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.generation.image.insert_sphere">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.image.</span></code><code class="sig-name descname"><span class="pre">insert_sphere</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_centre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.image.insert_sphere" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a sphere into the given array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arr</strong> (<em>np.array</em>) – Array in which to insert sphere</p></li>
+<li><p><strong>sp_radius</strong> (<em>int</em><em>, </em><em>optional</em>) – The radius of the sphere. Defaults to 4.</p></li>
+<li><p><strong>sp_centre</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The position at which the sphere should be inserted. Defaults
+to (0, 0, 0).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An array with the sphere inserted</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.generation.image.insert_sphere_image">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.image.</span></code><code class="sig-name descname"><span class="pre">insert_sphere_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_centre</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.image.insert_sphere_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a sphere into an image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>sitk.Image</em>) – Image in which to insert sphere</p></li>
+<li><p><strong>sp_radius</strong> (<em>int | list</em><em>, </em><em>optional</em>) – The radius of the sphere.
+Can also be defined as a vector. Defaults to 4.</p></li>
+<li><p><strong>sp_centre</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The position at which the sphere should be inserted. Defaults
+to (0, 0, 0).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An array with the sphere inserted</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+</section>
+<section id="module-platipy.imaging.generation.mask">
+<span id="platipy-imaging-generation-mask-module"></span><h2>platipy.imaging.generation.mask module<a class="headerlink" href="#module-platipy.imaging.generation.mask" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.imaging.generation.mask.extend_mask">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.mask.</span></code><code class="sig-name descname"><span class="pre">extend_mask</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('ax',</span> <span class="pre">'sup')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interior_mm_shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.mask.extend_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extends a binary label (mask) a number of slices.
+PROTOTYPE!
+Currently can only extend in axial directions (superior of inferior).
+The shape of the extended part is based on some number of interior slices, as defined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask</strong> (<em>SimpleITK.Image</em>) – The input binary label (mask).</p></li>
+<li><p><strong>direction</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The direction as a tuple. First element is axis, second
+element is direction. Defaults to (“ax”, “sup”).</p></li>
+<li><p><strong>extension_mm</strong> (<em>int</em><em>, </em><em>optional</em>) – The extension in millimeters. Defaults to 10.</p></li>
+<li><p><strong>interior_mm_shape</strong> (<em>int</em><em>, </em><em>optional</em>) – The length on which to base the extension shape.
+Defaults to 10.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The output (extended mask).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>SimpleITK.Image</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.generation.mask.get_bone_mask">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.mask.</span></code><code class="sig-name descname"><span class="pre">get_bone_mask</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">350</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_hole_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.mask.get_bone_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically generate a binary mask of bones from a CT image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The patient x-ray CT image to segment.</p></li>
+<li><p><strong>lower_threshold</strong> (<em>int</em><em>, </em><em>optional</em>) – Lower voxel value for threshold. Defaults to 350.</p></li>
+<li><p><strong>upper_threshold</strong> (<em>int</em><em>, </em><em>optional</em>) – Upper voxel value for threshold. Defaults to 3500.</p></li>
+<li><p><strong>max_hole_size</strong> (<em>int | list | bool</em><em>, </em><em>optional</em>) – Maximum hole size to be filled in millimetres.
+Can be specified as a vector (z,y,x). Defaults
+to 5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The binary bone mask.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>[SimpleITK.Image]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.generation.mask.get_external_mask">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.mask.</span></code><code class="sig-name descname"><span class="pre">get_external_mask</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_hole_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.mask.get_external_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically generate a binary mask of the patient external contour.
+Uses slice-wise convex hull generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The patient x-ray CT image to segment. May work with other
+modalities with modified thresholds.</p></li>
+<li><p><strong>lower_threshold</strong> (<em>int</em><em>, </em><em>optional</em>) – Lower voxel value for threshold. Defaults to -100.</p></li>
+<li><p><strong>upper_threshold</strong> (<em>int</em><em>, </em><em>optional</em>) – Upper voxel value for threshold. Defaults to 2500.</p></li>
+<li><p><strong>dilate</strong> (<em>int | list | bool</em><em>, </em><em>optional</em>) – Dilation filter size applied to the binary mask. Can
+be specified as a vector (z,y,x). Defaults to 1.</p></li>
+<li><p><strong>max_hole_size</strong> (<em>int  | list | bool</em><em>, </em><em>optional</em>) – Maximum hole size to be filled in
+millimetres. Can be specified as a vector
+(z,y,x). Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The binary external mask.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>[SimpleITK.Image]</p>
+</dd>
+</dl>
+</dd></dl>
+</section>
+<section id="module-platipy.imaging.generation">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.generation" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+
+      </article>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+
+        <div class="related-information">
+              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+            |
+            <a class="muted-link" href="../_sources/gen/platipy.imaging.generation.rst.txt"
+               rel="nofollow">
+              Show Source
+            </a>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">platipy.imaging.generation package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-platipy.imaging.generation.augment">platipy.imaging.generation.augment module</a></li>
+<li><a class="reference internal" href="#module-platipy.imaging.generation.dvf">platipy.imaging.generation.dvf module</a></li>
+<li><a class="reference internal" href="#module-platipy.imaging.generation.image">platipy.imaging.generation.image module</a></li>
+<li><a class="reference internal" href="#module-platipy.imaging.generation.mask">platipy.imaging.generation.mask module</a></li>
+<li><a class="reference internal" href="#module-platipy.imaging.generation">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </main>
+</div>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
+</html>
