@@ -21,13 +21,11 @@ jobs:
         python -m pip install --upgrade pip
         python setup.py install
         pip install -r requirements-dev.txt
-    - name: Build Docs
-      run: |
-        sphinx-build -b html -a docs docs/site
-
-    # - name: Test with pytest
+    # - name: Build Docs
     #   run: |
-    #     pip install pytest
-    #     pip install pytest-cov
-    #     pytest tests.py --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+    #     sphinx-build -b html -a docs docs/site
+
+    - name: Run Tests
+      run: |
+        pytest
 
