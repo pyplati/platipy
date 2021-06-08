@@ -16,5 +16,5 @@ psutil == 5.8.0
 gunicorn == 20.0.4
 requests == 2.25.1
 pandas == 1.1.5
-pymedphys == 0.35.0
+pymedphys == 0.37.1
 rt_utils == 1.1.4
