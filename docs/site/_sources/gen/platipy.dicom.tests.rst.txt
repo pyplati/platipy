@@ -4,18 +4,18 @@ platipy.dicom.tests package
 Submodules
 ----------
 
-platipy.dicom.tests.test\_convert\_nifti module
------------------------------------------------
+platipy.dicom.tests.test\_convert module
+----------------------------------------
 
-.. automodule:: platipy.dicom.tests.test_convert_nifti
+.. automodule:: platipy.dicom.tests.test_convert
    :members:
    :undoc-members:
    :show-inheritance:
 
-platipy.dicom.tests.test\_convert\_rtstruct module
---------------------------------------------------
+platipy.dicom.tests.test\_crawl module
+--------------------------------------
 
-.. automodule:: platipy.dicom.tests.test_convert_rtstruct
+.. automodule:: platipy.dicom.tests.test_crawl
    :members:
    :undoc-members:
    :show-inheritance:

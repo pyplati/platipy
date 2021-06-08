@@ -13,29 +13,52 @@
 # limitations under the License.
 
 import pathlib
+import shutil
+import tempfile
+
+import imageio
 
 import numpy as np
 import SimpleITK as sitk
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib.animation import FileMovieWriter
 
-from matplotlib import rcParams
+
+class FileWriter(FileMovieWriter):
+    """Class to write image frames for animation"""
+
+    supported_formats = ["png"]
+
+    # pylint: disable=arguments-differ, attribute-defined-outside-init
+    def setup(self, fig, dpi, frame_prefix):
+        super().setup(fig, dpi, frame_prefix)
+        self.fname_format_str = "%s%%d.%s"
+        self.temp_prefix, self.frame_format = self.outfile.split(".")
+
+    def grab_frame(self, **savefig_kwargs):
+
+        with self._frame_sink() as myframesink:
+            self.fig.savefig(myframesink, format="png", dpi=self.dpi, **savefig_kwargs)
+
+    def finish(self):
+        self._frame_sink().close()
 
 
 def generate_animation_from_image_sequence(
     image_list,
     output_file="animation.gif",
     fps=10,
-    contour_list=False,
-    scalar_list=False,
+    contour_list=None,
+    scalar_list=None,
     figure_size_in=6,
     image_cmap=plt.cm.get_cmap("Greys_r"),
     contour_cmap=plt.cm.get_cmap("jet"),
     scalar_cmap=plt.cm.get_cmap("magma"),
     image_window=[-1000, 800],
-    scalar_min=False,
-    scalar_max=False,
+    scalar_min=None,
+    scalar_max=None,
     scalar_alpha=0.5,
     image_origin="lower",
 ):
@@ -71,16 +94,8 @@ def generate_animation_from_image_sequence(
         matplotlib.animation: The animation.
     """
 
-    # We need to check for ImageMagick
-    # There may be other tools that can be used
-    rcParams["animation.convert_path"] = r"/usr/bin/convert"
-    convert_path = pathlib.Path(rcParams["animation.convert_path"])
-
-    if not convert_path.exists():
-        raise RuntimeError("To use this function you need ImageMagick.")
-
-    if not all(isinstance(i, sitk.Image) for i in image_list):
-        raise ValueError("Each image must be a SimpleITK image (sitk.Image).")
+    if not isinstance(image_list[0], sitk.Image):
+        raise ValueError("Each image must be a SimplITK image (sitk.Image).")
 
     # Get the image information
     x_size, y_size = image_list[0].GetSize()
@@ -105,9 +120,9 @@ def generate_animation_from_image_sequence(
 
     # We now deal with the contours
     # These can be given as a list of sitk.Image objects or a list of dicts {"name":sitk.Image}
-    if contour_list is not False:
+    if contour_list:
 
-        if not isinstance(contour_list[0], dict):
+        if isinstance(contour_list[0], sitk.Image):
             plot_dict = {"_": contour_list[0]}
             contour_labels = False
         else:
@@ -135,11 +150,11 @@ def generate_animation_from_image_sequence(
                 fontsize=min([10, 16 * approx_scaling]),
             )
 
-    if scalar_list is not False:
+    if scalar_list:
 
-        if scalar_min is False:
+        if not scalar_min:
             scalar_min = np.min([sitk.GetArrayFromImage(i) for i in scalar_list])
-        if scalar_max is False:
+        if not scalar_max:
             scalar_max = np.max([sitk.GetArrayFromImage(i) for i in scalar_list])
 
         display_scalar = ax.imshow(
@@ -165,7 +180,7 @@ def generate_animation_from_image_sequence(
         display_image.set_data(nda)
 
         # TO DO - add in code for scalar overlay
-        if contour_list is not False:
+        if contour_list:
             try:
                 ax.collections = []
             except ValueError:
@@ -187,14 +202,14 @@ def generate_animation_from_image_sequence(
                     linewidths=2,
                 )
 
-        if scalar_list is not False:
+        if scalar_list:
             nda = sitk.GetArrayFromImage(scalar_list[i])
             display_scalar.set_data(np.ma.masked_outside(nda, scalar_min, scalar_max))
 
         return (display_image,)
 
     # create animation using the animate() function with no repeat
-    my_animation = animation.FuncAnimation(
+    animation_result = animation.FuncAnimation(
         fig,
         animate,
         frames=np.arange(0, len(image_list), 1),
@@ -203,7 +218,23 @@ def generate_animation_from_image_sequence(
         repeat=False,
     )
 
-    # save animation at 30 frames per second
-    my_animation.save(output_file, writer="imagemagick", fps=fps)
+    # Save animation
+    tmp_path = tempfile.mkdtemp()
+    animation_result.save(f"{tmp_path}/tmp.format", writer=FileWriter())
 
-    return my_animation
+    # Save the GIF
+    images = []
+    for filename in pathlib.Path(tmp_path).glob("tmp*.png"):
+
+        try:
+            images.append(imageio.imread(filename))
+        except RuntimeError:
+            # Skip frames which are corrupt
+            pass
+
+    imageio.mimsave(output_file, images, fps=fps)
+
+    # Clean up
+    shutil.rmtree(tmp_path)
+
+    return animation_result

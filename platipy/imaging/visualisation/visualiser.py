@@ -23,10 +23,14 @@ import SimpleITK as sitk
 
 from loguru import logger
 
-# from ipywidgets import interact
-# import ipywidgets as widgets
+from platipy.imaging.utils.crop import label_to_roi
 
 from platipy.imaging.visualisation.utils import (
+    VisualiseBoundingBox,
+    VisualiseContour,
+    VisualiseScalarOverlay,
+    VisualiseVectorOverlay,
+    VisualiseComparisonOverlay,
     return_slice,
     subsample_vector_field,
     vector_image_grid,
@@ -35,104 +39,12 @@ from platipy.imaging.visualisation.utils import (
     project_onto_arbitrary_plane,
 )
 
-from platipy.imaging.utils.crop import label_to_roi
-
-
 """
 This Python script comprises two contributions to the code base:
 1) A bunch of helpful visualisation "helper" functions
 
 2) A visualisation class used to generate figures of images, contours, vector fields, and more!
 """
-
-
-class VisualiseContour:
-    """Class to represent the visualiation of a contour"""
-
-    def __init__(self, image, name, color=None, linewidth=2):
-        self.image = image
-        self.name = name
-        self.color = color
-        self.linewidth = linewidth
-
-
-class VisualiseScalarOverlay:
-    """Class to represent the visualiation of a scalar overlay"""
-
-    def __init__(
-        self,
-        image,
-        name,
-        colormap=plt.cm.get_cmap("Spectral"),
-        alpha=0.75,
-        min_value=False,
-        max_value=False,
-        discrete_levels=False,
-        mid_ticks=False,
-        show_colorbar=True,
-        norm=None,
-    ):
-        self.image = image
-        self.name = name
-        self.colormap = colormap
-        self.alpha = alpha
-        self.min_value = min_value
-        self.max_value = max_value
-        self.discrete_levels = discrete_levels
-        self.mid_ticks = mid_ticks
-        self.show_colorbar = show_colorbar
-        self.norm = norm
-
-
-class VisualiseVectorOverlay:
-    """Class to represent the visualiation of a vector overlay"""
-
-    def __init__(
-        self,
-        image,
-        name,
-        colormap=plt.cm.get_cmap("Spectral"),
-        alpha=0.75,
-        arrow_scale=0.25,
-        arrow_width=1,
-        subsample=4,
-        color_function="perpendicular",
-        invert_field=True,
-        show_colorbar=True,
-    ):
-        self.image = image
-        self.name = name
-        self.colormap = colormap
-        self.alpha = alpha
-        self.arrow_scale = arrow_scale
-        self.arrow_width = arrow_width
-        self.subsample = subsample
-        self.color_function = color_function
-        self.invert_field = invert_field
-        self.show_colorbar = show_colorbar
-
-
-class VisualiseComparisonOverlay:
-    """Class to represent the visualiation of a comparison image"""
-
-    def __init__(self, image, name, color_rotation=0.35):
-        self.image = image
-        self.name = name
-        self.color_rotation = color_rotation
-
-
-class VisualiseBoundingBox:
-    """Class to represent the visualiation of a bounding box"""
-
-    def __init__(self, bounding_box, name, color="r", linewidth=2):
-
-        if isinstance(bounding_box, sitk.Image):
-            bounding_box = label_to_roi(bounding_box, return_as_list=True)
-
-        self.bounding_box = bounding_box
-        self.name = name
-        self.color = color
-        self.linewidth = linewidth
 
 
 class ImageVisualiser:
@@ -170,7 +82,7 @@ class ImageVisualiser:
         self.__projection = projection
         self.__image_view = None
         self.__scalar_view = None
-        self.__contour_color_base = None
+        self.__contour_colormap = None
 
         self.clear()
 
@@ -230,7 +142,7 @@ class ImageVisualiser:
         contour,
         name=None,
         color=None,
-        colorbase=plt.cm.get_cmap("rainbow"),
+        colormap=plt.cm.get_cmap("rainbow"),
         linewidth=2,
         show_legend=True,
     ):
@@ -277,15 +189,9 @@ class ImageVisualiser:
 
             # Use a default name if not specified
             if name is None:
-                name = "input"
-                self.__show_legend = False
+                name = "contour"
 
-            visualise_contour = VisualiseContour(
-                contour,
-                name,
-                color=color,
-                linewidth=linewidth,
-            )
+            visualise_contour = VisualiseContour(contour, name, color=color, linewidth=linewidth)
             self.__contours.append(visualise_contour)
         else:
 
@@ -294,7 +200,7 @@ class ImageVisualiser:
                 "and sitk.Image as value, or as an sitk.Image and passing the contour_name"
             )
 
-        self.__contour_color_base = colorbase
+        self.__contour_colormap = colormap
 
     def add_scalar_overlay(
         self,
@@ -514,127 +420,27 @@ class ImageVisualiser:
     def show(self, interact=False):
         """Render the image with all overlays"""
         if len(self.__comparison_overlays) == 0:
-            self.display_slice()
+            self._display_slice()
         else:
-            self.overlay_comparison()
+            self._overlay_comparison()
 
-        self.overlay_scalar_field()
-        self.overlay_vector_field()
-        self.overlay_contours()
-        self.overlay_bounding_boxes()
+        self._overlay_scalar_field()
+        self._overlay_vector_field()
+        self._overlay_contours()
+        self._overlay_bounding_boxes()
 
-        self.adjust_view()
+        self._adjust_view()
 
         if interact:
             logger.warning("Interactive mode not yet implemented")
             # self.interact_adjust_slice()
 
         self.__figure.canvas.draw()
-        self.add_legend()
+        self._add_legend()
 
         return self.__figure
 
-    # def precompute_array_slices(self):
-    #     pass
-
-    # def interact_adjust_slice(self):
-    #     image = self.__image
-    #     nda = sitk.GetArrayViewFromImage(image)
-    #     (ax_size, cor_size, sag_size) = nda.shape[:3]
-
-    #     image_view = self.__image_view
-
-    #     if hasattr(self, "__scalar_view"):
-    #         use_scalar = True
-    #         scalar_view = self.__scalar_view
-    #         scalar_image = self.__scalar_overlays[0]  # TO DO - generalsie
-    #         nda_scalar = sitk.GetArrayFromImage(scalar_image)
-    #     else:
-    #         use_scalar = False
-
-    #     # ~10x speed-up by pre-contructing views
-    #     arr_slices_ax = {i: nda.__getitem__(return_slice("z", i)) for i in range(ax_size)}
-    #     arr_slices_cor = {i: nda.__getitem__(return_slice("y", i)) for i in range(cor_size)}
-    #     arr_slices_sag = {i: nda.__getitem__(return_slice("x", i)) for i in range(sag_size)}
-
-    #     if use_scalar:
-    #         scalar_arr_slices_ax = {
-    #             i: nda_scalar.__getitem__(return_slice("z", i)) for i in range(ax_size)
-    #         }
-    #         scalar_arr_slices_cor = {
-    #             i: nda_scalar.__getitem__(return_slice("y", i)) for i in range(cor_size)
-    #         }
-    #         scalar_arr_slices_sag = {
-    #             i: nda_scalar.__getitem__(return_slice("x", i)) for i in range(sag_size)
-    #         }
-
-    #     if self.__cut is None:
-    #         slice_ax = int(ax_size / 2.0)
-    #         slice_cor = int(cor_size / 2.0)
-    #         slice_sag = int(sag_size / 2.0)
-
-    #         self.__cut = [slice_ax, slice_cor, slice_sag]
-
-    #     for view_name in image_view.keys():
-    #         if view_name == "ax_view":
-
-    #             ax_view_image = image_view["ax_view"]
-    #             if use_scalar:
-    #                 ax_view_scalar = scalar_view["ax_view"]
-
-    #             widget = widgets.IntSlider(min=0, max=ax_size, step=1, value=self.__cut[0])
-
-    #             def f_adjust(axial_slice):
-    #                 ax_view_image.set_data(image_arr_slices_ax[axial_slice])
-    #                 if use_scalar:
-    #                     ax_view_scalar.set_data(scalar_arr_slices_ax[axial_slice])
-    #                 return
-
-    #             interact(f_adjust, axial_slice=widget)
-
-    #         if view_name == "cor_view":
-
-    #             cor_view_image = image_view["cor_view"]
-    #             if use_scalar:
-    #                 cor_view_scalar = scalar_view["cor_view"]
-
-    #             if self.__axis == "y" or self.__axis == "cor":
-    #                 coronal_cut_default = self.__cut
-    #             else:
-    #                 coronal_cut_default = self.__cut[1]
-
-    #             widget = widgets.IntSlider(min=0, max=cor_size, step=1, value=self.__cut[1])
-
-    #             def f_adjust(coronal_slice):
-    #                 cor_view_image.set_data(image_arr_slices_cor[coronal_slice])
-    #                 if use_scalar:
-    #                     cor_view_scalar.set_data(scalar_arr_slices_cor[coronal_slice])
-    #                 return
-
-    #             interact(f_adjust, coronal_slice=widget)
-
-    #         if view_name == "sag_view":
-
-    #             sag_view_image = image_view["sag_view"]
-    #             if use_scalar:
-    #                 sag_view_scalar = scalar_view["sag_view"]
-
-    #             if self.__axis == "x" or self.__axis == "sag":
-    #                 sagittal_cut_default = self.__cut
-    #             else:
-    #                 sagittal_cut_default = self.__cut[2]
-
-    #             widget = widgets.IntSlider(min=0, max=sag_size, step=1, value=self.__cut[2])
-
-    #             def f_adjust(sagittal_slice):
-    #                 sag_view_image.set_data(image_arr_slices_sag[sagittal_slice])
-    #                 if use_scalar:
-    #                     sag_view_scalar.set_data(scalar_arr_slices_sag[sagittal_slice])
-    #                 return
-
-    #             interact(f_adjust, sagittal_slice=widget)
-
-    def display_slice(self):
+    def _display_slice(self):
         """Display the configured image slice"""
 
         image = self.__image
@@ -818,7 +624,7 @@ class ImageVisualiser:
 
             self.__image_view = {axis_view_name_consistent: ax_indiv}
 
-    def overlay_comparison(self):
+    def _overlay_comparison(self):
         """Display an overlay comparison
 
         Args:
@@ -978,7 +784,7 @@ class ImageVisualiser:
 
             self.__figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
 
-    def adjust_view(self):
+    def _adjust_view(self):
         """adjust_view is a helper function for modifying axis limits.
         Specify *limits* when initialising the ImageVisulaiser to use.
         Alternatively, use set_limits_from_label to specify automatically.
@@ -1092,7 +898,7 @@ class ImageVisualiser:
 
                 self.__figure.set_size_inches(fig_size_x, fig_size_y)
 
-    def overlay_contours(self):
+    def _overlay_contours(self):
         """Overlay the contours on to the current figure image"""
 
         if len(self.__contours) == 0:
@@ -1110,7 +916,7 @@ class ImageVisualiser:
             if contour.color is not None:
                 color_dict[contour.name] = contour.color
             else:
-                color_map = self.__contour_color_base(np.linspace(0, 1, len(self.__contours)))
+                color_map = self.__contour_colormap(np.linspace(0, 1, len(self.__contours)))
 
                 color_dict[contour.name] = color_map[color_gen_index % 255]
                 color_gen_index += 1
@@ -1219,7 +1025,7 @@ class ImageVisualiser:
         else:
             raise ValueError('Axis is must be one of "x","y","z","ortho".')
 
-    def overlay_scalar_field(self):
+    def _overlay_scalar_field(self):
         """Overlay the scalar image onto the existing figure"""
 
         if self.__projection and len(self.__scalar_overlays) > 0:
@@ -1403,7 +1209,7 @@ class ImageVisualiser:
                         "sag_view": sag_view,
                     }
 
-    def overlay_vector_field(self):
+    def _overlay_vector_field(self):
         """Overlay vector field onto existing figure"""
 
         if self.__projection and len(self.__vector_overlays) > 0:
@@ -1564,7 +1370,38 @@ class ImageVisualiser:
                     cbar = self.__figure.colorbar(sp_vector, cax=cax, orientation="vertical")
                     cbar.set_label(vector.name)
 
-    def overlay_bounding_boxes(self):
+    def draw_bounding_box_on_axes(self, ax, view, box, add_label=True):
+
+        sag_0, cor_0, ax_0, sag_d, cor_d, ax_d = box.bounding_box
+
+        from_points = None
+        to_points = None
+
+        if view == "z" or view == "ax":
+            from_points = [sag_0, sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0]
+            to_points = [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0]
+
+        if view == "y" or view == "cor":
+            from_points = [sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0, sag_0]
+            to_points = [ax_0, ax_0, ax_0 + ax_d, ax_0 + ax_d, ax_0]
+
+        if view == "x" or view == "sag":
+            from_points = [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0]
+            to_points = [ax_0, ax_0, ax_0 + ax_d, ax_0 + ax_d, ax_0]
+
+        if from_points is None:
+            logger.error("Invalid View")
+            return
+
+        ax.plot(
+            from_points,
+            to_points,
+            lw=box.linewidth,
+            c=box.color,
+            label=box.name if add_label else None,
+        )
+
+    def _overlay_bounding_boxes(self):
         """Overlay bounding boxes onto existing figure
 
         Args:
@@ -1572,64 +1409,20 @@ class ImageVisualiser:
         """
 
         for box in self.__bounding_boxes:
-            sag_0, cor_0, ax_0, sag_d, cor_d, ax_d = box.bounding_box
-
-            if box.color:
-                color = box.color
-                linewidth = box.linewidth
 
             # Test types of axes
             axes = self.__figure.axes[:4]
             if len(axes) < 4:
-                ax = axes[0]
-
-                if self.__axis == "z" or self.__axis == "ax":
-                    ax.plot(
-                        [sag_0, sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0],
-                        [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0],
-                        lw=linewidth,
-                        c=color,
-                        label=box.name,
-                    )
-                if self.__axis == "y" or self.__axis == "cor":
-                    ax.plot(
-                        [sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0, sag_0],
-                        [ax_0, ax_0, ax_0 + ax_d, ax_0 + ax_d, ax_0],
-                        lw=linewidth,
-                        c=color,
-                    )
-                if self.__axis == "x" or self.__axis == "sag":
-                    ax.plot(
-                        [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0],
-                        [ax_0, ax_0, ax_0 + ax_d, ax_0 + ax_d, ax_0],
-                        lw=linewidth,
-                        c=color,
-                    )
+                self.draw_bounding_box_on_axes(axes[0], self.__axis, box)
 
             elif len(axes) == 4:
                 ax_ax, _, ax_cor, ax_sag = axes
 
-                ax_ax.plot(
-                    [sag_0, sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0],
-                    [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0],
-                    lw=linewidth,
-                    c=color,
-                    label=box.name,
-                )
-                ax_cor.plot(
-                    [sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0, sag_0],
-                    [ax_0, ax_0, ax_0 + ax_d, ax_0 + ax_d, ax_0],
-                    lw=linewidth,
-                    c=color,
-                )
-                ax_sag.plot(
-                    [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0],
-                    [ax_0, ax_0, ax_0 + ax_d, ax_0 + ax_d, ax_0],
-                    lw=linewidth,
-                    c=color,
-                )
+                self.draw_bounding_box_on_axes(ax_ax, "z", box)
+                self.draw_bounding_box_on_axes(ax_cor, "y", box, add_label=False)
+                self.draw_bounding_box_on_axes(ax_sag, "x", box, add_label=False)
 
-    def add_legend(self):
+    def _add_legend(self):
         """Add a legend to the visualisation"""
 
         if len(self.__figure.axes) >= 4:

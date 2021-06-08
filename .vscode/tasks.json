@@ -94,6 +94,7 @@
             "args": [
                 "-b",
                 "html",
+                "-a",
                 "docs",
                 "docs/site"
             ],

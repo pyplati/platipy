@@ -2,17 +2,7 @@
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
     "python.linting.pylintArgs": [
-        "--load-plugins=pylint_flask_sqlalchemy",
-        "--max-line-length=99",
-        "--disable=C0330",
-        "--disable=C0114",
-        "--disable=W0102",
-        "--disable=W0105",
-        "--variable-rgx=[a-z_][a-z0-9_]{0,40}$",
-        "--argument-rgx=[a-z_][a-z0-9_]{0,40}$",
-        "--init-hook",
-        "import sys; sys.path.append('.')",
-        "--ignored-modules=vtk",
+        "--rcfile=.pylintrc"
     ],
     "python.formatting.blackArgs": [
         "--line-length",
@@ -28,5 +18,4 @@
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
-    "python.pythonPath": "/home/robbie/.pyenv/versions/3.8.8/envs/platipy/bin/python"
 }
