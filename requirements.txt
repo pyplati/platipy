@@ -1,10 +1,10 @@
-numpy == 1.20.1
+numpy == 1.19.5
 SimpleITK == 2.0.2
 vtk == 9.0.1
-scikit-image == 0.18.1
+scikit-image == 0.17.2
 click == 7.1.2
 pydicom == 2.1.2
-pynetdicom == 1.5.6
+pynetdicom == 1.5.7
 ipywidgets == 7.6.3
 flask == 1.1.2
 flask-restful == 0.3.8
@@ -15,6 +15,6 @@ loguru == 0.5.3
 psutil == 5.8.0
 gunicorn == 20.0.4
 requests == 2.25.1
-pandas == 1.2.2
+pandas == 1.1.5
 pymedphys == 0.35.0
 rt_utils == 1.1.4
