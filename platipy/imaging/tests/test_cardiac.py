@@ -201,7 +201,7 @@ def test_cardiac_structure_guided_service(cardiac_data):
             cardiac_data[infer_case]["WHOLEHEART"],
             settings=test_settings,
         )
-
+        print(output)
         # Check we have a WHOLEHEART structure
         assert "WHOLEHEART" in output
 

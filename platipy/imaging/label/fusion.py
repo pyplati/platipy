@@ -148,7 +148,7 @@ def combine_labels(atlas_set, structure_name, label="DIR", threshold=1e-4, smoot
         # Combine weight map with each label
         weighted_labels = [
             atlas_set[caseId][label]["Weight Map"]
-            * sitk.Cast(atlas_set[caseId][label][structure_name], sitk.sitkFloat32)
+            * sitk.Cast(atlas_set[caseId][label][s_name], sitk.sitkFloat32)
             for caseId in valid_case_id_list
         ]
 
@@ -167,7 +167,7 @@ def combine_labels(atlas_set, structure_name, label="DIR", threshold=1e-4, smoot
                 combined_label, lower=threshold, upper=1, outsideValue=0.0
             )
 
-        combined_label_dict[structure_name] = combined_label
+        combined_label_dict[s_name] = combined_label
 
     return combined_label_dict
 

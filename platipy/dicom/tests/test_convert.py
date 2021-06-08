@@ -90,7 +90,9 @@ def test_convert_dicom_to_nifti(dicom_data):
         assert np.allclose(mask.GetSpacing(), (0.97, 0.97, 3.0), atol=0.01)
         nda = sitk.GetArrayFromImage(mask)
 
-        assert nda.sum() == 261048
+        assert nda.sum() == 263237
+
+        sitk.WriteImage(mask, "data/heart_mask.nii.gz")
 
 
 def test_convert_nifti_to_dicom(nifti_data, dicom_data):
@@ -128,9 +130,10 @@ def test_convert_nifti_to_dicom(nifti_data, dicom_data):
         contour_map = {}
         for i in original.StructureSetROISequence:
             for j in rts.StructureSetROISequence:
-                if j.ROIName == i.ROIName:
+                if j.ROIName.upper() == i.ROIName.upper():
                     contour_map[int(i.ROINumber)] = int(j.ROINumber)
-        assert len(contour_map.keys()) == 11
+
+        assert len(contour_map.keys()) == 5
 
         # Confirm that the min/max contour points land within 1 voxel size of the original
         i = 1

@@ -121,7 +121,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "stop_condition_value_dict": {"LANTDESCARTERY_SPLINE": 1},
     },
     "return_as_cropped": False,
-    "return_additional_probability_dict": True,
+    "return_additional_probability_dict": False,
 }
 
 
@@ -565,11 +565,10 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
         if return_as_cropped:
             results[structure_name] = binary_struct
-
-            if return_additional_probability_dict:
-                results_prob[structure_name] = probability_map
+            results_prob[structure_name] = probability_map
 
         else:
+            # Un-crop binary structure
             paste_img_binary = sitk.Paste(
                 template_img_binary,
                 binary_struct,
@@ -577,18 +576,17 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
                 (0, 0, 0),
                 crop_box_index,
             )
-
             results[structure_name] = paste_img_binary
 
-            if return_additional_probability_dict:
-                paste_prob_img = sitk.Paste(
-                    template_img_prob,
-                    probability_map,
-                    probability_map.GetSize(),
-                    (0, 0, 0),
-                    crop_box_index,
-                )
-                results_prob[structure_name] = paste_prob_img
+            # Un-crop probability map
+            paste_prob_img = sitk.Paste(
+                template_img_prob,
+                probability_map,
+                probability_map.GetSize(),
+                (0, 0, 0),
+                crop_box_index,
+            )
+            results_prob[structure_name] = paste_prob_img
 
     for structure_name in vessel_spline_settings["vessel_name_list"]:
         binary_struct = segmented_vessel_dict[structure_name]
@@ -596,13 +594,12 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         if return_as_cropped:
             results[structure_name] = binary_struct
 
-            if return_additional_probability_dict:
-                results_prob[structure_name] = [
-                    atlas_set[atlas_id]["DIR"][structure_name]
-                    for atlas_id in list(atlas_set.keys())
-                ]
+            results_prob[structure_name] = [
+                atlas_set[atlas_id]["DIR"][structure_name] for atlas_id in list(atlas_set.keys())
+            ]
 
         else:
+            # Un-crop binary vessel
             paste_img_binary = sitk.Paste(
                 template_img_binary,
                 binary_struct,
@@ -610,27 +607,27 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
                 (0, 0, 0),
                 crop_box_index,
             )
-
             results[structure_name] = paste_img_binary
 
-            if return_additional_probability_dict:
-                vessel_list = []
-                for atlas_id in list(atlas_set.keys()):
-                    paste_img_binary = sitk.Paste(
-                        template_img_binary,
-                        atlas_set[atlas_id]["DIR"][structure_name],
-                        atlas_set[atlas_id]["DIR"][structure_name].GetSize(),
-                        (0, 0, 0),
-                        crop_box_index,
-                    )
-                    vessel_list.append(paste_img_binary)
+            vessel_list = []
+            for atlas_id in list(atlas_set.keys()):
+                paste_img_binary = sitk.Paste(
+                    template_img_binary,
+                    atlas_set[atlas_id]["DIR"][structure_name],
+                    atlas_set[atlas_id]["DIR"][structure_name].GetSize(),
+                    (0, 0, 0),
+                    crop_box_index,
+                )
+                vessel_list.append(paste_img_binary)
 
-                results_prob[structure_name] = vessel_list
+            # iterate over vessel list and construct prime-multiplied image
+            vessel_img_prime = 2 * vessel_list[0]
+            for prime, vessel in zip([], vessel_list[1:]):
+                vessel_img_prime = vessel_img_prime
+
+            results_prob[structure_name] = vessel_list
 
     if return_as_cropped:
         results["CROP_IMAGE"] = img_crop
 
-    if return_additional_probability_dict:
-        return results, results_prob
-
-    return results
+    return results, results_prob
