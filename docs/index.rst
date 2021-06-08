@@ -23,7 +23,6 @@ within Python code.
     :hidden:
 
     visualiser
-    registration
     cli
 
 .. toctree::
