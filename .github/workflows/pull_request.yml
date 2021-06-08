@@ -21,7 +21,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
-        echo "PYTHONPATH=platipy" >> $GITHUB_ENV
+        echo "PYTHONPATH=`pwd`" >> $GITHUB_ENV
     # - name: Build Docs
     #   run: |
     #     sphinx-build -b html -a docs docs/site
