@@ -105,7 +105,23 @@ def get_external_mask(
 
 
 def extend_mask(mask, direction=("ax", "sup"), extension_mm=10, interior_mm_shape=10):
+    """
+    Extends a binary label (mask) a number of slices.
+    PROTOTYPE!
+    Currently can only extend in axial directions (superior of inferior).
+    The shape of the extended part is based on some number of interior slices, as defined.
 
+    Args:
+        mask (SimpleITK.Image): The input binary label (mask).
+        direction (tuple, optional): The direction as a tuple. First element is axis, second
+            element is direction. Defaults to ("ax", "sup").
+        extension_mm (int, optional): The extension in millimeters. Defaults to 10.
+        interior_mm_shape (int, optional): The length on which to base the extension shape.
+            Defaults to 10.
+
+    Returns:
+        SimpleITK.Image: The output (extended mask).
+    """
     arr = sitk.GetArrayViewFromImage(mask)
     vals = np.unique(arr[arr > 0])
     if len(vals) > 2:

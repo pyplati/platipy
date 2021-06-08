@@ -12,18 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from matplotlib import rcParams
-
 import pathlib
 
 import numpy as np
 import SimpleITK as sitk
 
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import matplotlib.animation as animation
 
-from platipy.imaging.visualisation.utils import project_onto_arbitrary_plane
+from matplotlib import rcParams
 
 
 def generate_animation_from_image_sequence(
@@ -33,15 +30,46 @@ def generate_animation_from_image_sequence(
     contour_list=False,
     scalar_list=False,
     figure_size_in=6,
-    image_cmap=plt.cm.Greys_r,
-    contour_cmap=plt.cm.jet,
-    scalar_cmap=plt.cm.magma,
+    image_cmap=plt.cm.get_cmap("Greys_r"),
+    contour_cmap=plt.cm.get_cmap("jet"),
+    scalar_cmap=plt.cm.get_cmap("magma"),
     image_window=[-1000, 800],
     scalar_min=False,
     scalar_max=False,
     scalar_alpha=0.5,
     image_origin="lower",
 ):
+    """Generates an animation from a list of images, with optional scalar overlay and contours.
+
+    Args:
+        image_list (list (SimpleITK.Image)): A list of SimpleITK (2D) images.
+        output_file (str, optional): The name of the output file. Defaults to "animation.gif".
+        fps (int, optional): Frames per second. Defaults to 10.
+        contour_list (list (SimpleITK.Image), optional): A list of SimpleITK (2D) images
+            (overlay as scalar field). Defaults to False.
+        scalar_list (list (SimpleITK.Image), optional): A list of SimpleITK (2D) images
+            (overlay as contours). Defaults to False.
+        figure_size_in (int, optional): Size of the figure. Defaults to 6.
+        image_cmap (matplotlib.colors.ListedColormap, optional): Colormap to use for the image.
+            Defaults to plt.cm.get_cmap("Greys_r").
+        contour_cmap (matplotlib.colors.ListedColormap, optional): Colormap to use for contours.
+            Defaults to plt.cm.get_cmap("jet").
+        scalar_cmap (matplotlib.colors.ListedColormap, optional): Colormap to use for scalar field.
+            Defaults to plt.cm.get_cmap("magma").
+        image_window (list, optional): Image intensity window (mininmum, range).
+            Defaults to [-1000, 800].
+        scalar_min (bool, optional): Minimum scalar value to show. Defaults to False.
+        scalar_max (bool, optional): Maximum scalar value to show. Defaults to False.
+        scalar_alpha (float, optional): Alpha (transparency) for scalar field. Defaults to 0.5.
+        image_origin (str, optional): Image origin. Defaults to "lower".
+
+    Raises:
+        RuntimeError: If ImageMagick isn't installed you cannot use this function!
+        ValueError: The list of images must be of type SimpleITK.Image
+
+    Returns:
+        matplotlib.animation: The animation.
+    """
 
     # We need to check for ImageMagick
     # There may be other tools that can be used
@@ -51,8 +79,8 @@ def generate_animation_from_image_sequence(
     if not convert_path.exists():
         raise RuntimeError("To use this function you need ImageMagick.")
 
-    if type(image_list[0]) is not sitk.Image:
-        raise ValueError("Each image must be a SimplITK image (sitk.Image).")
+    if not all(isinstance(i, sitk.Image) for i in image_list):
+        raise ValueError("Each image must be a SimpleITK image (sitk.Image).")
 
     # Get the image information
     x_size, y_size = image_list[0].GetSize()
@@ -79,7 +107,7 @@ def generate_animation_from_image_sequence(
     # These can be given as a list of sitk.Image objects or a list of dicts {"name":sitk.Image}
     if contour_list is not False:
 
-        if type(contour_list[0]) is not dict:
+        if not isinstance(contour_list[0], dict):
             plot_dict = {"_": contour_list[0]}
             contour_labels = False
         else:
@@ -143,7 +171,7 @@ def generate_animation_from_image_sequence(
             except ValueError:
                 pass
 
-            if type(contour_list[i]) is not dict:
+            if not isinstance(contour_list[i], dict):
                 plot_dict = {"_": contour_list[i]}
             else:
                 plot_dict = contour_list[i]
@@ -152,7 +180,7 @@ def generate_animation_from_image_sequence(
 
             for index, contour in enumerate(plot_dict.values()):
 
-                display_contours = ax.contour(
+                ax.contour(
                     sitk.GetArrayFromImage(contour),
                     colors=[color_map[index]],
                     levels=[0],
@@ -166,7 +194,7 @@ def generate_animation_from_image_sequence(
         return (display_image,)
 
     # create animation using the animate() function with no repeat
-    myAnimation = animation.FuncAnimation(
+    my_animation = animation.FuncAnimation(
         fig,
         animate,
         frames=np.arange(0, len(image_list), 1),
@@ -176,6 +204,6 @@ def generate_animation_from_image_sequence(
     )
 
     # save animation at 30 frames per second
-    myAnimation.save(output_file, writer="imagemagick", fps=fps)
+    my_animation.save(output_file, writer="imagemagick", fps=fps)
 
-    return myAnimation
+    return my_animation

@@ -177,18 +177,21 @@ def linear_registration(
             registration.SetInitialTransform(sitk.ScaleSkewVersor3DTransform())
         else:
             raise ValueError(
-                "You have selected a registration method that does not exist.\n Please select from "
-                "Translation, Similarity, Affine, Rigid, ScaleVersor, ScaleSkewVersor"
+                "You have selected a registration method that does not exist.\n Please select from"
+                " Translation, Similarity, Affine, Rigid, ScaleVersor, ScaleSkewVersor"
             )
-    elif (
-        isinstance(reg_method, sitk.CompositeTransform)
-        or isinstance(reg_method, sitk.Transform)
-        or isinstance(reg_method, sitk.TranslationTransform)
-        or isinstance(reg_method, sitk.Similarity3DTransform)
-        or isinstance(reg_method, sitk.AffineTransform)
-        or isinstance(reg_method, sitk.VersorRigid3DTransform)
-        or isinstance(reg_method, sitk.ScaleVersor3DTransform)
-        or isinstance(reg_method, sitk.ScaleSkewVersor3DTransform)
+    elif isinstance(
+        reg_method,
+        (
+            sitk.CompositeTransform,
+            sitk.Transform,
+            sitk.TranslationTransform,
+            sitk.Similarity3DTransform,
+            sitk.AffineTransform,
+            sitk.VersorRigid3DTransform,
+            sitk.ScaleVersor3DTransform,
+            sitk.ScaleSkewVersor3DTransform,
+        ),
     ):
         registration.SetInitialTransform(reg_method)
     else:

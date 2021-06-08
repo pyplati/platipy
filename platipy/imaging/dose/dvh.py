@@ -17,6 +17,17 @@ import SimpleITK as sitk
 
 
 def calculate_dvh(dose_grid, label, bins=1001):
+    """Calculates a dose-volume histogram
+
+    Args:
+        dose_grid (SimpleITK.Image): The dose grid.
+        label (SimpleITK.Image): The (binary) label defining a structure.
+        bins (int | list | np.ndarray, optional): Passed to np.histogram,
+            can be an int (number of bins), or a list (specifying bin edges). Defaults to 1001.
+
+    Returns:
+        SimpleITK.Image: [description]
+    """
 
     if dose_grid.GetSize() != label.GetSize():
         print("Dose grid size does not match label, automatically resampling.")
