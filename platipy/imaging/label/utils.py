@@ -3,7 +3,7 @@ import SimpleITK as sitk
 from scipy.ndimage.measurements import center_of_mass
 
 
-def get_com(label, real_coords=False):
+def get_com(label, as_int=True, real_coords=False):
     """
     Get centre of mass of a SimpleITK.Image
     """
@@ -11,10 +11,11 @@ def get_com(label, real_coords=False):
     com = center_of_mass(arr)
 
     if real_coords:
-        com = label.TransformContinuousIndexToPhysicalPoint(com)
+        com = label.TransformContinuousIndexToPhysicalPoint(com[::-1])
 
     else:
-        com = [int(i) for i in com]
+        if as_int:
+            com = [int(i) for i in com]
 
     return com
 

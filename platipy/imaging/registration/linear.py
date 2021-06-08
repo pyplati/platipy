@@ -162,22 +162,42 @@ def linear_registration(
     if fixed_structure:
         registration.SetMetricFixedMask(fixed_structure)
 
-    if reg_method.lower() == "translation":
-        registration.SetInitialTransform(sitk.TranslationTransform(3))
-    elif reg_method.lower() == "similarity":
-        registration.SetInitialTransform(sitk.Similarity3DTransform())
-    elif reg_method.lower() == "affine":
-        registration.SetInitialTransform(sitk.AffineTransform(3))
-    elif reg_method.lower() == "rigid":
-        registration.SetInitialTransform(sitk.VersorRigid3DTransform())
-    elif reg_method.lower() == "scaleversor":
-        registration.SetInitialTransform(sitk.ScaleVersor3DTransform())
-    elif reg_method.lower() == "scaleskewversor":
-        registration.SetInitialTransform(sitk.ScaleSkewVersor3DTransform())
+    if isinstance(reg_method, str):
+        if reg_method.lower() == "translation":
+            registration.SetInitialTransform(sitk.TranslationTransform(3))
+        elif reg_method.lower() == "similarity":
+            registration.SetInitialTransform(sitk.Similarity3DTransform())
+        elif reg_method.lower() == "affine":
+            registration.SetInitialTransform(sitk.AffineTransform(3))
+        elif reg_method.lower() == "rigid":
+            registration.SetInitialTransform(sitk.VersorRigid3DTransform())
+        elif reg_method.lower() == "scaleversor":
+            registration.SetInitialTransform(sitk.ScaleVersor3DTransform())
+        elif reg_method.lower() == "scaleskewversor":
+            registration.SetInitialTransform(sitk.ScaleSkewVersor3DTransform())
+        else:
+            raise ValueError(
+                "You have selected a registration method that does not exist.\n Please select from"
+                " Translation, Similarity, Affine, Rigid, ScaleVersor, ScaleSkewVersor"
+            )
+    elif isinstance(
+        reg_method,
+        (
+            sitk.CompositeTransform,
+            sitk.Transform,
+            sitk.TranslationTransform,
+            sitk.Similarity3DTransform,
+            sitk.AffineTransform,
+            sitk.VersorRigid3DTransform,
+            sitk.ScaleVersor3DTransform,
+            sitk.ScaleSkewVersor3DTransform,
+        ),
+    ):
+        registration.SetInitialTransform(reg_method)
     else:
         raise ValueError(
-            "You have selected a registration method that does not exist.\n Please select from "
-            "Translation, Similarity, Affine, Rigid, ScaleVersor, ScaleSkewVersor"
+            "'reg_method' must be either a string (see docs for acceptable registration names), "
+            "or a custom sitk.CompositeTransform."
         )
 
     if optimiser.lower() == "lbfgsb":

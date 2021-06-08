@@ -1167,9 +1167,9 @@ class ImageVisualiser:
                     cax = self.__figure.add_axes(
                         (
                             ax_box.x1 + 0.02 + (cbar_width + 0.1) * scalar_index,
-                            ax_box.y0,
+                            ax_box.y0 * 1.025,
                             cbar_width,
-                            ax_box.height,
+                            ax_box.height - ax_box.y0 * 0.05,
                         )
                     )
 
@@ -1356,14 +1356,14 @@ class ImageVisualiser:
                         x_pos_legend = max_xpos + 0.025
 
                     else:
-                        x_pos_legend = ax_box.x0 + 0.025
+                        x_pos_legend = ax_box.x1 + 0.025
 
                     cax = self.__figure.add_axes(
                         (
                             x_pos_legend,
-                            ax_box.y0,
+                            ax_box.y0 * 1.025,
                             cbar_width,
-                            ax_box.height,
+                            ax_box.height - ax_box.y0 * 0.05,
                         )
                     )
 

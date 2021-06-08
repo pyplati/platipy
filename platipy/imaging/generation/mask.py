@@ -102,3 +102,58 @@ def get_external_mask(
     body_mask_hull.CopyInformation(body_mask)
 
     return body_mask_hull
+
+
+def extend_mask(mask, direction=("ax", "sup"), extension_mm=10, interior_mm_shape=10):
+    """
+    Extends a binary label (mask) a number of slices.
+    PROTOTYPE!
+    Currently can only extend in axial directions (superior of inferior).
+    The shape of the extended part is based on some number of interior slices, as defined.
+
+    Args:
+        mask (SimpleITK.Image): The input binary label (mask).
+        direction (tuple, optional): The direction as a tuple. First element is axis, second
+            element is direction. Defaults to ("ax", "sup").
+        extension_mm (int, optional): The extension in millimeters. Defaults to 10.
+        interior_mm_shape (int, optional): The length on which to base the extension shape.
+            Defaults to 10.
+
+    Returns:
+        SimpleITK.Image: The output (extended mask).
+    """
+    arr = sitk.GetArrayViewFromImage(mask)
+    vals = np.unique(arr[arr > 0])
+    if len(vals) > 2:
+        # There is more than one value! We need to threshold (at the median)
+        cutoff = np.median(vals)
+        mask_binary = sitk.BinaryThreshold(mask, cutoff, np.max(vals).astype(float))
+    else:
+        mask_binary = mask
+
+    arr = sitk.GetArrayFromImage(mask_binary)
+
+    if direction[0] == "ax":
+        inferior_slice = np.where(arr)[0].min()
+        superior_slice = np.where(arr)[0].max()
+
+        n_slices_ext = int(extension_mm / mask.GetSpacing()[2])
+        n_slices_est = int(interior_mm_shape / mask.GetSpacing()[2])
+
+        if direction[1] == "sup":
+            max_index = min([arr.shape[0], superior_slice + 1 + n_slices_ext])
+            for s_in in range(superior_slice + 1 - n_slices_est, max_index):
+                arr[s_in, :, :] = np.max(
+                    arr[superior_slice - n_slices_est : superior_slice, :, :], axis=0
+                )
+        if direction[1] == "inf":
+            min_index = max([arr.shape[0], inferior_slice - n_slices_ext + n_slices_est])
+            for s_in in range(min_index, inferior_slice):
+                arr[s_in, :, :] = np.max(
+                    arr[inferior_slice + n_slices_est : inferior_slice, :, :], axis=0
+                )
+
+    mask_ext = sitk.GetImageFromArray(arr)
+    mask_ext.CopyInformation(mask)
+
+    return mask_ext

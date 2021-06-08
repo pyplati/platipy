@@ -28,6 +28,8 @@ Description:
 import numpy as np
 import SimpleITK as sitk
 
+from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
+
 
 def compute_surface_metrics(label_a, label_b, verbose=False):
     """Compute surface distance metrics between two labels. Surface metrics computed are:
@@ -141,7 +143,7 @@ def compute_volume_metrics(label_a, label_b):
     return result
 
 
-def compute_metric_dsc(label_a, label_b):
+def compute_metric_dsc(label_a, label_b, auto_crop=True):
     """Compute the Dice Similarity Coefficient between two labels
 
     Args:
@@ -151,13 +153,19 @@ def compute_metric_dsc(label_a, label_b):
     Returns:
         float: The Dice Similarity Coefficient
     """
+    if auto_crop:
+        largest_region = (label_a + label_b) > 0
+        crop_box_size, crop_box_index = label_to_roi(largest_region)
+
+        label_a = crop_to_roi(label_a, size=crop_box_size, index=crop_box_index)
+        label_b = crop_to_roi(label_b, size=crop_box_size, index=crop_box_index)
 
     arr_a = sitk.GetArrayFromImage(label_a).astype(bool)
     arr_b = sitk.GetArrayFromImage(label_b).astype(bool)
     return 2 * ((arr_a & arr_b).sum()) / (arr_a.sum() + arr_b.sum())
 
 
-def compute_metric_specificity(label_a, label_b):
+def compute_metric_specificity(label_a, label_b, auto_crop=True):
     """Compute the specificity between two labels
 
     Args:
@@ -167,6 +175,12 @@ def compute_metric_specificity(label_a, label_b):
     Returns:
         float: The specificity between the two labels
     """
+    if auto_crop:
+        largest_region = (label_a + label_b) > 0
+        crop_box_size, crop_box_index = label_to_roi(largest_region)
+
+        label_a = crop_to_roi(label_a, size=crop_box_size, index=crop_box_index)
+        label_b = crop_to_roi(label_b, size=crop_box_size, index=crop_box_index)
 
     arr_a = sitk.GetArrayFromImage(label_a).astype(bool)
     arr_b = sitk.GetArrayFromImage(label_b).astype(bool)
@@ -180,7 +194,7 @@ def compute_metric_specificity(label_a, label_b):
     return float((1.0 * true_neg) / (true_neg + false_pos))
 
 
-def compute_metric_sensitivity(label_a, label_b):
+def compute_metric_sensitivity(label_a, label_b, auto_crop=True):
     """Compute the sensitivity between two labels
 
     Args:
@@ -190,6 +204,12 @@ def compute_metric_sensitivity(label_a, label_b):
     Returns:
         float: The sensitivity between the two labels
     """
+    if auto_crop:
+        largest_region = (label_a + label_b) > 0
+        crop_box_size, crop_box_index = label_to_roi(largest_region)
+
+        label_a = crop_to_roi(label_a, size=crop_box_size, index=crop_box_index)
+        label_b = crop_to_roi(label_b, size=crop_box_size, index=crop_box_index)
 
     arr_a = sitk.GetArrayFromImage(label_a).astype(bool)
     arr_b = sitk.GetArrayFromImage(label_b).astype(bool)
@@ -202,7 +222,7 @@ def compute_metric_sensitivity(label_a, label_b):
     return float((1.0 * true_pos) / (true_pos + false_neg))
 
 
-def compute_metric_masd(label_a, label_b):
+def compute_metric_masd(label_a, label_b, auto_crop=True):
     """Compute the mean absolute distance between two labels
 
     Args:
@@ -212,6 +232,12 @@ def compute_metric_masd(label_a, label_b):
     Returns:
         float: The mean absolute surface distance
     """
+    if auto_crop:
+        largest_region = (label_a + label_b) > 0
+        crop_box_size, crop_box_index = label_to_roi(largest_region)
+
+        label_a = crop_to_roi(label_a, size=crop_box_size, index=crop_box_index)
+        label_b = crop_to_roi(label_b, size=crop_box_size, index=crop_box_index)
 
     mean_sd_list = []
     num_points = []
@@ -231,7 +257,7 @@ def compute_metric_masd(label_a, label_b):
     return float(mean_surf_dist)
 
 
-def compute_metric_hd(label_a, label_b):
+def compute_metric_hd(label_a, label_b, auto_crop=True):
     """Compute the Hausdorff distance between two labels
 
     Args:
@@ -241,6 +267,12 @@ def compute_metric_hd(label_a, label_b):
     Returns:
         float: The maximum Hausdorff distance
     """
+    if auto_crop:
+        largest_region = (label_a + label_b) > 0
+        crop_box_size, crop_box_index = label_to_roi(largest_region)
+
+        label_a = crop_to_roi(label_a, size=crop_box_size, index=crop_box_index)
+        label_b = crop_to_roi(label_b, size=crop_box_size, index=crop_box_index)
 
     hausdorff_distance = sitk.HausdorffDistanceImageFilter()
     hausdorff_distance.Execute(label_a, label_b)

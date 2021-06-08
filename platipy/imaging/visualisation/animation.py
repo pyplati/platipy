@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import tempfile
 import pathlib
 import shutil
+import tempfile
 
 import imageio
 
@@ -62,29 +62,36 @@ def generate_animation_from_image_sequence(
     scalar_alpha=0.5,
     image_origin="lower",
 ):
-    """Make a GIF animation from the list of images supplied
+    """Generates an animation from a list of images, with optional scalar overlay and contours.
 
     Args:
-        image_list (list): List of 2D sitk.Image's to render
-        output_file (str, optional): Path to output GIF file. Defaults to "animation.gif".
+        image_list (list (SimpleITK.Image)): A list of SimpleITK (2D) images.
+        output_file (str, optional): The name of the output file. Defaults to "animation.gif".
         fps (int, optional): Frames per second. Defaults to 10.
-        contour_list (list, optional): List of contours to overlay. Defaults to None.
-        scalar_list (list, optional): List of scalars to overlay. Defaults to None.
-        figure_size_in (int, optional): Size of figure. Defaults to 6.
-        image_cmap ([type], optional): Colormap for image. Defaults to plt.cm.get_cmap("Greys_r").
-        contour_cmap ([type], optional): Colormap for contours. Defaults to plt.cm.get_cmap("jet").
-        scalar_cmap ([type], optional): Colormap for scalars. Defaults to plt.cm.get_cmap("magma").
-        image_window (list, optional): Window for image. Defaults to [-1000, 800].
-        scalar_min (float, optional): Minimum value for scalar. Defaults to None.
-        scalar_max (float, optional): Maximum value for scalar. Defaults to None.
-        scalar_alpha (float, optional): Alpha value for scalar. Defaults to 0.5.
-        image_origin (str, optional): Origin of image. Defaults to "lower".
+        contour_list (list (SimpleITK.Image), optional): A list of SimpleITK (2D) images
+            (overlay as scalar field). Defaults to False.
+        scalar_list (list (SimpleITK.Image), optional): A list of SimpleITK (2D) images
+            (overlay as contours). Defaults to False.
+        figure_size_in (int, optional): Size of the figure. Defaults to 6.
+        image_cmap (matplotlib.colors.ListedColormap, optional): Colormap to use for the image.
+            Defaults to plt.cm.get_cmap("Greys_r").
+        contour_cmap (matplotlib.colors.ListedColormap, optional): Colormap to use for contours.
+            Defaults to plt.cm.get_cmap("jet").
+        scalar_cmap (matplotlib.colors.ListedColormap, optional): Colormap to use for scalar field.
+            Defaults to plt.cm.get_cmap("magma").
+        image_window (list, optional): Image intensity window (mininmum, range).
+            Defaults to [-1000, 800].
+        scalar_min (bool, optional): Minimum scalar value to show. Defaults to False.
+        scalar_max (bool, optional): Maximum scalar value to show. Defaults to False.
+        scalar_alpha (float, optional): Alpha (transparency) for scalar field. Defaults to 0.5.
+        image_origin (str, optional): Image origin. Defaults to "lower".
 
     Raises:
-        ValueError: Raised if image list does not contain sitk.Image's
+        RuntimeError: If ImageMagick isn't installed you cannot use this function!
+        ValueError: The list of images must be of type SimpleITK.Image
 
     Returns:
-        matplotlib.animation.FuncAnimation: The animation object
+        matplotlib.animation: The animation.
     """
 
     if not isinstance(image_list[0], sitk.Image):

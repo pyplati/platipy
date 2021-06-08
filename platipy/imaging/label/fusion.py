@@ -130,11 +130,9 @@ def combine_labels(atlas_set, structure_name, label="DIR", threshold=1e-4, smoot
 
     combined_label_dict = {}
 
-    for structure_name in structure_name_list:
+    for s_name in structure_name_list:
         # Find the cases which have the strucure (in case some cases do not)
-        valid_case_id_list = [
-            i for i in case_id_list if structure_name in atlas_set[i][label].keys()
-        ]
+        valid_case_id_list = [i for i in case_id_list if s_name in atlas_set[i][label].keys()]
 
         # Get valid weight images
         weight_image_list = [

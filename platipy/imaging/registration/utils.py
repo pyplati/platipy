@@ -278,6 +278,13 @@ def convert_mask_to_distance_map(mask, squared_distance=False, normalise=False):
     Returns:
         [SimpleITK.Image]: The distance map as an image.
     """
+    arr = sitk.GetArrayViewFromImage(mask)
+    vals = np.unique(arr[arr > 0])
+    if len(vals) > 2:
+        # There is more than one value! We need to threshold at the median
+        cutoff = np.median(vals)
+        mask = sitk.BinaryThreshold(mask, cutoff, np.max(vals).astype(float))
+
     raw_map = sitk.SignedMaurerDistanceMap(
         mask,
         insideIsPositive=True,

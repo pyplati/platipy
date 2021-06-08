@@ -18,105 +18,170 @@ import SimpleITK as sitk
 
 from platipy.imaging.label.utils import get_com
 
-from platipy.imaging.generation.image import insert_sphere_image
+from platipy.imaging.generation.image import insert_cylinder_image
 
-"""
-Generate valves
-First example - meeting point of LA/LV (mitral valve)
-"""
+from platipy.imaging.utils.geometry import vector_angle, rotate_image
 
 
-def generate_valves_from_chambers(img_chamber_1, img_chamber_2, radius_mm=10):
+def generate_valve_from_great_vessel(
+    label_great_vessel, label_ventricle, initial_dilation=(4, 4, 5), final_erosion=(3, 3, 3)
+):
+    """
+    Generates a geometrically-defined valve.
+    This function is suitable for the pulmonic and aortic valves.
 
-    # Find the mid-point of the chambers
-    com_1 = np.array(get_com(img_chamber_1))
-    com_2 = np.array(get_com(img_chamber_2))
+    Args:
+        label_great_vessel (SimpleITK.Image): The binary mask for the great vessel
+            (pulmonary artery or ascending aorta)
+        label_ventricle (SimpleITK.Image): The binary mask for the ventricle (left or right)
+        initial_dilation (tuple, optional): Initial dilation, larger values increase the valve
+            size. Defaults to (4, 4, 5).
+        final_erosion (tuple, optional): Final erosion, larger values decrease the valve size.
+            Defaults to (3, 3, 3).
 
-    midpoint = com_1 + 0.5 * (com_2 - com_1)
+    Returns:
+        SimpleITK.Image: The geometric valve, as a binary mask.
+    """
+    # Dilate the great vessel and ventricle
+    label_great_vessel_dilate = sitk.BinaryDilate(label_great_vessel, initial_dilation)
+    label_ventricle_dilate = sitk.BinaryDilate(label_ventricle, initial_dilation)
 
+    # Find the overlap (of these dilated volumes)
+    overlap = label_great_vessel_dilate & label_ventricle_dilate
+
+    # Create a mask, first we calculate the union
+    dilation = 1
+    union_vol = 0
+    while union_vol <= 2000:
+        union = sitk.BinaryDilate(label_great_vessel, (dilation,) * 3) | sitk.BinaryDilate(
+            label_ventricle, (dilation,) * 3
+        )
+        union_vol = np.sum(sitk.GetArrayFromImage(union) * np.product(union.GetSpacing()))
+        dilation += 1
+
+    mask = sitk.Mask(overlap, union)
+
+    label_valve = sitk.BinaryMorphologicalClosing(mask)
+    label_valve = sitk.BinaryErode(label_valve, final_erosion)
+
+    return label_valve
+
+
+def generate_valve_using_cylinder(
+    label_atrium,
+    label_ventricle,
+    label_wh,
+    radius_mm=15,
+    height_mm=10,
+    shift_parameters=[
+        [7.63383999e-01, -1.15883572e00, 2.12311297e00],
+        [4.21062525e-03, -3.95014189e-04, 1.13108043e-03],
+    ],
+):
+    """
+    Generates a geometrically-defined valve.
+    This function is suitable for the tricuspid and mitral valves.
+
+    Note: the shift parameters have been determined empirically.
+    For the mitral valve, use the defaults.
+    For the tricuspid valve, use np.zeros((2,3))
+
+    Args:
+        label_atrium (SimpleITK.Image): The binary mask for the (left or right) atrium.
+        label_ventricle (SimpleITK.Image): The binary mask for the (left or right) ventricle.
+        label_wh (SimpleITK.Image): The binary mask for the whole heart. Used to scale the shift.
+        radius_mm (int, optional): The valve radius, in mm. Defaults to 15.
+        height_mm (int, optional): The valve height (i.e. perpendicular extend), in mm.
+            Defaults to 10.
+        shift_parameters (list, optional):
+            Shift parameters, which are the intercept (first row) and gradient (second row)
+                of a linear function that maps whole heart volume to 3D shift
+                (axial, coronal, sagittal). Set to zero to not use.
+                Defaults to
+                    [ [7.63383999e-01, -1.15883572e00, 2.12311297e00],
+                      [4.21062525e-03, -3.95014189e-04, 1.13108043e-03], ].
+
+    Returns:
+        SimpleITK.Image: The geometrically defined valve
+    """
     # Define the overlap region (using binary dilation)
     # Increment overlap to make sure we have enough voxels
     dilation = 1
     overlap_vol = 0
-    while overlap_vol <= 2000:
-        overlap = sitk.BinaryDilate(img_chamber_1, (dilation,) * 3) & sitk.BinaryDilate(
-            img_chamber_2, (dilation,) * 3
+    while overlap_vol <= 10000:
+        overlap = sitk.BinaryDilate(label_atrium, (dilation,) * 3) & sitk.BinaryDilate(
+            label_ventricle, (dilation,) * 3
         )
         overlap_vol = np.sum(sitk.GetArrayFromImage(overlap) * np.product(overlap.GetSpacing()))
         dilation += 1
 
-    print(f"Sufficient overlap found at dilation = {dilation} [V = {overlap_vol/1000:.2f} cm^3]")
+    com_overlap = get_com(overlap, as_int=False)
 
-    # Find the point in the overlap region closest to the mid-point
+    # Use empirical model to shift
+    wh_vol = sitk.GetArrayFromImage(label_wh).sum() * np.product(label_wh.GetSpacing()) / 1000
+    shift = np.dot([1, wh_vol], shift_parameters)
+    com_overlap_shifted = np.array(com_overlap) - shift
+
+    # Create a small expanded overlap region
+    overlap = sitk.BinaryDilate(label_atrium, (1,) * 3) & sitk.BinaryDilate(
+        label_ventricle, (1,) * 3
+    )
+
+    # Find the point in this small overlap region closest to the shifted location
     separation_vector_pixels = (
-        np.stack(np.where(sitk.GetArrayFromImage(overlap))) - midpoint[:, None]
+        np.stack(np.where(sitk.GetArrayFromImage(overlap))) - com_overlap_shifted[:, None]
     ) ** 2
-    spacing = np.array(img_chamber_1.GetSpacing())
+    spacing = np.array(label_atrium.GetSpacing())
     separation_vector_mm = separation_vector_pixels / spacing[:, None]
 
     separation_mm = np.sum(separation_vector_mm, axis=0)
     closest_overlap_point = np.argmin(separation_mm)
 
-    com_valve = np.stack(np.where(sitk.GetArrayFromImage(overlap)))[:, closest_overlap_point]
+    # Now we can calculate the location of the valve
+    valve_loc = np.stack(np.where(sitk.GetArrayFromImage(overlap)))[:, closest_overlap_point]
+    valve_loc_real = label_ventricle.TransformContinuousIndexToPhysicalPoint(
+        valve_loc.tolist()[::-1]
+    )
 
-    # Define the valve as a sphere
-    auto_valve = insert_sphere_image(0 * overlap, sp_radius=radius_mm, sp_centre=com_valve)
+    # Now we create a cylinder with the user_defined parameters
+    cylinder = insert_cylinder_image(0 * label_ventricle, radius_mm, height_mm, valve_loc[::-1])
 
-    return auto_valve
+    # Now we compute the first principal moment (long axis) of the larger chamber (2)
+    # f = sitk.LabelShapeStatisticsImageFilter()
+    # f.Execute(label_ventricle)
+    # orientation_vector = f.GetPrincipalAxes(1)
 
+    # A more robust method is to use the COM offset from the chambers
+    # as a proxy for the long axis of the LV/RV
+    # orientation_vector = np.array(get_com(label_ventricle, real_coords=True)) - np.array(
+    #     get_com(label_atrium, real_coords=True)
+    # )
 
-def generate_valves_from_vessels(vessel, thickness_mm=4, erosion_mm=2):
+    # Another method is to compute the third principal moment of the overlap region
+    f = sitk.LabelShapeStatisticsImageFilter()
+    f.Execute(overlap)
+    orientation_vector = f.GetPrincipalAxes(1)[:3]
 
-    # Thickness can be defined by (inferior_thickness, superior_thickness),
-    # or just total_thickness
-    if hasattr(thickness_mm, "__iter__"):
-        thickness_inferior, thickness_superior = thickness_mm
-    else:
-        thickness_inferior, thickness_superior = thickness_mm * 0.5, thickness_mm * 0.5
+    # Get the rotation parameters
+    rotation_angle = vector_angle(orientation_vector, (0, 0, 1))
+    rotation_axis = np.cross(orientation_vector, (0, 0, 1))
 
-    # Get the most inferior slice
-    arr_vessel = sitk.GetArrayFromImage(vessel)
-    inferior_slice = np.where(arr_vessel)[0].min()
+    # Rotate the cylinder to define the valve
+    label_valve = rotate_image(
+        cylinder,
+        rotation_centre=valve_loc_real,
+        rotation_axis=rotation_axis,
+        rotation_angle_radians=rotation_angle,
+        interpolation=sitk.sitkNearestNeighbor,
+        default_value=0,
+    )
 
-    # Get interior and superior limits
-    filled_superior_slice = np.ceil(
-        np.where(arr_vessel)[0].min() + (thickness_superior / vessel.GetSpacing()[2])
-    ).astype(int)
-    filled_inferior_slice = np.floor(
-        np.where(arr_vessel)[0].min() - (thickness_inferior / vessel.GetSpacing()[2])
-    ).astype(int)
+    # Now we want to trim any parts of the valve too close to the edge of the chambers
+    # combined_chambers = sitk.BinaryDilate(label_atrium, (3,) * 3) | sitk.BinaryDilate(
+    #     label_ventricle, (3,) * 3
+    # )
+    # combined_chambers = sitk.BinaryErode(combined_chambers, (6, 6, 6))
 
-    # Create vessel interior
-    vessel_interior = sitk.BinaryErode(vessel, (erosion_mm, erosion_mm, 0))
-    arr = sitk.GetArrayFromImage(vessel_interior)
+    # label_valve = sitk.Mask(label_valve, combined_chambers)
 
-    # Erase upper slices
-    arr[filled_superior_slice:, :, :] = 0
-
-    # Copy down (using mirroring about inferior slice)
-    for s_in, s_out in zip(
-        range(filled_inferior_slice, inferior_slice),
-        range(inferior_slice, filled_superior_slice)[::-1],
-    ):
-        arr[s_in, :, :] = arr[s_out, :, :]
-
-    # Define the valve
-    auto_valve = sitk.GetImageFromArray(arr)
-    auto_valve.CopyInformation(vessel)
-
-    # Post-processing
-    # 1. Extend the actual vessel downwards (continued)
-    arr_vessel[:inferior_slice, :, :] = arr_vessel[inferior_slice, :, :]
-    continued_vessel = sitk.GetImageFromArray(arr_vessel)
-    continued_vessel.CopyInformation(vessel)
-
-    # 2. Erode this continued vessel
-    continued_vessel = sitk.BinaryErode(continued_vessel, (erosion_mm, erosion_mm, 0))
-
-    # 3. Mask
-    auto_valve = sitk.Mask(auto_valve, continued_vessel)
-
-    # 4. Fill small holes
-    auto_valve = sitk.BinaryMorphologicalClosing(auto_valve, (1, 1, 1))
-
-    return auto_valve
+    return label_valve
