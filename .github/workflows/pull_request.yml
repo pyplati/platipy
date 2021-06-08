@@ -24,7 +24,7 @@ jobs:
         echo "PYTHONPATH=`pwd`" >> $GITHUB_ENV
     - name: Build Docs
       run: |
-        apt-get update -y && apt-get install -y pandoc
+        sudo apt-get update -y && sudo apt-get install -y pandoc
         sphinx-build -b html -a docs docs/site
 
     - name: Run Tests
