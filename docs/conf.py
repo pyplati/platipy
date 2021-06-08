@@ -21,7 +21,7 @@ html_theme = "furo"
 # -- Project information -----------------------------------------------------
 
 project = "PlatiPy"
-copyright = "2021, Phillip Chlap & Rob Finnegan"
+copyright = "2021, Ingham Institute, University of New South Wales, University of Sydney"
 author = "Phillip Chlap & Rob Finnegan"
 
 

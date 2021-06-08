@@ -142,3 +142,6 @@ converted/
 **/data
 **/tcia
 **/nifti_output
+
+# Don't include html docs in repo
+docs/site/
