@@ -232,6 +232,7 @@ def run_iar(
     # Exclude (at most) the worst 3 atlases for outlier detection
     # With a minimum number, this helps provide more robust estimates at low numbers
     result_list = list(q_results.values())
+    result_list = [r for r in result_list if ~np.isnan(r) and np.isfinite(r)]
     best_results = np.sort(result_list)[: max([min_best_atlases, len(result_list) - 3])]
 
     if outlier_method.lower() == "iqr":
