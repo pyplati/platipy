@@ -39,6 +39,4 @@ Jupyter Notebooks
 The following Jupyter Notebooks are provided to demonstrate how to use some of the PlatiPy
 functionality from your Python code:
 
-* `Nifti to RTStruct <https://github.com/pyplati/platipy/blob/master/platipy/dicom/nifti_to_rtstruct/convert_sample.ipynb>`_
-* `RTStruct to Nifti <https://github.com/pyplati/platipy/blob/master/platipy/dicom/rtstruct_to_nifti/convert_sample.ipynb>`_
-* `Visualise Segmentation <https://github.com/pyplati/platipy/blob/master/platipy/imaging/visualisation/examples/visualise_segmentation.ipynb>`_
+.. mdinclude:: ../examples/README.md
