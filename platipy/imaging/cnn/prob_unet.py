@@ -174,6 +174,9 @@ class ProbabilisticUnet(torch.nn.Module):
         self.prior_latent_space = None
         self.unet_features = None
 
+        self._moving_avg = None
+        self.register_buffer("_lambda", torch.zeros(1, requires_grad=False))
+
     def forward(self, img, seg, training=True):
         """
         Construct prior latent space for patch and run patch through UNet,
@@ -196,7 +199,9 @@ class ProbabilisticUnet(torch.nn.Module):
             elif not sample_x_stddev_from_mean is None:
                 if isinstance(sample_x_stddev_from_mean, list):
                     sample_x_stddev_from_mean = torch.Tensor(sample_x_stddev_from_mean)
-                    sample_x_stddev_from_mean = sample_x_stddev_from_mean.to(self.prior_latent_space.base_dist.stddev.device)
+                    sample_x_stddev_from_mean = sample_x_stddev_from_mean.to(
+                        self.prior_latent_space.base_dist.stddev.device
+                    )
                 z_prior = self.prior_latent_space.base_dist.loc + (
                     self.prior_latent_space.base_dist.scale * sample_x_stddev_from_mean
                 )
@@ -260,6 +265,56 @@ class ProbabilisticUnet(torch.nn.Module):
         reconstruction_loss = torch.sum(reconstruction_loss)
         # mean_reconstruction_loss = torch.mean(reconstruction_loss)
 
-        return {"loss": -(reconstruction_loss + self.beta * kl_div),
-                "rec_loss": reconstruction_loss,
-                "kl_div": kl_div}
+        return {
+            "loss": -(reconstruction_loss + self.beta * kl_div),
+            "rec_loss": reconstruction_loss,
+            "kl_div": kl_div,
+        }
+
+    def geco(self, segm, analytic_kl=True, reconstruct_posterior_mean=False):
+        """
+        Calculate the evidence lower bound of the log-likelihood of P(Y|X)
+        """
+
+        criterion = torch.nn.BCEWithLogitsLoss(reduction="mean")
+        z_posterior = self.posterior_latent_space.rsample()
+
+        kl_div = torch.mean(self.kl_divergence(analytic=analytic_kl, z_posterior=z_posterior))
+
+        # Here we use the posterior sample sampled above
+        reconstruction = self.reconstruct(
+            use_posterior_mean=reconstruct_posterior_mean, z_posterior=z_posterior
+        )
+
+        segm = torch.unsqueeze(segm, dim=1)
+        not_seg = segm.logical_not()
+        segm = torch.cat((not_seg, segm), dim=1).float()
+        reconstruction_loss = criterion(input=reconstruction, target=segm)
+        reconstruction_loss = torch.sum(reconstruction_loss)
+        # mean_reconstruction_loss = torch.mean(reconstruction_loss)
+
+        num_pixels = reconstruction.numel()
+        reconstruction_threshold = 0.02 * num_pixels
+        rec_constraint = self._moving_avg - reconstruction_threshold
+
+        loss = self._lambda * rec_constraint + kl_div
+
+        with torch.no_grad():
+            if self._moving_avg is None:
+                self._moving_avg = reconstruction_loss.detach().mean(0)
+            else:
+                self._moving_avg = (
+                    self._moving_avg * 0.5 + reconstruction_loss.detach() * (1 - 0.5)
+                ).mean(0)
+            speed = 1
+            self._lambda = (speed * self._moving_avg * self._lambda).clamp(1e-5, 1e5)
+
+        return {
+            "loss": -loss,
+            "rec_loss": reconstruction_loss,
+            "kl_div": kl_div,
+            "lambda": self._lambda,
+            "moving_avg": self._moving_avg,
+            "reconstruction_threshold": reconstruction_threshold,
+            "rec_constraint": rec_constraint,
+        }
