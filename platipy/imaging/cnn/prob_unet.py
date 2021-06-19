@@ -295,7 +295,7 @@ class ProbabilisticUnet(torch.nn.Module):
 
         num_pixels = reconstruction.numel()
         reconstruction_threshold = 0.02 * num_pixels
-        rec_constraint = self._moving_avg - reconstruction_threshold
+        rec_constraint = reconstruction_loss - reconstruction_threshold
 
         loss = self._lambda * rec_constraint + kl_div
 
@@ -308,7 +308,6 @@ class ProbabilisticUnet(torch.nn.Module):
                 ).mean(0)
             speed = 1
             self._lambda = (speed * self._moving_avg * self._lambda).clamp(1e-5, 1e5)
-
         return {
             "loss": -loss,
             "rec_loss": reconstruction_loss,
