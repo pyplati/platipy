@@ -38,11 +38,11 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
-    - name: Build Docs
+    - name: Build docs
       run: |
         sudo apt-get update -y && sudo apt-get install -y pandoc
         sphinx-build -b html -a docs docs/site
-    - name: Deploy Docs
+    - name: Deploy docs
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
