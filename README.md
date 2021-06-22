@@ -8,28 +8,6 @@ PlatiPy was motivated by the need for a simple way to use, visualise, process, a
 PlatiPy is written in :snake: Python, and uses SimpleITK, VTK, and standard Python libraries. Jupyter notebooks are provided where
 possible, mainly for guidance on getting started with using the tools.
 
-## Table of content
-
-- [Getting started](#getting-started)
-    - [Requirements](#requirements)
-    - [Installation](#installation)
-    - [Documentation](#documentation)
-- [What can I do with PlatiPy?](#what-can-i-do-with-platipy)
-
-    - [Command line utiities](#command-line-utilities)
-        - [DICOM conversion](#dicom-conversion)
-- [License](#license)
-- [Links](#links)
-
-## Getting started
-### Requirements
-- Python 3.6 or greater
-- See requirements.txt for required Python packages and requirements-dev.txt for librarites needed to contribute.
-### Installation
-- Python 3.6 or greater
-- See requirements.txt for required Python packages and requirements-dev.txt for librarites needed to contribute.
-### Documentation
-You can find the [PlatiPy documentation here](https://pyplati.github.io/platipy/).
 ## What can I do with ***platipy***?
 A lot! A good place to start is by looking in the **examples** directory. There are tools for:
  - Linear transformation image registration (rigid, affine, etc.)
@@ -40,6 +18,16 @@ A lot! A good place to start is by looking in the **examples** directory. There 
  - Image label operations (comparison metrics, iterative atlas removal, label fusion)
  
 A major part of this package is **visualisation**, and some examples are shown below!
+
+## Getting started
+### Requirements
+- Python 3.6 or greater
+- See requirements.txt for required Python packages and requirements-dev.txt for librarites needed to contribute.
+### Installation
+- Python 3.6 or greater
+- See requirements.txt for required Python packages and requirements-dev.txt for librarites needed to contribute.
+### Documentation
+You can find the [PlatiPy documentation here](https://pyplati.github.io/platipy/).
 
 Overlay a deformation vector field on an image (shown in orthogonal slices):
 
