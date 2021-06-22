@@ -90,7 +90,7 @@
       <a href="#"><div class="brand">PlatiPy  documentation</div></a>
     </div>
     <div class="header-right">
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
     </div>
@@ -111,15 +111,19 @@
   <p><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
-</ul>
-<p><span class="caption-text">Features</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="visualiser.html">Image Visualiser</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 </ul>
 <p><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="_examples/visualise.html">Visualise Images</a></li>
+</ul>
+<p><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="visualiser.html">Image Visualiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dicom.html">DICOM Conversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="registration.html">Registration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
 </ul>
 
 </div>
@@ -131,23 +135,140 @@
   <main class="main">
     <div class="content">
       <article role="main">
-        <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+        <label class="toc-overlay-icon toc-content-icon" for="__toc">
           <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
         </label>
         <section id="platipy-documentation">
 <h1>PlatiPy documentation<a class="headerlink" href="#platipy-documentation" title="Permalink to this headline">¶</a></h1>
-<p>PlatiPy is a <strong>P</strong>rocessing <strong>L</strong>ibrary and <strong>A</strong>nalysis <strong>T</strong>oolkit for Medical
-<strong>I</strong>maging in <strong>Py</strong>thon. It contains a collections of tools and scripts useful for processing
-and analysis of medical images.</p>
-<p>Generally these tools are accesible via a Command Line Interface or by calling them in a Python
-script directly. Examples are provided in Jupyter Notebooks to demonstrate how to use them from
-within Python code.</p>
+<section id="platipy">
+<h2>PlatiPy<a class="headerlink" href="#platipy" title="Permalink to this headline">¶</a></h2>
+<section id="processing-library-and-analysis-toolkit-for-medical-imaging-in-python">
+<h3>Processing Library and Analysis Toolkit for Medical Imaging in Python<a class="headerlink" href="#processing-library-and-analysis-toolkit-for-medical-imaging-in-python" title="Permalink to this headline">¶</a></h3>
+<p>PlatiPy is a library of <strong>amazing</strong> tools for image processing and analysis - designed specifically for medical imaging!</p>
+<p>Check out the <a class="reference external" href="https://pyplati.github.io/platipy/">PlatiPy documentation</a> for more info.</p>
+<p>This project was motivated by the need for a simple way to use, visualise, process, and analyse medical images. Many of
+the tools and algorithms are designed in the context of radiation therapy, although they are more widely applicable to
+other fields that use 2D, 3D, or 4D imaging.</p>
+<p>PlatiPy is written in :snake: Python, and uses SimpleITK, VTK, and standard Python libraries. Jupyter notebooks are provided where
+possible, mainly for guidance on getting started with using the tools. We welcome feedback and contributions from the community (yes, you!)
+and you can find more information about contributing here (link to docs).</p>
+</section>
+<section id="what-can-i-do-with-platipy">
+<h3>What can I do with <strong>platipy</strong>?<a class="headerlink" href="#what-can-i-do-with-platipy" title="Permalink to this headline">¶</a></h3>
+<p>A lot! A good place to start is by looking in the <a class="reference external" href="https://github.com/pyplati/platipy/tree/master/examples">examples directory</a>.</p>
+<p>Some examples of what PlatiPy can do:</p>
+<ul class="simple">
+<li><p>DICOM organising and converting:</p>
+<ul>
+<li><p>Bulk convert from multiple series and studies with a single function</p></li>
+<li><p>Convert DICOM-RT structure and dose filesto NIfTI images</p></li>
+<li><p>Create DICOM-RT structure files from binary masks e.g. from automatic contouring algorithms</p></li>
+</ul>
+</li>
+<li><p>Image registration</p>
+<ul>
+<li><p>Register images and transform labels with a few lines of code</p></li>
+<li><p>Linear transformations: rigid, affine, similarity</p></li>
+<li><p>Non-linear deformable transformations: demons, b-splines</p></li>
+<li><p>Multiple metrics for optimisation</p></li>
+</ul>
+</li>
+<li><p>Atlas-based segmentation</p>
+<ul>
+<li><p>A suite of tools that can be used out-of-the-box</p></li>
+<li><p>Includes advanced algorithms for <a class="reference external" href="https://doi.org/10.1088/1361-6560/ab652a/">iterative atlas selection</a> and <a class="reference external" href="https://doi.org/10.1088/1361-6560/abcb1d/">vessel splining</a></p></li>
+</ul>
+</li>
+<li><p>Synthetic deformation field generation</p>
+<ul>
+<li><p>Simulate anatomically realistic shifts, expansions, and bending</p></li>
+<li><p>Compare DIR results from clinical systems</p></li>
+</ul>
+</li>
+<li><p>Basic tools for image processing and analysis</p>
+<ul>
+<li><p>Computing label similarity metrics: DSC, mean distance to agreement, Hausdorff distance, and more</p></li>
+<li><p>Cropping images to a region of interest</p></li>
+<li><p>Rotate images and generate maximum/mean intensity projections (beams eye view modelling)</p></li>
+</ul>
+</li>
+</ul>
+<p>A major part of this package is <strong>visualisation</strong>, and some examples are shown below!</p>
+<section id="visualise-some-contours">
+<h4>Visualise some contours<a class="headerlink" href="#visualise-some-contours" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">platipy.imaging</span> <span class="kn">import</span> <span class="n">ImageVisualiser</span>
+
+<span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="n">vis</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">vis</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference external image-reference" href="assets/figure_1.png"><img alt="Figure 1" src="assets/figure_1.png"/></a>
+</section>
+<section id="register-some-images">
+<h4>Register some images<a class="headerlink" href="#register-some-images" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">platipy.imaging.registration.linear</span> <span class="kn">import</span> <span class="n">linear_registration</span>
+
+<span class="n">image_2_registered</span><span class="p">,</span> <span class="n">tfm</span> <span class="o">=</span> <span class="n">linear_registration</span><span class="p">(</span>
+<span class="n">image_1</span><span class="p">,</span>
+<span class="n">image_2</span>
+<span class="p">)</span>
+
+<span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">image_1</span><span class="p">)</span>
+<span class="n">vis</span><span class="o">.</span><span class="n">add_comparison_overlay</span><span class="p">(</span><span class="n">image_2_registered</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">vis</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference external image-reference" href="assets/figure_2.png"><img alt="Figure 2" src="assets/figure_2.png"/></a>
+</section>
+<section id="calculate-deformation-vector-fields">
+<h4>Calculate deformation vector fields<a class="headerlink" href="#calculate-deformation-vector-fields" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">platipy.imaging.registration.deformable</span> <span class="kn">import</span> <span class="n">fast_symmetric_forces_demons_registration</span>
+
+<span class="n">image_2_deformed</span><span class="p">,</span> <span class="n">tfm_dir</span><span class="p">,</span> <span class="n">dvf</span> <span class="o">=</span> <span class="n">fast_symmetric_forces_demons_registration</span><span class="p">(</span>
+<span class="n">image_1</span><span class="p">,</span>
+<span class="n">image_2_registered</span>
+<span class="p">)</span>
+
+<span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">image_2_deformed</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">"z"</span><span class="p">)</span>
+<span class="n">vis</span><span class="o">.</span><span class="n">add_vector_overlay</span><span class="p">(</span>
+    <span class="n">dvf</span><span class="p">,</span>
+    <span class="n">subsample</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+    <span class="n">arrow_scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">arrow_width</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">magma</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"DVF magnitude [mm]"</span><span class="p">,</span>
+    <span class="n">color_function</span><span class="o">=</span><span class="s2">"magnitude"</span>
+<span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">vis</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference external image-reference" href="assets/figure_3.png"><img alt="Figure 3" src="assets/figure_3.png"/></a>
+</section>
+</section>
+<section id="getting-started">
+<h3>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h3>
+<p>There aren’t many requirement, just an installed Python interpreter (3.6 or greater). The list of requirements can be
+found in requirements.txt.</p>
+<p>PlatiPy can be installed with <strong>pip</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install git+https://github.com/pyplati/platipy.git
+</pre></div>
+</div>
+</section>
+<section id="authors">
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Phillip Chlap</strong> - <a class="reference external" href="mailto:phillip.chlap%40unsw.edu.au">phillip<span>.</span>chlap<span>@</span>unsw<span>.</span>edu<span>.</span>au</a></p></li>
+<li><p><strong>Robert Finnegan</strong> - <a class="reference external" href="mailto:robert.finnegan%40sydney.edu.au">robert<span>.</span>finnegan<span>@</span>sydney<span>.</span>edu<span>.</span>au</a></p></li>
+</ul>
 <div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">
 </div>
+</section>
+</section>
 </section>
 
       </article>
@@ -177,8 +298,40 @@ within Python code.</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">PlatiPy documentation</a><ul>
+<li><a class="reference internal" href="#platipy">PlatiPy</a><ul>
+<li><a class="reference internal" href="#processing-library-and-analysis-toolkit-for-medical-imaging-in-python">Processing Library and Analysis Toolkit for Medical Imaging in Python</a></li>
+<li><a class="reference internal" href="#what-can-i-do-with-platipy">What can I do with <strong>platipy</strong>?</a><ul>
+<li><a class="reference internal" href="#visualise-some-contours">Visualise some contours</a></li>
+<li><a class="reference internal" href="#register-some-images">Register some images</a></li>
+<li><a class="reference internal" href="#calculate-deformation-vector-fields">Calculate deformation vector fields</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#getting-started">Getting started</a></li>
+<li><a class="reference internal" href="#authors">Authors</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

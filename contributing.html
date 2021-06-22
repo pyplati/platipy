@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Visualise Images" href="_examples/visualise.html" /><link rel="prev" title="Getting Started" href="getting_started.html" />
 
     <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
-        <title>Examples - PlatiPy documentation</title>
+        <title>Contributing - PlatiPy documentation</title>
       <link rel="stylesheet" href="_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
     <link rel="stylesheet" href="_static/pygments.css">
     <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="_static/pygments_dark.css">
@@ -90,7 +90,7 @@
       <a href="index.html"><div class="brand">PlatiPy  documentation</div></a>
     </div>
     <div class="header-right">
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
     </div>
@@ -109,9 +109,9 @@
   <input type="hidden" name="area" value="default">
 </form><div class="sidebar-scroll"><div class="sidebar-tree">
   <p><span class="caption-text">Introduction</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Contributing</a></li>
 </ul>
 <p><span class="caption-text">Examples</span></p>
 <ul>
@@ -135,25 +135,83 @@
   <main class="main">
     <div class="content">
       <article role="main">
-        <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+        <label class="toc-overlay-icon toc-content-icon" for="__toc">
           <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
         </label>
-        <section id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+        <section id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h1>
+<p>PlatiPy welcomes any and all contributions in the way of new tools/scripts, bug fixes or
+documentation. Below you will find information to help you get started.</p>
+<section id="git">
+<h2>Git<a class="headerlink" href="#git" title="Permalink to this headline">¶</a></h2>
+<p>Create a branch off of <strong>master</strong> while you make your changes or implement your new tool.
+Once complete, head to  <a class="reference external" href="https://github.com/pyplati/platipy/compare">GitHub to create a pull
+request</a> to merge your changes into the main branch
+(<strong>master</strong>). At this point the automated tests will run and maintainers will review your
+submission before merging.</p>
+</section>
+<section id="style-guide">
+<h2>Style Guide<a class="headerlink" href="#style-guide" title="Permalink to this headline">¶</a></h2>
+<p>Python code should conform to
+<a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP 8 Style Guide for Python</a>. You may like to use
+<a class="reference external" href="https://github.com/ambv/black">*black*</a> to ensure that your code conforms to PEP 8.</p>
+</section>
+<section id="structure">
+<h2>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h2>
+<p>In the <code class="docutils literal notranslate"><span class="pre">platipy</span></code> directory you will find the key modules of the library. If you are developing a
+new tool/script, create a folder in <code class="docutils literal notranslate"><span class="pre">platipy/experimental</span></code>. We can then collaborate on your tool in
+there until we have determined the best place in platipy for your code to live.</p>
+</section>
+<section id="writing-unit-tests">
+<h2>Writing unit tests<a class="headerlink" href="#writing-unit-tests" title="Permalink to this headline">¶</a></h2>
+<p>Automated unit tests are important for code bases to which various authors are contributing, to
+ensure that their changes don’t make any unintended breaking changes to other parts of the code.</p>
+<p>PlatiPy uses <em>pytest</em> as the testing framework. See
+<a class="reference external" href="https://docs.pytest.org/en/latest/getting-started.html">the official pytest documentation</a> for an
+introduction to writing tests with pytest.</p>
+<p>The automated tests will run when you submit your pull requests. If tests are failing, have a look
+to see what changes could have led to this. Before you code is integrated fully into PlatiPy, you
+should implement some automated tests of your own. If you’re unsure how to proceed with this, we
+can discuss this in your pull request.</p>
+</section>
+<section id="providing-command-line-tools">
+<h2>Providing command line tools<a class="headerlink" href="#providing-command-line-tools" title="Permalink to this headline">¶</a></h2>
+<p>Command line interface (CLI) tools in Platipy use <em>click</em>. With <em>click</em>. You can find the existing
+CLI tools in <code class="docutils literal notranslate"><span class="pre">platipy/cli</span></code>. Feel free to add a CLI for the tool you are implementing. See
+<a class="reference external" href="https://click.palletsprojects.com">the official click documentation</a> for more information.</p>
+</section>
 </section>
 
       </article>
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="_examples/visualise.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Visualise Images</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="getting_started.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Getting Started</div>
+                
+              </div>
+            </a>
         </div>
 
         <div class="related-information">
               Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
             |
-            <a class="muted-link" href="_sources/examples.rst.txt"
+            <a class="muted-link" href="_sources/contributing.rst.txt"
                rel="nofollow">
               Show Source
             </a>
@@ -161,8 +219,31 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Contributing</a><ul>
+<li><a class="reference internal" href="#git">Git</a></li>
+<li><a class="reference internal" href="#style-guide">Style Guide</a></li>
+<li><a class="reference internal" href="#structure">Structure</a></li>
+<li><a class="reference internal" href="#writing-unit-tests">Writing unit tests</a></li>
+<li><a class="reference internal" href="#providing-command-line-tools">Providing command line tools</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

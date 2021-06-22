@@ -111,15 +111,19 @@
   <p><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
-</ul>
-<p><span class="caption-text">Features</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../visualiser.html">Image Visualiser</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
 </ul>
 <p><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../_examples/visualise.html">Visualise Images</a></li>
+</ul>
+<p><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../visualiser.html">Image Visualiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dicom.html">DICOM Conversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registration.html">Registration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">Utilities</a></li>
 </ul>
 
 </div>
@@ -141,15 +145,6 @@
 </section>
 <section id="module-platipy.imaging.label.comparison">
 <span id="platipy-imaging-label-comparison-module"></span><h2>platipy.imaging.label.comparison module<a class="headerlink" href="#module-platipy.imaging.label.comparison" title="Permalink to this headline">¶</a></h2>
-<p>Module name: LabelComparison
-Author:      Robert Finnegan
-Date:        December 2018
-Description:
-———————————
-- Overlap metrics
-- Volume metrics
-- Surface metrics
-———————————</p>
 <dl class="py function">
 <dt id="platipy.imaging.label.comparison.compute_metric_dsc">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_dsc</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_dsc" title="Permalink to this definition">¶</a></dt>
@@ -424,7 +419,25 @@ Output: p_lat, p_long, grid_values (, fig)</p>
 <dl class="py function">
 <dt id="platipy.imaging.label.utils.get_com">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">get_com</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_int</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">real_coords</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.get_com" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get centre of mass of a SimpleITK.Image</p>
+<dd><blockquote>
+<div><p>Get centre of mass of a SimpleITK.Image</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<em>sitk.Image</em>) – Label mask image.</p></li>
+<li><p><strong>as_int</strong> (<em>bool</em><em>, </em><em>optional</em>) – Returns each components as int if true. Defaults to True.</p></li>
+<li><p><strong>real_coords</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return coordinates in physical space if true. Defaults to
+False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of coordinates</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
 </dd></dl>
 <dl class="py function">
 <dt id="platipy.imaging.label.utils.prime_decode_image">
