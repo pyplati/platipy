@@ -6,14 +6,13 @@ Getting Started
 Installation
 ************
 
-Currently this repository is not available in the official Python repositories. However, you can
-install it with pip using the following command:
+PlatiPy is available from the Python package repositories and can be installed with:
 
-``pip install git+git://github.com/pyplati/platipy``
+``pip install platipy``
 
 If you have already installed the library, you can install the latest updates using:
 
-``pip install --upgrade git+git://github.com/pyplati/platipy``
+``pip install platipy``
 
 ***************
 Getting Started
