@@ -13,7 +13,7 @@ PlatiPy is written in :snake: Python, and uses SimpleITK, VTK, and standard Pyth
 possible, mainly for guidance on getting started with using the tools. We welcome feedback and contributions from the community (yes, you!)
 and you can find more information about contributing here (link to docs).
 
-## What can I do with ***platipy***?
+## What can I do with **platipy**?
 A lot! A good place to start is by looking in the [examples directory](https://github.com/pyplati/platipy/tree/master/examples).
 
 Some examples of what PlatiPy can do:
