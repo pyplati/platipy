@@ -20,7 +20,16 @@ from scipy.ndimage.measurements import center_of_mass
 
 def get_com(label, as_int=True, real_coords=False):
     """
-    Get centre of mass of a SimpleITK.Image
+        Get centre of mass of a SimpleITK.Image
+
+    Args:
+        label (sitk.Image): Label mask image.
+        as_int (bool, optional): Returns each components as int if true. Defaults to True.
+        real_coords (bool, optional): Return coordinates in physical space if true. Defaults to
+            False.
+
+    Returns:
+        list: List of coordinates
     """
     arr = sitk.GetArrayFromImage(label)
     com = center_of_mass(arr)

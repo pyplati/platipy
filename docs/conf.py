@@ -56,15 +56,10 @@ html_show_sphinx = False
 
 print("Copy example notebooks into docs/_examples")
 
-
-def all_but_ipynb(directory, contents):
-    result = []
-    for c in contents:
-        if os.path.isfile(os.path.join(directory, c)) and (not c.endswith(".ipynb")):
-            result += [c]
-    return result
-
-
 shutil.rmtree("_examples", ignore_errors=True)
 os.mkdir("_examples")
 shutil.copy("../examples/visualise.ipynb", "_examples/visualise.ipynb")
+
+shutil.rmtree("site/assets", ignore_errors=True)
+os.makedirs("site", exist_ok=True)
+shutil.copytree("../assets", "site/assets")
