@@ -32,6 +32,7 @@ jobs:
       shell: bash
     - name: Build package
       run: |
+        pip install setuptools wheel
         python setup.py sdist bdist_wheel
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
