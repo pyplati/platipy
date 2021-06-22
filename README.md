@@ -97,7 +97,7 @@ fig = vis.show()
 There aren't many requirement, just an installed Python interpreter (3.6 or greater). The list of requirements can be
 found in requirements.txt.
 
-PlatiPy can be installed with ##pip##:
+PlatiPy can be installed with **pip**:
 
 ```bash
 pip install git+https://github.com/pyplati/platipy.git
