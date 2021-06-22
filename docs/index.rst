@@ -18,7 +18,6 @@ PlatiPy documentation
     :hidden:
 
     _examples/visualise
-    _examples/cardiac_segmentation
     
 .. toctree::
     :caption: Reference

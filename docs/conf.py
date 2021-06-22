@@ -59,7 +59,6 @@ print("Copy example notebooks into docs/_examples")
 shutil.rmtree("_examples", ignore_errors=True)
 os.mkdir("_examples")
 shutil.copy("../examples/visualise.ipynb", "_examples/visualise.ipynb")
-shutil.copy("../examples/cardiac_segmentation.ipynb", "_examples/cardiac_segmentation.ipynb")
 
 shutil.rmtree("site/assets", ignore_errors=True)
 os.makedirs("site", exist_ok=True)
