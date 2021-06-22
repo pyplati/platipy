@@ -3,7 +3,7 @@
 
 PlatiPy is a library of **amazing** tools for image processing and analysis - designed specifically for medical imaging! 
 
-You can find the [PlatiPy documentation here](https://pyplati.github.io/platipy/)
+Check out the [PlatiPy documentation](https://pyplati.github.io/platipy/) for more info.
 
 This project was motivated by the need for a simple way to use, visualise, process, and analyse medical images. Many of
 the tools and algorithms are designed in the context of radiation therapy, although they are more widely applicable to
