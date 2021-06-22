@@ -49,7 +49,7 @@ vis.add_contour(contours)
 fig = vis.show()
 ```
 
-![Figure 1](assets/figure_1.jpeg)
+![Figure 1](assets/figure_1.png)
 
 #### Register some images
 
@@ -66,7 +66,7 @@ vis.add_comparison_overlay(image_2_registered)
 fig = vis.show()
 ```
 
-![Figure 2](assets/figure_2.jpeg)
+![Figure 2](assets/figure_2.png)
 
 #### Calculate deformation vector fields
     
@@ -91,7 +91,7 @@ vis.add_vector_overlay(
 fig = vis.show()
 ```
 
-![Figure 3](assets/figure_3.jpeg)
+![Figure 3](assets/figure_3.png)
 
 ## Getting started
 There aren't many requirement, just an installed Python interpreter (3.6 or greater). The list of requirements can be
