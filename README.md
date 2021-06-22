@@ -1,14 +1,17 @@
 # PlatiPy 
-### Processing Library and Analysis Toolkit for Medical Imaging in Python
+## Processing Library and Analysis Toolkit for Medical Imaging in Python
 
 PlatiPy is a library of **amazing** tools for image processing and analysis - designed specifically for medical imaging! 
 
-PlatiPy was motivated by the need for a simple way to use, visualise, process, and analyse medical images.
+You can find the [PlatiPy documentation here](https://pyplati.github.io/platipy/)
+
+This project was motivated by the need for a simple way to use, visualise, process, and analyse medical images. Many of
+the tools and algorithms are designed in the context of radiation therapy, although they are more widely applicable to
+other fields that use 2D, 3D, or 4D imaging.
 
 PlatiPy is written in :snake: Python, and uses SimpleITK, VTK, and standard Python libraries. Jupyter notebooks are provided where
-possible, mainly for guidance on getting started with using the tools.
-
-You can find the [PlatiPy documentation here](https://pyplati.github.io/platipy/)
+possible, mainly for guidance on getting started with using the tools. We welcome feedback and contributions from the community (yes, you!)
+and you can find more information about contributing here (link to docs).
 
 ## What can I do with ***platipy***?
 A lot! A good place to start is by looking in the [examples directory](https://github.com/pyplati/platipy/tree/master/examples).
