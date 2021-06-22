@@ -53,18 +53,18 @@ A major part of this package is **visualisation**, and some examples are shown b
 
 #### Register some images
 
-    ```python
-    from platipy.imaging.registration.linear import linear_registration
+```python
+from platipy.imaging.registration.linear import linear_registration
 
-    image_2_registered, tfm = linear_registration(
-    image_1,
-    image_2
-    )
+image_2_registered, tfm = linear_registration(
+image_1,
+image_2
+)
 
-    vis = ImageVisualiser(image_1)
-    vis.add_comparison_overlay(image_2_registered)
-    fig = vis.show()
-    ```
+vis = ImageVisualiser(image_1)
+vis.add_comparison_overlay(image_2_registered)
+fig = vis.show()
+```
 
 ![Figure 2](assets/figure_2.jpeg)
 
@@ -91,7 +91,7 @@ A major part of this package is **visualisation**, and some examples are shown b
     fig = vis.show()
     ```
 
-![Figure 3](assets/figure_2.jpeg)
+![Figure 3](assets/figure_3.jpeg)
 
 ## Getting started
 There aren't many requirement, just an installed Python interpreter (3.6 or greater). The list of requirements can be
