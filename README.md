@@ -39,8 +39,11 @@ Some examples of what PlatiPy can do:
 
 A major part of this package is **visualisation**, and some examples are shown below!
 
+    vis = ImageVisualiser(image, figure_size_in=5)
+    vis.add_contour(contours)
+    fig = vis.show()
 
-![Figure 1](assets/prostate_dir.png)
+![Figure 1](assets/figure_1.jpeg)
 
 Overlay a scalar field on an image:
 
