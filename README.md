@@ -39,15 +39,6 @@ Some examples of what PlatiPy can do:
 
 A major part of this package is **visualisation**, and some examples are shown below!
 
-## Getting started
-### Requirements
-- Python 3.6 or greater
-- See requirements.txt for required Python packages and requirements-dev.txt for librarites needed to contribute.
-### Installation
-- Python 3.6 or greater
-- See requirements.txt for required Python packages and requirements-dev.txt for librarites needed to contribute.
-
-Overlay a deformation vector field on an image (shown in orthogonal slices):
 
 ![Figure 1](assets/prostate_dir.png)
 
@@ -58,6 +49,14 @@ Overlay a scalar field on an image:
 Create a comparison image, with vector fields:
 
 ![Figure 3](assets/hn_dvf_overlay.jpeg)
+## Getting started
+There aren't many requirement, just an installed Python interpreter (3.6 or greater). The list of requirements can be
+found in requirements.txt.
+
+PlatiPy can be installed with ##pip##:
+
+    ```bash
+    pip install git+https://github.com/pyplati/platipy.git
 
 ## Authors
 
