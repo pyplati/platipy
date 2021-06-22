@@ -2,13 +2,7 @@
 PlatiPy documentation
 #####################
 
-PlatiPy is a **P**\ rocessing **L**\ ibrary and **A**\ nalysis **T**\ oolkit for Medical 
-**I**\ maging in **Py**\ thon. It contains a collections of tools and scripts useful for processing
-and analysis of medical images.
-
-Generally these tools are accesible via a Command Line Interface or by calling them in a Python
-script directly. Examples are provided in Jupyter Notebooks to demonstrate how to use them from
-within Python code.
+.. mdinclude:: ../README.md
 
 .. toctree::
     :caption: Introduction
@@ -16,14 +10,7 @@ within Python code.
     :hidden:
 
     getting_started
-
-.. toctree::
-    :caption: Features
-    :maxdepth: 2
-    :hidden:
-
-    visualiser
-    cli
+    contributing
 
 .. toctree::
     :caption: Examples
@@ -31,3 +18,15 @@ within Python code.
     :hidden:
 
     _examples/visualise
+    _examples/cardiac_segmentation
+    
+.. toctree::
+    :caption: Reference
+    :maxdepth: 2
+    :hidden:
+
+    visualiser
+    dicom
+    cli
+    registration
+    utils

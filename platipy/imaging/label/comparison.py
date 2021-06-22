@@ -12,18 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Module name: LabelComparison
-Author:      Robert Finnegan
-Date:        December 2018
-Description:
----------------------------------
-- Overlap metrics
-- Volume metrics
-- Surface metrics
----------------------------------
-
-"""
 
 import numpy as np
 import SimpleITK as sitk
