@@ -41,7 +41,7 @@ A major part of this package is **visualisation**, and some examples are shown b
 
 #### Visualise some contours
 
-    ```python
+    ``` python
     from platipy.imaging import ImageVisualiser
 
     vis = ImageVisualiser(image)
@@ -101,6 +101,7 @@ PlatiPy can be installed with ##pip##:
 
     ```bash
     pip install git+https://github.com/pyplati/platipy.git
+    ```
 
 ## Authors
 
