@@ -41,13 +41,13 @@ A major part of this package is **visualisation**, and some examples are shown b
 
 #### Visualise some contours
 
-    ``` python
-    from platipy.imaging import ImageVisualiser
+``` python
+from platipy.imaging import ImageVisualiser
 
-    vis = ImageVisualiser(image)
-    vis.add_contour(contours)
-    fig = vis.show()
-    ```
+vis = ImageVisualiser(image)
+vis.add_contour(contours)
+fig = vis.show()
+```
 
 ![Figure 1](assets/figure_1.jpeg)
 
@@ -70,26 +70,26 @@ fig = vis.show()
 
 #### Calculate deformation vector fields
     
-    ```python
-    from platipy.imaging.registration.deformable import fast_symmetric_forces_demons_registration
+```python
+from platipy.imaging.registration.deformable import fast_symmetric_forces_demons_registration
 
-    image_2_deformed, tfm_dir, dvf = fast_symmetric_forces_demons_registration(
-    image_1,
-    image_2_registered
-    )
+image_2_deformed, tfm_dir, dvf = fast_symmetric_forces_demons_registration(
+image_1,
+image_2_registered
+)
 
-    vis = ImageVisualiser(image_2_deformed, axis="z")
-    vis.add_vector_overlay(
-        dvf,
-        subsample=12,
-        arrow_scale=1,
-        arrow_width=2,
-        colormap=plt.cm.magma,
-        name="DVF magnitude [mm]",
-        color_function="magnitude"
-    )
-    fig = vis.show()
-    ```
+vis = ImageVisualiser(image_2_deformed, axis="z")
+vis.add_vector_overlay(
+    dvf,
+    subsample=12,
+    arrow_scale=1,
+    arrow_width=2,
+    colormap=plt.cm.magma,
+    name="DVF magnitude [mm]",
+    color_function="magnitude"
+)
+fig = vis.show()
+```
 
 ![Figure 3](assets/figure_3.jpeg)
 
@@ -99,9 +99,9 @@ found in requirements.txt.
 
 PlatiPy can be installed with ##pip##:
 
-    ```bash
-    pip install git+https://github.com/pyplati/platipy.git
-    ```
+```bash
+pip install git+https://github.com/pyplati/platipy.git
+```
 
 ## Authors
 
