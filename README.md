@@ -47,6 +47,7 @@ A major part of this package is **visualisation**, and some examples are shown b
     vis = ImageVisualiser(image)
     vis.add_contour(contours)
     fig = vis.show()
+    ```
 
 ![Figure 1](assets/figure_1.jpeg)
 
@@ -63,6 +64,7 @@ A major part of this package is **visualisation**, and some examples are shown b
     vis = ImageVisualiser(image_1)
     vis.add_comparison_overlay(image_2_registered)
     fig = vis.show()
+    ```
 
 ![Figure 2](assets/figure_2.jpeg)
 
@@ -76,7 +78,7 @@ A major part of this package is **visualisation**, and some examples are shown b
     image_2_registered
     )
 
-    vis = ImageVisualiser(image_2_deformed, axis="z", figure_size_in=5)
+    vis = ImageVisualiser(image_2_deformed, axis="z")
     vis.add_vector_overlay(
         dvf,
         subsample=12,
@@ -87,7 +89,7 @@ A major part of this package is **visualisation**, and some examples are shown b
         color_function="magnitude"
     )
     fig = vis.show()
-    fig.savefig("../../4_Software/platipy/assets/figure_3.jpeg", dpi=400)
+    ```
 
 ![Figure 3](assets/figure_2.jpeg)
 
