@@ -39,19 +39,58 @@ Some examples of what PlatiPy can do:
 
 A major part of this package is **visualisation**, and some examples are shown below!
 
-    vis = ImageVisualiser(image, figure_size_in=5)
+#### Visualise some contours
+
+    ```python
+    from platipy.imaging import ImageVisualiser
+
+    vis = ImageVisualiser(image)
     vis.add_contour(contours)
     fig = vis.show()
 
 ![Figure 1](assets/figure_1.jpeg)
 
-Overlay a scalar field on an image:
+#### Register some images
 
-![Figure 2](assets/prostate_tumour_p.png)
+    ```python
+    from platipy.imaging.registration.linear import linear_registration
 
-Create a comparison image, with vector fields:
+    image_2_registered, tfm = linear_registration(
+    image_1,
+    image_2
+    )
 
-![Figure 3](assets/hn_dvf_overlay.jpeg)
+    vis = ImageVisualiser(image_1)
+    vis.add_comparison_overlay(image_2_registered)
+    fig = vis.show()
+
+![Figure 2](assets/figure_2.jpeg)
+
+#### Calculate deformation vector fields
+    
+    ```python
+    from platipy.imaging.registration.deformable import fast_symmetric_forces_demons_registration
+
+    image_2_deformed, tfm_dir, dvf = fast_symmetric_forces_demons_registration(
+    image_1,
+    image_2_registered
+    )
+
+    vis = ImageVisualiser(image_2_deformed, axis="z", figure_size_in=5)
+    vis.add_vector_overlay(
+        dvf,
+        subsample=12,
+        arrow_scale=1,
+        arrow_width=2,
+        colormap=plt.cm.magma,
+        name="DVF magnitude [mm]",
+        color_function="magnitude"
+    )
+    fig = vis.show()
+    fig.savefig("../../4_Software/platipy/assets/figure_3.jpeg", dpi=400)
+
+![Figure 3](assets/figure_2.jpeg)
+
 ## Getting started
 There aren't many requirement, just an installed Python interpreter (3.6 or greater). The list of requirements can be
 found in requirements.txt.
