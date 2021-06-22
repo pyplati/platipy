@@ -1,20 +1,23 @@
 # PlatiPy 
 ## Processing Library and Analysis Toolkit for Medical Imaging in Python
 
-PlatiPy is a library of **amazing** tools for image processing and analysis - designed specifically for medical imaging! 
+PlatiPy is a library of **amazing** tools for image processing and analysis - designed specifically
+for medical imaging! 
 
 Check out the [PlatiPy documentation](https://pyplati.github.io/platipy/) for more info.
 
-This project was motivated by the need for a simple way to use, visualise, process, and analyse medical images. Many of
-the tools and algorithms are designed in the context of radiation therapy, although they are more widely applicable to
-other fields that use 2D, 3D, or 4D imaging.
+This project was motivated by the need for a simple way to use, visualise, process, and analyse 
+medical images. Many of the tools and algorithms are designed in the context of radiation therapy,
+although they are more widely applicable to other fields that use 2D, 3D, or 4D imaging.
 
-PlatiPy is written in :snake: Python, and uses SimpleITK, VTK, and standard Python libraries. Jupyter notebooks are provided where
-possible, mainly for guidance on getting started with using the tools. We welcome feedback and contributions from the community (yes, you!)
-and you can find more information about contributing here (link to docs).
+PlatiPy is written in Python, and uses SimpleITK, VTK, and standard Python libraries. Jupyter
+notebooks are provided where possible, mainly for guidance on getting started with using the tools.
+We welcome feedback and contributions from the community (yes, you!) and you can find more
+information about contributing [here](https://pyplati.github.io/platipy/contributing.html).
 
 ## What can I do with **platipy**?
-A lot! A good place to start is by looking in the [examples directory](https://github.com/pyplati/platipy/tree/master/examples).
+A lot! A good place to start is by looking in the 
+[examples directory](https://github.com/pyplati/platipy/tree/master/examples).
 
 Some examples of what PlatiPy can do:
  - DICOM organising and converting:
@@ -28,7 +31,9 @@ Some examples of what PlatiPy can do:
     * Multiple metrics for optimisation
  - Atlas-based segmentation
     * A suite of tools that can be used out-of-the-box
-    * Includes advanced algorithms for [iterative atlas selection](https://doi.org/10.1088/1361-6560/ab652a/) and [vessel splining](https://doi.org/10.1088/1361-6560/abcb1d/)
+    * Includes advanced algorithms for 
+      [iterative atlas selection](https://doi.org/10.1088/1361-6560/ab652a/) and 
+      [vessel splining](https://doi.org/10.1088/1361-6560/abcb1d/)
  - Synthetic deformation field generation
     * Simulate anatomically realistic shifts, expansions, and bending
     * Compare DIR results from clinical systems
@@ -94,13 +99,13 @@ fig = vis.show()
 ![Figure 3](assets/figure_3.png)
 
 ## Getting started
-There aren't many requirement, just an installed Python interpreter (3.6 or greater). The list of requirements can be
-found in requirements.txt.
+There aren't many requirements, just an installed Python interpreter (3.6 or greater). The list of
+required Python packages can be found in requirements.txt.
 
 PlatiPy can be installed with **pip**:
 
 ```bash
-pip install git+https://github.com/pyplati/platipy.git
+pip install platipy
 ```
 
 ## Authors
