@@ -1,8 +1,9 @@
 
 name: Release
-on:
 
-  workflow_dispatch:
+on:
+  release:
+    types: [created]
 
 jobs:
   build:
@@ -20,6 +21,20 @@ jobs:
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
         echo "PYTHONPATH=`pwd`" >> $GITHUB_ENV
+    - name: Autobump version
+      run: |
+        # from refs/tags/v1.2.3 get 1.2.3
+        VERSION=$(echo $GITHUB_REF | sed 's#.*/v##')
+        PLACEHOLDER='__version__ = "develop"'
+        VERSION_FILE='platipy/__init__.py'
+        grep "$PLACEHOLDER" "$VERSION_FILE"
+        sed -i "s/$PLACEHOLDER/__version__ = \"${VERSION}\"/g" "$VERSION_FILE"
+      shell: bash
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
     - name: Build Docs
       run: |
         sudo apt-get update -y && sudo apt-get install -y pandoc
