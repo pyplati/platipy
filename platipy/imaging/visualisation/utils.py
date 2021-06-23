@@ -22,6 +22,18 @@ import matplotlib.pyplot as plt
 from platipy.imaging.utils.crop import label_to_roi
 
 
+class VisualiseImage:
+    """Class to represent visualisation of an image"""
+
+    def __init__(self, image, aspect, interpolation, origin, colormap, clim):
+        self.image = image
+        self.aspect = aspect
+        self.interpolation = interpolation
+        self.origin = origin
+        self.colormap = colormap
+        self.clim = clim
+
+
 class VisualiseContour:
     """Class to represent the visualiation of a contour"""
 
