@@ -802,6 +802,8 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         # Set up a GECO objective (ELBO with a reconstruction constraint).
         elif self._loss_kwargs["type"] == "geco":
+
+            loss = rec_loss["sum"] * self._multiplier + self._loss_kwargs["beta"] * kl_sum
             # ma_rec_loss = self._moving_average(rec_loss["sum"])
             if self._ema is None:
                 self._ema = rec_loss["sum"].detach().mean(0)
@@ -816,8 +818,8 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             speed = 1
             if rec_constraint > 0:
                 speed = 2
-            self._multiplier = (speed * rec_constraint * self._multiplier).clamp(1e-5, 1e5)
-            loss = rec_loss["sum"] * self._multiplier + self._loss_kwargs["beta"] * kl_sum
+            self._multiplier = (speed * rec_constraint * self._multiplier).clamp(1e-5, 1e2)
+            # loss = rec_loss["sum"] * self._multiplier + self._loss_kwargs["beta"] * kl_sum
 
             summaries["geco_loss"] = loss
             # summaries["ma_rec_loss_mean"] = ma_rec_loss / num_valid_pixels
