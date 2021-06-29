@@ -16,14 +16,13 @@
 
 import tempfile
 import shutil
-import os
 
 import pytest
 
 import SimpleITK as sitk
 import numpy as np
 
-from platipy.imaging.tests.pull_data import fetch_data
+from platipy.imaging.tests.data import get_lung_nifti
 
 from platipy.imaging.projects.bronchus.bronchus import (
     generate_lung_mask,
@@ -42,65 +41,56 @@ def bronchus_data():
     """Gets the data needed for the bronchus tests
 
     Returns:
-        dict -- Data for broncus test
+        pathlib.Path: Path to Data for bronchus test
     """
-    return fetch_data("LCTSC", patient_ids=["LCTSC-Train-S1-001"])
+    return get_lung_nifti()
 
 
 def assert_lung_mask(lung_mask):
-    """Checks that the lung mask looks as expected for the tests in this file
-    """
+    """Checks that the lung mask looks as expected for the tests in this file"""
 
     label_shape_statistics_image_filter = sitk.LabelShapeStatisticsImageFilter()
     label_shape_statistics_image_filter.Execute(lung_mask)
 
-    assert np.allclose(
-        label_shape_statistics_image_filter.GetPhysicalSize(1), 4138240, atol=100
-    )
+    assert np.allclose(label_shape_statistics_image_filter.GetPhysicalSize(1), 2480246, atol=100)
 
-    assert np.allclose(
-        label_shape_statistics_image_filter.GetElongation(1), 1.52, atol=0.01
-    )
-    assert np.allclose(
-        label_shape_statistics_image_filter.GetRoundness(1), 0.46, atol=0.01
-    )
+    assert np.allclose(label_shape_statistics_image_filter.GetElongation(1), 1.48, atol=0.01)
+    assert np.allclose(label_shape_statistics_image_filter.GetRoundness(1), 0.46, atol=0.01)
 
     centroid = label_shape_statistics_image_filter.GetCentroid(1)
-    assert np.allclose(centroid[0], 11, atol=1)
-    assert np.allclose(centroid[1], -200, atol=1)
-    assert np.allclose(centroid[2], -448, atol=1)
+    assert np.allclose(centroid[0], -1, atol=1)
+    assert np.allclose(centroid[1], -169, atol=1)
+    assert np.allclose(centroid[2], -476, atol=1)
 
 
 def assert_bronchus_mask(bronchus_mask):
-    """Checks that the bronchus mask looks as expected for the tests in this file
-    """
+    """Checks that the bronchus mask looks as expected for the tests in this file"""
 
     label_shape_statistics_image_filter = sitk.LabelShapeStatisticsImageFilter()
     label_shape_statistics_image_filter.Execute(bronchus_mask)
 
-    assert np.allclose(
-        label_shape_statistics_image_filter.GetPhysicalSize(1), 51700, atol=100
-    )
+    print(label_shape_statistics_image_filter.GetPhysicalSize(1))
+    print(label_shape_statistics_image_filter.GetElongation(1))
+    print(label_shape_statistics_image_filter.GetRoundness(1))
+    print(label_shape_statistics_image_filter.GetCentroid(1))
+    assert np.allclose(label_shape_statistics_image_filter.GetPhysicalSize(1), 42823, atol=100)
 
-    assert np.allclose(
-        label_shape_statistics_image_filter.GetElongation(1), 1.39, atol=0.01
-    )
-    assert np.allclose(
-        label_shape_statistics_image_filter.GetRoundness(1), 0.55, atol=0.01
-    )
+    assert np.allclose(label_shape_statistics_image_filter.GetElongation(1), 1.41, atol=0.01)
+    assert np.allclose(label_shape_statistics_image_filter.GetRoundness(1), 0.55, atol=0.01)
 
     centroid = label_shape_statistics_image_filter.GetCentroid(1)
-    assert np.allclose(centroid[0], 18, atol=1)
-    assert np.allclose(centroid[1], -188, atol=1)
-    assert np.allclose(centroid[2], -446, atol=1)
+    assert np.allclose(centroid[0], 8.85, atol=1)
+    assert np.allclose(centroid[1], -160, atol=1)
+    assert np.allclose(centroid[2], -457, atol=1)
 
 
 def test_lung_segmentation(bronchus_data):
-    """Tests the lung segmentation used as an initial step of bronchus segmentation
-    """
+    """Tests the lung segmentation used as an initial step of bronchus segmentation"""
 
-    img_file = os.path.join(bronchus_data["LCTSC-Train-S1-001"], "CT.nii.gz")
-    img = sitk.ReadImage(img_file)
+    patient_path = bronchus_data.joinpath("LCTSC-Test-S1-201")
+
+    ct_path = next(patient_path.glob("IMAGES/*.nii.gz"))
+    img = sitk.ReadImage(str(ct_path))
 
     lung_mask = generate_lung_mask(img)
 
@@ -108,11 +98,12 @@ def test_lung_segmentation(bronchus_data):
 
 
 def test_bronchus_segmentation(bronchus_data):
-    """Tests the bronchus segmentation algorithm
-    """
+    """Tests the bronchus segmentation algorithm"""
 
-    img_file = os.path.join(bronchus_data["LCTSC-Train-S1-001"], "CT.nii.gz")
-    img = sitk.ReadImage(img_file)
+    patient_path = bronchus_data.joinpath("LCTSC-Test-S1-201")
+
+    ct_path = next(patient_path.glob("IMAGES/*.nii.gz"))
+    img = sitk.ReadImage(str(ct_path))
 
     working_dir = tempfile.mkdtemp()
 
@@ -125,15 +116,17 @@ def test_bronchus_segmentation(bronchus_data):
 
 
 def test_bronchus_service(bronchus_data):
-    """An end-to-end test to check that the bronchus service is running as expected
-    """
+    """An end-to-end test to check that the bronchus service is running as expected"""
 
     working_dir = tempfile.mkdtemp()
+
+    patient_path = bronchus_data.joinpath("LCTSC-Test-S1-201")
+    ct_path = next(patient_path.glob("IMAGES/*.nii.gz"))
 
     # Create a data object to be segmented
     data_object = DataObject()
     data_object.id = 1
-    data_object.path = os.path.join(bronchus_data["LCTSC-Train-S1-001"], "CT.nii.gz")
+    data_object.path = str(ct_path)
     data_object.type = "FILE"
 
     # Run the service function

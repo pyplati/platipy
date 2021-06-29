@@ -15,7 +15,8 @@
 
 import click
 
-from platipy.dicom.rtstruct_to_nifti.convert import convert_rtstruct
+from platipy.dicom.io.rtstruct_to_nifti import convert_rtstruct
+
 
 @click.command()
 @click.option(
@@ -30,15 +31,13 @@ from platipy.dicom.rtstruct_to_nifti.convert import convert_rtstruct
     required=True,
     help="Dicom RTStruct file containing the contours to convert",
 )
-@click.option(
-    "--prefix", "-p", default="Struct_", help="Prefix for output files (e.g. Case_01_"
-)
+@click.option("--prefix", "-p", default="Struct_", help="Prefix for output files (e.g. Case_01_")
 @click.option(
     "--output_dir",
     "-od",
     default=".",
     help="Directory in which to place converted files",
-    show_default=True
+    show_default=True,
 )
 @click.option("--output_img", "-oi", help="Output name of converted image series")
 @click.option(

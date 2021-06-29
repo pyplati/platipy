@@ -21,7 +21,9 @@ from pathlib import Path
 import requests
 from loguru import logger
 
-from platipy.dicom.dicom_directory_crawler.conversion_utils import process_dicom_directory
+from platipy.dicom.io.crawl import (
+    process_dicom_directory,
+)
 
 API_URL = "https://services.cancerimagingarchive.net/services/v4/TCIA"
 

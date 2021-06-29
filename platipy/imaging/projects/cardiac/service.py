@@ -46,44 +46,85 @@ def cardiac_service(data_objects, working_dir, settings):
         # Read the image series
         load_path = data_object.path
         if data_object.type == "DICOM":
-            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(
-                data_object.path
-            )
+            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(data_object.path)
 
         img = sitk.ReadImage(load_path)
 
-        results = run_cardiac_segmentation(img, settings)
+        results, _ = run_cardiac_segmentation(img, settings=settings)
 
         # Save resulting masks and add to output for service
-        for output in results.keys():
+        for output in results:
 
             mask_file = os.path.join(working_dir, "{0}.nii.gz".format(output))
             sitk.WriteImage(results[output], mask_file)
 
-            output_data_object = DataObject(
-                type="FILE", path=mask_file, parent=data_object
-            )
+            output_data_object = DataObject(type="FILE", path=mask_file, parent=data_object)
             output_objects.append(output_data_object)
 
         # If the input was a DICOM, then we can use it to generate an output RTStruct
-        # if data_object.type == 'DICOM':
+        # if data_object.type == "DICOM":
 
         #     dicom_file = load_path[0]
-        #     logger.info('Will write Dicom using file: {0}'.format(dicom_file))
-        #     masks = {settings['outputContourName']: mask_file}
+        #     logger.info("Will write Dicom using file: {0}".format(dicom_file))
+        #     masks = {settings["outputContourName"]: mask_file}
 
         #     # Use the image series UID for the file of the RTStruct
         #     suid = pydicom.dcmread(dicom_file).SeriesInstanceUID
-        #     output_file = os.path.join(working_dir, 'RS.{0}.dcm'.format(suid))
+        #     output_file = os.path.join(working_dir, "RS.{0}.dcm".format(suid))
 
         #     # Use the convert nifti function to generate RTStruct from nifti masks
         #     convert_nifti(dicom_file, masks, output_file)
 
         #     # Create the Data Object for the RTStruct and add it to the list
-        #     do = DataObject(type='DICOM', path=output_file, parent=d)
+        #     do = DataObject(type="DICOM", path=output_file, parent=d)
         #     output_objects.append(do)
 
-        #     logger.info('RTStruct generated')
+        #     logger.info("RTStruct generated")
+
+    return output_objects
+
+
+@app.register(
+    "Cardiac Structure Guided Segmentation",
+    default_settings=CARDIAC_SETTINGS_DEFAULTS,
+)
+def cardiac_structure_guided_service(data_objects, working_dir, settings):
+    """Runs the structure guided cardiac segmentation service"""
+
+    logger.info("Running Structure Guided Cardiac Segmentation")
+    logger.info("Using settings: " + str(settings))
+
+    output_objects = []
+    for data_object in data_objects:
+        logger.info("Running on data object: " + data_object.path)
+
+        # Read the image series
+        load_path = data_object.path
+        if data_object.type == "DICOM":
+            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(data_object.path)
+
+        img = sitk.ReadImage(load_path)
+
+        # Load the WHOLEHEART contour (child of Image)
+        if len(data_object.children) == 0:
+            logger.error(
+                "Wholeheart structure needed for structure guided cardiac "
+                f"segmentation, skipping {data_object.id}"
+            )
+            continue
+
+        wholeheart = sitk.ReadImage(data_object.children[0].path)
+
+        results = run_cardiac_segmentation(img, wholeheart, settings)
+
+        # Save resulting masks and add to output for service
+        for output in results:
+
+            mask_file = os.path.join(working_dir, "{0}.nii.gz".format(output))
+            sitk.WriteImage(results[output], mask_file)
+
+            output_data_object = DataObject(type="FILE", path=mask_file, parent=data_object)
+            output_objects.append(output_data_object)
 
     return output_objects
 
