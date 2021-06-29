@@ -271,7 +271,7 @@ class ProbabilisticUnet(torch.nn.Module):
             "kl_div": kl_div,
         }
 
-    def geco(self, segm, analytic_kl=True, reconstruct_posterior_mean=False):
+    def geco(self, segm, analytic_kl=True, reconstruct_posterior_mean=False, kappa=0.02):
         """
         Calculate the evidence lower bound of the log-likelihood of P(Y|X)
         """
@@ -294,7 +294,7 @@ class ProbabilisticUnet(torch.nn.Module):
         # mean_reconstruction_loss = torch.mean(reconstruction_loss)
 
         num_pixels = reconstruction.numel()
-        reconstruction_threshold = 0.02 * num_pixels
+        reconstruction_threshold = kappa * num_pixels
         rec_constraint = reconstruction_loss - reconstruction_threshold
 
         loss = self._lambda * rec_constraint + kl_div
