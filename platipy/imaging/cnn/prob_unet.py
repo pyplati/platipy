@@ -177,7 +177,7 @@ class ProbabilisticUnet(torch.nn.Module):
         self._moving_avg = None
         self.register_buffer("_lambda", torch.zeros(1, requires_grad=False))
 
-    def forward(self, img, seg, training=True):
+    def forward(self, img, seg=None, training=False):
         """
         Construct prior latent space for patch and run patch through UNet,
         in case training is True also construct posterior latent space
@@ -291,7 +291,6 @@ class ProbabilisticUnet(torch.nn.Module):
         segm = torch.cat((not_seg, segm), dim=1).float()
         reconstruction_loss = criterion(input=reconstruction, target=segm)
         reconstruction_loss = torch.sum(reconstruction_loss)
-        # mean_reconstruction_loss = torch.mean(reconstruction_loss)
 
         num_pixels = reconstruction.numel()
         reconstruction_threshold = kappa * num_pixels
@@ -301,13 +300,11 @@ class ProbabilisticUnet(torch.nn.Module):
 
         with torch.no_grad():
             if self._moving_avg is None:
-                self._moving_avg = reconstruction_loss.detach().mean(0)
+                self._moving_avg = rec_constraint.detach()
             else:
-                self._moving_avg = (
-                    self._moving_avg * 0.5 + reconstruction_loss.detach() * (1 - 0.5)
-                ).mean(0)
+                self._moving_avg = self._moving_avg * 0.5 + rec_constraint.detach() * (1 - 0.5)
             speed = 1
-            self._lambda = (speed * self._moving_avg * self._lambda).clamp(1e-5, 1e5)
+            self._lambda = (speed * torch.exp(self._moving_avg) * self._lambda).clamp(1e-5, 1e5)
         return {
             "loss": -loss,
             "rec_loss": reconstruction_loss,
