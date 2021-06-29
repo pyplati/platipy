@@ -10,3 +10,6 @@ $.dcm binary
 *.ttf binary
 *.pickle binary
 *.woff binary
+
+*.ipynb filter=nbstripout
+*.ipynb diff=ipynb
