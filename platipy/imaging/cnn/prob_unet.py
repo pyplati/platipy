@@ -16,8 +16,6 @@
 # https://github.com/stefanknegt/Probabilistic-Unet-Pytorch
 # which is released under the Apache Licence 2.0
 
-# pylint: disable=invalid-name
-
 import torch
 from torch.distributions import Normal, Independent, kl
 
