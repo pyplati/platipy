@@ -153,20 +153,23 @@ class ProbabilisticUnet(torch.nn.Module):
         filters_per_layer=[64 * (2 ** x) for x in range(5)],
         latent_dim=6,
         no_convs_fcomb=4,
-        beta=1.0,
+        loss_type="elbo",
+        loss_params={"beta": 1},
     ):
         super(ProbabilisticUnet, self).__init__()
 
         self.no_convs_per_block = 3
         self.no_convs_fcomb = no_convs_fcomb
         self.initializers = {"w": "he_normal", "b": "normal"}
-        self.beta = beta
         self.z_prior_sample = 0
 
         self.unet = UNet(input_channels, num_classes, filters_per_layer, final_layer=False)
         self.prior = AxisAlignedConvGaussian(input_channels, filters_per_layer, latent_dim)
         self.posterior = AxisAlignedConvGaussian(input_channels + 1, filters_per_layer, latent_dim)
         self.fcomb = Fcomb(filters_per_layer, latent_dim, num_classes, no_convs_fcomb)
+
+        self.loss_type = loss_type
+        self.loss_params = loss_params
 
         self.posterior_latent_space = None
         self.prior_latent_space = None
@@ -256,11 +259,11 @@ class ProbabilisticUnet(torch.nn.Module):
         not_seg = segm.logical_not()
         segm = torch.cat((not_seg, segm), dim=1).float()
         reconstruction_loss = criterion(input=reconstruction, target=segm)
-        reconstruction_loss = torch.sum(reconstruction_loss)
+        reconstruction_loss = torch.mean(reconstruction_loss)
 
         return reconstruction_loss
 
-    def elbo(self, segm, analytic_kl=True, reconstruct_posterior_mean=False):
+    def loss(self, segm, analytic_kl=True, reconstruct_posterior_mean=False):
         """
         Calculate the evidence lower bound of the log-likelihood of P(Y|X)
         """
@@ -274,48 +277,42 @@ class ProbabilisticUnet(torch.nn.Module):
             segm, reconstruct_posterior_mean=reconstruct_posterior_mean, z_posterior=z_posterior
         )
 
-        return {
-            "loss": reconstruction_loss + self.beta * kl_div,
-            "rec_loss": reconstruction_loss,
-            "kl_div": kl_div,
-        }
+        if self.loss_type == "elbo":
 
-    def geco(self, segm, analytic_kl=True, reconstruct_posterior_mean=False, kappa=0.02):
-        """
-        Calculate the evidence lower bound of the log-likelihood of P(Y|X)
-        """
+            return {
+                "loss": reconstruction_loss + self.loss_params["beta"] * kl_div,
+                "rec_loss": reconstruction_loss,
+                "kl_div": kl_div,
+            }
+        elif self.loss_type == "geco":
 
-        z_posterior = self.posterior_latent_space.rsample()
+            num_pixels = segm.numel()
+            reconstruction_threshold = self.loss_params["kappa"]  # * num_pixels
+            rec_constraint = reconstruction_loss - reconstruction_threshold
 
-        kl_div = torch.mean(self.kl_divergence(analytic=analytic_kl, z_posterior=z_posterior))
+            loss = (
+                self._lambda * rec_constraint  # pylint: disable=access-member-before-definition
+                + kl_div
+            )
 
-        # Here we use the posterior sample sampled above
-        reconstruction_loss = self.reconstruction_loss(
-            segm, reconstruct_posterior_mean=reconstruct_posterior_mean, z_posterior=z_posterior
-        )
+            with torch.no_grad():
+                if self._moving_avg is None:
+                    self._moving_avg = rec_constraint.detach()
+                else:
+                    self._moving_avg = self._moving_avg * 0.5 + rec_constraint.detach() * (1 - 0.5)
+                speed = 1
+                self._lambda = (speed * torch.exp(self._moving_avg) * self._lambda).clamp(
+                    self.loss_params["clamp_rec"][0], self.loss_params["clamp_rec"][1]
+                )
+            return {
+                "loss": loss,
+                "rec_loss": reconstruction_loss,
+                "kl_div": kl_div,
+                "lambda": self._lambda,
+                "moving_avg": self._moving_avg,
+                "reconstruction_threshold": reconstruction_threshold,
+                "rec_constraint": rec_constraint,
+            }
 
-        num_pixels = segm.numel()
-        reconstruction_threshold = kappa * num_pixels
-        rec_constraint = reconstruction_loss - reconstruction_threshold
-
-        loss = (
-            self._lambda * rec_constraint  # pylint: disable=access-member-before-definition
-            + kl_div
-        )
-
-        with torch.no_grad():
-            if self._moving_avg is None:
-                self._moving_avg = rec_constraint.detach()
-            else:
-                self._moving_avg = self._moving_avg * 0.5 + rec_constraint.detach() * (1 - 0.5)
-            speed = 1
-            self._lambda = (speed * torch.exp(self._moving_avg) * self._lambda).clamp(1e-5, 1e5)
-        return {
-            "loss": -loss,
-            "rec_loss": reconstruction_loss,
-            "kl_div": kl_div,
-            "lambda": self._lambda,
-            "moving_avg": self._moving_avg,
-            "reconstruction_threshold": reconstruction_threshold,
-            "rec_constraint": rec_constraint,
-        }
+        else:
+            raise NotImplementedError("Loss must be 'elbo' or 'geco'")

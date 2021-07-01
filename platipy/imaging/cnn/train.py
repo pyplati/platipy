@@ -1,12 +1,17 @@
+import os
+import math
+
 from pathlib import Path
 import numpy as np
 from scipy.optimize import linear_sum_assignment
+
+from comet_ml import Experiment
+from pytorch_lightning.loggers import CometLogger
 
 import torch
 import pytorch_lightning as pl
 
 from argparse import ArgumentParser
-
 
 from platipy.imaging.cnn.prob_unet import ProbabilisticUnet
 from platipy.imaging.cnn.unet import l2_regularisation
@@ -15,37 +20,79 @@ from platipy.imaging.cnn.sampler import ObserverSampler
 
 
 class ProbUNet(pl.LightningModule):
-    def __init__(self):
+    def __init__(
+        self,
+        **kwargs,
+    ):
         super().__init__()
-        self.prob_unet = ProbabilisticUnet()
+
+        self.save_hyperparameters()
+
+        loss_params = {"beta": self.hparams.beta}
+
+        if self.hparams.loss_type == "geco":
+            loss_params = {"kappa": self.hparams.kappa, "clamp_rec": self.hparams.clamp_rec}
+
+        self.prob_unet = ProbabilisticUnet(
+            self.hparams.input_channels,
+            self.hparams.num_classes,
+            self.hparams.filters_per_layer,
+            self.hparams.latent_dim,
+            self.hparams.no_convs_fcomb,
+            self.hparams.loss_type,
+            loss_params,
+        )
+
+    @staticmethod
+    def add_model_specific_args(parent_parser):
+        parser = parent_parser.add_argument_group("Probabilistic UNet")
+        parser.add_argument("--learning_rate", type=float, default=1e-5)
+        parser.add_argument("--input_channels", type=int, default=1)
+        parser.add_argument("--num_classes", type=int, default=2)
+        parser.add_argument(
+            "--filters_per_layer", nargs="+", type=int, default=[64 * (2 ** x) for x in range(5)]
+        )
+        parser.add_argument("--latent_dim", type=int, default=6)
+        parser.add_argument("--no_convs_fcomb", type=int, default=4)
+        parser.add_argument("--loss_type", type=str, default="elbo")
+        parser.add_argument("--beta", type=float, default=1.0)
+        parser.add_argument("--kappa", type=float, default=0.02)
+        parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
+        return parent_parser
 
     def forward(self, x):
         self.prob_unet.forward(x, None, False)
         return x
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-5, weight_decay=0)
+        optimizer = torch.optim.Adam(
+            self.parameters(), lr=self.hparams.learning_rate, weight_decay=0
+        )
         return optimizer
 
     def training_step(self, batch, batch_idx):
         x, y = batch
         self.prob_unet.forward(x, y, training=True)
-        elbo = self.prob_unet.elbo(y, analytic_kl=True)
+        loss = self.prob_unet.loss(y, analytic_kl=True)
         reg_loss = (
             l2_regularisation(self.prob_unet.posterior)
             + l2_regularisation(self.prob_unet.prior)
             + l2_regularisation(self.prob_unet.fcomb.layers)
         )
-        loss = elbo["loss"] + 1e-5 * reg_loss
-
-        self.log("elbo_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        training_loss = loss["loss"] + 1e-5 * reg_loss
         self.log(
-            "rec_loss", elbo["rec_loss"], on_step=True, on_epoch=True, prog_bar=True, logger=True
-        )
-        self.log(
-            "kl_loss", elbo["kl_div"], on_step=True, on_epoch=True, prog_bar=True, logger=True
+            "training_loss", training_loss, on_step=True, on_epoch=True, prog_bar=True, logger=True
         )
 
+        for k in loss:
+            self.log(
+                k,
+                loss[k],
+                on_step=True,
+                on_epoch=True,
+                prog_bar=True,
+                logger=True,
+            )
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -88,21 +135,42 @@ class ProbUNetDataModule(pl.LightningDataModule):
         self,
         data_dir: str = "./data",
         working_dir: str = "./working",
-        train_cases=[],
-        validation_cases=[],
-        test_cases=[],
+        fold=0,
+        k_folds=5,
+        **kwargs,
     ):
         super().__init__()
         self.data_dir = Path(data_dir)
         self.working_dir = Path(working_dir)
 
-        self.train_cases = train_cases
-        self.validation_cases = validation_cases
+        self.fold = fold
+        self.k_folds = k_folds
 
-    def prepare_data(self):
-        pass
+        self.train_cases = []
+        self.validation_cases = []
+
+        print(f"Training fold {self.fold}")
+
+    @staticmethod
+    def add_model_specific_args(parent_parser):
+        parser = parent_parser.add_argument_group("Data Loader")
+        parser.add_argument("--data_dir", type=str, default="./data")
+        parser.add_argument("--fold", type=int, default=0)
+        parser.add_argument("--k_folds", type=int, default=5)
+
+        return parent_parser
 
     def setup(self, stage=None):
+
+        cases = [p.name.replace(".nii.gz", "") for p in self.data_dir.joinpath("images").glob("*")]
+        cases.sort()
+        cases_per_fold = math.ceil(len(cases) / self.k_folds)
+        for f in range(self.k_folds):
+
+            if self.fold == f:
+                self.validation_cases = cases[f * cases_per_fold : (f + 1) * cases_per_fold]
+            else:
+                self.train_cases += cases[f * cases_per_fold : (f + 1) * cases_per_fold]
 
         train_data = [
             {
@@ -123,7 +191,6 @@ class ProbUNetDataModule(pl.LightningDataModule):
         ]
 
         self.training_set = NiftiDataset(train_data, self.working_dir.joinpath("train"))
-        print(len(self.training_set))
         self.validation_set = NiftiDataset(
             validation_data, self.working_dir.joinpath("validation")
         )
@@ -154,22 +221,35 @@ def main(args):
 
     pl.seed_everything(args.seed, workers=True)
 
-    data_module = ProbUNetDataModule(
-        data_dir="./data",
-        working_dir="./working",
-        train_cases=[c for c in range(2)],
-        validation_cases=[c for c in range(15, 16)],
+    args.working_dir = Path(args.working_dir)
+    args.working_dir = args.working_dir.joinpath(args.experiment)
+
+    comet_logger = CometLogger(
+        api_key=os.environ["COMET_API_KEY"],
+        workspace=os.environ["COMET_WORKSPACE"],
+        project_name=os.environ["COMET_PROJECT"],
+        experiment_name=args.experiment,
+        save_dir=args.working_dir,
     )
 
-    prob_unet = ProbUNet()
+    dict_args = vars(args)
+
+    data_module = ProbUNetDataModule(**dict_args)
+
+    prob_unet = ProbUNet(**dict_args)
     trainer = pl.Trainer.from_argparse_args(args)
+    trainer.logger = comet_logger
     trainer.fit(prob_unet, data_module)
 
 
 if __name__ == "__main__":
     parser = ArgumentParser()
+    parser = ProbUNet.add_model_specific_args(parser)
+    parser = ProbUNetDataModule.add_model_specific_args(parser)
     parser = pl.Trainer.add_argparse_args(parser)
     parser.add_argument("--seed", type=int, default=42, help="an integer to use as seed")
+    parser.add_argument("--experiment", type=str, default="default", help="Name of experiment")
+    parser.add_argument("--working_dir", type=str, default="./working")
     args = parser.parse_args()
 
     main(args)
