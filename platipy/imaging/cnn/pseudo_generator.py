@@ -52,3 +52,7 @@ def generate_pseudo_data(data_dir="data"):
         vis.show()
         plt.savefig(slice_directory.joinpath(f"{case}.png"))
         plt.close()
+
+
+if __name__ == "__main__":
+    generate_pseudo_data()
