@@ -10,7 +10,7 @@ from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 from loguru import logger
 
 
-def preprocess_image(img, crop_to_mm=256):
+def preprocess_image(img, crop_to_mm=128):
 
     img = sitk.Normalize(img)
 
@@ -163,9 +163,14 @@ class NiftiDataset(torch.utils.data.Dataset):
         img_file = self.slices[index]["image"]
         mask_file = self.slices[index]["mask"]
         z_slice = self.slices[index]["z"]
+        
+        img = sitk.ReadImage(str(img_file))
+        img = sitk.GetArrayFromImage(img)
+        img = img[z_slice, :, :]
 
-        img = sitk.GetArrayFromImage(sitk.ReadImage(str(img_file))[:, :, z_slice])
-        mask = sitk.GetArrayFromImage(sitk.ReadImage(str(mask_file))[:, :, z_slice])
+        mask = sitk.ReadImage(str(mask_file))
+        mask = sitk.GetArrayFromImage(mask)
+        mask = mask[z_slice, :, :]
 
         segmap = SegmentationMapsOnImage(mask, shape=mask.shape)
         img, mask = self.transforms(image=img, segmentation_maps=segmap)

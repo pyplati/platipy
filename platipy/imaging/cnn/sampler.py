@@ -18,10 +18,3 @@ class ObserverSampler(Sampler):
 
     def __len__(self):
         return len(self.data_source)
-
-
-print(
-    list(
-        BatchSampler(ObserverSampler(["x" for x in range(50)], 5), batch_size=10, drop_last=False)
-    )
-)

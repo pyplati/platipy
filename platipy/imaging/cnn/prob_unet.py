@@ -241,17 +241,13 @@ class ProbabilisticUnet(torch.nn.Module):
             kl_div = log_posterior_prob - log_prior_prob
         return kl_div
 
-    def elbo(self, segm, analytic_kl=True, reconstruct_posterior_mean=False):
-        """
-        Calculate the evidence lower bound of the log-likelihood of P(Y|X)
-        """
+    def reconstruction_loss(self, segm, reconstruct_posterior_mean=False, z_posterior=None):
 
         criterion = torch.nn.BCEWithLogitsLoss(size_average=False, reduce=False, reduction=None)
-        z_posterior = self.posterior_latent_space.rsample()
 
-        kl_div = torch.mean(self.kl_divergence(analytic=analytic_kl, z_posterior=z_posterior))
+        if z_posterior is None:
+            z_posterior = self.posterior_latent_space.rsample()
 
-        # Here we use the posterior sample sampled above
         reconstruction = self.reconstruct(
             use_posterior_mean=reconstruct_posterior_mean, z_posterior=z_posterior
         )
@@ -261,10 +257,25 @@ class ProbabilisticUnet(torch.nn.Module):
         segm = torch.cat((not_seg, segm), dim=1).float()
         reconstruction_loss = criterion(input=reconstruction, target=segm)
         reconstruction_loss = torch.sum(reconstruction_loss)
-        # mean_reconstruction_loss = torch.mean(reconstruction_loss)
+
+        return reconstruction_loss
+
+    def elbo(self, segm, analytic_kl=True, reconstruct_posterior_mean=False):
+        """
+        Calculate the evidence lower bound of the log-likelihood of P(Y|X)
+        """
+
+        z_posterior = self.posterior_latent_space.rsample()
+
+        kl_div = torch.mean(self.kl_divergence(analytic=analytic_kl, z_posterior=z_posterior))
+
+        # Here we use the posterior sample sampled above
+        reconstruction_loss = self.reconstruction_loss(
+            segm, reconstruct_posterior_mean=reconstruct_posterior_mean, z_posterior=z_posterior
+        )
 
         return {
-            "loss": -(reconstruction_loss + self.beta * kl_div),
+            "loss": reconstruction_loss + self.beta * kl_div,
             "rec_loss": reconstruction_loss,
             "kl_div": kl_div,
         }
@@ -274,27 +285,23 @@ class ProbabilisticUnet(torch.nn.Module):
         Calculate the evidence lower bound of the log-likelihood of P(Y|X)
         """
 
-        criterion = torch.nn.BCEWithLogitsLoss(size_average=False, reduce=False, reduction=None)
         z_posterior = self.posterior_latent_space.rsample()
 
         kl_div = torch.mean(self.kl_divergence(analytic=analytic_kl, z_posterior=z_posterior))
 
         # Here we use the posterior sample sampled above
-        reconstruction = self.reconstruct(
-            use_posterior_mean=reconstruct_posterior_mean, z_posterior=z_posterior
+        reconstruction_loss = self.reconstruction_loss(
+            segm, reconstruct_posterior_mean=reconstruct_posterior_mean, z_posterior=z_posterior
         )
 
-        segm = torch.unsqueeze(segm, dim=1)
-        not_seg = segm.logical_not()
-        segm = torch.cat((not_seg, segm), dim=1).float()
-        reconstruction_loss = criterion(input=reconstruction, target=segm)
-        reconstruction_loss = torch.sum(reconstruction_loss)
-
-        num_pixels = reconstruction.numel()
+        num_pixels = segm.numel()
         reconstruction_threshold = kappa * num_pixels
         rec_constraint = reconstruction_loss - reconstruction_threshold
 
-        loss = self._lambda * rec_constraint + kl_div
+        loss = (
+            self._lambda * rec_constraint  # pylint: disable=access-member-before-definition
+            + kl_div
+        )
 
         with torch.no_grad():
             if self._moving_avg is None:

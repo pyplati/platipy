@@ -1,4 +1,6 @@
 from pathlib import Path
+import numpy as np
+from scipy.optimize import linear_sum_assignment
 
 import torch
 import pytorch_lightning as pl
@@ -9,6 +11,7 @@ from argparse import ArgumentParser
 from platipy.imaging.cnn.prob_unet import ProbabilisticUnet
 from platipy.imaging.cnn.unet import l2_regularisation
 from platipy.imaging.cnn.dataset import NiftiDataset
+from platipy.imaging.cnn.sampler import ObserverSampler
 
 
 class ProbUNet(pl.LightningModule):
@@ -33,9 +36,7 @@ class ProbUNet(pl.LightningModule):
             + l2_regularisation(self.prob_unet.prior)
             + l2_regularisation(self.prob_unet.fcomb.layers)
         )
-        loss = -elbo["loss"] + 1e-5 * reg_loss
-
-        print(loss)
+        loss = elbo["loss"] + 1e-5 * reg_loss
 
         self.log("elbo_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         self.log(
@@ -48,11 +49,38 @@ class ProbUNet(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        # x, y = batch
-        # y_hat = self(x)
-        # val_loss = F.cross_entropy(y_hat, y)
-        val_loss = 1
-        return val_loss
+        with torch.set_grad_enabled(False):
+            x, y = batch
+            self.prob_unet.forward(x)
+            sample = self.prob_unet.sample(testing=True)
+            mean = self.prob_unet.sample(testing=True, use_mean=True)
+
+            criterion = torch.nn.BCEWithLogitsLoss(
+                size_average=False, reduce=False, reduction=None
+            )
+
+            onehot = torch.nn.functional.one_hot(y, 2).transpose(1, 3).float()
+
+            observers = y.shape[0]
+            sim_matrix = np.zeros((observers, observers))
+            for i in range(observers):
+                for j in range(observers):
+                    rec_loss = criterion(input=sample[i], target=onehot[j])
+                    rec_loss = torch.sum(rec_loss)
+                    sim_matrix[i, j] = rec_loss.item()
+
+            row_idx, col_idx = linear_sum_assignment(sim_matrix)
+
+            matched_val = sim_matrix[row_idx, col_idx].mean()
+            self.log(
+                "matched_val", matched_val, on_step=True, on_epoch=True, prog_bar=True, logger=True
+            )
+
+            mean_val = criterion(input=mean, target=onehot)
+            mean_val = torch.sum(rec_loss).item()
+            self.log("mean_val", mean_val, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+
+            return matched_val
 
 
 class ProbUNetDataModule(pl.LightningDataModule):
@@ -115,12 +143,9 @@ class ProbUNetDataModule(pl.LightningDataModule):
     def val_dataloader(self):
         return torch.utils.data.DataLoader(
             self.validation_set,
-            # batch_sampler=BatchSampler(
-            #    ObserverSampler(train_set, 5), batch_size=params["batch_size"], drop_last=False
-            # ),
-            # num_workers=params["num_workers"],
-            batch_size=5,
-            shuffle=True,
+            batch_sampler=torch.utils.data.BatchSampler(
+                ObserverSampler(self.validation_set, 5), batch_size=5, drop_last=False
+            ),
             num_workers=4,
         )
 
@@ -132,8 +157,8 @@ def main(args):
     data_module = ProbUNetDataModule(
         data_dir="./data",
         working_dir="./working",
-        train_cases=[c for c in range(15)],
-        validation_cases=[c for c in range(15, 20)],
+        train_cases=[c for c in range(2)],
+        validation_cases=[c for c in range(15, 16)],
     )
 
     prob_unet = ProbUNet()

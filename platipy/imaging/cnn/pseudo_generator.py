@@ -49,6 +49,6 @@ def generate_pseudo_data(data_dir="data"):
             masks[f"obs_{obs_id}_{obs_rad}"] = mask
 
         vis.add_contour(masks)
-        fig = vis.show()
+        vis.show()
         plt.savefig(slice_directory.joinpath(f"{case}.png"))
         plt.close()
