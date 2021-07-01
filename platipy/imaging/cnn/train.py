@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-from comet_ml import Experiment
+import comet_ml
 from pytorch_lightning.loggers import CometLogger
 
 import torch
@@ -28,7 +28,10 @@ class ProbUNet(pl.LightningModule):
 
         self.save_hyperparameters()
 
-        loss_params = {"beta": self.hparams.beta}
+        loss_params = None
+
+        if self.hparams.loss_type == "elbo":
+            loss_params = {"beta": self.hparams.beta}
 
         if self.hparams.loss_type == "geco":
             loss_params = {"kappa": self.hparams.kappa, "clamp_rec": self.hparams.clamp_rec}
