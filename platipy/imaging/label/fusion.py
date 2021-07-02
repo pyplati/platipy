@@ -141,7 +141,7 @@ def compute_weight_map(
         # +1: makes sense for similar modality (CT-cCT)
         correlation_function = vote_params["correlation_function"]
 
-        return correlation_function(corr_img)
+        weight_map = correlation_function(corr_img)
 
     square_difference_image = sitk.SquaredDifference(target_image, moving_image)
     square_difference_image = sitk.Cast(square_difference_image, sitk.sitkFloat32)
@@ -196,9 +196,6 @@ def compute_weight_map(
             weight_map = (
                 weight_map / sitk.GetArrayViewFromImage(sitk.Mask(weight_map, normalise)).max()
             )
-
-    else:
-        raise ValueError("Weighting scheme not valid.")
 
     return sitk.Cast(weight_map, sitk.sitkFloat32)
 
