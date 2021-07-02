@@ -140,6 +140,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         working_dir: str = "./working",
         fold=0,
         k_folds=5,
+        batch_size=5,
         **kwargs,
     ):
         super().__init__()
@@ -152,6 +153,8 @@ class ProbUNetDataModule(pl.LightningDataModule):
         self.train_cases = []
         self.validation_cases = []
 
+        self.batch_size = batch_size
+
         print(f"Training fold {self.fold}")
 
     @staticmethod
@@ -160,6 +163,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         parser.add_argument("--data_dir", type=str, default="./data")
         parser.add_argument("--fold", type=int, default=0)
         parser.add_argument("--k_folds", type=int, default=5)
+        parser.add_argument("--batch_size", type=int, default=5)
 
         return parent_parser
 
@@ -205,7 +209,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
             #    ObserverSampler(train_set, 5), batch_size=params["batch_size"], drop_last=False
             # ),
             # num_workers=params["num_workers"],
-            batch_size=5,
+            batch_size=self.batch_size,
             shuffle=True,
             num_workers=4,
         )
