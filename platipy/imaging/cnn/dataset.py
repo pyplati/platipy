@@ -198,14 +198,8 @@ class NiftiDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
 
-        img_file = self.slices[index]["image"]
-        mask_file = self.slices[index]["mask"]
-
-        img = sitk.ReadImage(str(img_file))
-        img = sitk.GetArrayFromImage(img)
-
-        mask = sitk.ReadImage(str(mask_file))
-        mask = sitk.GetArrayFromImage(mask)
+        img = np.load(self.slices[index]["image"])
+        mask = np.load(self.slices[index]["mask"])
 
         segmap = SegmentationMapsOnImage(mask, shape=mask.shape)
         img, mask = self.transforms(image=img, segmentation_maps=segmap)
