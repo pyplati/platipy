@@ -26,6 +26,7 @@ from platipy.imaging.cnn.sampler import ObserverSampler
 from platipy.imaging import ImageVisualiser
 from platipy.imaging.label.utils import get_com
 
+
 class ProbUNet(pl.LightningModule):
     def __init__(
         self,
@@ -179,8 +180,6 @@ class ProbUNet(pl.LightningModule):
                 continue
 
             img_arr = np.stack(img_arrs)
-            print(img_arr.min())
-            print(img_arr.max())
             img = sitk.GetImageFromArray(img_arr)
             sitk.WriteImage(img, f"test_{case}.nii.gz")
 
@@ -195,8 +194,12 @@ class ProbUNet(pl.LightningModule):
                 mask_arrs = []
                 sample_arrs = []
                 for z in slices:
-                    mask_file = self.validation_directory.joinpath(f"mask_{case}_{z}_{observer}.npy")
-                    sample_file = self.validation_directory.joinpath(f"sample_{case}_{z}_{observer}.npy")
+                    mask_file = self.validation_directory.joinpath(
+                        f"mask_{case}_{z}_{observer}.npy"
+                    )
+                    sample_file = self.validation_directory.joinpath(
+                        f"sample_{case}_{z}_{observer}.npy"
+                    )
 
                     mask_arrs.append(np.load(mask_file))
                     sample_arrs.append(np.load(sample_file))
@@ -213,17 +216,19 @@ class ProbUNet(pl.LightningModule):
                 sitk.WriteImage(sample, f"test_sample_{case}_{observer}.nii.gz")
                 pred_dict[f"auto_{observer}"] = sample
 
-            img_vis = ImageVisualiser(img, cut=get_com(mask), figure_size_in=16, window=[img_arr.min(), img_arr.max()])
+            img_vis = ImageVisualiser(
+                img, cut=get_com(mask), figure_size_in=16, window=[img_arr.min(), img_arr.max()]
+            )
 
             # color_dict = {str(i): [0.5, 0.5, 0.5] for i, m in enumerate(observers)}
             contour_dict = {**obs_dict, **pred_dict}
 
-            img_vis.add_contour(contour_dict)#, color=color_dict)
+            img_vis.add_contour(contour_dict)  # , color=color_dict)
             fig = img_vis.show()
             figure_path = f"valid_{case}.png"
             fig.savefig(figure_path, dpi=300)
-                
 
+            self.logger.experiment.add_image(figure_path)
 
         # for pred in validation_step_outputs:
         #     # do something with a pred
