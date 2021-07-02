@@ -109,7 +109,7 @@ def prepare_transforms():
 class NiftiDataset(torch.utils.data.Dataset):
     """PyTorch Dataset for processing Nifti data"""
 
-    def __init__(self, data, working_dir):
+    def __init__(self, data, working_dir, augment_on_the_fly=True):
         """Prepare a dataset from Nifti images/labels
 
         Args:
@@ -120,7 +120,9 @@ class NiftiDataset(torch.utils.data.Dataset):
         """
 
         self.data = data
-        self.transforms = prepare_transforms()
+        self.transforms = None
+        if augment_on_the_fly:
+            self.transforms = prepare_transforms()
         self.slices = []
         self.working_dir = Path(working_dir)
 
@@ -201,9 +203,10 @@ class NiftiDataset(torch.utils.data.Dataset):
         img = np.load(self.slices[index]["image"])
         mask = np.load(self.slices[index]["mask"])
 
-        segmap = SegmentationMapsOnImage(mask, shape=mask.shape)
-        img, mask = self.transforms(image=img, segmentation_maps=segmap)
-        mask = mask.get_arr()
+        if self.transforms:
+            segmap = SegmentationMapsOnImage(mask, shape=mask.shape)
+            img, mask = self.transforms(image=img, segmentation_maps=segmap)
+            mask = mask.get_arr()
 
         img = torch.FloatTensor(img)
         mask = torch.LongTensor(mask)

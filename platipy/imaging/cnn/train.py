@@ -23,6 +23,8 @@ from platipy.imaging.cnn.unet import l2_regularisation
 from platipy.imaging.cnn.dataset import NiftiDataset
 from platipy.imaging.cnn.sampler import ObserverSampler
 
+from platipy.imaging import ImageVisualiser
+from platipy.imaging.label.utils import get_com
 
 class ProbUNet(pl.LightningModule):
     def __init__(
@@ -119,55 +121,109 @@ class ProbUNet(pl.LightningModule):
                 img_file = self.validation_directory.joinpath(
                     f"img_{info['case'][s]}_{info['z'][s]}.npy"
                 )
-                np.save(img_file, x[0].unsqueeze(0).numpy())
+                np.save(img_file, x[0].squeeze(0).cpu().numpy())
 
                 mask_file = self.validation_directory.joinpath(
                     f"mask_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
                 )
-                np.save(mask_file, y[0].unsqueeze(0).numpy())
+                np.save(mask_file, y[s].squeeze(0).cpu().numpy())
 
                 self.prob_unet.forward(x[s].unsqueeze(0))
                 sample = self.prob_unet.sample(testing=True)
                 sample_file = self.validation_directory.joinpath(
                     f"sample_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
                 )
-                np.save(sample_file, sample.numpy())
+                sample = np.argmax(sample.squeeze(0).cpu().numpy(), axis=0)
+                np.save(sample_file, sample)
 
                 mean = self.prob_unet.sample(testing=True, use_mean=True)
                 mean_file = self.validation_directory.joinpath(
-                    f"mean_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
+                    f"mean_{info['case'][s]}_{info['z'][s]}.npy"
                 )
-                np.save(mean_file, mean.numpy())
+                mean = np.argmax(mean.squeeze(0).cpu().numpy(), axis=0)
+                np.save(mean_file, mean)
+
+        return info
 
     def validation_epoch_end(self, validation_step_outputs):
 
-        print(validation_step_outputs)
+        print(self.validation_directory)
 
         cases = {}
-        for mask in self.validation_directory.glob("mask_*.nii.gz"):
+        for info in validation_step_outputs:
 
-            parts = mask.name.replace(".nii.gz", "").split("_")
-            case = parts[0]
-            z = parts[1]
-            observer = parts[2]
+            for case, z, observer in zip(info["case"], info["z"], info["observer"]):
 
-            if not case in cases:
-                cases[case] = {"slices": z, "observers": [observer]}
-            else:
-                if z > cases[case]["slices"]:
-                    cases[case]["slices"] = z
-                cases[case]["observers"].append(observer)
-
+                if not case in cases:
+                    cases[case] = {"slices": z.item(), "observers": [observer.item()]}
+                else:
+                    if z.item() > cases[case]["slices"]:
+                        cases[case]["slices"] = z.item()
+                    if not observer in cases[case]["observers"]:
+                        cases[case]["observers"].append(observer.item())
         for case in cases:
 
             img_arrs = []
+            mean_arrs = []
+            slices = []
             for z in range(cases[case]["slices"] + 1):
                 img_file = self.validation_directory.joinpath(f"img_{case}_{z}.npy")
-                img_arrs.append(np.load(img_file))
+                mean_file = self.validation_directory.joinpath(f"mean_{case}_{z}.npy")
+                if img_file.exists():
+                    img_arrs.append(np.load(img_file))
+                    mean_arrs.append(np.load(mean_file))
+                    slices.append(z)
+
+            if len(slices) < 5:
+                # Likely initial sanity check
+                continue
 
             img_arr = np.stack(img_arrs)
+            print(img_arr.min())
+            print(img_arr.max())
+            img = sitk.GetImageFromArray(img_arr)
+            sitk.WriteImage(img, f"test_{case}.nii.gz")
 
-            sitk.WriteImage(sitk.GetImageFromArray(img_arr), f"test_{case}.nii.gz")
+            mean_arr = np.stack(mean_arrs)
+            mean = sitk.GetImageFromArray(mean_arr)
+            mean = sitk.Cast(mean, sitk.sitkUInt8)
+            sitk.WriteImage(mean, f"test_mean_{case}_{observer}.nii.gz")
+
+            obs_dict = {}
+            pred_dict = {}
+            for observer in cases[case]["observers"]:
+                mask_arrs = []
+                sample_arrs = []
+                for z in slices:
+                    mask_file = self.validation_directory.joinpath(f"mask_{case}_{z}_{observer}.npy")
+                    sample_file = self.validation_directory.joinpath(f"sample_{case}_{z}_{observer}.npy")
+
+                    mask_arrs.append(np.load(mask_file))
+                    sample_arrs.append(np.load(sample_file))
+
+                mask_arr = np.stack(mask_arrs)
+                mask = sitk.GetImageFromArray(mask_arr)
+                mask = sitk.Cast(mask, sitk.sitkUInt8)
+                sitk.WriteImage(mask, f"test_mask_{case}_{observer}.nii.gz")
+                obs_dict[f"manual_{observer}"] = mask
+
+                sample_arr = np.stack(sample_arrs)
+                sample = sitk.GetImageFromArray(sample_arr)
+                sample = sitk.Cast(sample, sitk.sitkUInt8)
+                sitk.WriteImage(sample, f"test_sample_{case}_{observer}.nii.gz")
+                pred_dict[f"auto_{observer}"] = sample
+
+            img_vis = ImageVisualiser(img, cut=get_com(mask), figure_size_in=16, window=[img_arr.min(), img_arr.max()])
+
+            # color_dict = {str(i): [0.5, 0.5, 0.5] for i, m in enumerate(observers)}
+            contour_dict = {**obs_dict, **pred_dict}
+
+            img_vis.add_contour(contour_dict)#, color=color_dict)
+            fig = img_vis.show()
+            figure_path = f"valid_{case}.png"
+            fig.savefig(figure_path, dpi=300)
+                
+
 
         # for pred in validation_step_outputs:
         #     # do something with a pred
@@ -279,7 +335,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
 
         self.training_set = NiftiDataset(train_data, self.working_dir.joinpath("train"))
         self.validation_set = NiftiDataset(
-            validation_data, self.working_dir.joinpath("validation")
+            validation_data, self.working_dir.joinpath("validation"), False
         )
 
     def train_dataloader(self):
