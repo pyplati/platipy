@@ -141,6 +141,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         fold=0,
         k_folds=5,
         batch_size=5,
+        num_workers=4,
         **kwargs,
     ):
         super().__init__()
@@ -154,6 +155,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         self.validation_cases = []
 
         self.batch_size = batch_size
+        self.num_workers = num_workers
 
         print(f"Training fold {self.fold}")
 
@@ -164,6 +166,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         parser.add_argument("--fold", type=int, default=0)
         parser.add_argument("--k_folds", type=int, default=5)
         parser.add_argument("--batch_size", type=int, default=5)
+        parser.add_argument("--num_workers", type=int, default=4)
 
         return parent_parser
 
@@ -211,7 +214,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
             # num_workers=params["num_workers"],
             batch_size=self.batch_size,
             shuffle=True,
-            num_workers=4,
+            num_workers=self.num_workers,
         )
 
     def val_dataloader(self):
@@ -220,7 +223,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
             batch_sampler=torch.utils.data.BatchSampler(
                 ObserverSampler(self.validation_set, 5), batch_size=5, drop_last=False
             ),
-            num_workers=4,
+            num_workers=self.num_workers,
         )
 
 
