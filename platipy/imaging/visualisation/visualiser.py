@@ -69,27 +69,20 @@ class ImageVisualiser:
         self.__scalar_overlays = []
         self.__vector_overlays = []
         self.__comparison_overlays = []
-
-        self.__crosshair_overlay()  # !TO DOs
-
         self.__show_legend = False
         self.__show_colorbar = False
         self.__figure = None
         self.__figure_size = figure_size_in
-        self.__contour_colormap
-
-        self.__projection = projection
-        self.__image_view = None #?!
-        self.__scalar_view = None #?!
-
         self.__window = window
         self.__axis = axis
         self.__cut = cut
         self.__limits = limits
         self.__colormap = colormap
         self.__origin = origin
-
+        self.__projection = projection
         self.__image_view = None
+        self.__scalar_view = None
+        self.__contour_colormap = None
 
         self.clear()
 
@@ -114,71 +107,6 @@ class ImageVisualiser:
         self.__scalar_overlays = []
         self.__comparison_overlays = []
         self.__vector_overlays = []
-
-    def create_figure(
-        self,
-    ):
-
-        # Get image information to define aspect ratios
-        image = self.__image
-        sp_plane_sag, sp_plane_cor, sp_slice_ax = image.GetSpacing()
-
-        asp_ax = sp_plane_cor / sp_plane_sag
-        asp_cor = sp_slice_ax / sp_plane_sag
-        asp_sag = sp_slice_ax / sp_plane_cor
-
-        nda = sitk.GetArrayViewFromImage(image)
-        (ax_size, cor_size, sag_size) = nda.shape[:3]
-
-        if nda.ndim == 4 and nda.shape[3] == 3:
-            logger.info(
-                f"Found a (z,y,x,{nda.shape[3]}) dimensional array - assuming this is an RGB"
-                "image."
-            )
-            # Normalise the RGB image
-            try:
-                nda /= nda.max()
-            except ValueError:
-                logger.warning("Problem converting RGB image to np.ndarray.")
-
-
-
-        if self.__axis.lower() == "ortho":
-            x_size = self.__figure_size
-            y_size = x_size * (asp_cor * ax_size + asp_ax * cor_size)/ (1.0 * sag_size + cor_size)
-
-            figure_size = (
-                x_size,
-                y_size,
-            )
-
-            self.__figure, ((ax_ax, blank), (ax_cor, ax_sag)) = plt.subplots(
-                2,
-                2,
-                figsize=figure_size,
-                gridspec_kw={
-                    "height_ratios": [(casp_ax * or_size) / (asp_cor * ax_size), 1],
-                    "width_ratios": [sag_size, cor_size],
-                },
-            )
-            blank.axis("off")
-
-            self.__image_visual
-
-
-    def add_image_visual(
-        self,
-        image,
-        aspect,
-        origin,
-        interpolation,
-        colormap,
-        clim,
-    ):
-        self.__image_view = VisualiseImage(
-            image=image,
-            aspect=aspect,
-            )
 
     def set_limits_from_label(self, label, expansion=[0, 0, 0]):
         """Sets the limits of the axes to the bounds of the given label.
@@ -239,27 +167,15 @@ class ImageVisualiser:
             if not all(map(lambda i: isinstance(i, sitk.Image), contour.values())):
                 raise ValueError("When passing dict, all values must be of type SimpleITK.Image")
 
-            color_list = colormap(np.linspace(0, 1, len(contour.keys())))
-            color_gen_index = 0
-
             for contour_name in contour:
-                
-                # Set the contour color
+
                 if isinstance(color, dict):
                     try:
                         contour_color = color[contour_name]
                     except AttributeError:
-                        contour_color = color_list[color_gen_index % 255]
-                        color_gen_index += 1
-                            
-                elif color is None:
-                    contour_color = colormap(0.5)
-
-                elif isinstance(color, (str, tuple list, np.ndarray)):
-                    contour_color = color
-
+                        contour_color = None
                 else:
-                    raise ValueError("color must be a dictionay, string, or None.")
+                    contour_color = color
 
                 visualise_contour = VisualiseContour(
                     contour[contour_name],
@@ -275,18 +191,7 @@ class ImageVisualiser:
             if name is None:
                 name = "contour"
 
-            # Set the contour colour
-            if color is None:
-                contour_color = color_list[color_gen_index % 255]
-                color_gen_index += 1
-
-            elif isinstance(color, (str, tuple list, np.ndarray)):
-                contour_color = color
-
-            else:
-                raise ValueError("color must be a dict or valid color format (list, str, etc)")
-
-            visualise_contour = VisualiseContour(contour, name, color=contour_color, linewidth=linewidth)
+            visualise_contour = VisualiseContour(contour, name, color=color, linewidth=linewidth)
             self.__contours.append(visualise_contour)
         else:
 
@@ -294,6 +199,8 @@ class ImageVisualiser:
                 "Contours should be represented as a dict with contour name as key "
                 "and sitk.Image as value, or as an sitk.Image and passing the contour_name"
             )
+
+        self.__contour_colormap = colormap
 
     def add_scalar_overlay(
         self,
@@ -533,17 +440,44 @@ class ImageVisualiser:
 
         return self.__figure
 
-    def create_figure(self):
-        """Creates a figure to put the visuals in
-        """
-
-        #First, check to see if "ortho" or single axis
-        if self.__axis == "ortho"
-
     def _display_slice(self):
         """Display the configured image slice"""
 
+        image = self.__image
+        nda = sitk.GetArrayFromImage(image)
 
+        (ax_size, cor_size, sag_size) = nda.shape[:3]
+
+        try:
+            logger.info(
+                f"Found a (z,y,x,{nda.shape[3]}) dimensional array - assuming this is an RGB"
+                "image."
+            )
+            nda /= nda.max()
+        except ValueError:
+            logger.warning("Problem converting RGB image to np.ndarray.")
+        except IndexError:
+            pass
+
+        sp_plane, _, sp_slice = image.GetSpacing()
+        asp = (1.0 * sp_slice) / sp_plane
+
+        if self.__axis == "ortho":
+            figure_size = (
+                self.__figure_size,
+                self.__figure_size * (asp * ax_size + cor_size) / (1.0 * sag_size + cor_size),
+            )
+
+            self.__figure, ((ax_ax, blank), (ax_cor, ax_sag)) = plt.subplots(
+                2,
+                2,
+                figsize=figure_size,
+                gridspec_kw={
+                    "height_ratios": [(cor_size) / (asp * ax_size), 1],
+                    "width_ratios": [sag_size, cor_size],
+                },
+            )
+            blank.axis("off")
 
             if self.__cut is None:
                 slice_ax = int(ax_size / 2.0)
@@ -613,11 +547,11 @@ class ImageVisualiser:
                 left=0, right=1, wspace=0.01, hspace=0.01, top=1, bottom=0
             )
 
-            # self.__image_view = {
-            #     "ax_view": ax_view,
-            #     "cor_view": cor_view,
-            #     "sag_view": sag_view,
-            # }
+            self.__image_view = {
+                "ax_view": ax_view,
+                "cor_view": cor_view,
+                "sag_view": sag_view,
+            }
 
         else:
 
@@ -688,7 +622,7 @@ class ImageVisualiser:
 
             self.__figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
 
-            #self.__image_view = {axis_view_name_consistent: ax_indiv}
+            self.__image_view = {axis_view_name_consistent: ax_indiv}
 
     def _overlay_comparison(self):
         """Display an overlay comparison
@@ -973,7 +907,9 @@ class ImageVisualiser:
         plot_dict = {}
         color_dict = {}
 
-        for enum, contour in enumerate(self.__contours):
+        color_gen_index = 0
+
+        for contour in self.__contours:
             contour_image_resampled = sitk.Resample(contour.image, self.__image)
             plot_dict[contour.name] = contour_image_resampled
 
@@ -982,11 +918,9 @@ class ImageVisualiser:
             else:
                 color_map = self.__contour_colormap(np.linspace(0, 1, len(self.__contours)))
 
-                color_dict = color_map[color_gen_index % 255]
+                color_dict[contour.name] = color_map[color_gen_index % 255]
                 color_gen_index += 1
-                color_map[color_gen_index % 255]
 
-        colors 
         linewidths = [contour.linewidth for contour in self.__contours]
 
         # Test types of axes
@@ -1013,7 +947,7 @@ class ImageVisualiser:
                     ax.contour(
                         contour_disp,
                         colors=[color_dict[c_name]],
-                        levels=[0],
+                        levels=[1],
                         # alpha=0.8,
                         linewidths=linewidths,
                         label=c_name,
@@ -1066,7 +1000,7 @@ class ImageVisualiser:
 
                 temp = ax_ax.contour(
                     contour_ax,
-                    levels=[0],
+                    levels=[1],
                     linewidths=linewidths,
                     colors=[color_dict[c_name]],
                     origin="lower",
@@ -1075,14 +1009,14 @@ class ImageVisualiser:
 
                 ax_cor.contour(
                     contour_cor,
-                    levels=[0],
+                    levels=[1],
                     linewidths=linewidths,
                     colors=[color_dict[c_name]],
                     origin="lower",
                 )
                 ax_sag.contour(
                     contour_sag,
-                    levels=[0],
+                    levels=[1],
                     linewidths=linewidths,
                     colors=[color_dict[c_name]],
                     origin="lower",
