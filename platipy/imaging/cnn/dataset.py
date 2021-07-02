@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import numpy as np
+
 import torch
 
 import SimpleITK as sitk
@@ -125,6 +127,8 @@ class NiftiDataset(torch.utils.data.Dataset):
         self.img_dir = working_dir.joinpath("img")
         self.mask_dir = working_dir.joinpath("mask")
 
+        self.data_exists = self.img_dir.exists()
+
         self.img_dir.mkdir(exist_ok=True, parents=True)
         self.mask_dir.mkdir(exist_ok=True, parents=True)
 
@@ -136,24 +140,58 @@ class NiftiDataset(torch.utils.data.Dataset):
             if isinstance(structure_paths, (str, Path)):
                 structure_paths = [structure_paths]
 
-            img_file = self.img_dir.joinpath(f"{case_id}.nii.gz")
+            existing_images = [i for i in self.img_dir.glob(f"{case_id}_*.npy")]
+            if len(existing_images) > 0:
+                logger.debug(f"Image for case already exist: {case_id}")
+
+                for z_slice in range(len(existing_images)):
+                    img_file = self.img_dir.joinpath(f"{case_id}_{z_slice}.npy")
+
+                    for obs in range(len(structure_paths)):
+                        mask_file = self.mask_dir.joinpath(f"{case_id}_{obs}_{z_slice}.npy")
+                        self.slices.append(
+                            {
+                                "z": z_slice,
+                                "image": img_file,
+                                "mask": mask_file,
+                                "case": case_id,
+                                "observer": obs,
+                            }
+                        )
+
+                continue
+
             img = sitk.ReadImage(img_path)
 
-            if not img_file.exists():
-                img = preprocess_image(img)
-                sitk.WriteImage(img, str(img_file))
+            img = preprocess_image(img)
 
-                for obs, structure_path in enumerate(structure_paths):
-                    structure_path = str(structure_path)
-                    mask = sitk.ReadImage(structure_path)
-                    mask = resample_mask_to_image(img, mask)
-                    mask_file = self.mask_dir.joinpath(f"{case_id}_{obs}.nii.gz")
-                    sitk.WriteImage(mask, str(mask_file))
+            observers = []
+            for obs, structure_path in enumerate(structure_paths):
+                structure_path = str(structure_path)
+                mask = sitk.ReadImage(structure_path)
+                mask = resample_mask_to_image(img, mask)
+                observers.append(mask)
 
             for z_slice in range(img.GetSize()[2]):
-                for obs, mask in enumerate(structure_paths):
-                    mask_file = self.mask_dir.joinpath(f"{case_id}_{obs}.nii.gz")
-                    self.slices.append({"z": z_slice, "image": img_file, "mask": mask_file})
+
+                img_slice = img[:, :, z_slice]
+                img_file = self.img_dir.joinpath(f"{case_id}_{z_slice}.npy")
+                np.save(img_file, sitk.GetArrayFromImage(img_slice))
+
+                for obs, mask in enumerate(observers):
+
+                    mask_slice = mask[:, :, z_slice]
+                    mask_file = self.mask_dir.joinpath(f"{case_id}_{obs}_{z_slice}.npy")
+                    np.save(mask_file, sitk.GetArrayFromImage(mask_slice))
+                    self.slices.append(
+                        {
+                            "z": z_slice,
+                            "image": img_file,
+                            "mask": mask_file,
+                            "case": case_id,
+                            "observer": obs,
+                        }
+                    )
 
     def __len__(self):
         return len(self.slices)
@@ -162,15 +200,12 @@ class NiftiDataset(torch.utils.data.Dataset):
 
         img_file = self.slices[index]["image"]
         mask_file = self.slices[index]["mask"]
-        z_slice = self.slices[index]["z"]
-        
+
         img = sitk.ReadImage(str(img_file))
         img = sitk.GetArrayFromImage(img)
-        img = img[z_slice, :, :]
 
         mask = sitk.ReadImage(str(mask_file))
         mask = sitk.GetArrayFromImage(mask)
-        mask = mask[z_slice, :, :]
 
         segmap = SegmentationMapsOnImage(mask, shape=mask.shape)
         img, mask = self.transforms(image=img, segmentation_maps=segmap)
