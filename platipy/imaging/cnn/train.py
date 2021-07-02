@@ -1,7 +1,10 @@
 import os
 import math
+import tempfile
+import shutil
 
 from pathlib import Path
+import SimpleITK as sitk
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
@@ -12,6 +15,8 @@ import torch
 import pytorch_lightning as pl
 
 from argparse import ArgumentParser
+
+from torch._C import NoneType
 
 from platipy.imaging.cnn.prob_unet import ProbabilisticUnet
 from platipy.imaging.cnn.unet import l2_regularisation
@@ -46,6 +51,8 @@ class ProbUNet(pl.LightningModule):
             loss_params,
         )
 
+        self.validation_directory = None
+
     @staticmethod
     def add_model_specific_args(parent_parser):
         parser = parent_parser.add_argument_group("Probabilistic UNet")
@@ -74,7 +81,7 @@ class ProbUNet(pl.LightningModule):
         return optimizer
 
     def training_step(self, batch, batch_idx):
-        x, y = batch
+        x, y, _ = batch
         self.prob_unet.forward(x, y, training=True)
         loss = self.prob_unet.loss(y, analytic_kl=True)
         reg_loss = (
@@ -99,38 +106,108 @@ class ProbUNet(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
+
+        if self.validation_directory is None:
+            self.validation_directory = Path(tempfile.mkdtemp())
+            print(self.validation_directory)
+
         with torch.set_grad_enabled(False):
-            x, y = batch
-            self.prob_unet.forward(x)
-            sample = self.prob_unet.sample(testing=True)
-            mean = self.prob_unet.sample(testing=True, use_mean=True)
+            x, y, info = batch
 
-            criterion = torch.nn.BCEWithLogitsLoss(
-                size_average=False, reduce=False, reduction=None
-            )
+            for s in range(y.shape[0]):
 
-            onehot = torch.nn.functional.one_hot(y, 2).transpose(1, 3).float()
+                img_file = self.validation_directory.joinpath(
+                    f"img_{info['case'][s]}_{info['z'][s]}.npy"
+                )
+                np.save(img_file, x[0].unsqueeze(0).numpy())
 
-            observers = y.shape[0]
-            sim_matrix = np.zeros((observers, observers))
-            for i in range(observers):
-                for j in range(observers):
-                    rec_loss = criterion(input=sample[i], target=onehot[j])
-                    rec_loss = torch.sum(rec_loss)
-                    sim_matrix[i, j] = rec_loss.item()
+                mask_file = self.validation_directory.joinpath(
+                    f"mask_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
+                )
+                np.save(mask_file, y[0].unsqueeze(0).numpy())
 
-            row_idx, col_idx = linear_sum_assignment(sim_matrix)
+                self.prob_unet.forward(x[s].unsqueeze(0))
+                sample = self.prob_unet.sample(testing=True)
+                sample_file = self.validation_directory.joinpath(
+                    f"sample_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
+                )
+                np.save(sample_file, sample.numpy())
 
-            matched_val = sim_matrix[row_idx, col_idx].mean()
-            self.log(
-                "matched_val", matched_val, on_step=True, on_epoch=True, prog_bar=True, logger=True
-            )
+                mean = self.prob_unet.sample(testing=True, use_mean=True)
+                mean_file = self.validation_directory.joinpath(
+                    f"mean_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
+                )
+                np.save(mean_file, mean.numpy())
 
-            mean_val = criterion(input=mean, target=onehot)
-            mean_val = torch.sum(rec_loss).item()
-            self.log("mean_val", mean_val, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+    def validation_epoch_end(self, validation_step_outputs):
 
-            return matched_val
+        print(validation_step_outputs)
+
+        cases = {}
+        for mask in self.validation_directory.glob("mask_*.nii.gz"):
+
+            parts = mask.name.replace(".nii.gz", "").split("_")
+            case = parts[0]
+            z = parts[1]
+            observer = parts[2]
+
+            if not case in cases:
+                cases[case] = {"slices": z, "observers": [observer]}
+            else:
+                if z > cases[case]["slices"]:
+                    cases[case]["slices"] = z
+                cases[case]["observers"].append(observer)
+
+        for case in cases:
+
+            img_arrs = []
+            for z in range(cases[case]["slices"] + 1):
+                img_file = self.validation_directory.joinpath(f"img_{case}_{z}.npy")
+                img_arrs.append(np.load(img_file))
+
+            img_arr = np.stack(img_arrs)
+
+            sitk.WriteImage(sitk.GetImageFromArray(img_arr), f"test_{case}.nii.gz")
+
+        # for pred in validation_step_outputs:
+        #     # do something with a pred
+        #     print(pred)
+
+        #     break
+
+        # criterion = torch.nn.BCEWithLogitsLoss(
+        #     size_average=False, reduce=False, reduction=None
+        # )
+
+        # onehot = torch.nn.functional.one_hot(y, 2).transpose(1, 3).float()
+
+        # observers = y.shape[0]
+        # sim_matrix = np.zeros((observers, observers))
+        # for i in range(observers):
+        #     for j in range(observers):
+        #         rec_loss = criterion(input=sample[i], target=onehot[j])
+        #         rec_loss = torch.sum(rec_loss)
+        #         sim_matrix[i, j] = rec_loss.item()
+
+        # row_idx, col_idx = linear_sum_assignment(sim_matrix)
+
+        # matched_val = sim_matrix[row_idx, col_idx].mean()
+        # self.log(
+        #     "matched_val",
+        #     matched_val,
+        #     on_step=False,
+        #     on_epoch=True,
+        #     prog_bar=False,
+        #     logger=True,
+        # )
+
+        # mean_val = criterion(input=mean, target=onehot)
+        # mean_val = torch.sum(rec_loss).item()
+        # self.log(
+        #     "mean_val", mean_val, on_step=False, on_epoch=True, prog_bar=False, logger=True
+        # )
+
+        # shutil.rmtree(self.validation_directory)
 
 
 class ProbUNetDataModule(pl.LightningDataModule):
@@ -240,6 +317,7 @@ def main(args):
         project_name=os.environ["COMET_PROJECT"],
         experiment_name=args.experiment,
         save_dir=args.working_dir,
+        offline=True,
     )
 
     dict_args = vars(args)
@@ -249,17 +327,16 @@ def main(args):
     prob_unet = ProbUNet(**dict_args)
     trainer = pl.Trainer.from_argparse_args(args)
     trainer.logger = comet_logger
-    trainer.fit(prob_unet, data_module)
+    trainer.fit(prob_unet, data_module)  # pylint: disable=no-member
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser = ProbUNet.add_model_specific_args(parser)
-    parser = ProbUNetDataModule.add_model_specific_args(parser)
-    parser = pl.Trainer.add_argparse_args(parser)
-    parser.add_argument("--seed", type=int, default=42, help="an integer to use as seed")
-    parser.add_argument("--experiment", type=str, default="default", help="Name of experiment")
-    parser.add_argument("--working_dir", type=str, default="./working")
-    args = parser.parse_args()
+    arg_parser = ArgumentParser()
+    arg_parser = ProbUNet.add_model_specific_args(arg_parser)
+    arg_parser = ProbUNetDataModule.add_model_specific_args(arg_parser)
+    arg_parser = pl.Trainer.add_argparse_args(arg_parser)
+    arg_parser.add_argument("--seed", type=int, default=42, help="an integer to use as seed")
+    arg_parser.add_argument("--experiment", type=str, default="default", help="Name of experiment")
+    arg_parser.add_argument("--working_dir", type=str, default="./working")
 
-    main(args)
+    main(arg_parser.parse_args())

@@ -208,4 +208,12 @@ class NiftiDataset(torch.utils.data.Dataset):
         img = torch.FloatTensor(img)
         mask = torch.LongTensor(mask)
 
-        return img.unsqueeze(0), mask
+        return (
+            img.unsqueeze(0),
+            mask,
+            {
+                "case": self.slices[index]["case"],
+                "observer": self.slices[index]["observer"],
+                "z": self.slices[index]["z"],
+            },
+        )
