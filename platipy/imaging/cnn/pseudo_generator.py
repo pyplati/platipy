@@ -23,14 +23,24 @@ def generate_pseudo_data(data_dir="data"):
 
     for case, sphere_rad in enumerate(range(10, 30)):
 
-        ct_arr = np.ones((80, 128, 128)) * -1000
-        mask_arr = np.zeros((80, 128, 128))
-
         xpos = random.randint(50, 80)
         ypos = random.randint(50, 80)
 
-        ct_arr = insert_sphere(ct_arr, sp_radius=sphere_rad, sp_centre=(30, ypos, xpos))
+        mask_arr = np.zeros((80, 128, 128))
+        mask_arr = insert_sphere(mask_arr, sp_radius=sphere_rad, sp_centre=(30, ypos, xpos))
+
+        mask = sitk.GetImageFromArray(mask_arr)
+        mask = sitk.Cast(mask, sitk.sitkUInt8)
+        mask = sitk.BinaryNot(mask)
+
+        ct = sitk.SignedMaurerDistanceMap(mask)
+
+        ct_arr = sitk.GetArrayFromImage(ct)
+        ct_arr[ct_arr < -10] = -1000
+        ct_arr[ct_arr > 20] = 100
+
         ct = sitk.GetImageFromArray(ct_arr)
+
         sitk.WriteImage(ct, str(image_directory.joinpath(f"{case}.nii.gz")))
 
         vis = ImageVisualiser(ct, cut=(30, ypos, xpos))
@@ -39,6 +49,7 @@ def generate_pseudo_data(data_dir="data"):
         for obs_id, obs in enumerate(range(-4, 5, 2)):
             obs_rad = sphere_rad + obs
 
+            mask_arr = np.zeros((80, 128, 128))
             mask_arr = insert_sphere(mask_arr, sp_radius=obs_rad, sp_centre=(30, ypos, xpos))
 
             mask = sitk.GetImageFromArray(mask_arr)

@@ -371,15 +371,34 @@ def main(args):
 
     args.working_dir = Path(args.working_dir)
     args.working_dir = args.working_dir.joinpath(args.experiment)
+    args.default_root_dir = str(args.working_dir)
 
-    comet_logger = CometLogger(
-        api_key=os.environ["COMET_API_KEY"],
-        workspace=os.environ["COMET_WORKSPACE"],
-        project_name=os.environ["COMET_PROJECT"],
-        experiment_name=args.experiment,
-        save_dir=args.working_dir,
-#        offline=True,
-    )
+    comet_api_key = None
+    comet_workspace = None
+    comet_project = None
+
+    if args.comet_api_key:
+        comet_api_key = args.comet_api_key
+        comet_workspace = args.comet_workspace
+        comet_project = args.comet_project
+
+    if comet_api_key is None:
+        if "COMET_API_KEY" in os.environ:
+            comet_api_key = os.environ["COMET_API_KEY"]
+        if "COMET_WORKSPACE" in os.environ:
+            comet_workspace = os.environ["COMET_WORKSPACE"]
+        if "COMET_PROJECT" in os.environ:
+            comet_project = os.environ["COMET_PROJECT"]
+
+    if comet_api_key is not None:
+        comet_logger = CometLogger(
+            api_key=comet_api_key,
+            workspace=comet_workspace,
+            project_name=comet_project,
+            experiment_name=args.experiment,
+            save_dir=args.working_dir,
+            offline=True,
+        )
 
     dict_args = vars(args)
 
@@ -387,7 +406,10 @@ def main(args):
 
     prob_unet = ProbUNet(**dict_args)
     trainer = pl.Trainer.from_argparse_args(args)
-    trainer.logger = comet_logger
+
+    if comet_api_key is not None:
+        trainer.logger = comet_logger
+
     trainer.fit(prob_unet, data_module)  # pylint: disable=no-member
 
 
@@ -399,5 +421,9 @@ if __name__ == "__main__":
     arg_parser.add_argument("--seed", type=int, default=42, help="an integer to use as seed")
     arg_parser.add_argument("--experiment", type=str, default="default", help="Name of experiment")
     arg_parser.add_argument("--working_dir", type=str, default="./working")
+    arg_parser.add_argument("--offline", type=bool, default=False)
+    arg_parser.add_argument("--comet_api_key", type=str, default=None)
+    arg_parser.add_argument("--comet_workspace", type=str, default=None)
+    arg_parser.add_argument("--comet_project", type=str, default=None)
 
     main(arg_parser.parse_args())
