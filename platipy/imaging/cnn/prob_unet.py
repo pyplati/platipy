@@ -246,7 +246,7 @@ class ProbabilisticUnet(torch.nn.Module):
 
     def reconstruction_loss(self, segm, reconstruct_posterior_mean=False, z_posterior=None):
 
-        criterion = torch.nn.BCEWithLogitsLoss(size_average=False, reduce=False, reduction=None)
+        criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
 
         if z_posterior is None:
             z_posterior = self.posterior_latent_space.rsample()

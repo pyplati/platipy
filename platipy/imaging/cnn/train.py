@@ -202,7 +202,10 @@ class ProbUNet(pl.LightningModule):
                         cases[case]["observers"].append(observer.item())
 
         metrics = ["JI", "DSC", "HD", "ASD"]
-        result = {"probnet": {k: [] for k in metrics}, "unet": {k: [] for k in metrics}}
+        computed_metrics = {
+            **{f"probnet_{m}": [] for m in metrics},
+            **{f"unet_{m}": [] for m in metrics},
+        }
         for case in cases:
 
             img_arrs = []
@@ -252,7 +255,7 @@ class ProbUNet(pl.LightningModule):
                 mask = sitk.GetImageFromArray(mask_arr)
                 mask = sitk.Cast(mask, sitk.sitkUInt8)
                 # sitk.WriteImage(mask, f"val_mask_{case}_{observer}.nii.gz")
-                mask.append(mask)
+                observers.append(mask)
                 obs_dict[f"manual_{observer}"] = mask
 
                 sample_arr = np.stack(sample_arrs)
@@ -278,43 +281,48 @@ class ProbUNet(pl.LightningModule):
 
             self.logger.experiment.log_image(figure_path)
 
-        sim = {k: np.zeros((len(observers), len(samples))) for k in metrics}
-        msim = {k: np.zeros((len(observers), len(samples))) for k in metrics}
-        for sid, samp in enumerate(samples):
-            for oid, obs in enumerate(observers):
-                sample_metrics = get_metrics(obs, samp)
-                mean_metrics = get_metrics(obs, mean)
+            sim = {k: np.zeros((len(observers), len(samples))) for k in metrics}
+            msim = {k: np.zeros((len(observers), len(samples))) for k in metrics}
+            for sid, samp in enumerate(samples):
+                for oid, obs in enumerate(observers):
+                    sample_metrics = get_metrics(obs, samp)
+                    mean_metrics = get_metrics(obs, mean)
 
-                for k in sample_metrics:
-                    sim[k][sid, oid] = sample_metrics[k]
-                    msim[k][sid, oid] = mean_metrics[k]
+                    for k in sample_metrics:
+                        sim[k][sid, oid] = sample_metrics[k]
+                        msim[k][sid, oid] = mean_metrics[k]
 
-        for k in sim:
+            result = {"probnet": {k: [] for k in metrics}, "unet": {k: [] for k in metrics}}
+            for k in sim:
 
-            val = sim[k]
-            if not k.endswith("D"):
-                val = -val
-            row_idx, col_idx = linear_sum_assignment(val)
-            prob_unet_mean = sim[k][row_idx, col_idx].mean()
-            result["prob"][k].append(prob_unet_mean)
+                val = sim[k]
+                if not k.endswith("D"):
+                    val = -val
+                row_idx, col_idx = linear_sum_assignment(val)
+                prob_unet_mean = sim[k][row_idx, col_idx].mean()
+                result["probnet"][k].append(prob_unet_mean)
 
-            val = msim[k]
-            if not k.endswith("D"):
-                val = -val
-            row_idx, col_idx = linear_sum_assignment(val)
-            unet_mean = msim[k][row_idx, col_idx].mean()
-            result["unet"][k].append(unet_mean)
+                val = msim[k]
+                if not k.endswith("D"):
+                    val = -val
+                row_idx, col_idx = linear_sum_assignment(val)
+                unet_mean = msim[k][row_idx, col_idx].mean()
+                result["unet"][k].append(unet_mean)
 
-        for t in result:
-            for m in result[t]:
-                self.log(
-                    f"val_{t}_{m}",
-                    np.array(result[t][m]).mean(),
-                    on_step=True,
-                    on_epoch=True,
-                    prog_bar=True,
-                    logger=True,
-                )
+            for t in result:
+                for m in result[t]:
+                    computed_metrics[f"{t}_{m}"].append(np.array(result[t][m]).mean())
+
+        for cm in computed_metrics:
+            self.log(
+                cm,
+                np.array(computed_metrics[cm]).mean(),
+                on_step=False,
+                on_epoch=True,
+                prog_bar=True,
+                logger=True,
+            )
+
         # shutil.rmtree(self.validation_directory)
 
 
