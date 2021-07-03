@@ -228,7 +228,7 @@ class ProbUNet(pl.LightningModule):
             figure_path = f"valid_{case}.png"
             fig.savefig(figure_path, dpi=300)
 
-            self.logger.experiment.add_image(figure_path)
+            self.logger.experiment.log_image(figure_path)
 
         # for pred in validation_step_outputs:
         #     # do something with a pred
@@ -378,7 +378,7 @@ def main(args):
         project_name=os.environ["COMET_PROJECT"],
         experiment_name=args.experiment,
         save_dir=args.working_dir,
-        offline=True,
+#        offline=True,
     )
 
     dict_args = vars(args)
