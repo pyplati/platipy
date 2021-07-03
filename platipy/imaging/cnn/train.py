@@ -27,6 +27,46 @@ from platipy.imaging import ImageVisualiser
 from platipy.imaging.label.utils import get_com
 
 
+def post_process(pred):
+
+    # Take only the largest componenet
+    labelled_image = sitk.ConnectedComponent(pred)
+    label_shape_filter = sitk.LabelShapeStatisticsImageFilter()
+    label_shape_filter.Execute(labelled_image)
+    label_indices = label_shape_filter.GetLabels()
+    voxel_counts = [label_shape_filter.GetNumberOfPixels(i) for i in label_indices]
+    if len(voxel_counts) > 0:
+        largest_component_label = label_indices[np.argmax(voxel_counts)]
+        largest_component_image = labelled_image == largest_component_label
+        pred = sitk.Cast(largest_component_image, sitk.sitkUInt8)
+
+    # Fill any holes in the structure
+    pred = sitk.BinaryMorphologicalClosing(pred, (5, 5, 5))
+    pred = sitk.BinaryFillhole(pred)
+
+    return pred
+
+
+def get_metrics(target, pred):
+
+    result = {}
+    lomif = sitk.LabelOverlapMeasuresImageFilter()
+    lomif.Execute(target, pred)
+    result["JI"] = lomif.GetJaccardCoefficient()
+    result["DSC"] = lomif.GetDiceCoefficient()
+
+    if sitk.GetArrayFromImage(pred).sum() == 0:
+        result["HD"] = 1000
+        result["ASD"] = 100
+    else:
+        hdif = sitk.HausdorffDistanceImageFilter()
+        hdif.Execute(target, pred)
+        result["HD"] = hdif.GetHausdorffDistance()
+        result["ASD"] = hdif.GetAverageHausdorffDistance()
+
+    return result
+
+
 class ProbUNet(pl.LightningModule):
     def __init__(
         self,
@@ -148,8 +188,6 @@ class ProbUNet(pl.LightningModule):
 
     def validation_epoch_end(self, validation_step_outputs):
 
-        print(self.validation_directory)
-
         cases = {}
         for info in validation_step_outputs:
 
@@ -162,6 +200,9 @@ class ProbUNet(pl.LightningModule):
                         cases[case]["slices"] = z.item()
                     if not observer in cases[case]["observers"]:
                         cases[case]["observers"].append(observer.item())
+
+        metrics = ["JI", "DSC", "HD", "ASD"]
+        result = {"probnet": {k: [] for k in metrics}, "unet": {k: [] for k in metrics}}
         for case in cases:
 
             img_arrs = []
@@ -181,15 +222,18 @@ class ProbUNet(pl.LightningModule):
 
             img_arr = np.stack(img_arrs)
             img = sitk.GetImageFromArray(img_arr)
-            sitk.WriteImage(img, f"test_{case}.nii.gz")
+            # sitk.WriteImage(img, f"test_{case}.nii.gz")
 
             mean_arr = np.stack(mean_arrs)
             mean = sitk.GetImageFromArray(mean_arr)
             mean = sitk.Cast(mean, sitk.sitkUInt8)
-            sitk.WriteImage(mean, f"test_mean_{case}_{observer}.nii.gz")
+            mean = post_process(mean)
+            # sitk.WriteImage(mean, f"val_mean_{case}_mean.nii.gz")
 
             obs_dict = {}
             pred_dict = {}
+            observers = []
+            samples = []
             for observer in cases[case]["observers"]:
                 mask_arrs = []
                 sample_arrs = []
@@ -207,13 +251,16 @@ class ProbUNet(pl.LightningModule):
                 mask_arr = np.stack(mask_arrs)
                 mask = sitk.GetImageFromArray(mask_arr)
                 mask = sitk.Cast(mask, sitk.sitkUInt8)
-                sitk.WriteImage(mask, f"test_mask_{case}_{observer}.nii.gz")
+                # sitk.WriteImage(mask, f"val_mask_{case}_{observer}.nii.gz")
+                mask.append(mask)
                 obs_dict[f"manual_{observer}"] = mask
 
                 sample_arr = np.stack(sample_arrs)
                 sample = sitk.GetImageFromArray(sample_arr)
                 sample = sitk.Cast(sample, sitk.sitkUInt8)
-                sitk.WriteImage(sample, f"test_sample_{case}_{observer}.nii.gz")
+                sample = post_process(sample)
+                # sitk.WriteImage(sample, f"val_sample_{case}_{observer}.nii.gz")
+                samples.append(sample)
                 pred_dict[f"auto_{observer}"] = sample
 
             img_vis = ImageVisualiser(
@@ -222,6 +269,7 @@ class ProbUNet(pl.LightningModule):
 
             # color_dict = {str(i): [0.5, 0.5, 0.5] for i, m in enumerate(observers)}
             contour_dict = {**obs_dict, **pred_dict}
+            contour_dict["mean"] = mean
 
             img_vis.add_contour(contour_dict)  # , color=color_dict)
             fig = img_vis.show()
@@ -230,44 +278,43 @@ class ProbUNet(pl.LightningModule):
 
             self.logger.experiment.log_image(figure_path)
 
-        # for pred in validation_step_outputs:
-        #     # do something with a pred
-        #     print(pred)
+        sim = {k: np.zeros((len(observers), len(samples))) for k in metrics}
+        msim = {k: np.zeros((len(observers), len(samples))) for k in metrics}
+        for sid, samp in enumerate(samples):
+            for oid, obs in enumerate(observers):
+                sample_metrics = get_metrics(obs, samp)
+                mean_metrics = get_metrics(obs, mean)
 
-        #     break
+                for k in sample_metrics:
+                    sim[k][sid, oid] = sample_metrics[k]
+                    msim[k][sid, oid] = mean_metrics[k]
 
-        # criterion = torch.nn.BCEWithLogitsLoss(
-        #     size_average=False, reduce=False, reduction=None
-        # )
+        for k in sim:
 
-        # onehot = torch.nn.functional.one_hot(y, 2).transpose(1, 3).float()
+            val = sim[k]
+            if not k.endswith("D"):
+                val = -val
+            row_idx, col_idx = linear_sum_assignment(val)
+            prob_unet_mean = sim[k][row_idx, col_idx].mean()
+            result["prob"][k].append(prob_unet_mean)
 
-        # observers = y.shape[0]
-        # sim_matrix = np.zeros((observers, observers))
-        # for i in range(observers):
-        #     for j in range(observers):
-        #         rec_loss = criterion(input=sample[i], target=onehot[j])
-        #         rec_loss = torch.sum(rec_loss)
-        #         sim_matrix[i, j] = rec_loss.item()
+            val = msim[k]
+            if not k.endswith("D"):
+                val = -val
+            row_idx, col_idx = linear_sum_assignment(val)
+            unet_mean = msim[k][row_idx, col_idx].mean()
+            result["unet"][k].append(unet_mean)
 
-        # row_idx, col_idx = linear_sum_assignment(sim_matrix)
-
-        # matched_val = sim_matrix[row_idx, col_idx].mean()
-        # self.log(
-        #     "matched_val",
-        #     matched_val,
-        #     on_step=False,
-        #     on_epoch=True,
-        #     prog_bar=False,
-        #     logger=True,
-        # )
-
-        # mean_val = criterion(input=mean, target=onehot)
-        # mean_val = torch.sum(rec_loss).item()
-        # self.log(
-        #     "mean_val", mean_val, on_step=False, on_epoch=True, prog_bar=False, logger=True
-        # )
-
+        for t in result:
+            for m in result[t]:
+                self.log(
+                    f"val_{t}_{m}",
+                    np.array(result[t][m]).mean(),
+                    on_step=True,
+                    on_epoch=True,
+                    prog_bar=True,
+                    logger=True,
+                )
         # shutil.rmtree(self.validation_directory)
 
 
@@ -397,7 +444,7 @@ def main(args):
             project_name=comet_project,
             experiment_name=args.experiment,
             save_dir=args.working_dir,
-            offline=True,
+            offline=args.offline,
         )
 
     dict_args = vars(args)
