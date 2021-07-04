@@ -286,10 +286,11 @@ class ProbabilisticUnet(torch.nn.Module):
                 mask.shape == segm.shape
             ), f"The loss mask shape differs from the target shape: {mask.shape} vs. {segm.shape}."
             mask = torch.reshape(segm, (-1,))
+        mask = mask.to(y_flat.device)
 
         n_pixels_in_batch = y_flat.shape[0]
         xe = criterion(input=y_flat, target=t_flat)
-        top_k_percentage = 0.02
+
         if top_k_percentage is not None:
 
             assert 0.0 < top_k_percentage <= 1.0
@@ -306,6 +307,7 @@ class ProbabilisticUnet(torch.nn.Module):
 
                 score = score + torch.log(mask.unsqueeze(1).repeat((1, num_classes)))
                 top_k_mask = self.topk_mask(score, k_pixels)
+                top_k_mask = top_k_mask.to(y_flat.device)
                 mask = mask * top_k_mask
 
         batch_size = segm.shape[0]
