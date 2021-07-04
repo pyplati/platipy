@@ -244,7 +244,23 @@ class ProbabilisticUnet(torch.nn.Module):
             kl_div = log_posterior_prob - log_prior_prob
         return kl_div
 
-    def reconstruction_loss(self, segm, reconstruct_posterior_mean=False, z_posterior=None):
+    def topk_mask(self, score, k):
+        """Returns a mask for the top-k elements in score."""
+
+        values, _ = torch.topk(score, 1, axis=1)
+        _, indices = torch.topk(values, k, axis=0)
+        return torch.scatter_add(
+            torch.zeros(score.shape[0]), 0, indices.reshape(-1), torch.ones(score.shape[0])
+        )
+
+    def reconstruction_loss(
+        self,
+        segm,
+        reconstruct_posterior_mean=False,
+        z_posterior=None,
+        mask=None,
+        top_k_percentage=None,
+    ):
 
         criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
 
@@ -258,10 +274,49 @@ class ProbabilisticUnet(torch.nn.Module):
         segm = torch.unsqueeze(segm, dim=1)
         not_seg = segm.logical_not()
         segm = torch.cat((not_seg, segm), dim=1).float()
-        reconstruction_loss = criterion(input=reconstruction, target=segm)
-        reconstruction_loss = torch.mean(reconstruction_loss)
 
-        return reconstruction_loss
+        #####
+        num_classes = reconstruction.shape[1]
+        y_flat = torch.reshape(reconstruction, (-1, num_classes))
+        t_flat = torch.reshape(segm, (-1, num_classes))
+        if mask is None:
+            mask = torch.ones(torch.reshape(t_flat, (-1, 2)).shape[0])
+        else:
+            assert (
+                mask.shape == segm.shape
+            ), f"The loss mask shape differs from the target shape: {mask.shape} vs. {segm.shape}."
+            mask = torch.reshape(segm, (-1,))
+
+        n_pixels_in_batch = y_flat.shape[0]
+        xe = criterion(input=y_flat, target=t_flat)
+        top_k_percentage = 0.02
+        if top_k_percentage is not None:
+
+            assert 0.0 < top_k_percentage <= 1.0
+            k_pixels = int(n_pixels_in_batch * top_k_percentage)
+
+            with torch.no_grad():
+                norm_xe = xe / torch.sum(xe)
+                deterministic = True
+                if deterministic:
+                    score = torch.log(norm_xe)
+                else:
+                    # TODO Gumbel trick
+                    raise NotImplementedError("Still need to implement Gumbel trick")
+
+                score = score + torch.log(mask.unsqueeze(1).repeat((1, num_classes)))
+                top_k_mask = self.topk_mask(score, k_pixels)
+                mask = mask * top_k_mask
+
+        batch_size = segm.shape[0]
+        xe = torch.reshape(xe, shape=(batch_size, -1))
+        mask = mask.repeat((1, num_classes))
+        mask = torch.reshape(mask, shape=(batch_size, -1))
+
+        ce_sum_per_instance = torch.sum(mask * xe, axis=1)
+        ce_sum = torch.mean(ce_sum_per_instance, axis=0)
+
+        return ce_sum
 
     def loss(self, segm, analytic_kl=True, reconstruct_posterior_mean=False):
         """
@@ -273,8 +328,15 @@ class ProbabilisticUnet(torch.nn.Module):
         kl_div = torch.mean(self.kl_divergence(analytic=analytic_kl, z_posterior=z_posterior))
 
         # Here we use the posterior sample sampled above
+        top_k_percentage = None
+        if "top_k_percentage" in self.loss_params:
+            top_k_percentage = self.loss_params["top_k_percentage"]
+
         reconstruction_loss = self.reconstruction_loss(
-            segm, reconstruct_posterior_mean=reconstruct_posterior_mean, z_posterior=z_posterior
+            segm,
+            reconstruct_posterior_mean=reconstruct_posterior_mean,
+            z_posterior=z_posterior,
+            top_k_percentage=top_k_percentage,
         )
 
         if self.loss_type == "elbo":

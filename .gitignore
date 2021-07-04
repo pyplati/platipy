@@ -140,6 +140,7 @@ platipy/*/tests/data
 testing/
 converted/
 **/data
+**/working
 **/tcia
 **/nifti_output
 
