@@ -17,6 +17,7 @@ import pytorch_lightning as pl
 from argparse import ArgumentParser
 
 from torch._C import NoneType
+import matplotlib.pyplot as plt
 
 from platipy.imaging.cnn.prob_unet import ProbabilisticUnet
 from platipy.imaging.cnn.unet import l2_regularisation
@@ -96,6 +97,8 @@ class ProbUNet(pl.LightningModule):
 
         self.validation_directory = None
 
+        self.stddevs = np.linspace(-2,2,5)
+
     @staticmethod
     def add_model_specific_args(parent_parser):
         parser = parent_parser.add_argument_group("Probabilistic UNet")
@@ -121,7 +124,12 @@ class ProbUNet(pl.LightningModule):
         optimizer = torch.optim.Adam(
             self.parameters(), lr=self.hparams.learning_rate, weight_decay=0
         )
-        return optimizer
+
+        scheduler = torch.optim.lr_scheduler.LambdaLR(
+            optimizer, lr_lambda=[lambda epoch: 0.99 ** (epoch)]
+        )
+
+        return [optimizer], [scheduler]
 
     def training_step(self, batch, batch_idx):
         x, y, _ = batch
@@ -134,7 +142,7 @@ class ProbUNet(pl.LightningModule):
         )
         training_loss = loss["loss"] + 1e-5 * reg_loss
         self.log(
-            "training_loss", training_loss, on_step=True, on_epoch=True, prog_bar=True, logger=True
+            "training_loss", training_loss, on_step=True, on_epoch=False, prog_bar=True, logger=True
         )
 
         for k in loss:
@@ -142,7 +150,7 @@ class ProbUNet(pl.LightningModule):
                 k,
                 loss[k],
                 on_step=True,
-                on_epoch=True,
+                on_epoch=False,
                 prog_bar=True,
                 logger=True,
             )
@@ -170,7 +178,7 @@ class ProbUNet(pl.LightningModule):
                 np.save(mask_file, y[s].squeeze(0).cpu().numpy())
 
                 self.prob_unet.forward(x[s].unsqueeze(0))
-                sample = self.prob_unet.sample(testing=True)
+                sample = self.prob_unet.sample(testing=True, use_mean=False, sample_x_stddev_from_mean=self.stddevs[info["observer"][s]])
                 sample_file = self.validation_directory.joinpath(
                     f"sample_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
                 )
@@ -189,6 +197,7 @@ class ProbUNet(pl.LightningModule):
     def validation_epoch_end(self, validation_step_outputs):
 
         cases = {}
+        cmap = plt.cm.get_cmap('Set2')
         for info in validation_step_outputs:
 
             for case, z, observer in zip(info["case"], info["z"], info["observer"]):
@@ -235,6 +244,7 @@ class ProbUNet(pl.LightningModule):
 
             obs_dict = {}
             pred_dict = {}
+            color_dict = {}
             observers = []
             samples = []
             for observer in cases[case]["observers"]:
@@ -257,6 +267,7 @@ class ProbUNet(pl.LightningModule):
                 # sitk.WriteImage(mask, f"val_mask_{case}_{observer}.nii.gz")
                 observers.append(mask)
                 obs_dict[f"manual_{observer}"] = mask
+                color_dict[f"manual_{observer}"] = [0.5, 0.5, 0.5]
 
                 sample_arr = np.stack(sample_arrs)
                 sample = sitk.GetImageFromArray(sample_arr)
@@ -264,17 +275,19 @@ class ProbUNet(pl.LightningModule):
                 sample = post_process(sample)
                 # sitk.WriteImage(sample, f"val_sample_{case}_{observer}.nii.gz")
                 samples.append(sample)
-                pred_dict[f"auto_{observer}"] = sample
+                pred_dict[f"auto_{self.stddevs[observer]}"] = sample
+                color_dict[f"auto_{self.stddevs[observer]}"] = cmap(observer/5)
 
             img_vis = ImageVisualiser(
                 img, cut=get_com(mask), figure_size_in=16, window=[img_arr.min(), img_arr.max()]
             )
 
-            # color_dict = {str(i): [0.5, 0.5, 0.5] for i, m in enumerate(observers)}
+            #color_dict = {str(i): [0.5, 0.5, 0.5] for i, m in enumerate(observers)}
             contour_dict = {**obs_dict, **pred_dict}
-            contour_dict["mean"] = mean
+            contour_dict["auto_mean"] = mean
+            color_dict["auto_mean"] = [0.0, 0.0, 0.0]
 
-            img_vis.add_contour(contour_dict)  # , color=color_dict)
+            img_vis.add_contour(contour_dict, color=color_dict)
             fig = img_vis.show()
             figure_path = f"valid_{case}.png"
             fig.savefig(figure_path, dpi=300)
@@ -319,7 +332,7 @@ class ProbUNet(pl.LightningModule):
                 np.array(computed_metrics[cm]).mean(),
                 on_step=False,
                 on_epoch=True,
-                prog_bar=True,
+                prog_bar=False,
                 logger=True,
             )
 
