@@ -75,3 +75,14 @@ def label_to_roi(label, expansion_mm=[0, 0, 0], return_as_list=False):
 def crop_to_roi(image, size, index):
     """Utility function for cropping images"""
     return sitk.RegionOfInterest(image, size=size, index=index)
+
+
+def crop_to_label_extent(image, label, expansion_mm=0):
+
+    if ~hasattr(expansion_mm, "__iter__"):
+        expansion_mm = [
+            expansion_mm,
+        ] * 3
+
+    cbox_s, cbox_i = label_to_roi(label, expansion_mm=expansion_mm)
+    return crop_to_roi(image, cbox_s, cbox_i)
