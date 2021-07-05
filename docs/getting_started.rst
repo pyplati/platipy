@@ -12,7 +12,7 @@ PlatiPy is available from the Python package repositories and can be installed w
 
 If you have already installed the library, you can install the latest updates using:
 
-``pip install platipy``
+``pip install --upgrade platipy``
 
 ***************
 Getting Started
