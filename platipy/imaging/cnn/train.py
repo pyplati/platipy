@@ -2,6 +2,7 @@ import os
 import math
 import tempfile
 import shutil
+import random
 
 from pathlib import Path
 import SimpleITK as sitk
@@ -83,7 +84,7 @@ class ProbUNet(pl.LightningModule):
             loss_params = {"beta": self.hparams.beta}
 
         if self.hparams.loss_type == "geco":
-            loss_params = {"kappa": self.hparams.kappa, "clamp_rec": self.hparams.clamp_rec}
+            loss_params = {"kappa": self.hparams.kappa, "clamp_rec": self.hparams.clamp_rec, "top_k_percentage": self.hparams.top_k_percentage}
 
         self.prob_unet = ProbabilisticUnet(
             self.hparams.input_channels,
@@ -114,6 +115,8 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--beta", type=float, default=1.0)
         parser.add_argument("--kappa", type=float, default=0.02)
         parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
+        parser.add_argument("--top_k_percentage", type=float, default=None)
+
         return parent_parser
 
     def forward(self, x):
@@ -279,10 +282,9 @@ class ProbUNet(pl.LightningModule):
                 color_dict[f"auto_{self.stddevs[observer]}"] = cmap(observer/5)
 
             img_vis = ImageVisualiser(
-                img, cut=get_com(mask), figure_size_in=16, window=[img_arr.min(), img_arr.max()]
+                img, cut=get_com(mask), figure_size_in=16, window=[-1.0, 1.0]
             )
 
-            #color_dict = {str(i): [0.5, 0.5, 0.5] for i, m in enumerate(observers)}
             contour_dict = {**obs_dict, **pred_dict}
             contour_dict["auto_mean"] = mean
             color_dict["auto_mean"] = [0.0, 0.0, 0.0]
@@ -291,6 +293,7 @@ class ProbUNet(pl.LightningModule):
             fig = img_vis.show()
             figure_path = f"valid_{case}.png"
             fig.savefig(figure_path, dpi=300)
+            plt.close("all")
 
             self.logger.experiment.log_image(figure_path)
 
@@ -380,6 +383,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
 
         cases = [p.name.replace(".nii.gz", "") for p in self.data_dir.joinpath("images").glob("*")]
         cases.sort()
+        random.shuffle(cases) # will be consistent for same value of 'seed everything'
         cases_per_fold = math.ceil(len(cases) / self.k_folds)
         for f in range(self.k_folds):
 

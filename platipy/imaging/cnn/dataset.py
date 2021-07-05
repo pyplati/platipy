@@ -14,7 +14,10 @@ from loguru import logger
 
 def preprocess_image(img, crop_to_mm=128):
 
-    img = sitk.Normalize(img)
+    img = sitk.Cast(img, sitk.sitkFloat32)
+    img = sitk.IntensityWindowing(
+        img, windowMinimum=-100.0, windowMaximum=100.0, outputMinimum=-1.0, outputMaximum=1.0
+    )
 
     new_spacing = sitk.VectorDouble(3)
     new_spacing[0] = 1.0
