@@ -50,25 +50,42 @@ if "ATLAS_PATH" in os.environ:
 
 CARDIAC_SETTINGS_DEFAULTS = {
     "atlas_settings": {
-        "atlas_id_list": ["13", "17", "33", "12", "16", "22", "27"],
-        "atlas_structure_list": ["WHOLEHEART", "LANTDESCARTERY_SPLINE"],
+        "atlas_id_list": ["08", "12", "16", "22", "24", "33"],
+        "atlas_structure_list": [
+            "AORTICVALVE",
+            "ASCENDINGAORTA",
+            "LANTDESCARTERY_SPLINE",
+            "LCIRCUMFLEXARTERY_SPLINE",
+            "LCORONARYARTERY_SPLINE",
+            "LEFTATRIUM",
+            "LEFTVENTRICLE",
+            "MITRALVALVE",
+            "PULMONARYARTERY",
+            "PULMONICVALVE",
+            "RCORONARYARTERY_SPLINE",
+            "RIGHTATRIUM",
+            "RIGHTVENTRICLE",
+            "SVC",
+            "TRICUSPIDVALVE",
+            "WHOLEHEART",
+        ],
         "atlas_path": ATLAS_PATH,
         "atlas_image_format": "Case_{0}/Images/Case_{0}_CROP.nii.gz",
         "atlas_label_format": "Case_{0}/Structures/Case_{0}_{1}_CROP.nii.gz",
-        "crop_atlas_to_structures": False,
-        "crop_atlas_expansion_mm": (10, 10, 10),
+        "crop_atlas_to_structures": True,
+        "crop_atlas_expansion_mm": (20, 20, 40),
         "guide_structure_name": "WHOLEHEART",
         "superior_extension": 30,
     },
     "auto_crop_target_image_settings": {
-        "expansion_mm": [2, 2, 2],
+        "expansion_mm": [20, 20, 40],
     },
     "linear_registration_settings": {
-        "reg_method": "similarity",
+        "reg_method": "affine",
         "shrink_factors": [16, 8, 4],
         "smooth_sigmas": [0, 0, 0],
         "sampling_rate": 0.75,
-        "default_value": -1024,
+        "default_value": -1000,
         "number_of_iterations": 50,
         "metric": "mean_squares",
         "optimiser": "gradient_descent_line_search",
@@ -77,14 +94,15 @@ CARDIAC_SETTINGS_DEFAULTS = {
     "deformable_registration_settings": {
         "isotropic_resample": True,
         "resolution_staging": [
-            16,
-            8,
+            6,
+            4,
             2,
+            1,
         ],  # specify voxel size (mm) since isotropic_resample is set
-        "iteration_staging": [5, 5, 5],
-        "smoothing_sigmas": [0, 0, 0],
+        "iteration_staging": [200, 150, 125, 100],
+        "smoothing_sigmas": [0, 0, 0, 0],
         "ncores": 8,
-        "default_value": -1000,
+        "default_value": 0,
         "verbose": False,
     },
     "structure_guided_registration_settings": {
@@ -94,14 +112,14 @@ CARDIAC_SETTINGS_DEFAULTS = {
             8,
             2,
         ],  # specify voxel size (mm) since isotropic_resample is set
-        "iteration_staging": [25, 25, 25],
+        "iteration_staging": [40, 40, 40],
         "smoothing_sigmas": [0, 0, 0],
         "ncores": 8,
         "default_value": 0,
         "verbose": False,
     },
     "iar_settings": {
-        "reference_structure": "WHOLEHEART",
+        "reference_structure": False,
         "smooth_distance_maps": True,
         "smooth_sigma": 1,
         "z_score_statistic": "mad",
@@ -112,15 +130,53 @@ CARDIAC_SETTINGS_DEFAULTS = {
     },
     "label_fusion_settings": {
         "vote_type": "unweighted",
-        "vote_params": {},  # No parameters needed for majority voting
-        "optimal_threshold": {"WHOLEHEART": 0.5},
+        "vote_params": None,
+        "optimal_threshold": {
+            "AORTICVALVE": 0.5,
+            "ASCENDINGAORTA": 0.5,
+            "LEFTATRIUM": 0.5,
+            "LEFTVENTRICLE": 0.5,
+            "MITRALVALVE": 0.5,
+            "PULMONARYARTERY": 0.5,
+            "PULMONICVALVE": 0.5,
+            "RIGHTATRIUM": 0.5,
+            "RIGHTVENTRICLE": 0.5,
+            "SVC": 0.5,
+            "TRICUSPIDVALVE": 0.5,
+            "WHOLEHEART": 0.5,
+        },
     },
     "vessel_spline_settings": {
-        "vessel_name_list": ["LANTDESCARTERY_SPLINE"],
-        "vessel_radius_mm_dict": {"LANTDESCARTERY_SPLINE": 2},
-        "scan_direction_dict": {"LANTDESCARTERY_SPLINE": "z"},
-        "stop_condition_type_dict": {"LANTDESCARTERY_SPLINE": "count"},
-        "stop_condition_value_dict": {"LANTDESCARTERY_SPLINE": 1},
+        "vessel_name_list": [
+            "LANTDESCARTERY_SPLINE",
+            "LCIRCUMFLEXARTERY_SPLINE",
+            "LCORONARYARTERY_SPLINE",
+            "RCORONARYARTERY_SPLINE",
+        ],
+        "vessel_radius_mm_dict": {
+            "LANTDESCARTERY_SPLINE": 2,
+            "LCIRCUMFLEXARTERY_SPLINE": 2,
+            "LCORONARYARTERY_SPLINE": 2,
+            "RCORONARYARTERY_SPLINE": 2,
+        },
+        "scan_direction_dict": {
+            "LANTDESCARTERY_SPLINE": "z",
+            "LCIRCUMFLEXARTERY_SPLINE": "z",
+            "LCORONARYARTERY_SPLINE": "x",
+            "RCORONARYARTERY_SPLINE": "z",
+        },
+        "stop_condition_type_dict": {
+            "LANTDESCARTERY_SPLINE": "count",
+            "LCIRCUMFLEXARTERY_SPLINE": "count",
+            "LCORONARYARTERY_SPLINE": "count",
+            "RCORONARYARTERY_SPLINE": "count",
+        },
+        "stop_condition_value_dict": {
+            "LANTDESCARTERY_SPLINE": 2,
+            "LCIRCUMFLEXARTERY_SPLINE": 2,
+            "LCORONARYARTERY_SPLINE": 2,
+            "RCORONARYARTERY_SPLINE": 2,
+        },
     },
     "return_as_cropped": False,
 }
@@ -233,7 +289,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         img_crop = crop_to_roi(img, crop_box_size, crop_box_index)
 
         guide_structure = crop_to_roi(guide_structure, crop_box_size, crop_box_index)
-        target_reg_structure = convert_mask_to_reg_structure(guide_structure, expansion=0)
+        target_reg_structure = convert_mask_to_reg_structure(guide_structure, expansion=2)
 
     else:
         quick_reg_settings = {
@@ -305,7 +361,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
             guide_structure_name = settings["atlas_settings"]["guide_structure_name"]
             target_reg_image = target_reg_structure
             atlas_reg_image = convert_mask_to_reg_structure(
-                atlas_set[atlas_id]["Original"][guide_structure_name], expansion=0
+                atlas_set[atlas_id]["Original"][guide_structure_name], expansion=2
             )
 
         else:
@@ -592,7 +648,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         if return_as_cropped:
             results[structure_name] = binary_struct
 
-            results_prob[structure_name] = [
+            vessel_list = [
                 atlas_set[atlas_id]["DIR"][structure_name] for atlas_id in list(atlas_set.keys())
             ]
 
@@ -618,9 +674,9 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
                 )
                 vessel_list.append(paste_img_binary)
 
-            # Encode list of vessels
-            encoded_vessels = binary_encode_structure_list(vessel_list)
-            results_prob[structure_name] = encoded_vessels
+        # Encode list of vessels
+        encoded_vessels = binary_encode_structure_list(vessel_list)
+        results_prob[structure_name] = encoded_vessels
 
     if return_as_cropped:
         results["CROP_IMAGE"] = img_crop

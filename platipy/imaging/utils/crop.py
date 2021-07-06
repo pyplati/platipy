@@ -78,6 +78,18 @@ def crop_to_roi(image, size, index):
 
 
 def crop_to_label_extent(image, label, expansion_mm=0):
+    """Crop an image to the 3D extent defined by a binary mask (label).
+
+    Args:
+        image (SimpleITK.Image): The image to crop.
+        label (SimpleITK.Image): The binary mask (label) defining the region to crop to.
+        expansion_mm (float | tuple | list, optional): An optional expansion in physical units.
+            Can be defined as a single number or iterable: (axial, coronal, sagittal) expansion.
+            Defaults to 0.
+
+    Returns:
+        SimpleITK.Image: The cropped image.
+    """
 
     if ~hasattr(expansion_mm, "__iter__"):
         expansion_mm = [
