@@ -934,6 +934,11 @@ class ImageVisualiser:
                 if not self.__projection:
                     contour_disp = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s)
 
+                    # Force a single pixel to 1 to display all contours
+                    # even if they aren't defined on a particular slice
+                    if contour_disp.sum() == 0:
+                        contour_disp[0, 0] = 1
+
                 else:
                     contour_disp_proj = project_onto_arbitrary_plane(
                         plot_dict[c_name],
@@ -947,7 +952,7 @@ class ImageVisualiser:
                     ax.contour(
                         contour_disp,
                         colors=[color_dict[c_name]],
-                        levels=[0],
+                        levels=[0.5],
                         # alpha=0.8,
                         linewidths=linewidths,
                         label=c_name,
@@ -972,6 +977,15 @@ class ImageVisualiser:
                     contour_ax = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_ax)
                     contour_cor = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_cor)
                     contour_sag = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_sag)
+
+                    # Force a single pixel to 1 to display all contours
+                    # even if they aren't defined on a particular slice
+                    if contour_ax.sum() == 0:
+                        contour_ax[0, 0] = 1
+                    if contour_cor.sum() == 0:
+                        contour_cor[0, 0] = 1
+                    if contour_sag.sum() == 0:
+                        contour_sag[0, 0] = 1
 
                 else:
                     contour_ax_proj = project_onto_arbitrary_plane(
@@ -1000,7 +1014,7 @@ class ImageVisualiser:
 
                 temp = ax_ax.contour(
                     contour_ax,
-                    levels=[0],
+                    levels=[0.5],
                     linewidths=linewidths,
                     colors=[color_dict[c_name]],
                     origin="lower",
@@ -1009,14 +1023,14 @@ class ImageVisualiser:
 
                 ax_cor.contour(
                     contour_cor,
-                    levels=[0],
+                    levels=[0.5],
                     linewidths=linewidths,
                     colors=[color_dict[c_name]],
                     origin="lower",
                 )
                 ax_sag.contour(
                     contour_sag,
-                    levels=[0],
+                    levels=[0.5],
                     linewidths=linewidths,
                     colors=[color_dict[c_name]],
                     origin="lower",

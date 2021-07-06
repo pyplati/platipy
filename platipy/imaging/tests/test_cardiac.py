@@ -96,7 +96,10 @@ def test_cardiac_service(cardiac_data):
         test_settings["atlas_settings"]["atlas_path"] = str(working_path)
         test_settings["atlas_settings"]["atlas_structure_list"] = ["WHOLEHEART"]
         test_settings["atlas_settings"]["auto_crop_atlas"] = False
+        test_settings["deformable_registration_settings"]["resolution_staging"] = [8, 4, 2]
         test_settings["deformable_registration_settings"]["iteration_staging"] = [5, 5, 5]
+        test_settings["deformable_registration_settings"]["smoothing_sigmas"] = [0, 0, 0]
+        test_settings["deformable_registration_settings"]["default_value"] = -1000
         test_settings["iar_settings"]["reference_structure"] = None
         test_settings["label_fusion_settings"]["optimal_threshold"] = {"WHOLEHEART": 0.5}
         test_settings["vessel_spline_settings"]["vessel_name_list"] = []
@@ -170,7 +173,10 @@ def test_cardiac_structure_guided_service(cardiac_data):
         test_settings["atlas_settings"]["atlas_structure_list"] = ["WHOLEHEART", "SUBSTRUCTURE"]
         test_settings["atlas_settings"]["auto_crop_atlas"] = False
         test_settings["atlas_settings"]["guide_structure_name"] = "WHOLEHEART"
+        test_settings["deformable_registration_settings"]["resolution_staging"] = [8, 4, 2]
         test_settings["deformable_registration_settings"]["iteration_staging"] = [5, 5, 5]
+        test_settings["deformable_registration_settings"]["smoothing_sigmas"] = [0, 0, 0]
+        test_settings["deformable_registration_settings"]["default_value"] = -1000
         test_settings["structure_guided_registration_settings"]["iteration_staging"] = [5, 5, 5]
         test_settings["structure_guided_registration_settings"]["resolution_staging"] = [6, 3, 1.5]
         test_settings["iar_settings"]["reference_structure"] = None
