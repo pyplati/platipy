@@ -176,7 +176,9 @@ def binary_encode_structure_list(structure_list):
         # Convert image to array
         s_arr = sitk.GetArrayFromImage(s_img).astype(int)
         # Bitwise-or with existing array
-        binary_encoded_arr = np.bitwise_or(binary_encoded_arr, s_arr.astype(bool) * 2 ** power)
+        binary_encoded_arr = np.bitwise_or(
+            binary_encoded_arr, s_arr.astype(bool) * 2 ** (power + 1)
+        )
 
     binary_encoded_img = sitk.GetImageFromArray(binary_encoded_arr)
     binary_encoded_img.CopyInformation(structure_list[0])
@@ -206,13 +208,14 @@ def binary_decode_image(binary_encoded_img):
     for power in range(32):
 
         # Calculate the region originally defined with this prime
-        s_arr = np.bitwise_and(binary_encoded_arr, 2 ** power)
+        s_arr = np.bitwise_and(binary_encoded_arr, 2 ** (power + 1))
 
         # Check how many voxels we have
         num_nonzero_voxels = s_arr.sum()
 
         if num_nonzero_voxels > 0:
             s_img = sitk.GetImageFromArray(s_arr) > 0
+            s_img.CopyInformation(binary_encoded_img)
             structure_list.append(s_img)
         else:
             continue

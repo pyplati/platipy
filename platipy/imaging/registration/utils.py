@@ -298,7 +298,7 @@ def convert_mask_to_distance_map(mask, squared_distance=False, normalise=False):
         return raw_map
 
 
-def convert_mask_to_reg_structure(mask, expansion=1, scale=lambda x: x):
+def convert_mask_to_reg_structure(mask, expansion=(0, 0, 0), scale=lambda x: x):
     """
     Generate a mask-like image to make structure-guided registration more
     realistic via internal deformation within a binary mask.
@@ -317,18 +317,20 @@ def convert_mask_to_reg_structure(mask, expansion=1, scale=lambda x: x):
     Returns:
         [SimpleITK.Image]: [description]
     """
+    if not hasattr(expansion, "__iter__"):
+        expansion = [int(expansion / i) for i in mask.GetSpacing()]
+    if any(expansion):
+        mask = sitk.BinaryDilate(mask, expansion)
+
     distance_map = sitk.Cast(
         convert_mask_to_distance_map(mask, squared_distance=False), sitk.sitkFloat64
     )
 
-    inverted_distance_map = sitk.Threshold(
-        distance_map + expansion * sitk.Cast(distance_map < (expansion), sitk.sitkFloat64),
-        lower=0,
-        upper=1000,
+    distance_map = sitk.Mask(
+        distance_map,
+        mask,
     )
 
-    scaled_distance_map = inverted_distance_map / (
-        sitk.GetArrayViewFromImage(inverted_distance_map).max()
-    )
+    scaled_distance_map = distance_map / (sitk.GetArrayViewFromImage(distance_map).max())
 
     return scale(scaled_distance_map)
