@@ -72,7 +72,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "atlas_path": ATLAS_PATH,
         "atlas_image_format": "Case_{0}/Images/Case_{0}_CROP.nii.gz",
         "atlas_label_format": "Case_{0}/Structures/Case_{0}_{1}_CROP.nii.gz",
-        "crop_atlas_to_structures": True,
+        "crop_atlas_to_structures": False,
         "crop_atlas_expansion_mm": (20, 20, 40),
         "guide_structure_name": "WHOLEHEART",
         "superior_extension": 30,
