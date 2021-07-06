@@ -24,7 +24,11 @@ from platipy.imaging.utils.geometry import vector_angle, rotate_image
 
 
 def generate_valve_from_great_vessel(
-    label_great_vessel, label_ventricle, initial_dilation=(4, 4, 5), final_erosion=(3, 3, 3)
+    label_great_vessel,
+    label_ventricle,
+    initial_dilation=(4, 4, 5),
+    final_erosion=(3, 3, 3),
+    mask_to_labels=False,
 ):
     """
     Generates a geometrically-defined valve.
@@ -63,6 +67,9 @@ def generate_valve_from_great_vessel(
 
     label_valve = sitk.BinaryMorphologicalClosing(mask)
     label_valve = sitk.BinaryErode(label_valve, final_erosion)
+
+    if mask_to_labels:
+        label_valve = sitk.Mask(label_valve, label_great_vessel | label_ventricle)
 
     return label_valve
 
@@ -123,8 +130,8 @@ def generate_valve_using_cylinder(
     com_overlap_shifted = np.array(com_overlap) - shift
 
     # Create a small expanded overlap region
-    overlap = sitk.BinaryDilate(label_atrium, (1,) * 3) & sitk.BinaryDilate(
-        label_ventricle, (1,) * 3
+    overlap = sitk.BinaryDilate(label_atrium, (2,) * 3) & sitk.BinaryDilate(
+        label_ventricle, (2,) * 3
     )
 
     # Find the point in this small overlap region closest to the shifted location
@@ -146,21 +153,21 @@ def generate_valve_using_cylinder(
     # Now we create a cylinder with the user_defined parameters
     cylinder = insert_cylinder_image(0 * label_ventricle, radius_mm, height_mm, valve_loc[::-1])
 
-    # Now we compute the first principal moment (long axis) of the larger chamber (2)
+    # Now we compute the first principal moment (long axis) of the combined chambers
     # f = sitk.LabelShapeStatisticsImageFilter()
-    # f.Execute(label_ventricle)
-    # orientation_vector = f.GetPrincipalAxes(1)
+    # f.Execute(label_ventricle + label_atrium)
+    # orientation_vector = f.GetPrincipalAxes(1)[:3]
 
     # A more robust method is to use the COM offset from the chambers
     # as a proxy for the long axis of the LV/RV
-    # orientation_vector = np.array(get_com(label_ventricle, real_coords=True)) - np.array(
-    #     get_com(label_atrium, real_coords=True)
-    # )
+    orientation_vector = np.array(get_com(label_ventricle, real_coords=True)) - np.array(
+        get_com(label_atrium, real_coords=True)
+    )
 
     # Another method is to compute the third principal moment of the overlap region
-    f = sitk.LabelShapeStatisticsImageFilter()
-    f.Execute(overlap)
-    orientation_vector = f.GetPrincipalAxes(1)[:3]
+    # f = sitk.LabelShapeStatisticsImageFilter()
+    # f.Execute(overlap)
+    # orientation_vector = f.GetPrincipalAxes(1)[:3]
 
     # Get the rotation parameters
     rotation_angle = vector_angle(orientation_vector, (0, 0, 1))
