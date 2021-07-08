@@ -76,11 +76,17 @@ def geometric_sinoatrialnode(label_svc, label_ra, label_wholeheart, radius_mm=10
     # Now expand the SVC until it touches the RA on the inf slice
     overlap = 0
     dilate = 1
+    dilate_ax = 0
     while overlap == 0:
-        label_svc_dilate = sitk.BinaryDilate(label_svc, (dilate, dilate, 0))
+        label_svc_dilate = sitk.BinaryDilate(label_svc, (dilate, dilate, dilate_ax))
         label_overlap = label_svc_dilate & label_ra
         overlap = sitk.GetArrayFromImage(label_overlap)[inf_limit_svc, :, :].sum()
         dilate += 1
+
+        if dilate >= 3:
+            arr_svc = sitk.GetArrayFromImage(label_svc_dilate)
+            inf_limit_svc = np.min(np.where(arr_svc)[0])
+            dilate_ax += 1
 
     # Locate the point on intersection
     intersect_loc = get_com(label_overlap)
@@ -91,14 +97,9 @@ def geometric_sinoatrialnode(label_svc, label_ra, label_wholeheart, radius_mm=10
     label_intersect = sitk.GetImageFromArray(arr_intersect)
     label_intersect.CopyInformation(label_ra)
 
-    # Define the distance map from whole heart contour
-    distancemap_wh = sitk.SignedMaurerDistanceMap(
-        label_wholeheart, squaredDistance=False, useImageSpacing=True
-    )
-
     # Define the locations greater than 10mm from the WH
     # Ensures the SAN doesn't extend outside the heart volume
-    potential_san_region = distancemap_wh <= -10
+    potential_san_region = sitk.BinaryErode(label_wholeheart, (10, 10, 0))
 
     # Find the point in this region closest to the intersection
     # First generate a distance map
@@ -111,6 +112,7 @@ def geometric_sinoatrialnode(label_svc, label_ra, label_wholeheart, radius_mm=10
     arr_potential_san_region = sitk.GetArrayFromImage(potential_san_region)
 
     yloc, xloc = np.where(arr_potential_san_region[inf_limit_svc, :, :])
+
     distances = arr_distancemap_san[inf_limit_svc, yloc, xloc]
 
     # Find where the distance is a minimum
