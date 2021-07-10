@@ -112,7 +112,7 @@ def prepare_transforms():
 class NiftiDataset(torch.utils.data.Dataset):
     """PyTorch Dataset for processing Nifti data"""
 
-    def __init__(self, data, working_dir, augment_on_the_fly=True):
+    def __init__(self, data, working_dir, augment_on_the_fly=True, crop_to_mm=128):
         """Prepare a dataset from Nifti images/labels
 
         Args:
@@ -168,7 +168,7 @@ class NiftiDataset(torch.utils.data.Dataset):
 
             img = sitk.ReadImage(img_path)
 
-            img = preprocess_image(img)
+            img = preprocess_image(img, crop_to_mm=crop_to_mm)
 
             observers = []
             for obs, structure_path in enumerate(structure_paths):

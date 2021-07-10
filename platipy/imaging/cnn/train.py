@@ -381,6 +381,8 @@ class ProbUNetDataModule(pl.LightningDataModule):
         k_folds=5,
         batch_size=5,
         num_workers=4,
+        crop_to_mm=128,
+        num_observers=5,
         **kwargs,
     ):
         super().__init__()
@@ -399,6 +401,8 @@ class ProbUNetDataModule(pl.LightningDataModule):
 
         self.batch_size = batch_size
         self.num_workers = num_workers
+        self.crop_to_mm = crop_to_mm
+        self.num_observers = num_observers
 
         self.training_set = None
         self.validation_set = None
@@ -416,6 +420,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         parser.add_argument("--case_glob", type=str, default="images/*.nii.gz")
         parser.add_argument("--image_glob", type=str, default="images/{case}.nii.gz")
         parser.add_argument("--label_glob", type=str, default="labels/{case}_*.nii.gz")
+        parser.add_argument("--crop_to_mm", type=int, default=128)
 
         return parent_parser
 
@@ -432,6 +437,9 @@ class ProbUNetDataModule(pl.LightningDataModule):
             else:
                 self.train_cases += cases[f * cases_per_fold : (f + 1) * cases_per_fold]
 
+        print(f"Training cases: {self.train_cases}")
+        print(f"Validation cases: {self.validation_cases}")
+
         train_data = [
             {
                 "id": case,
@@ -440,7 +448,6 @@ class ProbUNetDataModule(pl.LightningDataModule):
             }
             for case in self.train_cases
         ]
-        print(train_data)
 
         validation_data = [
             {
@@ -450,20 +457,20 @@ class ProbUNetDataModule(pl.LightningDataModule):
             }
             for case in self.validation_cases
         ]
-        print(validation_data)
 
-        self.training_set = NiftiDataset(train_data, self.working_dir.joinpath("train"))
+        self.training_set = NiftiDataset(
+            train_data, self.working_dir.joinpath("train"), crop_to_mm=self.crop_to_mm
+        )
         self.validation_set = NiftiDataset(
-            validation_data, self.working_dir.joinpath("validation"), False
+            validation_data,
+            self.working_dir.joinpath("validation"),
+            augment_on_the_fly=False,
+            crop_to_mm=self.crop_to_mm,
         )
 
     def train_dataloader(self):
         return torch.utils.data.DataLoader(
             self.training_set,
-            # batch_sampler=BatchSampler(
-            #    ObserverSampler(train_set, 5), batch_size=params["batch_size"], drop_last=False
-            # ),
-            # num_workers=params["num_workers"],
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
@@ -473,7 +480,9 @@ class ProbUNetDataModule(pl.LightningDataModule):
         return torch.utils.data.DataLoader(
             self.validation_set,
             batch_sampler=torch.utils.data.BatchSampler(
-                ObserverSampler(self.validation_set, 5), batch_size=5, drop_last=False
+                ObserverSampler(self.validation_set, self.num_observers),
+                batch_size=self.num_observers,
+                drop_last=False,
             ),
             num_workers=self.num_workers,
         )
