@@ -1,8 +1,23 @@
+# Copyright 2021 University of New South Wales, University of Sydney, Ingham Institute
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import sys
 import os
 import math
 import tempfile
-import shutil
 import random
+import json
 
 from pathlib import Path
 import SimpleITK as sitk
@@ -17,7 +32,6 @@ import pytorch_lightning as pl
 
 from argparse import ArgumentParser
 
-from torch._C import NoneType
 import matplotlib.pyplot as plt
 
 from platipy.imaging.cnn.prob_unet import ProbabilisticUnet
@@ -84,7 +98,11 @@ class ProbUNet(pl.LightningModule):
             loss_params = {"beta": self.hparams.beta}
 
         if self.hparams.loss_type == "geco":
-            loss_params = {"kappa": self.hparams.kappa, "clamp_rec": self.hparams.clamp_rec, "top_k_percentage": self.hparams.top_k_percentage}
+            loss_params = {
+                "kappa": self.hparams.kappa,
+                "clamp_rec": self.hparams.clamp_rec,
+                "top_k_percentage": self.hparams.top_k_percentage,
+            }
 
         self.prob_unet = ProbabilisticUnet(
             self.hparams.input_channels,
@@ -98,7 +116,7 @@ class ProbUNet(pl.LightningModule):
 
         self.validation_directory = None
 
-        self.stddevs = np.linspace(-2,2,5)
+        self.stddevs = np.linspace(-2, 2, 5)
 
     @staticmethod
     def add_model_specific_args(parent_parser):
@@ -145,7 +163,12 @@ class ProbUNet(pl.LightningModule):
         )
         training_loss = loss["loss"] + 1e-5 * reg_loss
         self.log(
-            "training_loss", training_loss, on_step=True, on_epoch=False, prog_bar=True, logger=True
+            "training_loss",
+            training_loss,
+            on_step=True,
+            on_epoch=False,
+            prog_bar=True,
+            logger=True,
         )
 
         for k in loss:
@@ -181,7 +204,11 @@ class ProbUNet(pl.LightningModule):
                 np.save(mask_file, y[s].squeeze(0).cpu().numpy())
 
                 self.prob_unet.forward(x[s].unsqueeze(0))
-                sample = self.prob_unet.sample(testing=True, use_mean=False, sample_x_stddev_from_mean=self.stddevs[info["observer"][s]])
+                sample = self.prob_unet.sample(
+                    testing=True,
+                    use_mean=False,
+                    sample_x_stddev_from_mean=self.stddevs[info["observer"][s]],
+                )
                 sample_file = self.validation_directory.joinpath(
                     f"sample_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
                 )
@@ -200,7 +227,7 @@ class ProbUNet(pl.LightningModule):
     def validation_epoch_end(self, validation_step_outputs):
 
         cases = {}
-        cmap = plt.cm.get_cmap('Set2')
+        cmap = plt.cm.get_cmap("Set2")
         for info in validation_step_outputs:
 
             for case, z, observer in zip(info["case"], info["z"], info["observer"]):
@@ -279,7 +306,7 @@ class ProbUNet(pl.LightningModule):
                 # sitk.WriteImage(sample, f"val_sample_{case}_{observer}.nii.gz")
                 samples.append(sample)
                 pred_dict[f"auto_{self.stddevs[observer]}"] = sample
-                color_dict[f"auto_{self.stddevs[observer]}"] = cmap(observer/5)
+                color_dict[f"auto_{self.stddevs[observer]}"] = cmap(observer / 5)
 
             img_vis = ImageVisualiser(
                 img, cut=get_com(mask), figure_size_in=16, window=[-1.0, 1.0]
@@ -347,6 +374,9 @@ class ProbUNetDataModule(pl.LightningDataModule):
         self,
         data_dir: str = "./data",
         working_dir: str = "./working",
+        case_glob="images/*.nii.gz",
+        image_glob="images/{case}.nii.gz",
+        label_glob="labels/{case}_*.nii.gz",
         fold=0,
         k_folds=5,
         batch_size=5,
@@ -357,6 +387,10 @@ class ProbUNetDataModule(pl.LightningDataModule):
         self.data_dir = Path(data_dir)
         self.working_dir = Path(working_dir)
 
+        self.case_glob = case_glob
+        self.image_glob = image_glob
+        self.label_glob = label_glob
+
         self.fold = fold
         self.k_folds = k_folds
 
@@ -365,6 +399,9 @@ class ProbUNetDataModule(pl.LightningDataModule):
 
         self.batch_size = batch_size
         self.num_workers = num_workers
+
+        self.training_set = None
+        self.validation_set = None
 
         print(f"Training fold {self.fold}")
 
@@ -376,14 +413,17 @@ class ProbUNetDataModule(pl.LightningDataModule):
         parser.add_argument("--k_folds", type=int, default=5)
         parser.add_argument("--batch_size", type=int, default=5)
         parser.add_argument("--num_workers", type=int, default=4)
+        parser.add_argument("--case_glob", type=str, default="images/*.nii.gz")
+        parser.add_argument("--image_glob", type=str, default="images/{case}.nii.gz")
+        parser.add_argument("--label_glob", type=str, default="labels/{case}_*.nii.gz")
 
         return parent_parser
 
     def setup(self, stage=None):
 
-        cases = [p.name.replace(".nii.gz", "") for p in self.data_dir.joinpath("images").glob("*")]
+        cases = [p.name.replace(".nii.gz", "") for p in self.data_dir.glob(self.case_glob)]
         cases.sort()
-        random.shuffle(cases) # will be consistent for same value of 'seed everything'
+        random.shuffle(cases)  # will be consistent for same value of 'seed everything'
         cases_per_fold = math.ceil(len(cases) / self.k_folds)
         for f in range(self.k_folds):
 
@@ -395,20 +435,22 @@ class ProbUNetDataModule(pl.LightningDataModule):
         train_data = [
             {
                 "id": case,
-                "image": self.data_dir.joinpath("images", f"{case}.nii.gz"),
-                "label": [p for p in self.data_dir.joinpath("labels").glob(f"{case}_*.nii.gz")],
+                "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
+                "label": [p for p in self.data_dir.glob(self.label_glob.format(case=case))],
             }
             for case in self.train_cases
         ]
+        print(train_data)
 
         validation_data = [
             {
                 "id": case,
-                "image": self.data_dir.joinpath("images", f"{case}.nii.gz"),
-                "label": [p for p in self.data_dir.joinpath("labels").glob(f"{case}_*.nii.gz")],
+                "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
+                "label": [p for p in self.data_dir.glob(self.label_glob.format(case=case))],
             }
             for case in self.validation_cases
         ]
+        print(validation_data)
 
         self.training_set = NiftiDataset(train_data, self.working_dir.joinpath("train"))
         self.validation_set = NiftiDataset(
@@ -486,6 +528,18 @@ def main(args):
 
 
 if __name__ == "__main__":
+
+    args = None
+    if len(sys.argv) == 2:
+        # Check if JSON file parsed, if so read arguments from there...
+        if sys.argv[-1].endswith(".json"):
+            with open(sys.argv[-1], "r") as f:
+                params = json.load(f)
+                args = []
+                for k in params:
+                    args.append(f"--{k}")
+                    args.append(params[k])
+
     arg_parser = ArgumentParser()
     arg_parser = ProbUNet.add_model_specific_args(arg_parser)
     arg_parser = ProbUNetDataModule.add_model_specific_args(arg_parser)
@@ -498,4 +552,4 @@ if __name__ == "__main__":
     arg_parser.add_argument("--comet_workspace", type=str, default=None)
     arg_parser.add_argument("--comet_project", type=str, default=None)
 
-    main(arg_parser.parse_args())
+    main(arg_parser.parse_args(args))
