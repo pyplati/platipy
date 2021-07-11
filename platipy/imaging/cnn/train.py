@@ -428,7 +428,11 @@ class ProbUNetDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
 
-        cases = [p.name.replace(".nii.gz", "") for p in self.data_dir.glob(self.case_glob) if not p.name.startswith(".")]
+        cases = [
+            p.name.replace(".nii.gz", "")
+            for p in self.data_dir.glob(self.case_glob)
+            if not p.name.startswith(".")
+        ]
         cases.sort()
         random.shuffle(cases)  # will be consistent for same value of 'seed everything'
         cases_per_fold = math.ceil(len(cases) / self.k_folds)
@@ -455,7 +459,11 @@ class ProbUNetDataModule(pl.LightningDataModule):
             {
                 "id": case,
                 "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
-                "label": [p for p in self.data_dir.glob(self.label_glob.format(case=case)) if not "edited" in p.name],
+                "label": [
+                    p
+                    for p in self.data_dir.glob(self.label_glob.format(case=case))
+                    if not "edited" in p.name
+                ],
             }
             for case in self.validation_cases
         ]
@@ -549,7 +557,12 @@ if __name__ == "__main__":
                 args = []
                 for k in params:
                     args.append(f"--{k}")
-                    args.append(str(params[k]))
+
+                    if isinstance(params[k], list):
+                        for x in params[k]:
+                            args.append(str(x))
+                    else:
+                        args.append(str(params[k]))
 
     arg_parser = ArgumentParser()
     arg_parser = ProbUNet.add_model_specific_args(arg_parser)

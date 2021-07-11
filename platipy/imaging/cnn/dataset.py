@@ -16,7 +16,7 @@ def preprocess_image(img, crop_to_mm=128):
 
     img = sitk.Cast(img, sitk.sitkFloat32)
     img = sitk.IntensityWindowing(
-        img, windowMinimum=-100.0, windowMaximum=100.0, outputMinimum=-1.0, outputMaximum=1.0
+        img, windowMinimum=-500.0, windowMaximum=500.0, outputMinimum=-1.0, outputMaximum=1.0
     )
 
     new_spacing = sitk.VectorDouble(3)
