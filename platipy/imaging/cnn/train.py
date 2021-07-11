@@ -116,7 +116,7 @@ class ProbUNet(pl.LightningModule):
 
         self.validation_directory = None
 
-        self.stddevs = np.linspace(-2, 2, 5)
+        self.stddevs = np.linspace(-2, 2, self.hparams.num_observers)
 
     @staticmethod
     def add_model_specific_args(parent_parser):
@@ -153,7 +153,9 @@ class ProbUNet(pl.LightningModule):
         return [optimizer], [scheduler]
 
     def training_step(self, batch, batch_idx):
+
         x, y, _ = batch
+
         self.prob_unet.forward(x, y, training=True)
         loss = self.prob_unet.loss(y, analytic_kl=True)
         reg_loss = (
@@ -207,7 +209,7 @@ class ProbUNet(pl.LightningModule):
                 sample = self.prob_unet.sample(
                     testing=True,
                     use_mean=False,
-                    sample_x_stddev_from_mean=self.stddevs[info["observer"][s]],
+                    sample_x_stddev_from_mean=self.stddevs[s],
                 )
                 sample_file = self.validation_directory.joinpath(
                     f"sample_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
@@ -277,7 +279,7 @@ class ProbUNet(pl.LightningModule):
             color_dict = {}
             observers = []
             samples = []
-            for observer in cases[case]["observers"]:
+            for idx, observer in enumerate(cases[case]["observers"]):
                 mask_arrs = []
                 sample_arrs = []
                 for z in slices:
@@ -305,8 +307,8 @@ class ProbUNet(pl.LightningModule):
                 sample = post_process(sample)
                 # sitk.WriteImage(sample, f"val_sample_{case}_{observer}.nii.gz")
                 samples.append(sample)
-                pred_dict[f"auto_{self.stddevs[observer]}"] = sample
-                color_dict[f"auto_{self.stddevs[observer]}"] = cmap(observer / 5)
+                pred_dict[f"auto_{self.stddevs[idx]}"] = sample
+                color_dict[f"auto_{self.stddevs[idx]}"] = cmap(observer / 5)
 
             img_vis = ImageVisualiser(
                 img, cut=get_com(mask), figure_size_in=16, window=[-1.0, 1.0]
@@ -426,7 +428,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
 
-        cases = [p.name.replace(".nii.gz", "") for p in self.data_dir.glob(self.case_glob)]
+        cases = [p.name.replace(".nii.gz", "") for p in self.data_dir.glob(self.case_glob) if not p.name.startswith(".")]
         cases.sort()
         random.shuffle(cases)  # will be consistent for same value of 'seed everything'
         cases_per_fold = math.ceil(len(cases) / self.k_folds)
@@ -453,7 +455,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
             {
                 "id": case,
                 "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
-                "label": [p for p in self.data_dir.glob(self.label_glob.format(case=case))],
+                "label": [p for p in self.data_dir.glob(self.label_glob.format(case=case)) if not "edited" in p.name],
             }
             for case in self.validation_cases
         ]
@@ -547,7 +549,7 @@ if __name__ == "__main__":
                 args = []
                 for k in params:
                     args.append(f"--{k}")
-                    args.append(params[k])
+                    args.append(str(params[k]))
 
     arg_parser = ArgumentParser()
     arg_parser = ProbUNet.add_model_specific_args(arg_parser)
@@ -556,6 +558,7 @@ if __name__ == "__main__":
     arg_parser.add_argument("--seed", type=int, default=42, help="an integer to use as seed")
     arg_parser.add_argument("--experiment", type=str, default="default", help="Name of experiment")
     arg_parser.add_argument("--working_dir", type=str, default="./working")
+    arg_parser.add_argument("--num_observers", type=int, default=5)
     arg_parser.add_argument("--offline", type=bool, default=False)
     arg_parser.add_argument("--comet_api_key", type=str, default=None)
     arg_parser.add_argument("--comet_workspace", type=str, default=None)

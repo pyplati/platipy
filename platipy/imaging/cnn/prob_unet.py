@@ -250,7 +250,7 @@ class ProbabilisticUnet(torch.nn.Module):
         values, _ = torch.topk(score, 1, axis=1)
         _, indices = torch.topk(values, k, axis=0)
         return torch.scatter_add(
-            torch.zeros(score.shape[0]), 0, indices.reshape(-1), torch.ones(score.shape[0])
+            torch.zeros(score.shape[0]).to(score.device), 0, indices.reshape(-1), torch.ones(score.shape[0]).to(score.device)
         )
 
     def reconstruction_loss(
@@ -318,7 +318,7 @@ class ProbabilisticUnet(torch.nn.Module):
         ce_sum_per_instance = torch.sum(mask * xe, axis=1)
         ce_sum = torch.mean(ce_sum_per_instance, axis=0)
 
-        return ce_sum
+        return ce_sum, mask
 
     def loss(self, segm, analytic_kl=True, reconstruct_posterior_mean=False):
         """
@@ -334,7 +334,7 @@ class ProbabilisticUnet(torch.nn.Module):
         if "top_k_percentage" in self.loss_params:
             top_k_percentage = self.loss_params["top_k_percentage"]
 
-        reconstruction_loss = self.reconstruction_loss(
+        reconstruction_loss, mask = self.reconstruction_loss(
             segm,
             reconstruct_posterior_mean=reconstruct_posterior_mean,
             z_posterior=z_posterior,
@@ -350,8 +350,9 @@ class ProbabilisticUnet(torch.nn.Module):
             }
         elif self.loss_type == "geco":
 
-            num_pixels = segm.numel()
-            reconstruction_threshold = self.loss_params["kappa"]  # * num_pixels
+            num_pixels = mask.sum().item()
+            batch_size = segm.shape[0]
+            reconstruction_threshold = (self.loss_params["kappa"] * num_pixels) / batch_size
             rec_constraint = reconstruction_loss - reconstruction_threshold
 
             loss = (
@@ -360,14 +361,22 @@ class ProbabilisticUnet(torch.nn.Module):
             )
 
             with torch.no_grad():
+
+                rc = rec_constraint.detach()
                 if self._moving_avg is None:
-                    self._moving_avg = rec_constraint.detach()
+                    self._moving_avg = rc
                 else:
-                    self._moving_avg = self._moving_avg * 0.5 + rec_constraint.detach() * (1 - 0.5)
+                    self._moving_avg = self._moving_avg * 0.5 + rc * (1 - 0.5)
                 speed = 1
+                self._moving_avg = self._moving_avg.clamp(
+                    -25, 25
+                )
                 self._lambda = (speed * torch.exp(self._moving_avg) * self._lambda).clamp(
                     self.loss_params["clamp_rec"][0], self.loss_params["clamp_rec"][1]
                 )
+#                self._lambda = (speed * self._moving_avg * self._lambda).clamp(
+#                    self.loss_params["clamp_rec"][0], self.loss_params["clamp_rec"][1]
+#                )
             return {
                 "loss": loss,
                 "rec_loss": reconstruction_loss,
