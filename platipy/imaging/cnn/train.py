@@ -29,6 +29,7 @@ from pytorch_lightning.loggers import CometLogger
 
 import torch
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import LearningRateMonitor
 
 from argparse import ArgumentParser
 
@@ -174,6 +175,7 @@ class ProbUNet(pl.LightningModule):
         )
 
         for k in loss:
+            if k == "loss": continue
             self.log(
                 k,
                 loss[k],
@@ -311,7 +313,7 @@ class ProbUNet(pl.LightningModule):
                 color_dict[f"auto_{self.stddevs[idx]}"] = cmap(observer / 5)
 
             img_vis = ImageVisualiser(
-                img, cut=get_com(mask), figure_size_in=16, window=[-1.0, 1.0]
+                img, cut=get_com(mask), figure_size_in=16, window=[-0.4, 0.8]
             )
 
             contour_dict = {**obs_dict, **pred_dict}
@@ -538,10 +540,14 @@ def main(args):
     data_module = ProbUNetDataModule(**dict_args)
 
     prob_unet = ProbUNet(**dict_args)
+
     trainer = pl.Trainer.from_argparse_args(args)
 
     if comet_api_key is not None:
         trainer.logger = comet_logger
+
+    lr_monitor = LearningRateMonitor(logging_interval='step')
+    trainer.callbacks = [lr_monitor]
 
     trainer.fit(prob_unet, data_module)  # pylint: disable=no-member
 

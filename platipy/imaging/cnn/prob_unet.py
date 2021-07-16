@@ -260,6 +260,7 @@ class ProbabilisticUnet(torch.nn.Module):
         z_posterior=None,
         mask=None,
         top_k_percentage=None,
+        deterministic=True
     ):
 
         criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
@@ -298,7 +299,6 @@ class ProbabilisticUnet(torch.nn.Module):
 
             with torch.no_grad():
                 norm_xe = xe / torch.sum(xe)
-                deterministic = True
                 if deterministic:
                     score = torch.log(norm_xe)
                 else:
@@ -317,8 +317,9 @@ class ProbabilisticUnet(torch.nn.Module):
 
         ce_sum_per_instance = torch.sum(mask * xe, axis=1)
         ce_sum = torch.mean(ce_sum_per_instance, axis=0)
+        ce_mean = torch.sum(mask * xe) / torch.sum(mask)
 
-        return ce_sum, mask
+        return ce_sum, ce_mean, mask
 
     def loss(self, segm, analytic_kl=True, reconstruct_posterior_mean=False):
         """
@@ -334,7 +335,7 @@ class ProbabilisticUnet(torch.nn.Module):
         if "top_k_percentage" in self.loss_params:
             top_k_percentage = self.loss_params["top_k_percentage"]
 
-        reconstruction_loss, mask = self.reconstruction_loss(
+        reconstruction_loss, rec_loss_mean, mask = self.reconstruction_loss(
             segm,
             reconstruct_posterior_mean=reconstruct_posterior_mean,
             z_posterior=z_posterior,
@@ -353,27 +354,27 @@ class ProbabilisticUnet(torch.nn.Module):
             num_pixels = mask.sum().item()
             batch_size = segm.shape[0]
             reconstruction_threshold = (self.loss_params["kappa"] * num_pixels) / batch_size
-            rec_constraint = reconstruction_loss - reconstruction_threshold
-
-            loss = (
-                self._lambda * rec_constraint  # pylint: disable=access-member-before-definition
-                + kl_div
-            )
+            reconstruction_threshold = self.loss_params["kappa"]
 
             with torch.no_grad():
 
-                rc = rec_constraint.detach()
+                rl = rec_loss_mean.detach()
+                moving_avg_factor = 0.8
                 if self._moving_avg is None:
-                    self._moving_avg = rc
+                    self._moving_avg = rl
                 else:
-                    self._moving_avg = self._moving_avg * 0.5 + rc * (1 - 0.5)
-                speed = 1
-                self._moving_avg = self._moving_avg.clamp(
-                    -25, 25
+                    self._moving_avg = self._moving_avg * moving_avg_factor + rl * (1 - moving_avg_factor)
+
+                rc = self._moving_avg - reconstruction_threshold
+                lambda_lower = self.loss_params["clamp_rec"][0]
+                lambda_upper = self.loss_params["clamp_rec"][1]
+                self._lambda = (torch.exp(rc) * self._lambda).clamp(
+                    lambda_lower, lambda_upper
                 )
-                self._lambda = (speed * torch.exp(self._moving_avg) * self._lambda).clamp(
-                    self.loss_params["clamp_rec"][0], self.loss_params["clamp_rec"][1]
-                )
+            loss = (
+                self._lambda * reconstruction_loss  # pylint: disable=access-member-before-definition
+                + kl_div
+            )
 #                self._lambda = (speed * self._moving_avg * self._lambda).clamp(
 #                    self.loss_params["clamp_rec"][0], self.loss_params["clamp_rec"][1]
 #                )
@@ -384,7 +385,7 @@ class ProbabilisticUnet(torch.nn.Module):
                 "lambda": self._lambda,
                 "moving_avg": self._moving_avg,
                 "reconstruction_threshold": reconstruction_threshold,
-                "rec_constraint": rec_constraint,
+                "rec_constraint": rc,
             }
 
         else:
