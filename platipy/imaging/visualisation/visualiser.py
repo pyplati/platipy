@@ -520,7 +520,7 @@ class ImageVisualiser:
                 interpolation="none",
                 origin={"normal": "upper", "reversed": "lower"}[self.__origin],
                 cmap=self.__colormap,
-                clim=(self.__window[0], self.__window[0] + self.__window[1]),
+                clim=self.__window,
             )
             cor_view = ax_cor.imshow(
                 cor_img,
@@ -528,7 +528,7 @@ class ImageVisualiser:
                 aspect=asp,
                 interpolation="none",
                 cmap=self.__colormap,
-                clim=(self.__window[0], self.__window[0] + self.__window[1]),
+                clim=self.__window,
             )
             sag_view = ax_sag.imshow(
                 sag_img,
@@ -536,7 +536,7 @@ class ImageVisualiser:
                 aspect=asp,
                 interpolation="none",
                 cmap=self.__colormap,
-                clim=(self.__window[0], self.__window[0] + self.__window[1]),
+                clim=self.__window,
             )
 
             ax_ax.axis("off")
@@ -616,7 +616,7 @@ class ImageVisualiser:
                 interpolation="none",
                 origin=org,
                 cmap=self.__colormap,
-                clim=(self.__window[0], self.__window[0] + self.__window[1]),
+                clim=self.__window,
             )
             ax.axis("off")
 

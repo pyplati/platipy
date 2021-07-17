@@ -30,6 +30,7 @@ from pytorch_lightning.loggers import CometLogger
 import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import LearningRateMonitor
+from pytorch_lightning.callbacks.progress import ProgressBar
 
 from argparse import ArgumentParser
 
@@ -175,7 +176,8 @@ class ProbUNet(pl.LightningModule):
         )
 
         for k in loss:
-            if k == "loss": continue
+            if k == "loss":
+                continue
             self.log(
                 k,
                 loss[k],
@@ -268,7 +270,7 @@ class ProbUNet(pl.LightningModule):
 
             img_arr = np.stack(img_arrs)
             img = sitk.GetImageFromArray(img_arr)
-            # sitk.WriteImage(img, f"test_{case}.nii.gz")
+            sitk.WriteImage(img, f"test_{case}.nii.gz")
 
             mean_arr = np.stack(mean_arrs)
             mean = sitk.GetImageFromArray(mean_arr)
@@ -313,7 +315,7 @@ class ProbUNet(pl.LightningModule):
                 color_dict[f"auto_{self.stddevs[idx]}"] = cmap(observer / 5)
 
             img_vis = ImageVisualiser(
-                img, cut=get_com(mask), figure_size_in=16, window=[-0.4, 0.8]
+                img, cut=get_com(mask), figure_size_in=16, window=[-1.0, 1.0]
             )
 
             contour_dict = {**obs_dict, **pred_dict}
@@ -326,7 +328,11 @@ class ProbUNet(pl.LightningModule):
             fig.savefig(figure_path, dpi=300)
             plt.close("all")
 
-            self.logger.experiment.log_image(figure_path)
+            try:
+                self.logger.experiment.log_image(figure_path)
+            except AttributeError:
+                # Likely offline mode
+                pass
 
             sim = {k: np.zeros((len(observers), len(samples))) for k in metrics}
             msim = {k: np.zeros((len(observers), len(samples))) for k in metrics}
@@ -377,10 +383,14 @@ class ProbUNetDataModule(pl.LightningDataModule):
     def __init__(
         self,
         data_dir: str = "./data",
+        augmented_dir: str = None,
         working_dir: str = "./working",
         case_glob="images/*.nii.gz",
         image_glob="images/{case}.nii.gz",
         label_glob="labels/{case}_*.nii.gz",
+        augmented_case_glob="{case}/*",
+        augmented_image_glob="images/{augmented_case}.nii.gz",
+        augmented_label_glob="labels/{augmented_case}_*.nii.gz",
         fold=0,
         k_folds=5,
         batch_size=5,
@@ -391,11 +401,17 @@ class ProbUNetDataModule(pl.LightningDataModule):
     ):
         super().__init__()
         self.data_dir = Path(data_dir)
+        self.augmented_dir = None
+        if augmented_dir is not None:
+            self.augmented_dir = Path(augmented_dir)
         self.working_dir = Path(working_dir)
 
         self.case_glob = case_glob
         self.image_glob = image_glob
         self.label_glob = label_glob
+        self.augmented_case_glob = augmented_case_glob
+        self.augmented_image_glob = augmented_image_glob
+        self.augmented_label_glob = augmented_label_glob
 
         self.fold = fold
         self.k_folds = k_folds
@@ -417,6 +433,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
     def add_model_specific_args(parent_parser):
         parser = parent_parser.add_argument_group("Data Loader")
         parser.add_argument("--data_dir", type=str, default="./data")
+        parser.add_argument("--augmented_dir", type=str, default=None)
         parser.add_argument("--fold", type=int, default=0)
         parser.add_argument("--k_folds", type=int, default=5)
         parser.add_argument("--batch_size", type=int, default=5)
@@ -424,6 +441,9 @@ class ProbUNetDataModule(pl.LightningDataModule):
         parser.add_argument("--case_glob", type=str, default="images/*.nii.gz")
         parser.add_argument("--image_glob", type=str, default="images/{case}.nii.gz")
         parser.add_argument("--label_glob", type=str, default="labels/{case}_*.nii.gz")
+        parser.add_argument("--augmented_case_glob", type=str, default=None)
+        parser.add_argument("--augmented_image_glob", type=str, default=None)
+        parser.add_argument("--augmented_label_glob", type=str, default=None)
         parser.add_argument("--crop_to_mm", type=int, default=128)
 
         return parent_parser
@@ -456,6 +476,35 @@ class ProbUNetDataModule(pl.LightningDataModule):
             }
             for case in self.train_cases
         ]
+
+        # If a directory with augmented data is specified, use that for training as well
+        if self.augmented_dir is not None:
+
+            for case in self.train_cases:
+                augmented_cases = [
+                    p.name.replace(".nii.gz", "")
+                    for p in self.augmented_dir.glob(self.augmented_case_glob)
+                    if not p.name.startswith(".")
+                ]
+                train_data += [
+                    {
+                        "id": case,
+                        "image": self.augmented_dir.joinpath(
+                            self.augmented_image_glob.format(
+                                case=case, augmented_case=augmented_case
+                            )
+                        ),
+                        "label": [
+                            p
+                            for p in self.augmented_dir.glob(
+                                self.augmented_label_glob.format(
+                                    case=case, augmented_case=augmented_case
+                                )
+                            )
+                        ],
+                    }
+                    for augmented_case in augmented_cases
+                ]
 
         validation_data = [
             {
@@ -546,8 +595,9 @@ def main(args):
     if comet_api_key is not None:
         trainer.logger = comet_logger
 
-    lr_monitor = LearningRateMonitor(logging_interval='step')
-    trainer.callbacks = [lr_monitor]
+    lr_monitor = LearningRateMonitor(logging_interval="step")
+    # bar = ProgressBar()
+    trainer.callbacks.append(lr_monitor)
 
     trainer.fit(prob_unet, data_module)  # pylint: disable=no-member
 
