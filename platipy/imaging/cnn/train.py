@@ -401,9 +401,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
     ):
         super().__init__()
         self.data_dir = Path(data_dir)
-        self.augmented_dir = None
-        if augmented_dir is not None:
-            self.augmented_dir = Path(augmented_dir)
+        self.augmented_dir = augmented_dir
         self.working_dir = Path(working_dir)
 
         self.case_glob = case_glob
@@ -481,22 +479,25 @@ class ProbUNetDataModule(pl.LightningDataModule):
         if self.augmented_dir is not None:
 
             for case in self.train_cases:
+
+                case_aug_dir = Path(self.augmented_dir.format(case=case))
                 augmented_cases = [
                     p.name.replace(".nii.gz", "")
-                    for p in self.augmented_dir.glob(self.augmented_case_glob)
+                    for p in case_aug_dir.glob(self.augmented_case_glob.format(case=case))
                     if not p.name.startswith(".")
                 ]
+                print(augmented_cases)
                 train_data += [
                     {
-                        "id": case,
-                        "image": self.augmented_dir.joinpath(
+                        "id": f"{case}_{augmented_case}",
+                        "image": case_aug_dir.joinpath(
                             self.augmented_image_glob.format(
                                 case=case, augmented_case=augmented_case
                             )
                         ),
                         "label": [
                             p
-                            for p in self.augmented_dir.glob(
+                            for p in case_aug_dir.glob(
                                 self.augmented_label_glob.format(
                                     case=case, augmented_case=augmented_case
                                 )
@@ -505,7 +506,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
                     }
                     for augmented_case in augmented_cases
                 ]
-
+        print(train_data)
         validation_data = [
             {
                 "id": case,
