@@ -250,7 +250,10 @@ class ProbabilisticUnet(torch.nn.Module):
         values, _ = torch.topk(score, 1, axis=1)
         _, indices = torch.topk(values, k, axis=0)
         return torch.scatter_add(
-            torch.zeros(score.shape[0]).to(score.device), 0, indices.reshape(-1), torch.ones(score.shape[0]).to(score.device)
+            torch.zeros(score.shape[0]).to(score.device),
+            0,
+            indices.reshape(-1),
+            torch.ones(score.shape[0]).to(score.device),
         )
 
     def reconstruction_loss(
@@ -260,7 +263,7 @@ class ProbabilisticUnet(torch.nn.Module):
         z_posterior=None,
         mask=None,
         top_k_percentage=None,
-        deterministic=True
+        deterministic=True,
     ):
 
         criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
@@ -278,10 +281,11 @@ class ProbabilisticUnet(torch.nn.Module):
 
         #####
         num_classes = reconstruction.shape[1]
-        y_flat = torch.reshape(reconstruction, (-1, num_classes))
-        t_flat = torch.reshape(segm, (-1, num_classes))
+        y_flat = torch.transpose(reconstruction, 1, -1).reshape((-1, num_classes))
+        t_flat = torch.transpose(segm, 1, -1).reshape((-1, num_classes))
+        n_pixels_in_batch = y_flat.shape[0]
         if mask is None:
-            mask = torch.ones(torch.reshape(t_flat, (-1, 2)).shape[0])
+            mask = torch.ones(n_pixels_in_batch)
         else:
             assert (
                 mask.shape == segm.shape
@@ -289,7 +293,6 @@ class ProbabilisticUnet(torch.nn.Module):
             mask = torch.reshape(segm, (-1,))
         mask = mask.to(y_flat.device)
 
-        n_pixels_in_batch = y_flat.shape[0]
         xe = criterion(input=y_flat, target=t_flat)
 
         if top_k_percentage is not None:
@@ -306,14 +309,17 @@ class ProbabilisticUnet(torch.nn.Module):
                     raise NotImplementedError("Still need to implement Gumbel trick")
 
                 score = score + torch.log(mask.unsqueeze(1).repeat((1, num_classes)))
+
                 top_k_mask = self.topk_mask(score, k_pixels)
                 top_k_mask = top_k_mask.to(y_flat.device)
                 mask = mask * top_k_mask
 
         batch_size = segm.shape[0]
-        xe = torch.reshape(xe, shape=(batch_size, -1))
-        mask = mask.repeat((1, num_classes))
-        mask = torch.reshape(mask, shape=(batch_size, -1))
+        xe = xe.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
+        mask = mask.unsqueeze(1).repeat((1, num_classes))
+        mask = (
+            mask.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
+        )
 
         ce_sum_per_instance = torch.sum(mask * xe, axis=1)
         ce_sum = torch.mean(ce_sum_per_instance, axis=0)
@@ -330,11 +336,11 @@ class ProbabilisticUnet(torch.nn.Module):
 
         kl_div = torch.mean(self.kl_divergence(analytic=analytic_kl, z_posterior=z_posterior))
 
-        # Here we use the posterior sample sampled above
         top_k_percentage = None
         if "top_k_percentage" in self.loss_params:
             top_k_percentage = self.loss_params["top_k_percentage"]
 
+        # Here we use the posterior sample sampled above
         reconstruction_loss, rec_loss_mean, mask = self.reconstruction_loss(
             segm,
             reconstruct_posterior_mean=reconstruct_posterior_mean,
@@ -363,21 +369,22 @@ class ProbabilisticUnet(torch.nn.Module):
                 if self._moving_avg is None:
                     self._moving_avg = rl
                 else:
-                    self._moving_avg = self._moving_avg * moving_avg_factor + rl * (1 - moving_avg_factor)
+                    self._moving_avg = self._moving_avg * moving_avg_factor + rl * (
+                        1 - moving_avg_factor
+                    )
 
                 rc = self._moving_avg - reconstruction_threshold
                 lambda_lower = self.loss_params["clamp_rec"][0]
                 lambda_upper = self.loss_params["clamp_rec"][1]
-                self._lambda = (torch.exp(rc) * self._lambda).clamp(
-                    lambda_lower, lambda_upper
-                )
+                self._lambda = (torch.exp(rc) * self._lambda).clamp(lambda_lower, lambda_upper)
             loss = (
-                self._lambda * reconstruction_loss  # pylint: disable=access-member-before-definition
+                self._lambda
+                * reconstruction_loss  # pylint: disable=access-member-before-definition
                 + kl_div
             )
-#                self._lambda = (speed * self._moving_avg * self._lambda).clamp(
-#                    self.loss_params["clamp_rec"][0], self.loss_params["clamp_rec"][1]
-#                )
+            #                self._lambda = (speed * self._moving_avg * self._lambda).clamp(
+            #                    self.loss_params["clamp_rec"][0], self.loss_params["clamp_rec"][1]
+            #                )
             return {
                 "loss": loss,
                 "rec_loss": reconstruction_loss,

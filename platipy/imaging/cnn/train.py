@@ -97,7 +97,10 @@ class ProbUNet(pl.LightningModule):
         loss_params = None
 
         if self.hparams.loss_type == "elbo":
-            loss_params = {"beta": self.hparams.beta}
+            loss_params = {
+                "beta": self.hparams.beta,
+                "top_k_percentage": self.hparams.top_k_percentage,
+            }
 
         if self.hparams.loss_type == "geco":
             loss_params = {
