@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import numpy as np
@@ -149,11 +150,17 @@ class NiftiDataset(torch.utils.data.Dataset):
             if len(existing_images) > 0:
                 logger.debug(f"Image for case already exist: {case_id}")
 
-                for z_slice in range(len(existing_images)):
+                for img_path in existing_images:
+                    z_matches = re.findall(f"{case_id}_([0-9]*)\.npy", img_path.name)
+                    if len(z_matches) == 0: continue
+                    z_slice = int(z_matches[0])
+
                     img_file = self.img_dir.joinpath(f"{case_id}_{z_slice}.npy")
+                    assert img_file.exists()
 
                     for obs in range(len(structure_paths)):
                         mask_file = self.mask_dir.joinpath(f"{case_id}_{obs}_{z_slice}.npy")
+                        assert mask_file.exists()
                         self.slices.append(
                             {
                                 "z": z_slice,
