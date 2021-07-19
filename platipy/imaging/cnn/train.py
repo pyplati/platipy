@@ -273,12 +273,13 @@ class ProbUNet(pl.LightningModule):
 
             img_arr = np.stack(img_arrs)
             img = sitk.GetImageFromArray(img_arr)
-            sitk.WriteImage(img, f"test_{case}.nii.gz")
+            img.SetSpacing(self.hparams.spacing)
 
             mean_arr = np.stack(mean_arrs)
             mean = sitk.GetImageFromArray(mean_arr)
             mean = sitk.Cast(mean, sitk.sitkUInt8)
             mean = post_process(mean)
+            mean.CopyInformation(img)
             # sitk.WriteImage(mean, f"val_mean_{case}_mean.nii.gz")
 
             obs_dict = {}
@@ -303,6 +304,7 @@ class ProbUNet(pl.LightningModule):
                 mask_arr = np.stack(mask_arrs)
                 mask = sitk.GetImageFromArray(mask_arr)
                 mask = sitk.Cast(mask, sitk.sitkUInt8)
+                mask.CopyInformation(img)
                 # sitk.WriteImage(mask, f"val_mask_{case}_{observer}.nii.gz")
                 observers.append(mask)
                 obs_dict[f"manual_{observer}"] = mask
@@ -312,6 +314,7 @@ class ProbUNet(pl.LightningModule):
                 sample = sitk.GetImageFromArray(sample_arr)
                 sample = sitk.Cast(sample, sitk.sitkUInt8)
                 sample = post_process(sample)
+                sample.CopyInformation(img)
                 # sitk.WriteImage(sample, f"val_sample_{case}_{observer}.nii.gz")
                 samples.append(sample)
                 pred_dict[f"auto_{self.stddevs[idx]}"] = sample
@@ -400,6 +403,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         num_workers=4,
         crop_to_mm=128,
         num_observers=5,
+        spacing=[1, 1, 1],
         **kwargs,
     ):
         super().__init__()
@@ -424,6 +428,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         self.num_workers = num_workers
         self.crop_to_mm = crop_to_mm
         self.num_observers = num_observers
+        self.spacing = spacing
 
         self.training_set = None
         self.validation_set = None
@@ -509,7 +514,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
                     }
                     for augmented_case in augmented_cases
                 ]
-        print(train_data)
+
         validation_data = [
             {
                 "id": case,
@@ -524,7 +529,10 @@ class ProbUNetDataModule(pl.LightningDataModule):
         ]
 
         self.training_set = NiftiDataset(
-            train_data, self.working_dir.joinpath("train"), crop_to_mm=self.crop_to_mm
+            train_data,
+            self.working_dir.joinpath("train"),
+            spacing=self.spacing,
+            crop_to_mm=self.crop_to_mm,
         )
         self.validation_set = NiftiDataset(
             validation_data,
@@ -632,6 +640,7 @@ if __name__ == "__main__":
     arg_parser.add_argument("--experiment", type=str, default="default", help="Name of experiment")
     arg_parser.add_argument("--working_dir", type=str, default="./working")
     arg_parser.add_argument("--num_observers", type=int, default=5)
+    arg_parser.add_argument("--spacing", type=list, default=[1, 1, 1])
     arg_parser.add_argument("--offline", type=bool, default=False)
     arg_parser.add_argument("--comet_api_key", type=str, default=None)
     arg_parser.add_argument("--comet_workspace", type=str, default=None)

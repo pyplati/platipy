@@ -13,22 +13,17 @@ from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 from loguru import logger
 
 
-def preprocess_image(img, crop_to_mm=128):
+def preprocess_image(img, spacing=[1, 1, 1], crop_to_mm=128):
 
     img = sitk.Cast(img, sitk.sitkFloat32)
     img = sitk.IntensityWindowing(
         img, windowMinimum=-500.0, windowMaximum=500.0, outputMinimum=-1.0, outputMaximum=1.0
     )
 
-    new_spacing = sitk.VectorDouble(3)
-    new_spacing[0] = 1.0
-    new_spacing[1] = 1.0
-    new_spacing[2] = img.GetSpacing()[2]
-
     new_size = sitk.VectorUInt32(3)
-    new_size[0] = int(img.GetSize()[0] * img.GetSpacing()[0])
-    new_size[1] = int(img.GetSize()[1] * img.GetSpacing()[1])
-    new_size[2] = int(img.GetSize()[2])
+    new_size[0] = int(img.GetSize()[0] * (img.GetSpacing()[0] / spacing[0]))
+    new_size[1] = int(img.GetSize()[1] * (img.GetSpacing()[1] / spacing[1]))
+    new_size[2] = int(img.GetSize()[2] * (img.GetSpacing()[2] / spacing[2]))
 
     if new_size[0] < crop_to_mm:
         new_size[0] = crop_to_mm
@@ -42,7 +37,7 @@ def preprocess_image(img, crop_to_mm=128):
         sitk.Transform(),
         sitk.sitkLinear,
         img.GetOrigin(),
-        new_spacing,
+        spacing,
         img.GetDirection(),
         -1,
         img.GetPixelID(),
@@ -89,7 +84,6 @@ def prepare_transforms():
                 )
             ),
             # execute 0 to 2 of the following (less important) augmenters per image
-            # don't execute all of them, as that would often be way too strong
             iaa.SomeOf(
                 (0, 2),
                 [
@@ -113,7 +107,9 @@ def prepare_transforms():
 class NiftiDataset(torch.utils.data.Dataset):
     """PyTorch Dataset for processing Nifti data"""
 
-    def __init__(self, data, working_dir, augment_on_the_fly=True, crop_to_mm=128):
+    def __init__(
+        self, data, working_dir, augment_on_the_fly=True, spacing=[1, 1, 1], crop_to_mm=128
+    ):
         """Prepare a dataset from Nifti images/labels
 
         Args:
@@ -151,8 +147,9 @@ class NiftiDataset(torch.utils.data.Dataset):
                 logger.debug(f"Image for case already exist: {case_id}")
 
                 for img_path in existing_images:
-                    z_matches = re.findall(f"{case_id}_([0-9]*)\.npy", img_path.name)
-                    if len(z_matches) == 0: continue
+                    z_matches = re.findall(fr"{case_id}_([0-9]*)\.npy", img_path.name)
+                    if len(z_matches) == 0:
+                        continue
                     z_slice = int(z_matches[0])
 
                     img_file = self.img_dir.joinpath(f"{case_id}_{z_slice}.npy")
@@ -173,9 +170,10 @@ class NiftiDataset(torch.utils.data.Dataset):
 
                 continue
 
+            logger.debug(f"Generating images for case: {case_id}")
             img = sitk.ReadImage(img_path)
 
-            img = preprocess_image(img, crop_to_mm=crop_to_mm)
+            img = preprocess_image(img, spacing=spacing, crop_to_mm=crop_to_mm)
 
             observers = []
             for obs, structure_path in enumerate(structure_paths):
