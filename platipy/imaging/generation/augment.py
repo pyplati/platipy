@@ -16,7 +16,15 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 import random
 
+from pathlib import Path
+
+from argparse import ArgumentParser
+
 import SimpleITK as sitk
+
+from loguru import logger
+
+from platipy.imaging import ImageVisualiser
 
 from platipy.imaging.generation.dvf import (
     generate_field_shift,
@@ -83,39 +91,21 @@ def apply_augmentation(image, augmentation, masks=[]):
     return image_deformed, dvf
 
 
-def generate_random_augmentation(ct_image, masks):
-
-    random.shuffle(masks)
-    # mask_count = len(masks)
-    # masks = masks[: random.randint(2, 5)]
-
-    # print(len(masks))
-    augmentation_types = [
-        {
-            "class": ShiftAugment,
-            "args": {"vector_shift": [(-10, 10), (10, 10), (-10, 10)], "gaussian_smooth": (3, 5)},
-        },
-        {
-            "class": ContractAugment,
-            "args": {
-                "vector_contract": [(0, 10), (0, 10), (0, 10)],
-                "gaussian_smooth": (3, 5),
-                "bone_mask": True,
-            },
-        },
-        {
-            "class": ExpandAugment,
-            "args": {
-                "vector_expand": [(0, 10), (0, 10), (0, 10)],
-                "gaussian_smooth": (3, 5),
-                "bone_mask": True,
-            },
-        },
-    ]
+def generate_random_augmentation(ct_image, masks, augmentation_types):
 
     augmentation = []
+
+    probabilities = [a["probability"] for a in augmentation_types]
+    prob_total = sum(probabilities)
+    prob_none = 1.0 - prob_total
+    if prob_none < 0:
+        prob_none = 0
+
     for mask in masks:
-        aug = random.choice(augmentation_types)
+        aug = random.choices(augmentation_types + [None], weights=probabilities + [prob_none])[0]
+
+        if aug is None:
+            continue
 
         aug_class = aug["class"]
         aug_args = {}
@@ -203,3 +193,181 @@ class ContractAugment(DeformableAugment):
             gaussian_smooth=self.gaussian_smooth,
         )
         return transform, dvf
+
+
+def augment_data(args):
+
+    random.seed(args.seed)
+
+    augmentation_types = []
+
+    if args.enable_shift:
+        augmentation_types.append(
+            {
+                "class": ShiftAugment,
+                "args": {
+                    "vector_shift": [
+                        tuple(args.shift_x_range),
+                        tuple(args.shift_y_range),
+                        tuple(args.shift_z_range),
+                    ],
+                    "gaussian_smooth": tuple(args.shift_smooth_range),
+                },
+                "probability": args.shift_probability,
+            }
+        )
+
+    if args.enable_contract:
+        augmentation_types.append(
+            {
+                "class": ContractAugment,
+                "args": {
+                    "vector_contract": [
+                        tuple(args.contract_x_range),
+                        tuple(args.contract_y_range),
+                        tuple(args.contract_z_range),
+                    ],
+                    "gaussian_smooth": tuple(args.contract_smooth_range),
+                    "bone_mask": args.contract_bone_mask,
+                },
+                "probability": args.contract_probability,
+            }
+        )
+
+    if args.enable_expand:
+        augmentation_types.append(
+            {
+                "class": ExpandAugment,
+                "args": {
+                    "vector_expand": [
+                        tuple(args.expand_x_range),
+                        tuple(args.expand_y_range),
+                        tuple(args.expand_z_range),
+                    ],
+                    "gaussian_smooth": tuple(args.expand_smooth_range),
+                    "bone_mask": args.expand_bone_mask,
+                },
+                "probability": args.expand_probability,
+            }
+        )
+
+    data_dir = Path(args.data_dir)
+    output_dir = Path(args.output_dir)
+
+    cases = [
+        p.name.replace(".nii.gz", "")
+        for p in data_dir.glob(args.case_glob)
+        if not p.name.startswith(".")
+    ]
+    cases.sort()
+
+    data = {
+        case: {
+            "image": data_dir.joinpath(args.image_glob.format(case=case)),
+            "label": [p for p in data_dir.glob(args.label_glob.format(case=case))],
+        }
+        for case in cases
+    }
+
+    for case in cases:
+
+        logger.info(f"Augmenting for case: {case}")
+
+        ct_image = sitk.ReadImage(str(data[case]["image"]))
+
+        # Get list of structures to generate augmentations off
+        all_masks = []
+        all_names = []
+        for structure_path in data[case]["label"]:
+
+            mask = sitk.ReadImage(str(structure_path))
+
+            all_masks.append(mask)
+            all_names.append(structure_path.name.replace(".nii.gz", ""))
+
+        # Generate 10 random augmentations per case
+        for i in range(args.augmentations_per_case):
+
+            logger.debug("Generating augmentation")
+
+            augmented_case_path = output_dir.joinpath(case, f"augment_{i}")
+            augmented_case_path.mkdir(exist_ok=True, parents=True)
+
+            augmentation = generate_random_augmentation(ct_image, all_masks, augmentation_types)
+
+            dvf = None
+
+            if len(augmentation) == 0:
+                logger.debug(
+                    "No augmentations generated, generated image won't differ from original"
+                )
+
+                augmented_image = ct_image
+                augmented_masks = all_masks
+            else:
+
+                logger.debug("Applying augmentation")
+                augmented_image, augmented_masks, dvf = apply_augmentation(
+                    ct_image, augmentation, masks=all_masks
+                )
+
+            augmented_image_path = augmented_case_path.joinpath("CT.nii.gz")
+            sitk.WriteImage(augmented_image, str(augmented_image_path))
+
+            vis = ImageVisualiser(image=ct_image, figure_size_in=6)
+            vis.add_comparison_overlay(augmented_image)
+            if dvf is not None:
+                vis.add_vector_overlay(dvf, arrow_scale=1, subsample=(4, 12, 12))
+            for mask_name, mask, augmented_mask in zip(all_names, all_masks, augmented_masks):
+                vis.add_contour({f"{mask_name}": mask, f"{mask_name} (augmented)": augmented_mask})
+
+                logger.debug(f"Applying augmentation to mask: {mask_name}")
+                augmented_mask_path = augmented_case_path.joinpath(f"{mask_name}.nii.gz")
+                sitk.WriteImage(augmented_mask, str(augmented_mask_path))
+
+            fig = vis.show()
+
+            figure_path = augmented_case_path.joinpath("aug.png")
+            fig.savefig(figure_path, bbox_inches="tight")
+
+
+if __name__ == "__main__":
+
+    arg_parser = ArgumentParser()
+    arg_parser.add_argument("--seed", type=int, default=42, help="an integer to use as seed")
+    arg_parser.add_argument("--data_dir", type=str, default="./data")
+    arg_parser.add_argument("--output_dir", type=str, default="./augment")
+    arg_parser.add_argument("--case_glob", type=str, default="images/*.nii.gz")
+    arg_parser.add_argument("--image_glob", type=str, default="images/{case}.nii.gz")
+    arg_parser.add_argument("--label_glob", type=str, default="labels/{case}_*.nii.gz")
+    arg_parser.add_argument(
+        "--augmentations_per_case",
+        type=int,
+        default=10,
+        help="How many augmented images per case to generate",
+    )
+
+    arg_parser.add_argument("--enable_shift", type=bool, default=True)
+    arg_parser.add_argument("--shift_x_range", nargs="+", type=int, default=[-10, 10])
+    arg_parser.add_argument("--shift_y_range", nargs="+", type=int, default=[-10, 10])
+    arg_parser.add_argument("--shift_z_range", nargs="+", type=int, default=[-10, 10])
+    arg_parser.add_argument("--shift_smooth_range", nargs="+", type=int, default=[3, 5])
+    arg_parser.add_argument("--shift_probability", type=float, default=0.5)
+
+    arg_parser.add_argument("--enable_expand", type=bool, default=True)
+    arg_parser.add_argument("--expand_x_range", nargs="+", type=int, default=[0, 10])
+    arg_parser.add_argument("--expand_y_range", nargs="+", type=int, default=[0, 10])
+    arg_parser.add_argument("--expand_z_range", nargs="+", type=int, default=[0, 10])
+    arg_parser.add_argument("--expand_smooth_range", nargs="+", type=int, default=[3, 5])
+    arg_parser.add_argument("--expand_bone_mask", type=bool, default=True)
+    arg_parser.add_argument("--expand_probability", type=float, default=0.5)
+
+    arg_parser.add_argument("--enable_contract", type=bool, default=True)
+    arg_parser.add_argument("--contract_x_range", nargs="+", type=int, default=[0, 10])
+    arg_parser.add_argument("--contract_y_range", nargs="+", type=int, default=[0, 10])
+    arg_parser.add_argument("--contract_z_range", nargs="+", type=int, default=[0, 10])
+    arg_parser.add_argument("--contract_smooth_range", nargs="+", type=int, default=[3, 5])
+    arg_parser.add_argument("--contract_bone_mask", type=bool, default=True)
+    arg_parser.add_argument("--contract_probability", type=float, default=0.5)
+
+    augment_data(arg_parser.parse_args())
