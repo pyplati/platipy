@@ -20,6 +20,8 @@ from platipy.imaging.label.utils import get_com
 
 from platipy.imaging.generation.image import insert_sphere_image
 
+from platipy.imaging.utils.crop import crop_to_roi, label_to_roi
+
 
 def get_closest_point_2d(reference_label, measurement_label):
     """Finds the point on "measurement_label" that is closest to "reference_label"
@@ -65,6 +67,16 @@ def geometric_sinoatrialnode(label_svc, label_ra, label_wholeheart, radius_mm=10
     Returns:
         SimpleITK.Image: A binary mask defining the SAN
     """
+
+    # To speed up binary morphology operations we first crop all images
+    template_img = 0 * label_wholeheart
+    cb_size, cb_index = label_to_roi(
+        (label_svc + label_ra + label_wholeheart) > 0, expansion_mm=(20, 20, 20)
+    )
+
+    label_svc = crop_to_roi(label_svc, cb_size, cb_index)
+    label_ra = crop_to_roi(label_ra, cb_size, cb_index)
+    label_wholeheart = crop_to_roi(label_wholeheart, cb_size, cb_index)
 
     arr_svc = sitk.GetArrayFromImage(label_svc)
     arr_ra = sitk.GetArrayFromImage(label_ra)
@@ -124,6 +136,15 @@ def geometric_sinoatrialnode(label_svc, label_ra, label_wholeheart, radius_mm=10
     # Generate an image
     label_san = insert_sphere_image(label_ra * 0, sp_radius=radius_mm, sp_centre=sphere_centre)
 
+    # Finally, paste the label into the original image space
+    label_san = sitk.Paste(
+        template_img,
+        label_san,
+        label_san.GetSize(),
+        (0, 0, 0),
+        cb_index,
+    )
+
     return label_san
 
 
@@ -141,6 +162,17 @@ def geometric_atrioventricularnode(label_la, label_lv, label_ra, label_rv, radiu
     Returns:
         SimpleITK.Image: A binary mask defining the AVN
     """
+
+    # To speed up binary morphology operations we first crop all images
+    template_img = 0 * label_ra
+    cb_size, cb_index = label_to_roi(
+        (label_la + label_lv + label_ra + label_rv) > 0, expansion_mm=(20, 20, 20)
+    )
+
+    label_la = crop_to_roi(label_la, cb_size, cb_index)
+    label_lv = crop_to_roi(label_lv, cb_size, cb_index)
+    label_ra = crop_to_roi(label_ra, cb_size, cb_index)
+    label_rv = crop_to_roi(label_rv, cb_size, cb_index)
 
     # First, find the most inferior slice of the left atrium
     arr_la = sitk.GetArrayFromImage(label_la)
@@ -209,5 +241,14 @@ def geometric_atrioventricularnode(label_la, label_lv, label_ra, label_rv, radiu
 
     # Generate an image
     label_avn = insert_sphere_image(label_ra * 0, sp_radius=radius_mm, sp_centre=sphere_centre)
+
+    # Finally, paste the label into the original image space
+    label_avn = sitk.Paste(
+        template_img,
+        label_avn,
+        label_avn.GetSize(),
+        (0, 0, 0),
+        cb_index,
+    )
 
     return label_avn
