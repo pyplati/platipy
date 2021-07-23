@@ -475,14 +475,19 @@ def process_dicom_series(
         """
         if initial_dicom.Modality == "PT":
 
-            scaling_factor = get_suv_bw_scale_factor(initial_dicom)
-            image *= scaling_factor
+            # scaling_factor = get_suv_bw_scale_factor(initial_dicom)
+            # image *= scaling_factor
+
+            # !TO DO
+            # Work on PET SUV conversion
+            None
 
         """
         ! CHECKPOINT
         Some DCE MRI sequences have the same series UID
         Here we check the sequence name, and split if necessary
         """
+
         if initial_dicom.Modality == "MR":
 
             try:
