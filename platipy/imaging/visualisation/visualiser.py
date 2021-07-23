@@ -1066,12 +1066,12 @@ class ImageVisualiser:
 
             alpha = scalar.alpha
 
-            if scalar.max_value:
+            if scalar.max_value is not False:
                 s_max = scalar.max_value
             else:
                 s_max = nda.max()
 
-            if scalar.min_value:
+            if scalar.min_value is not False:
                 s_min = scalar.min_value
             else:
                 s_min = nda.min()
@@ -1088,10 +1088,10 @@ class ImageVisualiser:
             else:
                 norm = None
 
-            # nda = nda / nda.max()
             nda = np.ma.masked_less_equal(nda, s_min)
 
             sp_plane, _, sp_slice = scalar_image.GetSpacing()
+
             asp = (1.0 * sp_slice) / sp_plane
 
             # Test types of axes
