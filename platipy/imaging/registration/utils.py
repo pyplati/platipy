@@ -317,6 +317,13 @@ def convert_mask_to_reg_structure(mask, expansion=(0, 0, 0), scale=lambda x: x):
     Returns:
         [SimpleITK.Image]: [description]
     """
+    arr = sitk.GetArrayViewFromImage(mask)
+    vals = np.unique(arr[arr > 0])
+    if len(vals) > 2:
+        # There is more than one value! We need to threshold at the median
+        cutoff = np.median(vals)
+        mask = sitk.BinaryThreshold(mask, cutoff, np.max(vals).astype(float))
+
     if not hasattr(expansion, "__iter__"):
         expansion = [int(expansion / i) for i in mask.GetSpacing()]
     if any(expansion):
