@@ -144,6 +144,7 @@ class ImageVisualiser:
         color=None,
         colormap=plt.cm.get_cmap("rainbow"),
         linewidth=2,
+        linestyle="solid",
         show_legend=True,
     ):
         """Add a contour as overlay
@@ -182,6 +183,7 @@ class ImageVisualiser:
                     contour_name,
                     color=contour_color,
                     linewidth=linewidth,
+                    linestyle=linestyle,
                 )
                 self.__contours.append(visualise_contour)
 
@@ -191,7 +193,9 @@ class ImageVisualiser:
             if name is None:
                 name = "contour"
 
-            visualise_contour = VisualiseContour(contour, name, color=color, linewidth=linewidth)
+            visualise_contour = VisualiseContour(
+                contour, name, color=color, linewidth=linewidth, linestyle=linestyle
+            )
             self.__contours.append(visualise_contour)
         else:
 
@@ -795,7 +799,7 @@ class ImageVisualiser:
 
         if limits is not None:
             if self.__axis == "ortho":
-                ax_ax, _, ax_cor, ax_sag = self.__figure.axes[:4]
+                ax_ax, ax_blank, ax_cor, ax_sag = self.__figure.axes[:4]
                 cax_list = self.__figure.axes[4:]
 
                 ax_orig_0, ax_orig_1 = ax_cor.get_ylim()
@@ -847,6 +851,9 @@ class ImageVisualiser:
 
                 ax_ax.set_position(gs[0].get_position(self.__figure))
                 ax_ax.set_subplotspec(gs[0])
+
+                ax_blank.set_position(gs[1].get_position(self.__figure))
+                ax_blank.set_subplotspec(gs[1])
 
                 ax_cor.set_position(gs[2].get_position(self.__figure))
                 ax_cor.set_subplotspec(gs[2])
@@ -906,6 +913,8 @@ class ImageVisualiser:
 
         plot_dict = {}
         color_dict = {}
+        lw_dict = {}
+        ls_dict = {}
 
         color_gen_index = 0
 
@@ -921,7 +930,8 @@ class ImageVisualiser:
                 color_dict[contour.name] = color_map[color_gen_index % 255]
                 color_gen_index += 1
 
-        linewidths = [contour.linewidth for contour in self.__contours]
+            lw_dict[contour.name] = contour.linewidth
+            ls_dict[contour.name] = contour.linestyle
 
         # Test types of axes
         axes = self.__figure.axes[:4]
@@ -954,7 +964,8 @@ class ImageVisualiser:
                         colors=[color_dict[c_name]],
                         levels=[0.5],
                         # alpha=0.8,
-                        linewidths=linewidths,
+                        linewidths=lw_dict[c_name],
+                        linestyles=ls_dict[c_name],
                         label=c_name,
                         origin="lower",
                     )
@@ -1015,7 +1026,8 @@ class ImageVisualiser:
                 temp = ax_ax.contour(
                     contour_ax,
                     levels=[0.5],
-                    linewidths=linewidths,
+                    linewidths=lw_dict[c_name],
+                    linestyles=ls_dict[c_name],
                     colors=[color_dict[c_name]],
                     origin="lower",
                 )
@@ -1024,14 +1036,16 @@ class ImageVisualiser:
                 ax_cor.contour(
                     contour_cor,
                     levels=[0.5],
-                    linewidths=linewidths,
+                    linewidths=lw_dict[c_name],
+                    linestyles=ls_dict[c_name],
                     colors=[color_dict[c_name]],
                     origin="lower",
                 )
                 ax_sag.contour(
                     contour_sag,
                     levels=[0.5],
-                    linewidths=linewidths,
+                    linewidths=lw_dict[c_name],
+                    linestyles=ls_dict[c_name],
                     colors=[color_dict[c_name]],
                     origin="lower",
                 )
@@ -1052,12 +1066,12 @@ class ImageVisualiser:
 
             alpha = scalar.alpha
 
-            if scalar.max_value:
+            if scalar.max_value is not False:
                 s_max = scalar.max_value
             else:
                 s_max = nda.max()
 
-            if scalar.min_value:
+            if scalar.min_value is not False:
                 s_min = scalar.min_value
             else:
                 s_min = nda.min()
@@ -1074,10 +1088,10 @@ class ImageVisualiser:
             else:
                 norm = None
 
-            # nda = nda / nda.max()
             nda = np.ma.masked_less_equal(nda, s_min)
 
             sp_plane, _, sp_slice = scalar_image.GetSpacing()
+
             asp = (1.0 * sp_slice) / sp_plane
 
             # Test types of axes

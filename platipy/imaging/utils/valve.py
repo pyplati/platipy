@@ -22,6 +22,8 @@ from platipy.imaging.generation.image import insert_cylinder_image
 
 from platipy.imaging.utils.geometry import vector_angle, rotate_image
 
+from platipy.imaging.utils.crop import crop_to_roi, label_to_roi
+
 
 def generate_valve_from_great_vessel(
     label_great_vessel,
@@ -46,6 +48,15 @@ def generate_valve_from_great_vessel(
     Returns:
         SimpleITK.Image: The geometric valve, as a binary mask.
     """
+    # To speed up binary morphology operations we first crop all images
+    template_img = 0 * label_ventricle
+    cb_size, cb_index = label_to_roi(
+        (label_great_vessel + label_ventricle) > 0, expansion_mm=(20, 20, 20)
+    )
+
+    label_ventricle = crop_to_roi(label_ventricle, cb_size, cb_index)
+    label_great_vessel = crop_to_roi(label_great_vessel, cb_size, cb_index)
+
     # Dilate the great vessel and ventricle
     label_great_vessel_dilate = sitk.BinaryDilate(label_great_vessel, initial_dilation)
     label_ventricle_dilate = sitk.BinaryDilate(label_ventricle, initial_dilation)
@@ -70,6 +81,15 @@ def generate_valve_from_great_vessel(
 
     if mask_to_labels:
         label_valve = sitk.Mask(label_valve, label_great_vessel | label_ventricle)
+
+    # Finally, paste back to the original image space
+    label_valve = sitk.Paste(
+        template_img,
+        label_valve,
+        label_valve.GetSize(),
+        (0, 0, 0),
+        cb_index,
+    )
 
     return label_valve
 
@@ -111,6 +131,16 @@ def generate_valve_using_cylinder(
     Returns:
         SimpleITK.Image: The geometrically defined valve
     """
+    # To speed up binary morphology operations we first crop all images
+    template_img = 0 * label_wh
+    cb_size, cb_index = label_to_roi(
+        (label_atrium + label_ventricle + label_wh) > 0, expansion_mm=(20, 20, 20)
+    )
+
+    label_atrium = crop_to_roi(label_atrium, cb_size, cb_index)
+    label_ventricle = crop_to_roi(label_ventricle, cb_size, cb_index)
+    label_wh = crop_to_roi(label_wh, cb_size, cb_index)
+
     # Define the overlap region (using binary dilation)
     # Increment overlap to make sure we have enough voxels
     dilation = 1
@@ -190,5 +220,14 @@ def generate_valve_using_cylinder(
     # combined_chambers = sitk.BinaryErode(combined_chambers, (6, 6, 6))
 
     # label_valve = sitk.Mask(label_valve, combined_chambers)
+
+    # Finally, paste back to the original image space
+    label_valve = sitk.Paste(
+        template_img,
+        label_valve,
+        label_valve.GetSize(),
+        (0, 0, 0),
+        cb_index,
+    )
 
     return label_valve

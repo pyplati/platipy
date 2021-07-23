@@ -37,11 +37,12 @@ class VisualiseImage:
 class VisualiseContour:
     """Class to represent the visualiation of a contour"""
 
-    def __init__(self, image, name, color=None, linewidth=2):
+    def __init__(self, image, name, color=None, linewidth=2, linestyle="solid"):
         self.image = image
         self.name = name
         self.color = color
         self.linewidth = linewidth
+        self.linestyle = linestyle
 
 
 class VisualiseScalarOverlay:

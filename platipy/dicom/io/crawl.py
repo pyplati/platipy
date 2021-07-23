@@ -24,6 +24,51 @@ import SimpleITK as sitk
 from skimage.draw import polygon
 from loguru import logger
 
+from datetime import datetime
+
+
+def get_suv_bw_scale_factor(ds):
+    # Modified from
+    # https://qibawiki.rsna.org/images/6/62/SUV_vendorneutral_pseudocode_happypathonly_20180626_DAC.pdf
+
+    if ds.Units == "CNTS":
+        # Try to find the Philips private scale factor")
+        return float(ds[0x7053, 0x1000].value)
+
+    assert ds.Modality == "PT"
+    assert "DECY" in ds.CorrectedImage
+    assert "ATTN" in ds.CorrectedImage
+    assert "START" in ds.DecayCorrection
+    assert ds.Units == "BQML"
+
+    half_life = float(ds.RadiopharmaceuticalInformationSequence[0].RadionuclideHalfLife)
+
+    if "SeriesTime" in ds:
+        series_date_time = ds.SeriesDate + "_" + ds.SeriesTime
+    if "." in series_date_time:
+        series_date_time = series_date_time[
+            : -(len(series_date_time) - series_date_time.index("."))
+        ]
+    series_date_time = datetime.strptime(series_date_time, "%Y%m%d_%H%M%S")
+
+    if "SeriesTime" in ds:
+        start_time = (
+            ds.SeriesDate
+            + "_"
+            + ds.RadiopharmaceuticalInformationSequence[0].RadiopharmaceuticalStartTime
+        )
+    if "." in start_time:
+        start_time = start_time[: -(len(start_time) - start_time.index("."))]
+    start_time = datetime.strptime(start_time, "%Y%m%d_%H%M%S")
+
+    decay_time = (series_date_time - start_time).seconds
+    injected_dose = float(ds.RadiopharmaceuticalInformationSequence[0].RadionuclideTotalDose)
+    decayed_dose = injected_dose * pow(2, -decay_time / half_life)
+    patient_weight = float(ds.PatientWeight)
+    suv_bw_scale_factor = patient_weight * 1000 / decayed_dose
+
+    return suv_bw_scale_factor
+
 
 def get_dicom_info_from_description(dicom_object, return_extra=False, sop_class_name="UNKNOWN"):
     """
@@ -428,12 +473,21 @@ def process_dicom_series(
         ! TO DO - integrity check
             Read in all the files here, check the slice location and determine if any are missing
         """
+        if initial_dicom.Modality == "PT":
+
+            # scaling_factor = get_suv_bw_scale_factor(initial_dicom)
+            # image *= scaling_factor
+
+            # !TO DO
+            # Work on PET SUV conversion
+            None
 
         """
         ! CHECKPOINT
         Some DCE MRI sequences have the same series UID
         Here we check the sequence name, and split if necessary
         """
+
         if initial_dicom.Modality == "MR":
 
             try:
@@ -512,7 +566,8 @@ def process_dicom_series(
 
                     dicom_file_list_by_sequence = sequence_dict[sequence_name]
 
-                    print(sequence_name, len(dicom_file_list_by_sequence))
+                    logger.info(sequence_name)
+                    logger.info(len(dicom_file_list_by_sequence))
 
                     sorted_file_list = safe_sort_dicom_image_list(dicom_file_list_by_sequence)
 
@@ -935,7 +990,7 @@ def process_dicom_directory(
                 for dicom_field in dicom_header_tags:
                     try:
                         dicom_field_value = initial_dicom[dicom_field].value
-                    except AttributeError:
+                    except (AttributeError, KeyError):
                         logger.warning(
                             f"  Could not find DICOM header {dicom_field}. Setting as 0 to "
                             f"preserve naming convention."
@@ -1028,7 +1083,7 @@ def process_dicom_directory(
                         else:
                             logger.info("      An image with this name exists, appending.")
 
-                            if hasattr(output_data_dict["DOSES"][output_name], "__iter__"):
+                            if isinstance(output_data_dict["DOSES"][output_name], sitk.Image):
                                 output_data_dict["DOSES"][output_name] = list(
                                     [output_data_dict["DOSES"][output_name]]
                                 )
