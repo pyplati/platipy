@@ -99,15 +99,16 @@ class ProbUNet(pl.LightningModule):
         if self.hparams.loss_type == "elbo":
             loss_params = {
                 "beta": self.hparams.beta,
-                "top_k_percentage": self.hparams.top_k_percentage,
             }
 
         if self.hparams.loss_type == "geco":
             loss_params = {
                 "kappa": self.hparams.kappa,
                 "clamp_rec": self.hparams.clamp_rec,
-                "top_k_percentage": self.hparams.top_k_percentage,
             }
+
+        loss_params["top_k_percentage"] = self.hparams.top_k_percentage
+        loss_params["contour_loss_lambda_threshold"] = self.hparams.contour_loss_lambda_threshold
 
         self.prob_unet = ProbabilisticUnet(
             self.hparams.input_channels,
@@ -140,6 +141,7 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--kappa", type=float, default=0.02)
         parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
         parser.add_argument("--top_k_percentage", type=float, default=None)
+        parser.add_argument("--contour_loss_lambda_threshold", type=float, default=None)
 
         return parent_parser
 
@@ -158,12 +160,12 @@ class ProbUNet(pl.LightningModule):
 
         return [optimizer], [scheduler]
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch, _):
 
-        x, y, _ = batch
+        x, y, m, _ = batch
 
         self.prob_unet.forward(x, y, training=True)
-        loss = self.prob_unet.loss(y, analytic_kl=True)
+        loss = self.prob_unet.loss(y, analytic_kl=True, mask=m)
         reg_loss = (
             l2_regularisation(self.prob_unet.posterior)
             + l2_regularisation(self.prob_unet.prior)
@@ -199,7 +201,7 @@ class ProbUNet(pl.LightningModule):
             print(self.validation_directory)
 
         with torch.set_grad_enabled(False):
-            x, y, info = batch
+            x, y, _, info = batch
 
             for s in range(y.shape[0]):
 
@@ -495,7 +497,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
                     for p in case_aug_dir.glob(self.augmented_case_glob.format(case=case))
                     if not p.name.startswith(".")
                 ]
-                print(augmented_cases)
+
                 train_data += [
                     {
                         "id": f"{case}_{augmented_case}",

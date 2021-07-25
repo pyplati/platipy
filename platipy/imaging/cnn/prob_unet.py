@@ -327,7 +327,7 @@ class ProbabilisticUnet(torch.nn.Module):
 
         return ce_sum, ce_mean, mask
 
-    def loss(self, segm, analytic_kl=True, reconstruct_posterior_mean=False):
+    def loss(self, segm, analytic_kl=True, reconstruct_posterior_mean=False, mask=None):
         """
         Calculate the evidence lower bound of the log-likelihood of P(Y|X)
         """
@@ -340,12 +340,20 @@ class ProbabilisticUnet(torch.nn.Module):
         if "top_k_percentage" in self.loss_params:
             top_k_percentage = self.loss_params["top_k_percentage"]
 
+        loss_mask = None
+        if self.loss_params["contour_loss_lambda_threshold"]:
+            if (
+                self._lambda <= self.loss_params["contour_loss_lambda_threshold"]
+            ):  # pylint: disable=access-member-before-definition
+                loss_mask = mask
+
         # Here we use the posterior sample sampled above
         reconstruction_loss, rec_loss_mean, mask = self.reconstruction_loss(
             segm,
             reconstruct_posterior_mean=reconstruct_posterior_mean,
             z_posterior=z_posterior,
             top_k_percentage=top_k_percentage,
+            mask=loss_mask,
         )
 
         if self.loss_type == "elbo":
