@@ -1,4 +1,5 @@
 import re
+import copy
 from pathlib import Path
 
 import numpy as np
@@ -11,6 +12,40 @@ from imgaug import augmenters as iaa
 from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 
 from loguru import logger
+
+
+def get_union_mask(masks):
+
+    union_mask = copy.copy(masks[0])
+    for mask in masks[1:]:
+        union_mask += mask
+
+    return sitk.Cast(union_mask > 0, sitk.sitkUInt8)
+
+
+def get_intersection_mask(masks):
+
+    intersection_mask = copy.copy(masks[0])
+    for mask in masks[1:]:
+        intersection_mask += mask
+
+    return sitk.Cast(intersection_mask == len(masks), sitk.sitkUInt8)
+
+
+def get_contour_mask(masks, kernel=5):
+
+    if not hasattr(kernel, "__iter__"):
+        kernel = (kernel,) * 3
+
+    union_mask = get_union_mask(masks)
+    intersection_mask = get_intersection_mask(masks)
+
+    union_mask = sitk.BinaryDilate(union_mask, np.abs(kernel).astype(int).tolist(), sitk.sitkBall)
+    intersection_mask = sitk.BinaryErode(
+        intersection_mask, np.abs(kernel).astype(int).tolist(), sitk.sitkBall
+    )
+
+    return union_mask - intersection_mask
 
 
 def preprocess_image(img, spacing=[1, 1, 1], crop_to_mm=128):
@@ -127,12 +162,12 @@ class NiftiDataset(torch.utils.data.Dataset):
         self.working_dir = Path(working_dir)
 
         self.img_dir = working_dir.joinpath("img")
-        self.mask_dir = working_dir.joinpath("mask")
-
-        self.data_exists = self.img_dir.exists()
+        self.label_dir = working_dir.joinpath("label")
+        self.contour_mask_dir = working_dir.joinpath("contour_mask")
 
         self.img_dir.mkdir(exist_ok=True, parents=True)
-        self.mask_dir.mkdir(exist_ok=True, parents=True)
+        self.label_dir.mkdir(exist_ok=True, parents=True)
+        self.contour_mask_dir.mkdir(exist_ok=True, parents=True)
 
         for case in data:
             case_id = case["id"]
@@ -155,14 +190,18 @@ class NiftiDataset(torch.utils.data.Dataset):
                     img_file = self.img_dir.joinpath(f"{case_id}_{z_slice}.npy")
                     assert img_file.exists()
 
+                    contour_mask_file = self.contour_mask_dir.joinpath(f"{case_id}_{z_slice}.npy")
+                    assert contour_mask_file.exists()
+
                     for obs in range(len(structure_paths)):
-                        mask_file = self.mask_dir.joinpath(f"{case_id}_{obs}_{z_slice}.npy")
-                        assert mask_file.exists()
+                        label_file = self.label_dir.joinpath(f"{case_id}_{obs}_{z_slice}.npy")
+                        assert label_file.exists()
                         self.slices.append(
                             {
                                 "z": z_slice,
                                 "image": img_file,
-                                "mask": mask_file,
+                                "label": label_file,
+                                "contour_mask": contour_mask_file,
                                 "case": case_id,
                                 "observer": obs,
                             }
@@ -178,26 +217,36 @@ class NiftiDataset(torch.utils.data.Dataset):
             observers = []
             for obs, structure_path in enumerate(structure_paths):
                 structure_path = str(structure_path)
-                mask = sitk.ReadImage(structure_path)
-                mask = resample_mask_to_image(img, mask)
-                observers.append(mask)
+                label = sitk.ReadImage(structure_path)
+                label = resample_mask_to_image(img, label)
+                observers.append(label)
+
+            contour_mask = get_contour_mask(observers)
+            sitk.WriteImage(contour_mask, f"cm_{case['id']}.nii.gz")
 
             for z_slice in range(img.GetSize()[2]):
 
+                # Save the image slice
                 img_slice = img[:, :, z_slice]
                 img_file = self.img_dir.joinpath(f"{case_id}_{z_slice}.npy")
                 np.save(img_file, sitk.GetArrayFromImage(img_slice))
 
-                for obs, mask in enumerate(observers):
+                # Save the contour mask slice
+                contour_mask_slice = contour_mask[:, :, z_slice]
+                contour_mask_file = self.contour_mask_dir.joinpath(f"{case_id}_{z_slice}.npy")
+                np.save(contour_mask_file, sitk.GetArrayFromImage(contour_mask_slice))
 
-                    mask_slice = mask[:, :, z_slice]
-                    mask_file = self.mask_dir.joinpath(f"{case_id}_{obs}_{z_slice}.npy")
-                    np.save(mask_file, sitk.GetArrayFromImage(mask_slice))
+                for obs, label in enumerate(observers):
+
+                    label_slice = label[:, :, z_slice]
+                    label_file = self.label_dir.joinpath(f"{case_id}_{obs}_{z_slice}.npy")
+                    np.save(label_file, sitk.GetArrayFromImage(label_slice))
                     self.slices.append(
                         {
                             "z": z_slice,
                             "image": img_file,
-                            "mask": mask_file,
+                            "label": label_file,
+                            "contour_mask": contour_mask_file,
                             "case": case_id,
                             "observer": obs,
                         }
@@ -209,19 +258,26 @@ class NiftiDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
 
         img = np.load(self.slices[index]["image"])
-        mask = np.load(self.slices[index]["mask"])
+        label = np.load(self.slices[index]["label"])
+        contour_mask = np.load(self.slices[index]["contour_mask"])
 
         if self.transforms:
-            segmap = SegmentationMapsOnImage(mask, shape=mask.shape)
-            img, mask = self.transforms(image=img, segmentation_maps=segmap)
-            mask = mask.get_arr()
+            seg_arr = np.concatenate(
+                (np.expand_dims(label, 2), np.expand_dims(contour_mask, 2)), 2
+            )
+            segmap = SegmentationMapsOnImage(seg_arr, shape=label.shape)
+            img, seg = self.transforms(image=img, segmentation_maps=segmap)
+            label = seg.get_arr()[:, :, 0].squeeze()
+            contour_mask = seg.get_arr()[:, :, 1].squeeze()
 
         img = torch.FloatTensor(img)
-        mask = torch.LongTensor(mask)
+        label = torch.LongTensor(label)
+        contour_mask = torch.LongTensor(contour_mask)
 
         return (
             img.unsqueeze(0),
-            mask,
+            label,
+            contour_mask,
             {
                 "case": self.slices[index]["case"],
                 "observer": self.slices[index]["observer"],
