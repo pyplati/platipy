@@ -127,6 +127,7 @@ class ProbUNet(pl.LightningModule):
     def add_model_specific_args(parent_parser):
         parser = parent_parser.add_argument_group("Probabilistic UNet")
         parser.add_argument("--learning_rate", type=float, default=1e-5)
+        parser.add_argument("--lr_lambda", type=float, default=0.99)
         parser.add_argument("--input_channels", type=int, default=1)
         parser.add_argument("--num_classes", type=int, default=2)
         parser.add_argument(
@@ -152,7 +153,7 @@ class ProbUNet(pl.LightningModule):
         )
 
         scheduler = torch.optim.lr_scheduler.LambdaLR(
-            optimizer, lr_lambda=[lambda epoch: 0.99 ** (epoch)]
+            optimizer, lr_lambda=[lambda epoch: self.hparams.lr_lambda ** (epoch)]
         )
 
         return [optimizer], [scheduler]
@@ -538,6 +539,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
             validation_data,
             self.working_dir.joinpath("validation"),
             augment_on_the_fly=False,
+            spacing=self.spacing,
             crop_to_mm=self.crop_to_mm,
         )
 
@@ -561,7 +563,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         )
 
 
-def main(args):
+def main(args, config_json_path=None):
 
     pl.seed_everything(args.seed, workers=True)
 
@@ -595,6 +597,8 @@ def main(args):
             save_dir=args.working_dir,
             offline=args.offline,
         )
+        if config_json_path:
+            comet_logger.experiment.log_code(config_json_path)
 
     dict_args = vars(args)
 
@@ -602,7 +606,10 @@ def main(args):
 
     prob_unet = ProbUNet(**dict_args)
 
-    trainer = pl.Trainer.from_argparse_args(args)
+    if args.resume_from is not None:
+        trainer = pl.Trainer(resume_from_checkpoint=args.resume_from)
+    else:
+        trainer = pl.Trainer.from_argparse_args(args)
 
     if comet_api_key is not None:
         trainer.logger = comet_logger
@@ -617,10 +624,12 @@ def main(args):
 if __name__ == "__main__":
 
     args = None
+    config_json_path = None
     if len(sys.argv) == 2:
         # Check if JSON file parsed, if so read arguments from there...
         if sys.argv[-1].endswith(".json"):
-            with open(sys.argv[-1], "r") as f:
+            config_json_path = sys.argv[-1]
+            with open(config_json_path, "r") as f:
                 params = json.load(f)
                 args = []
                 for k in params:
@@ -636,14 +645,16 @@ if __name__ == "__main__":
     arg_parser = ProbUNet.add_model_specific_args(arg_parser)
     arg_parser = ProbUNetDataModule.add_model_specific_args(arg_parser)
     arg_parser = pl.Trainer.add_argparse_args(arg_parser)
+    arg_parser.add_argument("--config", type=str, default=None, help="JSON file with parameters to load")
     arg_parser.add_argument("--seed", type=int, default=42, help="an integer to use as seed")
     arg_parser.add_argument("--experiment", type=str, default="default", help="Name of experiment")
     arg_parser.add_argument("--working_dir", type=str, default="./working")
     arg_parser.add_argument("--num_observers", type=int, default=5)
-    arg_parser.add_argument("--spacing", type=list, default=[1, 1, 1])
+    arg_parser.add_argument("--spacing", nargs="+", type=int, default=[1,1,1])
     arg_parser.add_argument("--offline", type=bool, default=False)
     arg_parser.add_argument("--comet_api_key", type=str, default=None)
     arg_parser.add_argument("--comet_workspace", type=str, default=None)
     arg_parser.add_argument("--comet_project", type=str, default=None)
+    arg_parser.add_argument("--resume_from", type=str, default=None)
 
-    main(arg_parser.parse_args(args))
+    main(arg_parser.parse_args(args), config_json_path=config_json_path)

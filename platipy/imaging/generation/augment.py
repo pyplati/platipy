@@ -21,6 +21,7 @@ from pathlib import Path
 from argparse import ArgumentParser
 
 import SimpleITK as sitk
+import numpy as np
 
 from loguru import logger
 
@@ -37,6 +38,7 @@ from platipy.imaging.generation.mask import (
 
 from platipy.imaging.registration.utils import apply_transform
 
+from platipy.imaging.utils.lung import detect_holes
 
 def apply_augmentation(image, augmentation, masks=[]):
 
@@ -275,6 +277,27 @@ def augment_data(args):
 
         ct_image = sitk.ReadImage(str(data[case]["image"]))
 
+        if args.enable_fill_holes:
+
+            label_image, labels = detect_holes(ct_image)
+
+            for label in labels[1:]: # Skip first hole since likely air around body
+
+
+                if random.random() > args.fill_probability: continue
+
+                hole = label_image == label["label"]
+                hole_dilate = sitk.BinaryDilate(hole, (2,2,2), sitk.sitkBall)
+                contour_points = sitk.BinaryContour(hole_dilate)
+                fill_value = np.median(sitk.GetArrayFromImage(ct_image)[sitk.GetArrayFromImage(contour_points)==1])
+
+                ct_arr = sitk.GetArrayFromImage(ct_image)
+                ct_arr[sitk.GetArrayFromImage(hole_dilate)==1] = fill_value
+                ct_filled = sitk.GetImageFromArray(ct_arr)
+                ct_filled.CopyInformation(ct_image)
+
+                ct_image = ct_filled
+
         # Get list of structures to generate augmentations off
         all_masks = []
         all_names = []
@@ -369,5 +392,8 @@ if __name__ == "__main__":
     arg_parser.add_argument("--contract_smooth_range", nargs="+", type=int, default=[3, 5])
     arg_parser.add_argument("--contract_bone_mask", type=bool, default=True)
     arg_parser.add_argument("--contract_probability", type=float, default=0.5)
+
+    arg_parser.add_argument("--enable_fill_holes", type=bool, default=True)
+    arg_parser.add_argument("--fill_probability", type=float, default=0.2)
 
     augment_data(arg_parser.parse_args())
