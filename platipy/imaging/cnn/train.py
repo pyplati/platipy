@@ -109,6 +109,7 @@ class ProbUNet(pl.LightningModule):
 
         loss_params["top_k_percentage"] = self.hparams.top_k_percentage
         loss_params["contour_loss_lambda_threshold"] = self.hparams.contour_loss_lambda_threshold
+        loss_params["contour_loss_weight"] = self.hparams.contour_loss_weight
 
         self.prob_unet = ProbabilisticUnet(
             self.hparams.input_channels,
@@ -142,6 +143,8 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
         parser.add_argument("--top_k_percentage", type=float, default=None)
         parser.add_argument("--contour_loss_lambda_threshold", type=float, default=None)
+        parser.add_argument("--contour_loss_weight", type=float, default=0.0)
+        parser.add_argument("--epochs_all_rec", type=int, default=0)
 
         return parent_parser
 
@@ -165,7 +168,10 @@ class ProbUNet(pl.LightningModule):
         x, y, m, _ = batch
 
         self.prob_unet.forward(x, y, training=True)
-        loss = self.prob_unet.loss(y, analytic_kl=True, mask=m)
+
+        use_max_lambda = self.current_epoch < self.hparams.epochs_all_rec
+
+        loss = self.prob_unet.loss(y, analytic_kl=True, mask=m, use_max_lambda=use_max_lambda)
         reg_loss = (
             l2_regularisation(self.prob_unet.posterior)
             + l2_regularisation(self.prob_unet.prior)

@@ -222,7 +222,6 @@ class NiftiDataset(torch.utils.data.Dataset):
                 observers.append(label)
 
             contour_mask = get_contour_mask(observers)
-            sitk.WriteImage(contour_mask, f"cm_{case['id']}.nii.gz")
 
             for z_slice in range(img.GetSize()[2]):
 
@@ -272,7 +271,7 @@ class NiftiDataset(torch.utils.data.Dataset):
 
         img = torch.FloatTensor(img)
         label = torch.LongTensor(label)
-        contour_mask = torch.LongTensor(contour_mask)
+        contour_mask = torch.FloatTensor(contour_mask)
 
         return (
             img.unsqueeze(0),

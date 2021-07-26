@@ -158,6 +158,7 @@ class ProbabilisticUnet(torch.nn.Module):
     ):
         super(ProbabilisticUnet, self).__init__()
 
+        self.num_classes = num_classes
         self.no_convs_per_block = 3
         self.no_convs_fcomb = no_convs_fcomb
         self.initializers = {"w": "he_normal", "b": "normal"}
@@ -264,6 +265,8 @@ class ProbabilisticUnet(torch.nn.Module):
         mask=None,
         top_k_percentage=None,
         deterministic=True,
+        weight_mask=None,
+        weight_mask_weighting=0.0
     ):
 
         criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
@@ -284,13 +287,13 @@ class ProbabilisticUnet(torch.nn.Module):
         y_flat = torch.transpose(reconstruction, 1, -1).reshape((-1, num_classes))
         t_flat = torch.transpose(segm, 1, -1).reshape((-1, num_classes))
         n_pixels_in_batch = y_flat.shape[0]
-        if mask is None:
+        if mask is None or mask.sum() == 0:
             mask = torch.ones(n_pixels_in_batch)
         else:
-            assert (
-                mask.shape == segm.shape
-            ), f"The loss mask shape differs from the target shape: {mask.shape} vs. {segm.shape}."
-            mask = torch.reshape(segm, (-1,))
+#            assert (
+#                mask.shape == segm.shape
+#            ), f"The loss mask shape differs from the target shape: {mask.shape} vs. {segm.shape}."
+            mask = torch.reshape(mask, (-1,))
         mask = mask.to(y_flat.device)
 
         xe = criterion(input=y_flat, target=t_flat)
@@ -321,13 +324,21 @@ class ProbabilisticUnet(torch.nn.Module):
             mask.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
         )
 
+        if weight_mask is not None:
+            weight_mask = torch.reshape(weight_mask, (-1,))
+            weight_mask = weight_mask.unsqueeze(1).repeat((1, num_classes))
+            weight_mask = (
+                weight_mask.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
+            )
+            mask = mask + (weight_mask * weight_mask_weighting)
+
         ce_sum_per_instance = torch.sum(mask * xe, axis=1)
         ce_sum = torch.mean(ce_sum_per_instance, axis=0)
         ce_mean = torch.sum(mask * xe) / torch.sum(mask)
 
         return ce_sum, ce_mean, mask
 
-    def loss(self, segm, analytic_kl=True, reconstruct_posterior_mean=False, mask=None):
+    def loss(self, segm, analytic_kl=True, reconstruct_posterior_mean=False, mask=None, use_max_lambda=False):
         """
         Calculate the evidence lower bound of the log-likelihood of P(Y|X)
         """
@@ -343,9 +354,10 @@ class ProbabilisticUnet(torch.nn.Module):
         loss_mask = None
         if self.loss_params["contour_loss_lambda_threshold"]:
             if (
-                self._lambda <= self.loss_params["contour_loss_lambda_threshold"]
+                self._lambda <= self.loss_params["contour_loss_lambda_threshold"] and not use_max_lambda
             ):  # pylint: disable=access-member-before-definition
                 loss_mask = mask
+#                loss_mask = loss_mask.unsqueeze(1).repeat((1, self.num_classes, 1, 1))
 
         # Here we use the posterior sample sampled above
         reconstruction_loss, rec_loss_mean, mask = self.reconstruction_loss(
@@ -354,6 +366,8 @@ class ProbabilisticUnet(torch.nn.Module):
             z_posterior=z_posterior,
             top_k_percentage=top_k_percentage,
             mask=loss_mask,
+            weight_mask=mask,
+            weight_mask_weighting=self.loss_params["contour_loss_weight"]
         )
 
         if self.loss_type == "elbo":
@@ -384,15 +398,17 @@ class ProbabilisticUnet(torch.nn.Module):
                 rc = self._moving_avg - reconstruction_threshold
                 lambda_lower = self.loss_params["clamp_rec"][0]
                 lambda_upper = self.loss_params["clamp_rec"][1]
-                self._lambda = (torch.exp(rc) * self._lambda).clamp(lambda_lower, lambda_upper)
+                if use_max_lambda:
+                    self._lambda = torch.Tensor([lambda_upper]).to(rc.device)
+                else:
+                    self._lambda = (torch.exp(rc) * self._lambda).clamp(lambda_lower, lambda_upper)
+
             loss = (
                 self._lambda
                 * reconstruction_loss  # pylint: disable=access-member-before-definition
                 + kl_div
             )
-            #                self._lambda = (speed * self._moving_avg * self._lambda).clamp(
-            #                    self.loss_params["clamp_rec"][0], self.loss_params["clamp_rec"][1]
-            #                )
+
             return {
                 "loss": loss,
                 "rec_loss": reconstruction_loss,
