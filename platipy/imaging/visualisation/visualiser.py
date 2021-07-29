@@ -1125,6 +1125,27 @@ class ImageVisualiser:
                     if scalar.discrete_levels:
                         cbar.set_ticks(np.linspace(s_min, s_max, scalar.discrete_levels + 1))
 
+                        if scalar.mid_ticks:
+
+                            delta_tick = (s_max - s_min) / scalar.discrete_levels
+                            cbar.set_ticks(
+                                np.linspace(
+                                    s_min + delta_tick / 2,
+                                    s_max - delta_tick / 2,
+                                    scalar.discrete_levels,
+                                )
+                            )
+                            cbar.set_ticklabels(np.linspace(s_min, s_max, scalar.discrete_levels))
+
+                        else:
+                            cbar.set_ticks(
+                                np.linspace(
+                                    s_min,
+                                    s_max,
+                                    scalar.discrete_levels + 1,
+                                )
+                            )
+
                     f_x, f_y = self.__figure.get_size_inches()
                     self.__figure.set_size_inches(f_x * 1.15, f_y)
                     self.__figure.subplots_adjust(left=0, right=0.88, bottom=0, top=1)
