@@ -29,12 +29,6 @@ from platipy.imaging.projects.bronchus.bronchus import (
     generate_airway_mask,
 )
 
-from platipy.imaging.projects.bronchus.service import (
-    bronchus_service,
-    BRONCHUS_SETTINGS_DEFAULTS,
-)
-from platipy.backend.models import DataObject
-
 
 @pytest.fixture
 def bronchus_data():
@@ -115,28 +109,28 @@ def test_bronchus_segmentation(bronchus_data):
     shutil.rmtree(working_dir)
 
 
-def test_bronchus_service(bronchus_data):
-    """An end-to-end test to check that the bronchus service is running as expected"""
+# def test_bronchus_service(bronchus_data):
+#     """An end-to-end test to check that the bronchus service is running as expected"""
 
-    working_dir = tempfile.mkdtemp()
+#     working_dir = tempfile.mkdtemp()
 
-    patient_path = bronchus_data.joinpath("LCTSC-Test-S1-201")
-    ct_path = next(patient_path.glob("IMAGES/*.nii.gz"))
+#     patient_path = bronchus_data.joinpath("LCTSC-Test-S1-201")
+#     ct_path = next(patient_path.glob("IMAGES/*.nii.gz"))
 
-    # Create a data object to be segmented
-    data_object = DataObject()
-    data_object.id = 1
-    data_object.path = str(ct_path)
-    data_object.type = "FILE"
+#     # Create a data object to be segmented
+#     data_object = DataObject()
+#     data_object.id = 1
+#     data_object.path = str(ct_path)
+#     data_object.type = "FILE"
 
-    # Run the service function
-    result = bronchus_service([data_object], working_dir, BRONCHUS_SETTINGS_DEFAULTS)
+#     # Run the service function
+#     result = bronchus_service([data_object], working_dir, BRONCHUS_SETTINGS_DEFAULTS)
 
-    # Should have returned two output objects
-    assert len(result) == 2
+#     # Should have returned two output objects
+#     assert len(result) == 2
 
-    lung_mask = sitk.ReadImage(result[0].path)
-    assert_lung_mask(lung_mask)
+#     lung_mask = sitk.ReadImage(result[0].path)
+#     assert_lung_mask(lung_mask)
 
-    bronchus_mask = sitk.ReadImage(result[1].path)
-    assert_bronchus_mask(bronchus_mask)
+#     bronchus_mask = sitk.ReadImage(result[1].path)
+#     assert_bronchus_mask(bronchus_mask)
