@@ -14,8 +14,6 @@
 
 # pylint: disable=redefined-outer-name,missing-function-docstring
 
-import tempfile
-
 import pytest
 
 import SimpleITK as sitk
