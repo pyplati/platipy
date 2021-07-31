@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
+from pathlib import Path
+
 import SimpleITK as sitk
 import numpy as np
 
@@ -218,3 +221,63 @@ def binary_decode_image(binary_encoded_img):
             continue
 
     return structure_list
+
+
+def get_union_mask(masks):
+    """Get the union mask
+
+    Args:
+        masks (list|dict): A list or dictionary of masks given as SimpleITK.Image or path to mask
+            file.
+
+    Raises:
+        ValueError: Raised if masks provided is empty.
+
+    Returns:
+        SimpleITK.Image: The union mask
+    """
+
+    if isinstance(masks, dict):
+        masks = [masks[k] for k in masks]
+
+    if len(masks) > 0:
+        raise ValueError("Masks must not be empty")
+
+    if isinstance(masks[0], str, Path):
+        masks = [sitk.ReadImage(str(m)) for m in masks]
+
+    union_mask = copy.copy(masks[0])
+    for mask in masks[1:]:
+        union_mask += mask
+
+    return sitk.Cast(union_mask > 0, sitk.sitkUInt8)
+
+
+def get_intersection_mask(masks):
+    """Get the intersection mask
+
+    Args:
+        masks (list|dict): A list or dictionary of masks given as SimpleITK.Image or path to mask
+            file.
+
+    Raises:
+        ValueError: Raised if masks provided is empty.
+
+    Returns:
+        SimpleITK.Image: The intersection mask
+    """
+
+    if isinstance(masks, dict):
+        masks = [masks[k] for k in masks]
+
+    if len(masks) > 0:
+        raise ValueError("Masks must not be empty")
+
+    if isinstance(masks[0], str, Path):
+        masks = [sitk.ReadImage(str(m)) for m in masks]
+
+    intersection_mask = copy.copy(masks[0])
+    for mask in masks[1:]:
+        intersection_mask += mask
+
+    return sitk.Cast(intersection_mask == len(masks), sitk.sitkUInt8)

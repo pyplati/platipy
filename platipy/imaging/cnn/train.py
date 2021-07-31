@@ -24,13 +24,12 @@ import SimpleITK as sitk
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-import comet_ml
+import comet_ml  # pylint: disable=unused-import
 from pytorch_lightning.loggers import CometLogger
 
 import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import LearningRateMonitor
-from pytorch_lightning.callbacks.progress import ProgressBar
 
 from argparse import ArgumentParser
 
@@ -539,13 +538,13 @@ class ProbUNetDataModule(pl.LightningDataModule):
 
         self.training_set = NiftiDataset(
             train_data,
-            self.working_dir.joinpath("train"),
+            self.working_dir,
             spacing=self.spacing,
             crop_to_mm=self.crop_to_mm,
         )
         self.validation_set = NiftiDataset(
             validation_data,
-            self.working_dir.joinpath("validation"),
+            self.working_dir,
             augment_on_the_fly=False,
             spacing=self.spacing,
             crop_to_mm=self.crop_to_mm,
@@ -623,10 +622,9 @@ def main(args, config_json_path=None):
         trainer.logger = comet_logger
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
-    # bar = ProgressBar()
     trainer.callbacks.append(lr_monitor)
 
-    trainer.fit(prob_unet, data_module)  # pylint: disable=no-member
+    trainer.fit(prob_unet, data_module)
 
 
 if __name__ == "__main__":
@@ -644,8 +642,8 @@ if __name__ == "__main__":
                     args.append(f"--{k}")
 
                     if isinstance(params[k], list):
-                        for x in params[k]:
-                            args.append(str(x))
+                        for s in params[k]:
+                            args.append(str(s))
                     else:
                         args.append(str(params[k]))
 
@@ -653,12 +651,14 @@ if __name__ == "__main__":
     arg_parser = ProbUNet.add_model_specific_args(arg_parser)
     arg_parser = ProbUNetDataModule.add_model_specific_args(arg_parser)
     arg_parser = pl.Trainer.add_argparse_args(arg_parser)
-    arg_parser.add_argument("--config", type=str, default=None, help="JSON file with parameters to load")
+    arg_parser.add_argument(
+        "--config", type=str, default=None, help="JSON file with parameters to load"
+    )
     arg_parser.add_argument("--seed", type=int, default=42, help="an integer to use as seed")
     arg_parser.add_argument("--experiment", type=str, default="default", help="Name of experiment")
     arg_parser.add_argument("--working_dir", type=str, default="./working")
     arg_parser.add_argument("--num_observers", type=int, default=5)
-    arg_parser.add_argument("--spacing", nargs="+", type=int, default=[1,1,1])
+    arg_parser.add_argument("--spacing", nargs="+", type=int, default=[1, 1, 1])
     arg_parser.add_argument("--offline", type=bool, default=False)
     arg_parser.add_argument("--comet_api_key", type=str, default=None)
     arg_parser.add_argument("--comet_workspace", type=str, default=None)

@@ -1,5 +1,4 @@
 import re
-import copy
 from pathlib import Path
 
 import numpy as np
@@ -13,24 +12,7 @@ from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 
 from loguru import logger
 
-
-def get_union_mask(masks):
-
-    union_mask = copy.copy(masks[0])
-    for mask in masks[1:]:
-        union_mask += mask
-
-    return sitk.Cast(union_mask > 0, sitk.sitkUInt8)
-
-
-def get_intersection_mask(masks):
-
-    intersection_mask = copy.copy(masks[0])
-    for mask in masks[1:]:
-        intersection_mask += mask
-
-    return sitk.Cast(intersection_mask == len(masks), sitk.sitkUInt8)
-
+from platipy.imaging.label.utils import get_union_mask, get_intersection_mask
 
 def get_contour_mask(masks, kernel=5):
 
