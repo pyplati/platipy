@@ -240,7 +240,7 @@ def get_union_mask(masks):
     if isinstance(masks, dict):
         masks = [masks[k] for k in masks]
 
-    if len(masks) > 0:
+    if len(masks) == 0:
         raise ValueError("Masks must not be empty")
 
     if isinstance(masks[0], str, Path):
@@ -270,7 +270,7 @@ def get_intersection_mask(masks):
     if isinstance(masks, dict):
         masks = [masks[k] for k in masks]
 
-    if len(masks) > 0:
+    if len(masks) == 0:
         raise ValueError("Masks must not be empty")
 
     if isinstance(masks[0], str, Path):
