@@ -412,6 +412,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         crop_to_mm=128,
         num_observers=5,
         spacing=[1, 1, 1],
+        contour_mask_kernel=3,
         **kwargs,
     ):
         super().__init__()
@@ -437,6 +438,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         self.crop_to_mm = crop_to_mm
         self.num_observers = num_observers
         self.spacing = spacing
+        self.contour_mask_kernel = contour_mask_kernel
 
         self.training_set = None
         self.validation_set = None
