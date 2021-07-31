@@ -14,6 +14,7 @@ from loguru import logger
 
 from platipy.imaging.label.utils import get_union_mask, get_intersection_mask
 
+
 def get_contour_mask(masks, kernel=5):
 
     if not hasattr(kernel, "__iter__"):
@@ -125,7 +126,13 @@ class NiftiDataset(torch.utils.data.Dataset):
     """PyTorch Dataset for processing Nifti data"""
 
     def __init__(
-        self, data, working_dir, augment_on_the_fly=True, spacing=[1, 1, 1], crop_to_mm=128
+        self,
+        data,
+        working_dir,
+        augment_on_the_fly=True,
+        spacing=[1, 1, 1],
+        crop_to_mm=128,
+        contour_mask_kernel=5,
     ):
         """Prepare a dataset from Nifti images/labels
 
@@ -203,7 +210,7 @@ class NiftiDataset(torch.utils.data.Dataset):
                 label = resample_mask_to_image(img, label)
                 observers.append(label)
 
-            contour_mask = get_contour_mask(observers)
+            contour_mask = get_contour_mask(observers, kernel=contour_mask_kernel)
 
             for z_slice in range(img.GetSize()[2]):
 

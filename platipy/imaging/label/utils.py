@@ -243,7 +243,7 @@ def get_union_mask(masks):
     if len(masks) == 0:
         raise ValueError("Masks must not be empty")
 
-    if isinstance(masks[0], str, Path):
+    if isinstance(masks[0], (str, Path)):
         masks = [sitk.ReadImage(str(m)) for m in masks]
 
     union_mask = copy.copy(masks[0])
@@ -273,7 +273,7 @@ def get_intersection_mask(masks):
     if len(masks) == 0:
         raise ValueError("Masks must not be empty")
 
-    if isinstance(masks[0], str, Path):
+    if isinstance(masks[0], (str, Path)):
         masks = [sitk.ReadImage(str(m)) for m in masks]
 
     intersection_mask = copy.copy(masks[0])

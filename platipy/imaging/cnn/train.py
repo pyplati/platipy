@@ -459,6 +459,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         parser.add_argument("--augmented_image_glob", type=str, default=None)
         parser.add_argument("--augmented_label_glob", type=str, default=None)
         parser.add_argument("--crop_to_mm", type=int, default=128)
+        parser.add_argument("--contour_mask_kernel", type=int, default=5)
 
         return parent_parser
 
@@ -541,6 +542,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
             self.working_dir,
             spacing=self.spacing,
             crop_to_mm=self.crop_to_mm,
+            contour_mask_kernel=self.contour_mask_kernel
         )
         self.validation_set = NiftiDataset(
             validation_data,
@@ -548,6 +550,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
             augment_on_the_fly=False,
             spacing=self.spacing,
             crop_to_mm=self.crop_to_mm,
+            contour_mask_kernel=self.contour_mask_kernel
         )
 
     def train_dataloader(self):
