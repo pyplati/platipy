@@ -466,6 +466,11 @@ class ImageVisualiser:
         sp_plane, _, sp_slice = image.GetSpacing()
         asp = (1.0 * sp_slice) / sp_plane
 
+        if self.__projection is True:
+            projection == "max"
+        else:
+            projection = self.__projection
+
         if self.__axis == "ortho":
             figure_size = (
                 self.__figure_size,
@@ -501,19 +506,28 @@ class ImageVisualiser:
 
             else:
                 ax_img_proj = project_onto_arbitrary_plane(
-                    image, projection_axis=2, projection_name="mean", default_value=int(nda.min())
+                    image,
+                    projection_axis=2,
+                    projection_name=projection,
+                    default_value=int(nda.min()),
                 )
                 ax_img = sitk.GetArrayFromImage(ax_img_proj)
                 ax_img = (ax_img - ax_img.min()) / (ax_img.max() - ax_img.min())
 
                 cor_img_proj = project_onto_arbitrary_plane(
-                    image, projection_axis=1, projection_name="mean", default_value=int(nda.min())
+                    image,
+                    projection_axis=1,
+                    projection_name=projection,
+                    default_value=int(nda.min()),
                 )
                 cor_img = sitk.GetArrayFromImage(cor_img_proj)
                 cor_img = (cor_img - cor_img.min()) / (cor_img.max() - cor_img.min())
 
                 sag_img_proj = project_onto_arbitrary_plane(
-                    image, projection_axis=0, projection_name="mean", default_value=int(nda.min())
+                    image,
+                    projection_axis=0,
+                    projection_name=projection,
+                    default_value=int(nda.min()),
                 )
                 sag_img = sitk.GetArrayFromImage(sag_img_proj)
                 sag_img = (sag_img - sag_img.min()) / (sag_img.max() - sag_img.min())
@@ -607,7 +621,7 @@ class ImageVisualiser:
                 disp_img_proj = project_onto_arbitrary_plane(
                     image,
                     projection_axis={"x": 0, "y": 1, "z": 2}[self.__axis],
-                    projection_name="mean",
+                    projection_name=projection,
                     default_value=int(nda.min()),
                 )
                 disp_img = sitk.GetArrayFromImage(disp_img_proj)
@@ -983,7 +997,7 @@ class ImageVisualiser:
 
             for _, c_name in enumerate(plot_dict.keys()):
 
-                if not self.__projection:
+                if self.__projection:
 
                     contour_ax = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_ax)
                     contour_cor = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_cor)
