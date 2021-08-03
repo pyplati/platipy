@@ -467,7 +467,7 @@ class ImageVisualiser:
         asp = (1.0 * sp_slice) / sp_plane
 
         if self.__projection is True:
-            projection == "max"
+            projection = "max"
         else:
             projection = self.__projection
 
@@ -997,7 +997,7 @@ class ImageVisualiser:
 
             for _, c_name in enumerate(plot_dict.keys()):
 
-                if self.__projection:
+                if not self.__projection:
 
                     contour_ax = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_ax)
                     contour_cor = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_cor)
