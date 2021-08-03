@@ -3,6 +3,11 @@
 ### Demonstration of PlatiPy's Visualisation tools
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/visualise.ipynb)
+
+### Example DVH analysis
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/dvh_analysis.ipynb)
+
 ### Download from TCIA Example
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/tcia.ipynb)

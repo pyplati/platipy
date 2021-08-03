@@ -18,6 +18,8 @@ import tempfile
 
 import imageio
 
+from PIL import Image
+
 import numpy as np
 import SimpleITK as sitk
 
@@ -136,7 +138,7 @@ def generate_animation_from_image_sequence(
             display_contours = ax.contour(
                 sitk.GetArrayFromImage(contour),
                 colors=[color_map[index]],
-                levels=[0],
+                levels=[1],
                 linewidths=2,
             )
 
@@ -144,9 +146,9 @@ def generate_animation_from_image_sequence(
 
         if contour_labels:
             approx_scaling = figure_size_in / (len(plot_dict.keys()))
-            ax.legend(
+            leg = ax.legend(
                 loc="upper left",
-                bbox_to_anchor=(0.05, 0.95),
+                bbox_to_anchor=(0.025, 0.975),
                 fontsize=min([10, 16 * approx_scaling]),
             )
 
@@ -198,9 +200,12 @@ def generate_animation_from_image_sequence(
                 ax.contour(
                     sitk.GetArrayFromImage(contour),
                     colors=[color_map[index]],
-                    levels=[0],
+                    levels=[1],
                     linewidths=2,
                 )
+
+            for enum, l in enumerate(leg.get_lines()):
+                l.set_color(color_map[enum][:3])
 
         if scalar_list:
             nda = sitk.GetArrayFromImage(scalar_list[i])
@@ -213,7 +218,7 @@ def generate_animation_from_image_sequence(
         fig,
         animate,
         frames=np.arange(0, len(image_list), 1),
-        interval=10,
+        interval=1,
         blit=True,
         repeat=False,
     )
@@ -224,15 +229,20 @@ def generate_animation_from_image_sequence(
 
     # Save the GIF
     images = []
-    for filename in pathlib.Path(tmp_path).glob("tmp*.png"):
-
+    for filename in sorted(
+        pathlib.Path(tmp_path).glob("tmp*.png"), key=lambda n: int(n.name[3:-4])
+    ):
         try:
             images.append(imageio.imread(filename))
         except RuntimeError:
             # Skip frames which are corrupt
             pass
 
-    imageio.mimsave(output_file, images, fps=fps)
+    imageio.mimsave(
+        output_file,
+        images,
+        duration=1 / fps,
+    )
 
     # Clean up
     shutil.rmtree(tmp_path)
