@@ -298,8 +298,29 @@ falsePositiveFraction falseNegativeFraction</p>
 </dd></dl>
 <dl class="py function">
 <dt id="platipy.imaging.label.fusion.compute_weight_map">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.fusion.</span></code><code class="sig-name descname"><span class="pre">compute_weight_map</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moving_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vote_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unweighted'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vote_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'blockSize':</span> <span class="pre">5,</span> <span class="pre">'epsilon':</span> <span class="pre">1e-05,</span> <span class="pre">'factor':</span> <span class="pre">1000000000000.0,</span> <span class="pre">'gain':</span> <span class="pre">6,</span> <span class="pre">'sigma':</span> <span class="pre">2.0}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.fusion.compute_weight_map" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.fusion.</span></code><code class="sig-name descname"><span class="pre">compute_weight_map</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">target_image</span></em>, <em class="sig-param"><span class="pre">moving_image</span></em>, <em class="sig-param"><span class="pre">vote_type='unweighted'</span></em>, <em class="sig-param"><span class="pre">vote_params={'blockSize':</span> <span class="pre">5</span></em>, <em class="sig-param"><span class="pre">'correlation_function':</span> <span class="pre">&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;</span></em>, <em class="sig-param"><span class="pre">'epsilon':</span> <span class="pre">1e-05</span></em>, <em class="sig-param"><span class="pre">'factor':</span> <span class="pre">1000000000000.0</span></em>, <em class="sig-param"><span class="pre">'gain':</span> <span class="pre">6</span></em>, <em class="sig-param"><span class="pre">'normalise':</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">'patch_window_mm':</span> <span class="pre">25</span></em>, <em class="sig-param"><span class="pre">'resampled_voxel_size_mm':</span> <span class="pre">3</span></em>, <em class="sig-param"><span class="pre">'sigma':</span> <span class="pre">2.0}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.fusion.compute_weight_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the weight map</p>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.label.fusion.mutual_information">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.fusion.</span></code><code class="sig-name descname"><span class="pre">mutual_information</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arr_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.fusion.mutual_information" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the (histogram-based) mutual information between two arrays</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arr_a</strong> (<em>np.ndarray</em>) – The first image array values, should be flattened to a 1D array.</p></li>
+<li><p><strong>arr_b</strong> (<em>np.ndarray</em>) – The second image array values, should be flattened to a 1D array.</p></li>
+<li><p><strong>bins</strong> (<em>np.ndarray | int</em><em>, </em><em>optional</em>) – Histogram bins. Passed directly to np.histogram2d, so
+any format accepted by this function is okay. Defaults to 64.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The mutual information between the arrays.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
 </dd></dl>
 <dl class="py function">
 <dt id="platipy.imaging.label.fusion.process_probability_image">

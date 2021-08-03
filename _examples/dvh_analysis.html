@@ -1,0 +1,710 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
+
+    <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
+        <title>DVH Analysis Example - PlatiPy documentation</title>
+      <link rel="stylesheet" href="../_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
+    <link rel="stylesheet" href="../_static/pygments.css">
+    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="../_static/pygments_dark.css">
+    
+
+
+<style>
+  :root {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+
+  /* For allowing end-user-specific overrides */
+  .override-light {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  .override-dark {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+</style><link rel="stylesheet" href="../_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
+  <body dir="">
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z"/>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="20" y2="12" />
+      <line x1="6" y1="18" x2="20" y2="18" />
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">PlatiPy  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  
+  <span class="sidebar-brand-text">PlatiPy  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html">
+  <input class="sidebar-search" placeholder=Search name="q">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+</ul>
+<p><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="visualise.html">Visualise Images</a></li>
+</ul>
+<p><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../visualiser.html">Image Visualiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dicom.html">DICOM Conversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../registration.html">Registration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">Utilities</a></li>
+</ul>
+
+</div>
+</div>
+      </div>
+      
+    </div>
+  </aside>
+  <main class="main">
+    <div class="content">
+      <article role="main">
+        <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        </label>
+        
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<section id="DVH-Analysis-Example">
+<h1>DVH Analysis Example<a class="headerlink" href="#DVH-Analysis-Example" title="Permalink to this headline">¶</a></h1>
+<p>This notebook demonstrates how to compute and plot a DVH (Dose Volume Histogram).</p>
+<section id="Import-Modules">
+<h2>Import Modules<a class="headerlink" href="#Import-Modules" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">platipy</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="o">!</span>pip install git+https://github.com/pyplati/platipy.git
+    <span class="kn">import</span> <span class="nn">platipy</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">SimpleITK</span> <span class="k">as</span> <span class="nn">sitk</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="kn">from</span> <span class="nn">platipy.imaging.tests.data</span> <span class="kn">import</span> <span class="n">get_hn_nifti</span>
+<span class="kn">from</span> <span class="nn">platipy.imaging</span> <span class="kn">import</span> <span class="n">ImageVisualiser</span>
+<span class="kn">from</span> <span class="nn">platipy.imaging.label.utils</span> <span class="kn">import</span> <span class="n">get_com</span>
+<span class="kn">from</span> <span class="nn">platipy.imaging.dose.dvh</span> <span class="kn">import</span> <span class="n">calculate_dvh_for_labels</span><span class="p">,</span> <span class="n">calculate_d_x</span><span class="p">,</span> <span class="n">calculate_v_x</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Download-Test-Data">
+<h2>Download Test Data<a class="headerlink" href="#Download-Test-Data" title="Permalink to this headline">¶</a></h2>
+<p>This will download some data from the TCIA TCGA-HNSC dataset. The data is for one patient and contains a CT, dose and some structures.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">data_path</span> <span class="o">=</span> <span class="n">get_hn_nifti</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Load-data">
+<h2>Load data<a class="headerlink" href="#Load-data" title="Permalink to this headline">¶</a></h2>
+<p>Let’s read in the data that we’ve downloaded</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">test_pat_path</span> <span class="o">=</span> <span class="n">data_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"TCGA_CV_5977"</span><span class="p">)</span>
+
+<span class="n">ct_image</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"IMAGES/TCGA_CV_5977_1_CT_ONC_NECK_NECK_4.nii.gz"</span><span class="p">)))</span>
+
+<span class="n">dose</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"DOSES/TCGA_CV_5977_1_PLAN.nii.gz"</span><span class="p">)))</span>
+
+<span class="n">dose</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">Resample</span><span class="p">(</span><span class="n">dose</span><span class="p">,</span> <span class="n">ct_image</span><span class="p">)</span>
+
+<span class="n">structure_names</span> <span class="o">=</span><span class="p">[</span><span class="s2">"BRAINSTEM"</span><span class="p">,</span> <span class="s2">"MANDIBLE"</span><span class="p">,</span> <span class="s2">"CTV_60_GY"</span><span class="p">,</span> <span class="s2">"PTV60"</span><span class="p">,</span> <span class="s2">"CORD"</span><span class="p">,</span> <span class="s2">"L_PAROTID"</span><span class="p">,</span> <span class="s2">"R_PAROTID"</span><span class="p">]</span>
+
+<span class="n">structures</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">s</span><span class="p">:</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"STRUCTURES"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"TCGA_CV_5977_1_RTSTRUCT_</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">.nii.gz"</span><span class="p">)))</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">structure_names</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Visualise-data">
+<h2>Visualise data<a class="headerlink" href="#Visualise-data" title="Permalink to this headline">¶</a></h2>
+<p>and now let’s visualise the data we’ve got</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">structures</span><span class="p">[</span><span class="s2">"PTV60"</span><span class="p">]))</span>
+
+<span class="n">vis</span><span class="o">.</span><span class="n">add_scalar_overlay</span><span class="p">(</span><span class="n">dose</span><span class="p">,</span> <span class="n">discrete_levels</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">"inferno"</span><span class="p">))</span>
+<span class="n">vis</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">structures</span><span class="p">)</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">vis</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/_examples_dvh_analysis_7_0.png" src="../_images/_examples_dvh_analysis_7_0.png"/>
+</div>
+</div>
+</section>
+<section id="Compute-DVH">
+<h2>Compute DVH<a class="headerlink" href="#Compute-DVH" title="Permalink to this headline">¶</a></h2>
+<p>here we compute the DVH using the dose and structures loaded. We get the DVH back in a pandas DataFrame object.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">dvh</span> <span class="o">=</span> <span class="n">calculate_dvh_for_labels</span><span class="p">(</span><span class="n">dose</span><span class="p">,</span> <span class="n">structures</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Plot-DVH">
+<h2>Plot DVH<a class="headerlink" href="#Plot-DVH" title="Permalink to this headline">¶</a></h2>
+<p>using the pandas DataFrame, we plot the DVH here</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">plt_dvh</span> <span class="o">=</span> <span class="n">dvh</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">"label"</span><span class="p">,</span> <span class="s2">"cc"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">"bin"</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s2">"dose"</span><span class="p">)</span>
+<span class="n">plt</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">lineplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">plt_dvh</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s2">"bin"</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">"dose"</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s2">"label"</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="s2">"Dark2"</span><span class="p">)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"Dose (Gy)"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"Frequency"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Dose Volume Histogram (DVH)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/_examples_dvh_analysis_11_0.png" src="../_images/_examples_dvh_analysis_11_0.png"/>
+</div>
+</div>
+</section>
+<section id="DVH-Metrics">
+<h2>DVH Metrics<a class="headerlink" href="#DVH-Metrics" title="Permalink to this headline">¶</a></h2>
+<p>Finally, we extract commonly used metrics from the DVH, such as D95 or V40.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">df_metrics</span> <span class="o">=</span> <span class="n">calculate_d_x</span><span class="p">(</span><span class="n">dvh</span><span class="p">,</span> <span class="mi">95</span><span class="p">)</span>
+<span class="n">df_metrics</span> <span class="o">=</span> <span class="n">df_metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calculate_v_x</span><span class="p">(</span><span class="n">dvh</span><span class="p">,</span> <span class="mi">40</span><span class="p">))</span>
+<span class="n">df_metrics</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<div class="table-wrapper"><table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>label</th>
+<th>metric</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>BRAINSTEM</td>
+<td>D95</td>
+<td>0.000000</td>
+</tr>
+<tr>
+<th>1</th>
+<td>MANDIBLE</td>
+<td>D95</td>
+<td>36.500000</td>
+</tr>
+<tr>
+<th>2</th>
+<td>CTV_60_GY</td>
+<td>D95</td>
+<td>60.200000</td>
+</tr>
+<tr>
+<th>3</th>
+<td>PTV60</td>
+<td>D95</td>
+<td>58.900000</td>
+</tr>
+<tr>
+<th>4</th>
+<td>CORD</td>
+<td>D95</td>
+<td>6.500000</td>
+</tr>
+<tr>
+<th>5</th>
+<td>L_PAROTID</td>
+<td>D95</td>
+<td>9.100000</td>
+</tr>
+<tr>
+<th>6</th>
+<td>R_PAROTID</td>
+<td>D95</td>
+<td>7.300000</td>
+</tr>
+<tr>
+<th>0</th>
+<td>BRAINSTEM</td>
+<td>V40</td>
+<td>0.000000</td>
+</tr>
+<tr>
+<th>1</th>
+<td>MANDIBLE</td>
+<td>V40</td>
+<td>59.137344</td>
+</tr>
+<tr>
+<th>2</th>
+<td>CTV_60_GY</td>
+<td>V40</td>
+<td>190.980434</td>
+</tr>
+<tr>
+<th>3</th>
+<td>PTV60</td>
+<td>V40</td>
+<td>280.184746</td>
+</tr>
+<tr>
+<th>4</th>
+<td>CORD</td>
+<td>V40</td>
+<td>0.000000</td>
+</tr>
+<tr>
+<th>5</th>
+<td>L_PAROTID</td>
+<td>V40</td>
+<td>0.946522</td>
+</tr>
+<tr>
+<th>6</th>
+<td>R_PAROTID</td>
+<td>V40</td>
+<td>1.392365</td>
+</tr>
+</tbody>
+</table></div>
+</div></div>
+</div>
+</section>
+</section>
+
+      </article>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+
+        <div class="related-information">
+              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+            |
+            <a class="muted-link" href="../_sources/_examples/dvh_analysis.ipynb.txt"
+               rel="nofollow">
+              Show Source
+            </a>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">DVH Analysis Example</a><ul>
+<li><a class="reference internal" href="#Import-Modules">Import Modules</a></li>
+<li><a class="reference internal" href="#Download-Test-Data">Download Test Data</a></li>
+<li><a class="reference internal" href="#Load-data">Load data</a></li>
+<li><a class="reference internal" href="#Visualise-data">Visualise data</a></li>
+<li><a class="reference internal" href="#Compute-DVH">Compute DVH</a></li>
+<li><a class="reference internal" href="#Plot-DVH">Plot DVH</a></li>
+<li><a class="reference internal" href="#DVH-Metrics">DVH Metrics</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </main>
+</div>
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <script src="../_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
+</html>

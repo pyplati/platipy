@@ -147,6 +147,28 @@
 <span id="platipy-imaging-utils-crop-module"></span><h2>platipy.imaging.utils.crop module<a class="headerlink" href="#module-platipy.imaging.utils.crop" title="Permalink to this headline">¶</a></h2>
 <p>Various useful utility functions for atlas based segmentation algorithms.</p>
 <dl class="py function">
+<dt id="platipy.imaging.utils.crop.crop_to_label_extent">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></code><code class="sig-name descname"><span class="pre">crop_to_label_extent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.crop_to_label_extent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Crop an image to the 3D extent defined by a binary mask (label).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>SimpleITK.Image</em>) – The image to crop.</p></li>
+<li><p><strong>label</strong> (<em>SimpleITK.Image</em>) – The binary mask (label) defining the region to crop to.</p></li>
+<li><p><strong>expansion_mm</strong> (<em>float | tuple | list</em><em>, </em><em>optional</em>) – An optional expansion in physical units.
+Can be defined as a single number or iterable: (axial, coronal, sagittal) expansion.
+Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The cropped image.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>SimpleITK.Image</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
 <dt id="platipy.imaging.utils.crop.crop_to_roi">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></code><code class="sig-name descname"><span class="pre">crop_to_roi</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.crop_to_roi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Utility function for cropping images</p>
@@ -263,7 +285,7 @@ labels: a list of holes detected and some of their properties</p>
 <span id="platipy-imaging-utils-valve-module"></span><h2>platipy.imaging.utils.valve module<a class="headerlink" href="#module-platipy.imaging.utils.valve" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="platipy.imaging.utils.valve.generate_valve_from_great_vessel">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.valve.</span></code><code class="sig-name descname"><span class="pre">generate_valve_from_great_vessel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_great_vessel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_ventricle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_dilation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(4,</span> <span class="pre">4,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_erosion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(3,</span> <span class="pre">3,</span> <span class="pre">3)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.valve.generate_valve_from_great_vessel" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.valve.</span></code><code class="sig-name descname"><span class="pre">generate_valve_from_great_vessel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_great_vessel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_ventricle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_dilation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(4,</span> <span class="pre">4,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_erosion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(3,</span> <span class="pre">3,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_to_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.valve.generate_valve_from_great_vessel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a geometrically-defined valve.
 This function is suitable for the pulmonic and aortic valves.</p>
 <dl class="field-list simple">

@@ -165,9 +165,9 @@ color_map (matplotlib.colors.Colormap, optional): Colormap to use for output. De
 </dl>
 </dd></dl>
 </section>
-<section id="module-platipy.dicom.io.rtstruct_to_nifti">
-<span id="dicom-rtstuct-to-nifti"></span><h2>DICOM RTSTUCT to NIfTI<a class="headerlink" href="#module-platipy.dicom.io.rtstruct_to_nifti" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
+<section id="dicom-rtstruct-to-nifti">
+<h2>DICOM RTSTRUCT to NIfTI<a class="headerlink" href="#dicom-rtstruct-to-nifti" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-platipy.dicom.io.rtstruct_to_nifti"></span><dl class="py function">
 <dt id="platipy.dicom.io.rtstruct_to_nifti.convert_rtstruct">
 <code class="sig-prename descclassname"><span class="pre">platipy.dicom.io.rtstruct_to_nifti.</span></code><code class="sig-name descname"><span class="pre">convert_rtstruct</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dcm_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dcm_rt_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Struct_'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_img</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.io.rtstruct_to_nifti.convert_rtstruct" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a DICOM RTSTRUCT to NIFTI masks.</p>
@@ -255,6 +255,29 @@ in NIFTI format. Defaults to None.</p></li>
 </dl>
 </dd></dl>
 </section>
+<section id="module-platipy.dicom.io.rtdose_to_nifti">
+<span id="dicom-rtdose-to-nifti"></span><h2>DICOM RTDOSE to NIfTI<a class="headerlink" href="#module-platipy.dicom.io.rtdose_to_nifti" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="platipy.dicom.io.rtdose_to_nifti.convert_rtdose">
+<code class="sig-prename descclassname"><span class="pre">platipy.dicom.io.rtdose_to_nifti.</span></code><code class="sig-name descname"><span class="pre">convert_rtdose</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dcm_dose</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dose_output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.io.rtdose_to_nifti.convert_rtdose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert DICOM RTDose to SimpleITK image, saving as NiFTI if needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dcm_dose</strong> (<em>str|path</em>) – Path to DICOM dose file</p></li>
+<li><p><strong>dose_output_path</strong> (<em>str|path</em><em>, </em><em>optional</em>) – If set, NiFTI file will be written. Defaults to
+None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The dose grid as a SimpleITK image</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>SimpleITK.Image</p>
+</dd>
+</dl>
+</dd></dl>
+</section>
 </section>
 
       </article>
@@ -308,7 +331,8 @@ in NIFTI format. Defaults to None.</p></li>
             <ul>
 <li><a class="reference internal" href="#">DICOM Conversion</a><ul>
 <li><a class="reference internal" href="#module-platipy.dicom.io.nifti_to_rtstruct">NIfTI to DICOM RTSTUCT</a></li>
-<li><a class="reference internal" href="#module-platipy.dicom.io.rtstruct_to_nifti">DICOM RTSTUCT to NIfTI</a></li>
+<li><a class="reference internal" href="#dicom-rtstruct-to-nifti">DICOM RTSTRUCT to NIfTI</a></li>
+<li><a class="reference internal" href="#module-platipy.dicom.io.rtdose_to_nifti">DICOM RTDOSE to NIfTI</a></li>
 </ul>
 </li>
 </ul>
