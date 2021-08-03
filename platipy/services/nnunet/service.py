@@ -30,6 +30,28 @@ NNUNET_SETTINGS_DEFAULTS = {
     "clean_sup_slices": False,
 }
 
+def clean_sup_slices(mask):
+    lssif = sitk.LabelShapeStatisticsImageFilter()
+    max_slice_size = 0
+    sizes = {}
+    for z in range(mask.GetSize()[2]-1, -1, -1):
+        lssif.Execute(sitk.ConnectedComponent(mask[:,:,z]))
+        if len(lssif.GetLabels()) == 0:
+            continue
+
+        phys_size = lssif.GetPhysicalSize(1)
+
+        if phys_size > max_slice_size:
+            max_slice_size = phys_size
+
+        sizes[z] = phys_size
+    for z in sizes:
+        if sizes[z] > max_slice_size/2:
+            mask[:,:,z+1:mask.GetSize()[2]] = 0
+            break
+
+    return mask
+
 
 @app.register("nnUNet Service", default_settings=NNUNET_SETTINGS_DEFAULTS)
 def nnunet_service(data_objects, working_dir, settings):
@@ -53,8 +75,15 @@ def nnunet_service(data_objects, working_dir, settings):
 
         # Create a symbolic link for each image to auto-segment using the nnUNet
         do_path = Path(data_object.path)
-        io_path = input_path.joinpath(do_path.name.replace(".nii.gz", "_0000.nii.gz"))
-        os.link(do_path, io_path)
+        io_path = input_path.joinpath(f"{settings['task']}_0000.nii.gz")
+        load_path = data_object.path
+        if data_object.type == "DICOM":
+            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(
+                data_object.path
+            )
+
+        img = sitk.ReadImage(load_path)
+        sitk.WriteImage(img, str(io_path))
 
         command = [
             "nnUNet_predict",
@@ -76,6 +105,11 @@ def nnunet_service(data_objects, working_dir, settings):
 
         for op in output_path.glob("*.nii.gz"):
 
+            if settings["clean_sup_slices"]:
+                mask = sitk.ReadImage(str(op))
+                mask = clean_sup_slices(mask)
+                sitk.WriteImage(mask, str(op))
+
             output_data_object = DataObject(type="FILE", path=str(op), parent=data_object)
             output_objects.append(output_data_object)
 
@@ -91,7 +125,7 @@ if __name__ == "__main__":
     # Run app by calling "python service.py" from the command line
 
     DICOM_LISTENER_PORT = 7777
-    DICOM_LISTENER_AETITLE = "PINNACLE_EXPORT_SERVICE"
+    DICOM_LISTENER_AETITLE = "NNUNET_EXPORT_SERVICE"
 
     app.run(
         debug=True,
