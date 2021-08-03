@@ -1,7 +1,7 @@
 numpy >= 1.19.5
 SimpleITK >= 2.0.2
 vtk >= 9.0.1
-scikit-image >= 0.17.2
+scikit-image >= 0.17.2, < 0.18.0
 click >= 7.1.2
 pydicom >= 2.1.2
 pynetdicom >= 1.5.7
@@ -11,5 +11,5 @@ pandas >= 1.1.5
 pymedphys >= 0.37.1
 rt_utils >= 1.1.4
 ipywidgets >= 7.6.3
-matplotlib >= 3.3.4
+matplotlib >= 3.3.4, < 3.4.0
 seaborn >= 0.11.1
