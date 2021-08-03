@@ -14,7 +14,7 @@
 
 import zipfile
 import tempfile
-import urllib
+import urllib.request
 from pathlib import Path
 
 from loguru import logger
