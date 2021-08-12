@@ -683,6 +683,21 @@ class ImageVisualiser:
         asp = (1.0 * sp_slice) / sp_plane
 
         window = self.__window
+        if window is None:
+            # We will choose it ourselves!
+
+            lower = nda.min()
+
+            # Check if we *probably* have a CT
+            if lower < -1000:
+                # Just set a decent CT window
+                # Somewhere around soft tissue
+                window = (-250, 600)
+
+            # Otherwise just pick a reasonable upper limit
+            else:
+                upper = np.percentile(nda, 99)
+                window = (lower, upper - lower)
 
         if self.__axis == "ortho":
             figure_size = (
