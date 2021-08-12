@@ -686,7 +686,7 @@ class ImageVisualiser:
         if window is None:
             # We will choose it ourselves!
 
-            lower = nda.min()
+            lower = nda_original.min()
 
             # Check if we *probably* have a CT
             if lower < -1000:
@@ -696,7 +696,7 @@ class ImageVisualiser:
 
             # Otherwise just pick a reasonable upper limit
             else:
-                upper = np.percentile(nda, 99)
+                upper = np.percentile(nda_original, 99)
                 window = (lower, upper - lower)
 
         if self.__axis == "ortho":
