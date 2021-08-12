@@ -133,7 +133,7 @@ def contour_comparison(
         rows = s_select
 
     # Compute some metrics
-    columns = ("DSC", "MASD [mm]", "HD [mm]")
+    columns = ("DSC", "MDA [mm]", "HD [mm]")
     cell_text = []
     for s, row in zip(s_select, rows):
         cell_text.append(
