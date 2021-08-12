@@ -17,6 +17,43 @@ import numpy as np
 
 from scipy.ndimage.measurements import center_of_mass
 
+from platipy.imaging.utils.math import gen_primes
+
+
+def correct_volume_overlap(binary_label_dict):
+    """
+    Label structures by primes
+    Smallest prime = largest volume
+    """
+
+    # Calculate volume
+    f_vol = lambda x: sitk.GetArrayViewFromImage(x).sum()
+    volume_dict = {i: f_vol(binary_label_dict[i]) for i in binary_label_dict.keys()}
+
+    keys, vals = zip(*volume_dict.items())
+    volume_rank = np.argsort(vals)[::-1]
+
+    # print(keys, volume_rank)
+
+    ranked_names = np.array(keys)[volume_rank]
+
+    # Get overlap using prime factors
+    prime_labelled_image = sum(binary_label_dict.values()) > 0
+    combined_label = sum(binary_label_dict.values()) > 0
+
+    for p, label in zip(gen_primes(), ranked_names):
+        prime_labelled_image = prime_labelled_image * (
+            (p - 1) * binary_label_dict[label] + combined_label
+        )
+
+    output_label_dict = {}
+    for p, label in zip(gen_primes(), ranked_names):
+        output_label_dict[label] = combined_label * (sitk.Modulus(prime_labelled_image, p) == 0)
+
+        combined_label = sitk.Mask(combined_label, output_label_dict[label] == 0)
+
+    return output_label_dict
+
 
 def get_com(label, as_int=True, real_coords=False):
     """
