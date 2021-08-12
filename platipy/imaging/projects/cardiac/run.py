@@ -204,6 +204,32 @@ CARDIAC_SETTINGS_DEFAULTS = {
             "atrioventricular_node_radius_mm": 10,
         },
     },
+    "postprocessing_settings": {
+        "run_postprocessing": True,
+        "binaryfillhole_mm": 3,
+        "structures_for_binaryfillhole": [
+            "ASCENDINGAORTA",
+            "LEFTATRIUM",
+            "LEFTVENTRICLE",
+            "RIGHTATRIUM",
+            "RIGHTVENTRICLE",
+            "SVC",
+            "AORTICVALVE",
+            "MITRALVALVE",
+            "PULMONICVALVE",
+            "TRICUSPIDVALVE",
+            "WHOLEHEART",
+        ],
+        "structures_for_overlap_correction": [
+            "ASCENDINGAORTA",
+            "LEFTATRIUM",
+            "LEFTVENTRICLE",
+            "RIGHTATRIUM",
+            "RIGHTVENTRICLE",
+            "PULMONARYARTERY",
+            "SVC",
+        ],
+    },
     "return_as_cropped": False,
 }
 
@@ -769,6 +795,35 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
             label_rv=results[geom_atlas_names["atlas_right_ventricle"]],
             radius_mm=geom_conduction_defs["atrioventricular_node_radius_mm"],
         )
+
+    """
+    Step 8 - Post-processing
+    """
+    postprocessing_settings = settings["postprocessing_settings"]
+
+    if postprocessing_settings["run_postprocessing"]:
+        logger.info("Running post-processing.")
+
+        # Remove any smaller components and perform morphological closing (hole filling)
+        binaryfillhole_img = [
+            int(postprocessing_settings["binaryfillhole_mm"] / sp) for sp in img.GetSpacing()
+        ]
+
+        for structure_name in postprocessing_settings["structures_for_binaryfillhole"]:
+
+            contour_s = output[s]
+            contour_s = sitk.RelabelComponent(sitk.ConnectedComponent(contour_s)) == 1
+            contour_s = sitk.BinaryMorphologicalClosing(contour_s, binaryfillhole_img)
+            output[s] = contour_s
+
+        # Remove any overlaps
+        input_overlap = {
+            s: results[s] for s in postprocessing_settings["structures_for_overlap_correction"]
+        }
+        output_overlap = correct_volume_overlap(input_overlap)
+
+        for s in s_overlap:
+            results[s] = output_overlap[s]
 
     if return_as_cropped:
         results["CROP_IMAGE"] = img_crop
