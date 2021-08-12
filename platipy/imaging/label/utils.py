@@ -54,7 +54,7 @@ def correct_volume_overlap(binary_label_dict):
 
     return output_label_dict
 
-sd
+
 def get_com(label, as_int=True, real_coords=False):
     """
         Get centre of mass of a SimpleITK.Image
