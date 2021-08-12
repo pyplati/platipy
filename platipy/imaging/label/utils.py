@@ -54,7 +54,7 @@ def correct_volume_overlap(binary_label_dict):
 
     return output_label_dict
 
-
+sd
 def get_com(label, as_int=True, real_coords=False):
     """
         Get centre of mass of a SimpleITK.Image
@@ -142,6 +142,14 @@ def generate_primes():
 
 
 def prime_encode_structure_list(structure_list):
+    """Encode a list of structures using prime labels
+
+    Args:
+        structure_list (list [SimpleITK.Image]): A list of binary masks.
+
+    Returns:
+        SimpleITK.Image: The prime-encoded structure
+    """
 
     # Create an image with all ones
     img_size = structure_list[0].GetSize()
@@ -165,6 +173,14 @@ def prime_encode_structure_list(structure_list):
 
 
 def prime_decode_image(prime_encoded_image):
+    """Decode a prime-encoded image
+
+    Args:
+        prime_encoded_image (SimpleITK.Image): A prime-encoded image.
+
+    Returns:
+        list [SimpleITK.Image]: A list of binary masks.
+    """
 
     prime_generator = generate_primes()
 
