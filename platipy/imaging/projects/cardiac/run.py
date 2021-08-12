@@ -838,4 +838,6 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     if return_as_cropped:
         results["CROP_IMAGE"] = img_crop
 
+    logger.info("Done!")
+
     return results, results_prob

@@ -107,6 +107,8 @@ def test_cardiac_service(cardiac_data):
         test_settings["vessel_spline_settings"]["scan_direction_dict"] = {}
         test_settings["vessel_spline_settings"]["stop_condition_type_dict"] = {}
         test_settings["vessel_spline_settings"]["stop_condition_value_dict"] = {}
+        test_settings["postprocessing_settings"]["run_postprocessing"] = False
+        test_settings["geometric_segmentation_settings"]["run_geometric_algorithms"] = False
 
         test_settings["rigid_settings"] = {
             "shrink_factors": [2, 1],
@@ -189,6 +191,8 @@ def test_cardiac_structure_guided_service(cardiac_data):
         test_settings["vessel_spline_settings"]["scan_direction_dict"] = {}
         test_settings["vessel_spline_settings"]["stop_condition_type_dict"] = {}
         test_settings["vessel_spline_settings"]["stop_condition_value_dict"] = {}
+        test_settings["postprocessing_settings"]["run_postprocessing"] = False
+        test_settings["geometric_segmentation_settings"]["run_geometric_algorithms"] = False
 
         test_settings["rigid_settings"] = {
             "shrink_factors": [2, 1],
