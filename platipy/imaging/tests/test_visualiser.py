@@ -96,7 +96,7 @@ def test_comparison_overlay_visualisation(nifti_data):
     assert len(fig.axes[0].images) == 1  # Check correct number of images
     img = fig.axes[0].images[0]
     print(img.get_array().data.sum())
-    assert np.allclose(img.get_array().data.sum(), 207349, atol=1)
+    assert np.allclose(img.get_array().data.sum(), 317869, atol=1)
 
 
 def test_animation_visualisation(nifti_data):

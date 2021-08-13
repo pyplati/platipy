@@ -56,7 +56,7 @@ class ImageVisualiser:
         image,
         cut=None,
         axis="ortho",
-        window=[-250, 500],
+        window=None,
         figure_size_in=10,
         limits=None,
         colormap=plt.cm.get_cmap("Greys_r"),
@@ -452,6 +452,22 @@ class ImageVisualiser:
 
         (ax_size, cor_size, sag_size) = nda.shape[:3]
 
+        window = self.__window
+        if window is None:
+            # We will choose it ourselves!
+
+            lower = nda.min()
+
+            # Check if we *probably* have a CT
+            if lower < -1000:
+                # Just set a decent CT window
+                # Somewhere around soft tissue
+                window = (-250, 600)
+
+            # Otherwise just pick a reasonable upper limit
+            else:
+                upper = np.percentile(nda, 99)
+                window = (lower, upper - lower)
         try:
             logger.info(
                 f"Found a (z,y,x,{nda.shape[3]}) dimensional array - assuming this is an RGB"
@@ -538,7 +554,7 @@ class ImageVisualiser:
                 interpolation="none",
                 origin={"normal": "upper", "reversed": "lower"}[self.__origin],
                 cmap=self.__colormap,
-                clim=(self.__window[0], self.__window[0] + self.__window[1]),
+                clim=(window[0], window[0] + window[1]),
             )
             cor_view = ax_cor.imshow(
                 cor_img,
@@ -546,7 +562,7 @@ class ImageVisualiser:
                 aspect=asp,
                 interpolation="none",
                 cmap=self.__colormap,
-                clim=(self.__window[0], self.__window[0] + self.__window[1]),
+                clim=(window[0], window[0] + window[1]),
             )
             sag_view = ax_sag.imshow(
                 sag_img,
@@ -554,7 +570,7 @@ class ImageVisualiser:
                 aspect=asp,
                 interpolation="none",
                 cmap=self.__colormap,
-                clim=(self.__window[0], self.__window[0] + self.__window[1]),
+                clim=(window[0], window[0] + window[1]),
             )
 
             ax_ax.axis("off")
@@ -634,7 +650,7 @@ class ImageVisualiser:
                 interpolation="none",
                 origin=org,
                 cmap=self.__colormap,
-                clim=(self.__window[0], self.__window[0] + self.__window[1]),
+                clim=(window[0], window[0] + window[1]),
             )
             ax.axis("off")
 
@@ -667,6 +683,21 @@ class ImageVisualiser:
         asp = (1.0 * sp_slice) / sp_plane
 
         window = self.__window
+        if window is None:
+            # We will choose it ourselves!
+
+            lower = nda_original.min()
+
+            # Check if we *probably* have a CT
+            if lower < -1000:
+                # Just set a decent CT window
+                # Somewhere around soft tissue
+                window = (-250, 600)
+
+            # Otherwise just pick a reasonable upper limit
+            else:
+                upper = np.percentile(nda_original, 99)
+                window = (lower, upper - lower)
 
         if self.__axis == "ortho":
             figure_size = (

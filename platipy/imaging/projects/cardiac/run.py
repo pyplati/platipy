@@ -38,11 +38,21 @@ from platipy.imaging.label.iar import run_iar
 
 from platipy.imaging.utils.vessel import vessel_spline_generation
 
+from platipy.imaging.utils.valve import (
+    generate_valve_from_great_vessel,
+    generate_valve_using_cylinder,
+)
+
+from platipy.imaging.utils.conduction import (
+    geometric_sinoatrialnode,
+    geometric_atrioventricularnode,
+)
+
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
 from platipy.imaging.generation.mask import extend_mask
 
-from platipy.imaging.label.utils import binary_encode_structure_list
+from platipy.imaging.label.utils import binary_encode_structure_list, correct_volume_overlap
 
 ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:
@@ -54,15 +64,15 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "atlas_structure_list": [
             "AORTICVALVE",
             "ASCENDINGAORTA",
-            "LANTDESCARTERY_SPLINE",
-            "LCIRCUMFLEXARTERY_SPLINE",
-            "LCORONARYARTERY_SPLINE",
+            "LANTDESCARTERY",
+            "LCIRCUMFLEXARTERY",
+            "LCORONARYARTERY",
             "LEFTATRIUM",
             "LEFTVENTRICLE",
             "MITRALVALVE",
             "PULMONARYARTERY",
             "PULMONICVALVE",
-            "RCORONARYARTERY_SPLINE",
+            "RCORONARYARTERY",
             "RIGHTATRIUM",
             "RIGHTVENTRICLE",
             "SVC",
@@ -91,6 +101,19 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "optimiser": "gradient_descent_line_search",
         "verbose": False,
     },
+    "structure_guided_registration_settings": {
+        "isotropic_resample": True,
+        "resolution_staging": [
+            16,
+            8,
+            2,
+        ],  # specify voxel size (mm) since isotropic_resample is set
+        "iteration_staging": [50, 50, 50],
+        "smoothing_sigmas": [0, 0, 0],
+        "ncores": 8,
+        "default_value": 0,
+        "verbose": False,
+    },
     "deformable_registration_settings": {
         "isotropic_resample": True,
         "resolution_staging": [
@@ -101,19 +124,6 @@ CARDIAC_SETTINGS_DEFAULTS = {
         ],  # specify voxel size (mm) since isotropic_resample is set
         "iteration_staging": [200, 150, 125, 100],
         "smoothing_sigmas": [0, 0, 0, 0],
-        "ncores": 8,
-        "default_value": 0,
-        "verbose": False,
-    },
-    "structure_guided_registration_settings": {
-        "isotropic_resample": True,
-        "resolution_staging": [
-            16,
-            8,
-            2,
-        ],  # specify voxel size (mm) since isotropic_resample is set
-        "iteration_staging": [40, 40, 40],
-        "smoothing_sigmas": [0, 0, 0],
         "ncores": 8,
         "default_value": 0,
         "verbose": False,
@@ -148,35 +158,87 @@ CARDIAC_SETTINGS_DEFAULTS = {
     },
     "vessel_spline_settings": {
         "vessel_name_list": [
-            "LANTDESCARTERY_SPLINE",
-            "LCIRCUMFLEXARTERY_SPLINE",
-            "LCORONARYARTERY_SPLINE",
-            "RCORONARYARTERY_SPLINE",
+            "LANTDESCARTERY",
+            "LCIRCUMFLEXARTERY",
+            "LCORONARYARTERY",
+            "RCORONARYARTERY",
         ],
         "vessel_radius_mm_dict": {
-            "LANTDESCARTERY_SPLINE": 2,
-            "LCIRCUMFLEXARTERY_SPLINE": 2,
-            "LCORONARYARTERY_SPLINE": 2,
-            "RCORONARYARTERY_SPLINE": 2,
+            "LANTDESCARTERY": 2,
+            "LCIRCUMFLEXARTERY": 2,
+            "LCORONARYARTERY": 2,
+            "RCORONARYARTERY": 2,
         },
         "scan_direction_dict": {
-            "LANTDESCARTERY_SPLINE": "z",
-            "LCIRCUMFLEXARTERY_SPLINE": "z",
-            "LCORONARYARTERY_SPLINE": "x",
-            "RCORONARYARTERY_SPLINE": "z",
+            "LANTDESCARTERY": "z",
+            "LCIRCUMFLEXARTERY": "z",
+            "LCORONARYARTERY": "x",
+            "RCORONARYARTERY": "z",
         },
         "stop_condition_type_dict": {
-            "LANTDESCARTERY_SPLINE": "count",
-            "LCIRCUMFLEXARTERY_SPLINE": "count",
-            "LCORONARYARTERY_SPLINE": "count",
-            "RCORONARYARTERY_SPLINE": "count",
+            "LANTDESCARTERY": "count",
+            "LCIRCUMFLEXARTERY": "count",
+            "LCORONARYARTERY": "count",
+            "RCORONARYARTERY": "count",
         },
         "stop_condition_value_dict": {
-            "LANTDESCARTERY_SPLINE": 2,
-            "LCIRCUMFLEXARTERY_SPLINE": 2,
-            "LCORONARYARTERY_SPLINE": 2,
-            "RCORONARYARTERY_SPLINE": 2,
+            "LANTDESCARTERY": 2,
+            "LCIRCUMFLEXARTERY": 2,
+            "LCORONARYARTERY": 2,
+            "RCORONARYARTERY": 2,
         },
+    },
+    "geometric_segmentation_settings": {
+        "run_geometric_algorithms": True,
+        "geometric_name_suffix": "_GEOMETRIC",
+        "atlas_structure_names": {
+            "atlas_left_ventricle": "LEFTVENTRICLE",
+            "atlas_right_ventricle": "RIGHTVENTRICLE",
+            "atlas_left_atrium": "LEFTATRIUM",
+            "atlas_right_atrium": "RIGHTATRIUM",
+            "atlas_ascending_aorta": "ASCENDINGAORTA",
+            "atlas_pulmonary_artery": "PULMONARYARTERY",
+            "atlas_superior_vena_cava": "SVC",
+            "atlas_whole_heart": "WHOLEHEART",
+        },
+        "valve_definitions": {
+            "mitral_valve_thickness_mm": 10,
+            "mitral_valve_radius_mm": 15,
+            "tricuspid_valve_thickness_mm": 10,
+            "tricuspid_valve_radius_mm": 15,
+            "pulmonic_valve_thickness_mm": 10,
+            "aortic_valve_thickness_mm": 10,
+        },
+        "conduction_system_definitions": {
+            "sinoatrial_node_radius_mm": 10,
+            "atrioventricular_node_radius_mm": 10,
+        },
+    },
+    "postprocessing_settings": {
+        "run_postprocessing": True,
+        "binaryfillhole_mm": 3,
+        "structures_for_binaryfillhole": [
+            "ASCENDINGAORTA",
+            "LEFTATRIUM",
+            "LEFTVENTRICLE",
+            "RIGHTATRIUM",
+            "RIGHTVENTRICLE",
+            "SVC",
+            "AORTICVALVE",
+            "MITRALVALVE",
+            "PULMONICVALVE",
+            "TRICUSPIDVALVE",
+            "WHOLEHEART",
+        ],
+        "structures_for_overlap_correction": [
+            "ASCENDINGAORTA",
+            "LEFTATRIUM",
+            "LEFTVENTRICLE",
+            "RIGHTATRIUM",
+            "RIGHTVENTRICLE",
+            "PULMONARYARTERY",
+            "SVC",
+        ],
     },
     "return_as_cropped": False,
 }
@@ -297,7 +359,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
             "shrink_factors": [8],
             "smooth_sigmas": [0],
             "sampling_rate": 0.75,
-            "default_value": -1024,
+            "default_value": -1000,
             "number_of_iterations": 25,
             "final_interp": sitk.sitkLinear,
             "metric": "mean_squares",
@@ -603,7 +665,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     """
     Step 6 - Paste the cropped structure into the original image space
     """
-
+    logger.info("Generating binary segmentations.")
     template_img_binary = sitk.Cast((img * 0), sitk.sitkUInt8)
     template_img_prob = sitk.Cast((img * 0), sitk.sitkFloat64)
 
@@ -678,7 +740,104 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         encoded_vessels = binary_encode_structure_list(vessel_list)
         results_prob[structure_name] = encoded_vessels
 
+    """
+    Step 7 - Geometric definitions of cardiac valves and conduction system nodes
+    """
+    geometric_segmentation_settings = settings["geometric_segmentation_settings"]
+
+    if geometric_segmentation_settings["run_geometric_algorithms"]:
+
+        logger.info("Computing geometric definitions for valves and conduction system.")
+
+        geom_atlas_names = geometric_segmentation_settings["atlas_structure_names"]
+        geom_valve_defs = geometric_segmentation_settings["valve_definitions"]
+        geom_conduction_defs = geometric_segmentation_settings["conduction_system_definitions"]
+
+        # 1 - MITRAL VALVE
+        mv_name = "MITRALVALVE" + geometric_segmentation_settings["geometric_name_suffix"]
+        results[mv_name] = generate_valve_using_cylinder(
+            label_atrium=results[geom_atlas_names["atlas_left_atrium"]],
+            label_ventricle=results[geom_atlas_names["atlas_left_ventricle"]],
+            radius_mm=geom_valve_defs["mitral_valve_radius_mm"],
+            height_mm=geom_valve_defs["mitral_valve_thickness_mm"],
+        )
+
+        # 2 - TRICUSPID VALVE
+        tv_name = "TRICUSPIDVALVE" + geometric_segmentation_settings["geometric_name_suffix"]
+        results[tv_name] = generate_valve_using_cylinder(
+            label_atrium=results[geom_atlas_names["atlas_right_atrium"]],
+            label_ventricle=results[geom_atlas_names["atlas_right_ventricle"]],
+            radius_mm=geom_valve_defs["tricuspid_valve_radius_mm"],
+            height_mm=geom_valve_defs["tricuspid_valve_thickness_mm"],
+        )
+
+        # 3 - AORTIC VALVE
+        av_name = "AORTICVALVE" + geometric_segmentation_settings["geometric_name_suffix"]
+        results[av_name] = generate_valve_from_great_vessel(
+            label_great_vessel=results[geom_atlas_names["atlas_ascending_aorta"]],
+            label_ventricle=results[geom_atlas_names["atlas_left_ventricle"]],
+            valve_thickness_mm=geom_valve_defs["aortic_valve_thickness_mm"],
+        )
+
+        # 4 - PULMONIC VALVE
+        pv_name = "PULMONICVALVE" + geometric_segmentation_settings["geometric_name_suffix"]
+        results[pv_name] = generate_valve_from_great_vessel(
+            label_great_vessel=results[geom_atlas_names["atlas_pulmonary_artery"]],
+            label_ventricle=results[geom_atlas_names["atlas_right_ventricle"]],
+            valve_thickness_mm=geom_valve_defs["pulmonic_valve_thickness_mm"],
+        )
+
+        # 5 - SINOATRIAL NODE
+        san_name = "SAN" + geometric_segmentation_settings["geometric_name_suffix"]
+        results[san_name] = geometric_sinoatrialnode(
+            label_svc=results[geom_atlas_names["atlas_superior_vena_cava"]],
+            label_ra=results[geom_atlas_names["atlas_right_atrium"]],
+            label_wholeheart=results[geom_atlas_names["atlas_whole_heart"]],
+            radius_mm=geom_conduction_defs["sinoatrial_node_radius_mm"],
+        )
+
+        # 6 - ATRIOVENTRICULAR NODE
+        avn_name = "AVN" + geometric_segmentation_settings["geometric_name_suffix"]
+        results[avn_name] = geometric_atrioventricularnode(
+            label_la=results[geom_atlas_names["atlas_left_atrium"]],
+            label_lv=results[geom_atlas_names["atlas_left_ventricle"]],
+            label_ra=results[geom_atlas_names["atlas_right_atrium"]],
+            label_rv=results[geom_atlas_names["atlas_right_ventricle"]],
+            radius_mm=geom_conduction_defs["atrioventricular_node_radius_mm"],
+        )
+
+    """
+    Step 8 - Post-processing
+    """
+    postprocessing_settings = settings["postprocessing_settings"]
+
+    if postprocessing_settings["run_postprocessing"]:
+        logger.info("Running post-processing.")
+
+        # Remove any smaller components and perform morphological closing (hole filling)
+        binaryfillhole_img = [
+            int(postprocessing_settings["binaryfillhole_mm"] / sp) for sp in img.GetSpacing()
+        ]
+
+        for structure_name in postprocessing_settings["structures_for_binaryfillhole"]:
+
+            contour_s = results[structure_name]
+            contour_s = sitk.RelabelComponent(sitk.ConnectedComponent(contour_s)) == 1
+            contour_s = sitk.BinaryMorphologicalClosing(contour_s, binaryfillhole_img)
+            results[structure_name] = contour_s
+
+        # Remove any overlaps
+        input_overlap = {
+            s: results[s] for s in postprocessing_settings["structures_for_overlap_correction"]
+        }
+        output_overlap = correct_volume_overlap(input_overlap)
+
+        for s in postprocessing_settings["structures_for_overlap_correction"]:
+            results[s] = output_overlap[s]
+
     if return_as_cropped:
         results["CROP_IMAGE"] = img_crop
+
+    logger.info("Done!")
 
     return results, results_prob

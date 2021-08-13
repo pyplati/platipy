@@ -63,6 +63,7 @@ def generate_animation_from_image_sequence(
     scalar_max=None,
     scalar_alpha=0.5,
     image_origin="lower",
+    contour_kwargs={},
 ):
     """Generates an animation from a list of images, with optional scalar overlay and contours.
 
@@ -131,22 +132,26 @@ def generate_animation_from_image_sequence(
             plot_dict = contour_list[0]
             contour_labels = True
 
-        color_map = contour_cmap(np.linspace(0, 1, len(plot_dict)))
+        if isinstance(contour_cmap, dict):
+            color_list = [contour_cmap[i] for i in plot_dict.keys()]
+        else:
+            color_map = contour_cmap(np.linspace(0, 1, len(plot_dict)))
+            color_list = [color_map[i] for i in range(len(plot_dict.values()))]
 
-        for index, (contour_name, contour) in enumerate(plot_dict.items()):
+        for ctr_key, color in zip(plot_dict.keys(), color_list):
 
             display_contours = ax.contour(
-                sitk.GetArrayFromImage(contour),
-                colors=[color_map[index]],
+                sitk.GetArrayFromImage(plot_dict[ctr_key]),
+                colors=[color],
                 levels=[1],
-                linewidths=2,
+                **contour_kwargs,
             )
 
-            display_contours.collections[0].set_label(contour_name)
+            display_contours.collections[0].set_label(ctr_key)
 
         if contour_labels:
             approx_scaling = figure_size_in / (len(plot_dict.keys()))
-            leg = ax.legend(
+            ax.legend(
                 loc="upper left",
                 bbox_to_anchor=(0.025, 0.975),
                 fontsize=min([10, 16 * approx_scaling]),
@@ -193,19 +198,20 @@ def generate_animation_from_image_sequence(
             else:
                 plot_dict = contour_list[i]
 
-            color_map = contour_cmap(np.linspace(0, 1, len(plot_dict)))
+            if isinstance(contour_cmap, dict):
+                color_list = [contour_cmap[i] for i in plot_dict.keys()]
+            else:
+                color_map = contour_cmap(np.linspace(0, 1, len(plot_dict)))
+                color_list = [color_map[i] for i in range(len(plot_dict.values()))]
 
-            for index, contour in enumerate(plot_dict.values()):
+            for contour, color in zip(plot_dict.values(), color_list):
 
                 ax.contour(
                     sitk.GetArrayFromImage(contour),
-                    colors=[color_map[index]],
+                    colors=[color],
                     levels=[1],
-                    linewidths=2,
+                    **contour_kwargs,
                 )
-
-            for enum, l in enumerate(leg.get_lines()):
-                l.set_color(color_map[enum][:3])
 
         if scalar_list:
             nda = sitk.GetArrayFromImage(scalar_list[i])

@@ -300,6 +300,20 @@ def project_onto_arbitrary_plane(
     default_value=-1000,
     resample_interpolation=2,
 ):
+    """[summary]
+
+    Args:
+        image ([type]): [description]
+        projection_name (str, optional): [description]. Defaults to "mean".
+        projection_axis (int, optional): [description]. Defaults to 0.
+        rotation_axis (list, optional): [description]. Defaults to [1, 0, 0].
+        rotation_angle (int, optional): [description]. Defaults to 0.
+        default_value (int, optional): [description]. Defaults to -1000.
+        resample_interpolation (int, optional): [description]. Defaults to 2.
+
+    Returns:
+        [type]: [description]
+    """
 
     projection_dict = {
         "sum": sitk.SumProjection,
