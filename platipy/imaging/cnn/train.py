@@ -118,6 +118,7 @@ class ProbUNet(pl.LightningModule):
             self.hparams.no_convs_fcomb,
             self.hparams.loss_type,
             loss_params,
+            self.hparams.ndims,
         )
 
         self.validation_directory = None
@@ -413,6 +414,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         num_observers=5,
         spacing=[1, 1, 1],
         contour_mask_kernel=3,
+        ndims=2,
         **kwargs,
     ):
         super().__init__()
@@ -443,6 +445,8 @@ class ProbUNetDataModule(pl.LightningDataModule):
         self.training_set = None
         self.validation_set = None
 
+        self.ndims = ndims
+
         print(f"Training fold {self.fold}")
 
     @staticmethod
@@ -462,6 +466,7 @@ class ProbUNetDataModule(pl.LightningDataModule):
         parser.add_argument("--augmented_label_glob", type=str, default=None)
         parser.add_argument("--crop_to_mm", type=int, default=128)
         parser.add_argument("--contour_mask_kernel", type=int, default=5)
+        parser.add_argument("--ndims", type=int, default=2)
 
         return parent_parser
 
@@ -542,9 +547,11 @@ class ProbUNetDataModule(pl.LightningDataModule):
         self.training_set = NiftiDataset(
             train_data,
             self.working_dir,
+            augment_on_the_fly=False,
             spacing=self.spacing,
             crop_to_mm=self.crop_to_mm,
-            contour_mask_kernel=self.contour_mask_kernel
+            contour_mask_kernel=self.contour_mask_kernel,
+            ndims=self.ndims,
         )
         self.validation_set = NiftiDataset(
             validation_data,
@@ -552,7 +559,8 @@ class ProbUNetDataModule(pl.LightningDataModule):
             augment_on_the_fly=False,
             spacing=self.spacing,
             crop_to_mm=self.crop_to_mm,
-            contour_mask_kernel=self.contour_mask_kernel
+            contour_mask_kernel=self.contour_mask_kernel,
+            ndims=self.ndims,
         )
 
     def train_dataloader(self):
@@ -643,14 +651,14 @@ if __name__ == "__main__":
             with open(config_json_path, "r") as f:
                 params = json.load(f)
                 args = []
-                for k in params:
-                    args.append(f"--{k}")
+                for key in params:
+                    args.append(f"--{key}")
 
-                    if isinstance(params[k], list):
-                        for s in params[k]:
+                    if isinstance(params[key], list):
+                        for s in params[key]:
                             args.append(str(s))
                     else:
-                        args.append(str(params[k]))
+                        args.append(str(params[key]))
 
     arg_parser = ArgumentParser()
     arg_parser = ProbUNet.add_model_specific_args(arg_parser)

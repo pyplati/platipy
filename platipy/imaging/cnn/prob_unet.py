@@ -19,11 +19,16 @@
 import torch
 from torch.distributions import Normal, Independent, kl
 
-from platipy.imaging.cnn.unet import UNet, Conv, init_weights
+from platipy.imaging.cnn.unet import UNet, Conv, init_weights, conv_nd
 
 
 class Encoder(torch.nn.Module):
-    def __init__(self, input_channels, filters_per_layer=[64 * (2 ** x) for x in range(5)]):
+    """Encoder part of the probabilistic UNet
+    """
+
+    def __init__(
+        self, input_channels, filters_per_layer=[64 * (2 ** x) for x in range(5)], ndims=2
+    ):
         super(Encoder, self).__init__()
 
         layers = []
@@ -34,7 +39,9 @@ class Encoder(torch.nn.Module):
 
             down_sample = 0 if idx == 0 else -2
 
-            layers.append(Conv(input_filters, output_filters, up_down_sample=down_sample))
+            layers.append(
+                Conv(input_filters, output_filters, up_down_sample=down_sample, ndims=ndims)
+            )
 
         self.layers = torch.nn.Sequential(*layers)
 
@@ -47,19 +54,42 @@ class Encoder(torch.nn.Module):
 
 class AxisAlignedConvGaussian(torch.nn.Module):
     def __init__(
-        self, input_channels, filters_per_layer=[64 * (2 ** x) for x in range(5)], latent_dim=2
+        self,
+        input_channels,
+        filters_per_layer=[64 * (2 ** x) for x in range(5)],
+        latent_dim=2,
+        ndims=2,
     ):
 
         super(AxisAlignedConvGaussian, self).__init__()
 
         self.latent_dim = latent_dim
 
-        self.encoder = Encoder(input_channels, filters_per_layer)
-        self.final = torch.nn.Conv2d(filters_per_layer[-1], 2 * self.latent_dim, (1, 1), stride=1)
+        self.encoder = Encoder(input_channels, filters_per_layer, ndims=ndims)
+
+        self.final = conv_nd(
+            in_channels=filters_per_layer[-1],
+            out_channels=2 * self.latent_dim,
+            kernel_size=1,
+            stride=1,
+            ndims=ndims
+        )
+
+        self.ndims = ndims
 
         self.final.apply(init_weights)
 
     def forward(self, img, seg=None):
+        """Forward pass through the network
+
+        Args:
+            img (torch.Tensor): The image to be passed through.
+            seg (torch.Tensor, optional): The segmentation mask to use in the case of the prior
+                network. Defaults to None.
+
+        Returns:
+            torch.distributions.distribution.Distribution: The distribution output
+        """
 
         x = img
         if seg is not None:
@@ -71,6 +101,8 @@ class AxisAlignedConvGaussian(torch.nn.Module):
         # We only want the mean of the resulting hxw image
         encoding = torch.mean(encoding, dim=2, keepdim=True)
         encoding = torch.mean(encoding, dim=3, keepdim=True)
+        if self.ndims == 3:
+            encoding = torch.mean(encoding, dim=4, keepdim=True)
 
         # Convert encoding to 2 x latent dim and split up for mu and log_sigma
         mu_log_sigma = self.final(encoding)
@@ -79,6 +111,8 @@ class AxisAlignedConvGaussian(torch.nn.Module):
         # equal to 1
         mu_log_sigma = torch.squeeze(mu_log_sigma, dim=2)
         mu_log_sigma = torch.squeeze(mu_log_sigma, dim=2)
+        if self.ndims == 3:
+            mu_log_sigma = torch.squeeze(mu_log_sigma, dim=2)
 
         mu = mu_log_sigma[:, : self.latent_dim]
         log_sigma = mu_log_sigma[:, self.latent_dim :]
@@ -97,7 +131,7 @@ class Fcomb(torch.nn.Module):
     their channel axis.
     """
 
-    def __init__(self, filters_per_layer, latent_dim, num_classes, no_convs_fcomb):
+    def __init__(self, filters_per_layer, latent_dim, num_classes, no_convs_fcomb, ndims=2):
         super(Fcomb, self).__init__()
 
         layers = []
@@ -105,27 +139,43 @@ class Fcomb(torch.nn.Module):
         # Decoder of N x a 1x1 convolution followed by a ReLU activation function except for the
         # last layer
         layers.append(
-            torch.nn.Conv2d(filters_per_layer[0] + latent_dim, filters_per_layer[0], kernel_size=1)
+            conv_nd(
+                in_channels=filters_per_layer[0] + latent_dim,
+                out_channels=filters_per_layer[0],
+                kernel_size=1,
+                ndims=ndims,
+            )
         )
         layers.append(torch.nn.ReLU(inplace=True))
 
         for _ in range(no_convs_fcomb - 2):
             layers.append(
-                torch.nn.Conv2d(filters_per_layer[0], filters_per_layer[0], kernel_size=1)
+                conv_nd(
+                    in_channels=filters_per_layer[0],
+                    out_channels=filters_per_layer[0],
+                    kernel_size=1,
+                    ndims=ndims,
+                )
             )
             layers.append(torch.nn.ReLU(inplace=True))
 
         self.layers = torch.nn.Sequential(*layers)
 
-        self.last_layer = torch.nn.Conv2d(filters_per_layer[0], num_classes, kernel_size=1)
+        self.last_layer = conv_nd(
+            in_channels=filters_per_layer[0], out_channels=num_classes, kernel_size=1, ndims=ndims
+        )
 
         self.layers.apply(init_weights)
         self.last_layer.apply(init_weights)
+
+        self.ndims = ndims
 
     def forward(self, feature_map, z):
 
         z = torch.unsqueeze(z, 2).expand(-1, -1, feature_map.shape[2])
         z = torch.unsqueeze(z, 3).expand(-1, -1, -1, feature_map.shape[3])
+        if self.ndims == 3:
+            z = torch.unsqueeze(z, 4).expand(-1, -1, -1, -1, feature_map.shape[4])
 
         # Concatenate the feature map (output of the UNet) and the sample taken from the latent
         # space
@@ -155,6 +205,7 @@ class ProbabilisticUnet(torch.nn.Module):
         no_convs_fcomb=4,
         loss_type="elbo",
         loss_params={"beta": 1},
+        ndims=2,
     ):
         super(ProbabilisticUnet, self).__init__()
 
@@ -164,10 +215,16 @@ class ProbabilisticUnet(torch.nn.Module):
         self.initializers = {"w": "he_normal", "b": "normal"}
         self.z_prior_sample = 0
 
-        self.unet = UNet(input_channels, num_classes, filters_per_layer, final_layer=False)
-        self.prior = AxisAlignedConvGaussian(input_channels, filters_per_layer, latent_dim)
-        self.posterior = AxisAlignedConvGaussian(input_channels + 1, filters_per_layer, latent_dim)
-        self.fcomb = Fcomb(filters_per_layer, latent_dim, num_classes, no_convs_fcomb)
+        self.unet = UNet(
+            input_channels, num_classes, filters_per_layer, final_layer=False, ndims=ndims
+        )
+        self.prior = AxisAlignedConvGaussian(
+            input_channels, filters_per_layer, latent_dim, ndims=ndims
+        )
+        self.posterior = AxisAlignedConvGaussian(
+            input_channels + 1, filters_per_layer, latent_dim, ndims=ndims
+        )
+        self.fcomb = Fcomb(filters_per_layer, latent_dim, num_classes, no_convs_fcomb, ndims=ndims)
 
         self.loss_type = loss_type
         self.loss_params = loss_params
@@ -266,7 +323,7 @@ class ProbabilisticUnet(torch.nn.Module):
         top_k_percentage=None,
         deterministic=True,
         weight_mask=None,
-        weight_mask_weighting=0.0
+        weight_mask_weighting=0.0,
     ):
 
         criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
@@ -290,9 +347,9 @@ class ProbabilisticUnet(torch.nn.Module):
         if mask is None or mask.sum() == 0:
             mask = torch.ones(n_pixels_in_batch)
         else:
-#            assert (
-#                mask.shape == segm.shape
-#            ), f"The loss mask shape differs from the target shape: {mask.shape} vs. {segm.shape}."
+            #            assert (
+            #                mask.shape == segm.shape
+            #            ), f"The loss mask shape differs from the target shape: {mask.shape} vs. {segm.shape}."
             mask = torch.reshape(mask, (-1,))
         mask = mask.to(y_flat.device)
 
@@ -328,7 +385,9 @@ class ProbabilisticUnet(torch.nn.Module):
             weight_mask = torch.reshape(weight_mask, (-1,))
             weight_mask = weight_mask.unsqueeze(1).repeat((1, num_classes))
             weight_mask = (
-                weight_mask.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
+                weight_mask.reshape((batch_size, -1, num_classes))
+                .transpose(-1, 1)
+                .reshape((batch_size, -1))
             )
             mask = mask + (weight_mask * weight_mask_weighting)
 
@@ -338,7 +397,14 @@ class ProbabilisticUnet(torch.nn.Module):
 
         return ce_sum, ce_mean, mask
 
-    def loss(self, segm, analytic_kl=True, reconstruct_posterior_mean=False, mask=None, use_max_lambda=False):
+    def loss(
+        self,
+        segm,
+        analytic_kl=True,
+        reconstruct_posterior_mean=False,
+        mask=None,
+        use_max_lambda=False,
+    ):
         """
         Calculate the evidence lower bound of the log-likelihood of P(Y|X)
         """
@@ -354,10 +420,12 @@ class ProbabilisticUnet(torch.nn.Module):
         loss_mask = None
         if self.loss_params["contour_loss_lambda_threshold"]:
             if (
-                self._lambda <= self.loss_params["contour_loss_lambda_threshold"] and not use_max_lambda
-            ):  # pylint: disable=access-member-before-definition
+                self._lambda  # pylint: disable=access-member-before-definition
+                <= self.loss_params["contour_loss_lambda_threshold"]
+                and not use_max_lambda
+            ):
                 loss_mask = mask
-#                loss_mask = loss_mask.unsqueeze(1).repeat((1, self.num_classes, 1, 1))
+        #                loss_mask = loss_mask.unsqueeze(1).repeat((1, self.num_classes, 1, 1))
 
         # Here we use the posterior sample sampled above
         reconstruction_loss, rec_loss_mean, mask = self.reconstruction_loss(
@@ -367,7 +435,7 @@ class ProbabilisticUnet(torch.nn.Module):
             top_k_percentage=top_k_percentage,
             mask=loss_mask,
             weight_mask=mask,
-            weight_mask_weighting=self.loss_params["contour_loss_weight"]
+            weight_mask_weighting=self.loss_params["contour_loss_weight"],
         )
 
         if self.loss_type == "elbo":
@@ -399,9 +467,13 @@ class ProbabilisticUnet(torch.nn.Module):
                 lambda_lower = self.loss_params["clamp_rec"][0]
                 lambda_upper = self.loss_params["clamp_rec"][1]
                 if use_max_lambda:
-                    self._lambda = torch.Tensor([lambda_upper]).to(rc.device)
+                    self._lambda = torch.Tensor(  # pylint: disable=attribute-defined-outside-init
+                        [lambda_upper]
+                    ).to(rc.device)
                 else:
-                    self._lambda = (torch.exp(rc) * self._lambda).clamp(lambda_lower, lambda_upper)
+                    self._lambda = (  # pylint: disable=attribute-defined-outside-init
+                        torch.exp(rc) * self._lambda
+                    ).clamp(lambda_lower, lambda_upper)
 
             loss = (
                 self._lambda

@@ -22,6 +22,38 @@ import torch
 from torch import nn
 
 
+def conv_nd(ndims=2, **kwargs):
+    """Generate a 2D or 3D convolution
+
+    Args:
+        ndims (int, optional): 2 or 3 dimensions. Defaults to 2.
+
+    Raises:
+        NotImplementedError: Raised if ndims is not in 2 or 3 dimensions.
+
+    Returns:
+        torch.nn.Conv: The convolution.
+    """
+
+    if ndims == 2:
+        return torch.nn.Conv2d(**kwargs)
+    elif ndims == 3:
+        return torch.nn.Conv3d(**kwargs)
+
+    raise NotImplementedError("Only 2 or 3 dimensions are supported")
+
+
+def init_weights(m):
+    if (
+        isinstance(m, torch.nn.Conv2d)
+        or isinstance(m, torch.nn.ConvTranspose2d)
+        or isinstance(m, torch.nn.Conv3d)
+        or isinstance(m, torch.nn.ConvTranspose3d)
+    ):
+        torch.nn.init.kaiming_normal_(m.weight, mode="fan_in", nonlinearity="relu")
+        truncated_normal_(m.bias, mean=0, std=0.001)
+
+
 def l2_regularisation(m):
     l2_reg = None
 
@@ -33,6 +65,17 @@ def l2_regularisation(m):
     return l2_reg
 
 
+def init_zeros(m):
+    if (
+        isinstance(m, torch.nn.Conv2d)
+        or isinstance(m, torch.nn.ConvTranspose2d)
+        or isinstance(m, torch.nn.Conv3d)
+        or isinstance(m, torch.nn.ConvTranspose3d)
+    ):
+        torch.nn.init.zeros_(m.weight)
+        truncated_normal_(m.bias, mean=0, std=0.1)
+
+
 def truncated_normal_(tensor, mean=0, std=1):
     size = tensor.shape
     tmp = tensor.new_empty(size + (4,)).normal_()
@@ -42,39 +85,88 @@ def truncated_normal_(tensor, mean=0, std=1):
     tensor.data.mul_(std).add_(mean)
 
 
-def init_weights(m):
-    if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
-        nn.init.kaiming_normal_(m.weight, mode="fan_in", nonlinearity="relu")
-        truncated_normal_(m.bias, mean=0, std=0.001)
+def resize_down_func(scale=2, ndims=2):
+    """Returns function to resize the input to downsample
+
+    Args:
+        scale (int, optional): The scale used to downsize. Defaults to 2.
+        ndims (int, optional): Number of dimensions (2 or 3). Defaults to 2.
+
+    Returns:
+        function: The downsize function
+    """
+    if ndims == 3:
+        return torch.nn.MaxPool3d(kernel_size=scale, stride=scale, padding=0)
+    elif ndims == 2:
+        return torch.nn.MaxPool2d(kernel_size=scale, stride=scale, padding=0)
+
+    raise NotImplementedError()
+
+
+def resize_up_func(in_channels, out_channels, scale=2, ndims=2):
+    """Return function to resize the input to upsample
+
+    Args:
+        in_channels (int): Number of input channels
+        out_channels (int): Number of output channels
+        scale (int, optional): The scale used to upsize. Defaults to 2.
+        ndims (int, optional): Number of dimensions (2 or 3). Defaults to 2.
+
+    Raises:
+        NotImplementedError: Only supports 2d or 3d
+
+    Returns:
+        function: The upsize function
+    """
+    if ndims == 3:
+        return torch.nn.ConvTranspose3d(
+            in_channels,
+            out_channels,
+            kernel_size=scale,
+            stride=scale,
+        )
+    elif ndims == 2:
+        return torch.nn.ConvTranspose2d(
+            in_channels,
+            out_channels,
+            kernel_size=scale,
+            stride=scale,
+        )
+    raise NotImplementedError()
 
 
 class Conv(torch.nn.Module):
-    def __init__(self, input_channels, output_channels, up_down_sample=0):
+    def __init__(self, input_channels, output_channels, up_down_sample=0, ndims=2):
 
         super(Conv, self).__init__()
 
         self.pre_op = None
         size_and_stride = abs(up_down_sample)
         if up_down_sample < 0:
-            self.pre_op = nn.MaxPool2d(kernel_size=size_and_stride, stride=size_and_stride)
+            self.pre_op = resize_down_func(size_and_stride, ndims=ndims)
         elif up_down_sample > 0:
-            self.pre_op = nn.ConvTranspose2d(
-                input_channels,
-                output_channels,
-                kernel_size=size_and_stride,
-                stride=size_and_stride,
+            self.pre_op = resize_up_func(
+                input_channels, output_channels, size_and_stride, ndims=ndims
             )
 
         layers = []
         layers.append(
-            nn.Conv2d(
-                in_channels=input_channels, out_channels=output_channels, kernel_size=3, padding=1
+            conv_nd(
+                ndims=ndims,
+                in_channels=input_channels,
+                out_channels=output_channels,
+                kernel_size=3,
+                padding=1,
             )
         )
         layers.append(nn.ReLU(inplace=True))
         layers.append(
-            nn.Conv2d(
-                in_channels=output_channels, out_channels=output_channels, kernel_size=3, padding=1
+            conv_nd(
+                ndims=ndims,
+                in_channels=output_channels,
+                out_channels=output_channels,
+                kernel_size=3,
+                padding=1,
             )
         )
         layers.append(nn.ReLU(inplace=True))
@@ -100,6 +192,7 @@ class UNet(nn.Module):
         output_classes=2,
         filters_per_layer=[64 * (2 ** x) for x in range(5)],
         final_layer=True,
+        ndims=2,
     ):
 
         super(UNet, self).__init__()
@@ -110,7 +203,9 @@ class UNet(nn.Module):
             output_filters = layer_filters
             down_sample = 0 if idx == 0 else -2
 
-            self.encoder.append(Conv(input_filters, output_filters, up_down_sample=down_sample))
+            self.encoder.append(
+                Conv(input_filters, output_filters, up_down_sample=down_sample, ndims=ndims)
+            )
 
         reversed_filters = list(reversed(filters_per_layer))
         self.decoder = nn.ModuleList()
@@ -122,11 +217,16 @@ class UNet(nn.Module):
             input_filters = layer_filters
             output_filters = reversed_filters[idx + 1]
 
-            self.decoder.append(Conv(input_filters, output_filters, up_down_sample=2))
+            self.decoder.append(Conv(input_filters, output_filters, up_down_sample=2, ndims=ndims))
 
         self.final = None
         if final_layer:
-            self.final = nn.Conv2d(filters_per_layer[0], output_classes, kernel_size=1)
+            self.final = conv_nd(
+                ndims=ndims,
+                in_channels=filters_per_layer[0],
+                out_channels=output_classes,
+                kernel_size=1,
+            )
 
     def forward(self, x):
 

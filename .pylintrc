@@ -139,10 +139,11 @@ disable=print-statement,
         deprecated-sys-function,
         exception-escape,
         comprehension-escape,
-        C0330,
-        C0114,
-        W0102,
-        W0105
+        bad-continuation,
+        missing-module-docstring,
+        # pointless-string-statement,
+        dangerous-default-value,
+        arguments-differ
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
