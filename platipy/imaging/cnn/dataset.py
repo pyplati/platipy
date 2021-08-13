@@ -16,6 +16,15 @@ from platipy.imaging.label.utils import get_union_mask, get_intersection_mask
 
 
 def get_contour_mask(masks, kernel=5):
+    """Returns a mask around the region where observer masks don't agree
+
+    Args:
+        masks (list): List of observer masks (as sitk.Image)
+        kernel (int, optional): The size of the kernal to dilate the contour of. Defaults to 5.
+
+    Returns:
+        sitk.Image: The resulting contour mask
+    """
 
     if not hasattr(kernel, "__iter__"):
         kernel = (kernel,) * 3
@@ -133,6 +142,7 @@ class NiftiDataset(torch.utils.data.Dataset):
         spacing=[1, 1, 1],
         crop_to_mm=128,
         contour_mask_kernel=5,
+        ndims=2,
     ):
         """Prepare a dataset from Nifti images/labels
 
@@ -149,6 +159,7 @@ class NiftiDataset(torch.utils.data.Dataset):
             self.transforms = prepare_transforms()
         self.slices = []
         self.working_dir = Path(working_dir)
+        self.ndims = ndims
 
         self.img_dir = working_dir.joinpath("img")
         self.label_dir = working_dir.joinpath("label")
@@ -212,21 +223,34 @@ class NiftiDataset(torch.utils.data.Dataset):
 
             contour_mask = get_contour_mask(observers, kernel=contour_mask_kernel)
 
-            for z_slice in range(img.GetSize()[2]):
+            z_range = range(img.GetSize()[2])
+            if ndims == 3:
+                z_range = range(1)
+            for z_slice in z_range:
 
                 # Save the image slice
-                img_slice = img[:, :, z_slice]
+                if ndims == 2:
+                    img_slice = img[:, :, z_slice]
+                else:
+                    img_slice = img
+
                 img_file = self.img_dir.joinpath(f"{case_id}_{z_slice}.npy")
                 np.save(img_file, sitk.GetArrayFromImage(img_slice))
 
                 # Save the contour mask slice
-                contour_mask_slice = contour_mask[:, :, z_slice]
+                if ndims == 2:
+                    contour_mask_slice = contour_mask[:, :, z_slice]
+                else:
+                    contour_mask_slice = contour_mask
                 contour_mask_file = self.contour_mask_dir.joinpath(f"{case_id}_{z_slice}.npy")
                 np.save(contour_mask_file, sitk.GetArrayFromImage(contour_mask_slice))
 
                 for obs, label in enumerate(observers):
 
-                    label_slice = label[:, :, z_slice]
+                    if ndims == 2:
+                        label_slice = label[:, :, z_slice]
+                    else:
+                        label_slice = label
                     label_file = self.label_dir.joinpath(f"{case_id}_{obs}_{z_slice}.npy")
                     np.save(label_file, sitk.GetArrayFromImage(label_slice))
                     self.slices.append(
