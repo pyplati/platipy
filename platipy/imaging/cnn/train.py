@@ -263,28 +263,37 @@ class ProbUNet(pl.LightningModule):
             **{f"probnet_{m}": [] for m in metrics},
             **{f"unet_{m}": [] for m in metrics},
         }
+
         for case in cases:
 
             img_arrs = []
             mean_arrs = []
             slices = []
-            for z in range(cases[case]["slices"] + 1):
-                img_file = self.validation_directory.joinpath(f"img_{case}_{z}.npy")
-                mean_file = self.validation_directory.joinpath(f"mean_{case}_{z}.npy")
-                if img_file.exists():
-                    img_arrs.append(np.load(img_file))
-                    mean_arrs.append(np.load(mean_file))
-                    slices.append(z)
 
-            if len(slices) < 5:
+            if self.hparams.ndims == 2:
+                for z in range(cases[case]["slices"] + 1):
+                    img_file = self.validation_directory.joinpath(f"img_{case}_{z}.npy")
+                    mean_file = self.validation_directory.joinpath(f"mean_{case}_{z}.npy")
+                    if img_file.exists():
+                        img_arrs.append(np.load(img_file))
+                        mean_arrs.append(np.load(mean_file))
+                        slices.append(z)
+
+            #if len(slices) < 5:
                 # Likely initial sanity check
-                continue
+            #    continue
 
-            img_arr = np.stack(img_arrs)
+                img_arr = np.stack(img_arrs)
+                mean_arr = np.stack(mean_arrs)
+
+            else:
+                img_file = self.validation_directory.joinpath(f"img_{case}_0.npy")
+                mean_file = self.validation_directory.joinpath(f"mean_{case}_0.npy")
+                img_arr = np.load(img_file)
+                mean_arr = np.load(mean_file)
             img = sitk.GetImageFromArray(img_arr)
             img.SetSpacing(self.hparams.spacing)
 
-            mean_arr = np.stack(mean_arrs)
             mean = sitk.GetImageFromArray(mean_arr)
             mean = sitk.Cast(mean, sitk.sitkUInt8)
             mean = post_process(mean)
@@ -297,34 +306,47 @@ class ProbUNet(pl.LightningModule):
             observers = []
             samples = []
             for idx, observer in enumerate(cases[case]["observers"]):
-                mask_arrs = []
-                sample_arrs = []
-                for z in slices:
+
+                if self.hparams.ndims == 2:
+                    mask_arrs = []
+                    sample_arrs = []
+                    for z in slices:
+                        mask_file = self.validation_directory.joinpath(
+                            f"mask_{case}_{z}_{observer}.npy"
+                        )
+                        sample_file = self.validation_directory.joinpath(
+                            f"sample_{case}_{z}_{observer}.npy"
+                        )
+
+                        mask_arrs.append(np.load(mask_file))
+                        sample_arrs.append(np.load(sample_file))
+
+                    mask_arr = np.stack(mask_arrs)
+                    sample_arr = np.stack(sample_arrs)
+
+                else:
                     mask_file = self.validation_directory.joinpath(
                         f"mask_{case}_{z}_{observer}.npy"
                     )
                     sample_file = self.validation_directory.joinpath(
                         f"sample_{case}_{z}_{observer}.npy"
                     )
+                    mask_arr = np.load(mask_file)
+                    sample_arr = np.load(sample_file)
 
-                    mask_arrs.append(np.load(mask_file))
-                    sample_arrs.append(np.load(sample_file))
-
-                mask_arr = np.stack(mask_arrs)
                 mask = sitk.GetImageFromArray(mask_arr)
                 mask = sitk.Cast(mask, sitk.sitkUInt8)
                 mask.CopyInformation(img)
-                # sitk.WriteImage(mask, f"val_mask_{case}_{observer}.nii.gz")
+                sitk.WriteImage(mask, f"val_mask_{case}_{observer}.nii.gz")
                 observers.append(mask)
                 obs_dict[f"manual_{observer}"] = mask
                 color_dict[f"manual_{observer}"] = [0.5, 0.5, 0.5]
 
-                sample_arr = np.stack(sample_arrs)
                 sample = sitk.GetImageFromArray(sample_arr)
                 sample = sitk.Cast(sample, sitk.sitkUInt8)
                 sample = post_process(sample)
                 sample.CopyInformation(img)
-                # sitk.WriteImage(sample, f"val_sample_{case}_{observer}.nii.gz")
+                sitk.WriteImage(sample, f"val_sample_{case}_{observer}.nii.gz")
                 samples.append(sample)
                 pred_dict[f"auto_{self.stddevs[idx]}"] = sample
                 color_dict[f"auto_{self.stddevs[idx]}"] = cmap(observer / 5)
