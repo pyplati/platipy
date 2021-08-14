@@ -140,8 +140,9 @@ class NiftiDataset(torch.utils.data.Dataset):
         working_dir,
         augment_on_the_fly=True,
         spacing=[1, 1, 1],
-        crop_to_mm=128,
+        crop_to_mm=None,
         contour_mask_kernel=5,
+        combine_observers=None,
         ndims=2,
     ):
         """Prepare a dataset from Nifti images/labels
@@ -222,6 +223,12 @@ class NiftiDataset(torch.utils.data.Dataset):
                 observers.append(label)
 
             contour_mask = get_contour_mask(observers, kernel=contour_mask_kernel)
+
+            if combine_observers == "union":
+                observers = [get_union_mask(observers)]
+
+            if combine_observers == "intersection":
+                observers = [get_intersection_mask(observers)]
 
             z_range = range(img.GetSize()[2])
             if ndims == 3:
