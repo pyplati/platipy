@@ -27,50 +27,10 @@ import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 
 from platipy.imaging.cnn.unet import UNet
-from platipy.imaging.cnn.dataset import preprocess_image
+from platipy.imaging.cnn.utils import preprocess_image, postprocess_mask, get_metrics
 
 from platipy.imaging import ImageVisualiser
 from platipy.imaging.label.utils import get_com
-
-
-def post_process(pred):
-
-    # Take only the largest componenet
-    labelled_image = sitk.ConnectedComponent(pred)
-    label_shape_filter = sitk.LabelShapeStatisticsImageFilter()
-    label_shape_filter.Execute(labelled_image)
-    label_indices = label_shape_filter.GetLabels()
-    voxel_counts = [label_shape_filter.GetNumberOfPixels(i) for i in label_indices]
-    if len(voxel_counts) > 0:
-        largest_component_label = label_indices[np.argmax(voxel_counts)]
-        largest_component_image = labelled_image == largest_component_label
-        pred = sitk.Cast(largest_component_image, sitk.sitkUInt8)
-
-    # Fill any holes in the structure
-    pred = sitk.BinaryMorphologicalClosing(pred, (5, 5, 5))
-    pred = sitk.BinaryFillhole(pred)
-
-    return pred
-
-
-def get_metrics(target, pred):
-
-    result = {}
-    lomif = sitk.LabelOverlapMeasuresImageFilter()
-    lomif.Execute(target, pred)
-    result["JI"] = lomif.GetJaccardCoefficient()
-    result["DSC"] = lomif.GetDiceCoefficient()
-
-    if sitk.GetArrayFromImage(pred).sum() == 0:
-        result["HD"] = 1000
-        result["ASD"] = 100
-    else:
-        hdif = sitk.HausdorffDistanceImageFilter()
-        hdif.Execute(target, pred)
-        result["HD"] = hdif.GetHausdorffDistance()
-        result["ASD"] = hdif.GetAverageHausdorffDistance()
-
-    return result
 
 
 class LocaliseUNet(pl.LightningModule):
@@ -131,7 +91,7 @@ class LocaliseUNet(pl.LightningModule):
         pred = sitk.Cast(pred, sitk.sitkUInt8)
 
         pred.CopyInformation(pp_img)
-        pred = post_process(pred)
+        pred = postprocess_mask(pred)
         pred = sitk.Resample(pred, img, sitk.Transform(), sitk.sitkNearestNeighbor)
 
         return pred
@@ -222,7 +182,7 @@ class LocaliseUNet(pl.LightningModule):
             pred_arr = np.stack(pred_arrs)
             pred = sitk.GetImageFromArray(pred_arr)
             pred = sitk.Cast(pred, sitk.sitkUInt8)
-            pred = post_process(pred)
+            pred = postprocess_mask(pred)
             pred.CopyInformation(img)
             sitk.WriteImage(pred, f"val_pred_{case}.nii.gz")
 

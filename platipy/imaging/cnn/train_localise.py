@@ -17,14 +17,13 @@ import os
 import json
 
 from pathlib import Path
+from argparse import ArgumentParser
 
 import comet_ml  # pylint: disable=unused-import
 from pytorch_lightning.loggers import CometLogger
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
-
-from argparse import ArgumentParser
 
 from platipy.imaging.cnn.localise_net import LocaliseUNet
 from platipy.imaging.cnn.dataload import UNetDataModule

@@ -36,50 +36,10 @@ import matplotlib.pyplot as plt
 from platipy.imaging.cnn.prob_unet import ProbabilisticUnet
 from platipy.imaging.cnn.unet import l2_regularisation
 from platipy.imaging.cnn.dataload import UNetDataModule
+from platipy.imaging.cnn.utils import postprocess_mask, get_metrics
 
 from platipy.imaging import ImageVisualiser
 from platipy.imaging.label.utils import get_com
-
-
-def post_process(pred):
-
-    # Take only the largest componenet
-    labelled_image = sitk.ConnectedComponent(pred)
-    label_shape_filter = sitk.LabelShapeStatisticsImageFilter()
-    label_shape_filter.Execute(labelled_image)
-    label_indices = label_shape_filter.GetLabels()
-    voxel_counts = [label_shape_filter.GetNumberOfPixels(i) for i in label_indices]
-    if len(voxel_counts) > 0:
-        largest_component_label = label_indices[np.argmax(voxel_counts)]
-        largest_component_image = labelled_image == largest_component_label
-        pred = sitk.Cast(largest_component_image, sitk.sitkUInt8)
-
-    # Fill any holes in the structure
-    pred = sitk.BinaryMorphologicalClosing(pred, (5, 5, 5))
-    pred = sitk.BinaryFillhole(pred)
-
-    return pred
-
-
-def get_metrics(target, pred):
-
-    result = {}
-    lomif = sitk.LabelOverlapMeasuresImageFilter()
-    lomif.Execute(target, pred)
-    result["JI"] = lomif.GetJaccardCoefficient()
-    result["DSC"] = lomif.GetDiceCoefficient()
-
-    if sitk.GetArrayFromImage(pred).sum() == 0:
-        result["HD"] = 1000
-        result["ASD"] = 100
-    else:
-        hdif = sitk.HausdorffDistanceImageFilter()
-        hdif.Execute(target, pred)
-        result["HD"] = hdif.GetHausdorffDistance()
-        result["ASD"] = hdif.GetAverageHausdorffDistance()
-
-    return result
-
 
 class ProbUNet(pl.LightningModule):
     def __init__(
@@ -293,7 +253,7 @@ class ProbUNet(pl.LightningModule):
 
             mean = sitk.GetImageFromArray(mean_arr)
             mean = sitk.Cast(mean, sitk.sitkUInt8)
-            mean = post_process(mean)
+            mean = postprocess_mask(mean)
             mean.CopyInformation(img)
             # sitk.WriteImage(mean, f"val_mean_{case}_mean.nii.gz")
 
@@ -341,7 +301,7 @@ class ProbUNet(pl.LightningModule):
 
                 sample = sitk.GetImageFromArray(sample_arr)
                 sample = sitk.Cast(sample, sitk.sitkUInt8)
-                sample = post_process(sample)
+                sample = postprocess_mask(sample)
                 sample.CopyInformation(img)
                 sitk.WriteImage(sample, f"val_sample_{case}_{observer}.nii.gz")
                 samples.append(sample)
