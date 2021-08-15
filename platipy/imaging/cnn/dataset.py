@@ -12,7 +12,7 @@ from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 
 from loguru import logger
 
-from platipy.imaging.cnn.localise import LocaliseUNet
+from platipy.imaging.cnn.localise_net import LocaliseUNet
 from platipy.imaging.label.utils import get_union_mask, get_intersection_mask
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
