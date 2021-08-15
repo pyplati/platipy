@@ -11,6 +11,8 @@ from platipy.imaging.cnn.sampler import ObserverSampler
 
 
 class UNetDataModule(pl.LightningDataModule):
+    """PyTorch data module to training UNets"""
+
     def __init__(
         self,
         data_dir: str = "./data",
@@ -31,6 +33,8 @@ class UNetDataModule(pl.LightningDataModule):
         num_observers=5,
         spacing=[1, 1, 1],
         contour_mask_kernel=3,
+        crop_using_localise_model=None,
+        localise_voxel_grid_size=[100, 100, 100],
         ndims=2,
         **kwargs,
     ):
@@ -61,7 +65,8 @@ class UNetDataModule(pl.LightningDataModule):
         self.spacing = spacing
         self.contour_mask_kernel = contour_mask_kernel
 
-        print(self.spacing)
+        self.crop_using_localise_model = crop_using_localise_model
+        self.localise_voxel_grid_size = localise_voxel_grid_size
 
         self.training_set = None
         self.validation_set = None
@@ -73,6 +78,7 @@ class UNetDataModule(pl.LightningDataModule):
 
     @staticmethod
     def add_model_specific_args(parent_parser):
+        """Add arguments used for Data module"""
         parser = parent_parser.add_argument_group("Data Loader")
         parser.add_argument("--data_dir", type=str, default="./data")
         parser.add_argument("--augmented_dir", type=str, default=None)
@@ -89,6 +95,10 @@ class UNetDataModule(pl.LightningDataModule):
         parser.add_argument("--augmented_label_glob", type=str, default=None)
         parser.add_argument("--crop_to_mm", type=int, default=128)
         parser.add_argument("--contour_mask_kernel", type=int, default=5)
+        parser.add_argument("--crop_using_localise_model", type=str, default=None)
+        parser.add_argument(
+            "--localise_voxel_grid_size", nargs="+", type=int, default=[100, 100, 100]
+        )
         parser.add_argument("--ndims", type=int, default=2)
 
         return parent_parser
@@ -106,10 +116,10 @@ class UNetDataModule(pl.LightningDataModule):
         for f in range(self.k_folds):
 
             if self.fold == f:
-                self.val_test_cases = cases[f * cases_per_fold : (f + 1) * cases_per_fold]
+                val_test_cases = cases[f * cases_per_fold : (f + 1) * cases_per_fold]
 
-                self.validation_cases = self.val_test_cases[:int(len(self.val_test_cases)/2)]
-                self.test_cases = self.val_test_cases[int(len(self.val_test_cases)/2):]
+                self.validation_cases = val_test_cases[: int(len(val_test_cases) / 2)]
+                self.test_cases = val_test_cases[int(len(val_test_cases) / 2) :]
             else:
                 self.train_cases += cases[f * cases_per_fold : (f + 1) * cases_per_fold]
 
@@ -121,7 +131,11 @@ class UNetDataModule(pl.LightningDataModule):
             {
                 "id": case,
                 "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
-                "label": [p for p in self.data_dir.glob(self.label_glob.format(case=case)) if not "_OLD" in p.name],
+                "label": [
+                    p
+                    for p in self.data_dir.glob(self.label_glob.format(case=case))
+                    if not "_OLD" in p.name
+                ],
             }
             for case in self.train_cases
         ]

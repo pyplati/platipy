@@ -14,9 +14,7 @@
 
 import sys
 import os
-import math
 import tempfile
-import random
 import json
 
 from pathlib import Path
@@ -199,7 +197,7 @@ class ProbUNet(pl.LightningModule):
             )
         return loss
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch, _):
 
         if self.validation_directory is None:
             self.validation_directory = Path(tempfile.mkdtemp())
@@ -278,9 +276,9 @@ class ProbUNet(pl.LightningModule):
                         mean_arrs.append(np.load(mean_file))
                         slices.append(z)
 
-            #if len(slices) < 5:
+                # if len(slices) < 5:
                 # Likely initial sanity check
-            #    continue
+                #    continue
 
                 img_arr = np.stack(img_arrs)
                 mean_arr = np.stack(mean_arrs)
@@ -487,8 +485,8 @@ if __name__ == "__main__":
                     args.append(f"--{key}")
 
                     if isinstance(params[key], list):
-                        for s in params[key]:
-                            args.append(str(s))
+                        for list_val in params[key]:
+                            args.append(str(list_val))
                     else:
                         args.append(str(params[key]))
 

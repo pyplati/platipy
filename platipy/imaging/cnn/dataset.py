@@ -12,7 +12,9 @@ from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 
 from loguru import logger
 
+from platipy.imaging.cnn.localise import LocaliseUNet
 from platipy.imaging.label.utils import get_union_mask, get_intersection_mask
+from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
 
 def get_contour_mask(masks, kernel=5):
@@ -143,6 +145,8 @@ class NiftiDataset(torch.utils.data.Dataset):
         augment_on_the_fly=True,
         spacing=[1, 1, 1],
         crop_to_mm=None,
+        crop_using_localise_model=None,
+        localise_voxel_grid_size=[100, 100, 100],
         contour_mask_kernel=5,
         combine_observers=None,
         ndims=2,
@@ -155,6 +159,9 @@ class NiftiDataset(torch.utils.data.Dataset):
                 observer.
             working_dir (str|path): Working directory where to write prepared files.
         """
+
+        if crop_to_mm is not None and crop_using_localise_model is not None:
+            raise AttributeError("Only one of crop_to_mm or crop_using_localise_model may be set")
 
         self.data = data
         self.transforms = None
@@ -216,6 +223,17 @@ class NiftiDataset(torch.utils.data.Dataset):
             img = sitk.ReadImage(img_path)
 
             img = preprocess_image(img, spacing=spacing, crop_to_mm=crop_to_mm)
+
+            if crop_using_localise_model:
+                localise_model = LocaliseUNet.load_from_checkpoint(crop_using_localise_model)
+                localise_model.eval()
+                localise_pred = localise_model.infer(img)
+                localise_pred = resample_mask_to_image(img, localise_pred)
+
+                size, index = label_to_roi(localise_pred)
+                index = [i - int((100 - s) / 2) for i, s in zip(index, size)]
+                size = localise_voxel_grid_size
+                img = crop_to_roi(img, size, index)
 
             observers = []
             for obs, structure_path in enumerate(structure_paths):

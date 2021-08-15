@@ -26,7 +26,7 @@ from pytorch_lightning.loggers import CometLogger
 
 import torch
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 from argparse import ArgumentParser
 
@@ -115,19 +115,17 @@ class LocaliseUNet(pl.LightningModule):
             self.parameters(), lr=self.hparams.learning_rate, weight_decay=0
         )
 
-        # scheduler = torch.optim.lr_scheduler.LambdaLR(
-        #     optimizer, lr_lambda=[lambda epoch: self.hparams.lr_lambda ** (epoch)]
-        # )
-
         return optimizer
 
     def infer(self, img):
 
-        pp_img = preprocess_image(img, spacing=self.hparams.spacing, crop_to_mm=self.hparams.crop_to_mm)
+        pp_img = preprocess_image(
+            img, spacing=self.hparams.spacing, crop_to_mm=self.hparams.crop_to_mm
+        )
 
         preds = []
         for z in range(pp_img.GetSize()[2]):
-            x = sitk.GetArrayFromImage(pp_img[:,:, z])
+            x = sitk.GetArrayFromImage(pp_img[:, :, z])
             x = torch.Tensor(x)
             x = x.unsqueeze(0)
             x = x.unsqueeze(0)
@@ -161,7 +159,7 @@ class LocaliseUNet(pl.LightningModule):
 
         return loss
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch, _):
 
         if self.validation_directory is None:
             self.validation_directory = Path(tempfile.mkdtemp())
@@ -238,13 +236,13 @@ class LocaliseUNet(pl.LightningModule):
             color_dict = {}
             obs_dict = {}
 
+            com = None
             try:
-                get_com(pred)
+                com = get_com(pred)
             except:
-                continue
-            img_vis = ImageVisualiser(
-                img, cut=get_com(pred), figure_size_in=16, window=[-1.0, 1.0]
-            )
+                com = [int(i / 2) for i in pred.GetSize()]
+
+            img_vis = ImageVisualiser(img, cut=com, figure_size_in=16, window=[-1.0, 1.0])
 
             for _, observer in enumerate(cases[case]["observers"]):
                 mask_arrs = []
@@ -345,9 +343,6 @@ def main(args, config_json_path=None):
     if comet_api_key is not None:
         trainer.logger = comet_logger
 
-    lr_monitor = LearningRateMonitor(logging_interval="step")
-    trainer.callbacks.append(lr_monitor)
-
     # Save the best model
     checkpoint_callback = ModelCheckpoint(
         monitor="DSC",
@@ -377,8 +372,8 @@ if __name__ == "__main__":
                     args.append(f"--{key}")
 
                     if isinstance(params[key], list):
-                        for s in params[key]:
-                            args.append(str(s))
+                        for list_val in params[key]:
+                            args.append(str(list_val))
                     else:
                         args.append(str(params[key]))
 
