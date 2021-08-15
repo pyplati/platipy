@@ -52,11 +52,12 @@ def preprocess_image(img, spacing=[1, 1, 1], crop_to_mm=128):
     new_size[1] = int(img.GetSize()[1] * (img.GetSpacing()[1] / spacing[1]))
     new_size[2] = int(img.GetSize()[2] * (img.GetSpacing()[2] / spacing[2]))
 
-    if new_size[0] < crop_to_mm:
-        new_size[0] = crop_to_mm
+    if crop_to_mm:
+        if new_size[0] < crop_to_mm:
+            new_size[0] = crop_to_mm
 
-    if new_size[1] < crop_to_mm:
-        new_size[1] = crop_to_mm
+        if new_size[1] < crop_to_mm:
+            new_size[1] = crop_to_mm
 
     img = sitk.Resample(
         img,
@@ -70,15 +71,16 @@ def preprocess_image(img, spacing=[1, 1, 1], crop_to_mm=128):
         img.GetPixelID(),
     )
 
-    center_x = img.GetSize()[0] / 2
-    x_from = int(center_x - crop_to_mm / 2)
-    x_to = x_from + crop_to_mm
+    if crop_to_mm:
+        center_x = img.GetSize()[0] / 2
+        x_from = int(center_x - crop_to_mm / 2)
+        x_to = x_from + crop_to_mm
 
-    center_y = img.GetSize()[1] / 2
-    y_from = int(center_y - crop_to_mm / 2)
-    y_to = y_from + crop_to_mm
+        center_y = img.GetSize()[1] / 2
+        y_from = int(center_y - crop_to_mm / 2)
+        y_to = y_from + crop_to_mm
 
-    img = img[x_from:x_to, y_from:y_to, :]
+        img = img[x_from:x_to, y_from:y_to, :]
 
     return img
 

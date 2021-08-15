@@ -26,7 +26,7 @@ from pytorch_lightning.loggers import CometLogger
 
 import torch
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import LearningRateMonitor
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 
 from argparse import ArgumentParser
 
@@ -34,6 +34,7 @@ import matplotlib.pyplot as plt
 
 from platipy.imaging.cnn.unet import UNet
 from platipy.imaging.cnn.dataload import UNetDataModule
+from platipy.imaging.cnn.dataset import preprocess_image
 
 from platipy.imaging import ImageVisualiser
 from platipy.imaging.label.utils import get_com
@@ -119,6 +120,30 @@ class LocaliseUNet(pl.LightningModule):
         # )
 
         return optimizer
+
+    def infer(self, img):
+
+        pp_img = preprocess_image(img, spacing=self.hparams.spacing, crop_to_mm=self.hparams.crop_to_mm)
+
+        preds = []
+        for z in range(pp_img.GetSize()[2]):
+            x = sitk.GetArrayFromImage(pp_img[:,:, z])
+            x = torch.Tensor(x)
+            x = x.unsqueeze(0)
+            x = x.unsqueeze(0)
+            y = self(x)
+            y = y.squeeze(0)
+            y = np.argmax(y.cpu().detach().numpy(), axis=0)
+            preds.append(y)
+
+        pred = sitk.GetImageFromArray(np.stack(preds))
+        pred = sitk.Cast(pred, sitk.sitkUInt8)
+
+        pred.CopyInformation(pp_img)
+        pred = post_process(pred)
+        pred = sitk.Resample(pred, img, sitk.Transform(), sitk.sitkNearestNeighbor)
+
+        return pred
 
     def training_step(self, batch, _):
 
@@ -213,6 +238,10 @@ class LocaliseUNet(pl.LightningModule):
             color_dict = {}
             obs_dict = {}
 
+            try:
+                get_com(pred)
+            except:
+                continue
             img_vis = ImageVisualiser(
                 img, cut=get_com(pred), figure_size_in=16, window=[-1.0, 1.0]
             )
@@ -270,7 +299,8 @@ def main(args, config_json_path=None):
 
     args.working_dir = Path(args.working_dir)
     args.working_dir = args.working_dir.joinpath(args.experiment)
-    args.default_root_dir = str(args.working_dir)
+    args.fold_dir = args.working_dir.joinpath(f"fold_{args.fold}")
+    args.default_root_dir = str(args.fold_dir)
 
     comet_api_key = None
     comet_workspace = None
@@ -317,6 +347,17 @@ def main(args, config_json_path=None):
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
     trainer.callbacks.append(lr_monitor)
+
+    # Save the best model
+    checkpoint_callback = ModelCheckpoint(
+        monitor="DSC",
+        dirpath=args.default_root_dir,
+        filename="localise-{epoch:02d}-{DSC:.2f}",
+        save_top_k=1,
+        mode="max",
+    )
+
+    trainer.callbacks.append(checkpoint_callback)
 
     trainer.fit(prob_unet, data_module)
 

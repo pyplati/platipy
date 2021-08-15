@@ -52,6 +52,7 @@ class UNetDataModule(pl.LightningDataModule):
 
         self.train_cases = []
         self.validation_cases = []
+        self.test_cases = []
 
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -64,6 +65,7 @@ class UNetDataModule(pl.LightningDataModule):
 
         self.training_set = None
         self.validation_set = None
+        self.test_set = None
 
         self.ndims = ndims
 
@@ -104,18 +106,22 @@ class UNetDataModule(pl.LightningDataModule):
         for f in range(self.k_folds):
 
             if self.fold == f:
-                self.validation_cases = cases[f * cases_per_fold : (f + 1) * cases_per_fold]
+                self.val_test_cases = cases[f * cases_per_fold : (f + 1) * cases_per_fold]
+
+                self.validation_cases = self.val_test_cases[:int(len(self.val_test_cases)/2)]
+                self.test_cases = self.val_test_cases[int(len(self.val_test_cases)/2):]
             else:
                 self.train_cases += cases[f * cases_per_fold : (f + 1) * cases_per_fold]
 
         print(f"Training cases: {self.train_cases}")
         print(f"Validation cases: {self.validation_cases}")
+        print(f"Testing cases: {self.test_cases}")
 
         train_data = [
             {
                 "id": case,
                 "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
-                "label": [p for p in self.data_dir.glob(self.label_glob.format(case=case))],
+                "label": [p for p in self.data_dir.glob(self.label_glob.format(case=case)) if not "_OLD" in p.name],
             }
             for case in self.train_cases
         ]
@@ -147,6 +153,7 @@ class UNetDataModule(pl.LightningDataModule):
                                     case=case, augmented_case=augmented_case
                                 )
                             )
+                            if not "_OLD" in p.name
                         ],
                     }
                     for augmented_case in augmented_cases
@@ -159,10 +166,23 @@ class UNetDataModule(pl.LightningDataModule):
                 "label": [
                     p
                     for p in self.data_dir.glob(self.label_glob.format(case=case))
-                    if not "edited" in p.name
+                    if not "_OLD" in p.name
                 ],
             }
             for case in self.validation_cases
+        ]
+
+        test_data = [
+            {
+                "id": case,
+                "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
+                "label": [
+                    p
+                    for p in self.data_dir.glob(self.label_glob.format(case=case))
+                    if not "_OLD" in p.name
+                ],
+            }
+            for case in self.test_cases
         ]
 
         self.training_set = NiftiDataset(
@@ -176,6 +196,15 @@ class UNetDataModule(pl.LightningDataModule):
         )
         self.validation_set = NiftiDataset(
             validation_data,
+            self.working_dir,
+            augment_on_the_fly=False,
+            spacing=self.spacing,
+            crop_to_mm=self.crop_to_mm,
+            contour_mask_kernel=self.contour_mask_kernel,
+            ndims=self.ndims,
+        )
+        self.test_set = NiftiDataset(
+            test_data,
             self.working_dir,
             augment_on_the_fly=False,
             spacing=self.spacing,
