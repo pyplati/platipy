@@ -199,12 +199,25 @@ class UNetDataModule(pl.LightningDataModule):
             for case in self.test_cases
         ]
 
+        crop_to_mm = None
+        localise_model_path = None
+        if self.crop_using_localise_model:
+            localise_model_path = Path(self.crop_using_localise_model.format(fold=self.fold))
+            if localise_model_path.name.isdir():
+                localise_model_path = next(localise_model_path.glob("*.ckpt"))
+
+            logger.info(f"Using localise model: {localise_model_path}")
+        else:
+            crop_to_mm = self.crop_to_mm
+
         self.training_set = NiftiDataset(
             train_data,
             self.working_dir,
             augment_on_the_fly=self.augment_on_fly,
             spacing=self.spacing,
-            crop_to_mm=self.crop_to_mm,
+            crop_to_mm=crop_to_mm,
+            crop_using_localise_model=localise_model_path,
+            localise_voxel_grid_size=self.localise_voxel_grid_size,
             contour_mask_kernel=self.contour_mask_kernel,
             ndims=self.ndims,
         )
@@ -213,7 +226,9 @@ class UNetDataModule(pl.LightningDataModule):
             self.working_dir,
             augment_on_the_fly=False,
             spacing=self.spacing,
-            crop_to_mm=self.crop_to_mm,
+            crop_to_mm=crop_to_mm,
+            crop_using_localise_model=localise_model_path,
+            localise_voxel_grid_size=self.localise_voxel_grid_size,
             contour_mask_kernel=self.contour_mask_kernel,
             ndims=self.ndims,
         )
@@ -222,7 +237,9 @@ class UNetDataModule(pl.LightningDataModule):
             self.working_dir,
             augment_on_the_fly=False,
             spacing=self.spacing,
-            crop_to_mm=self.crop_to_mm,
+            crop_to_mm=crop_to_mm,
+            crop_using_localise_model=localise_model_path,
+            localise_voxel_grid_size=self.localise_voxel_grid_size,
             contour_mask_kernel=self.contour_mask_kernel,
             ndims=self.ndims,
         )
