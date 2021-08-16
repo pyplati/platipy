@@ -20,58 +20,7 @@
 
 import torch
 
-
-def truncated_normal_(tensor, mean=0, std=1):
-    size = tensor.shape
-    tmp = tensor.new_empty(size + (4,)).normal_()
-    valid = (tmp < 2) & (tmp > -2)
-    ind = valid.max(-1, keepdim=True)[1]
-    tensor.data.copy_(tmp.gather(-1, ind).squeeze(-1))
-    tensor.data.mul_(std).add_(mean)
-
-
-def init_weights(m):
-    if (
-        isinstance(m, torch.nn.Conv2d)
-        or isinstance(m, torch.nn.ConvTranspose2d)
-        or isinstance(m, torch.nn.Conv3d)
-        or isinstance(m, torch.nn.ConvTranspose3d)
-    ):
-        torch.nn.init.kaiming_normal_(m.weight, mode="fan_in", nonlinearity="relu")
-        truncated_normal_(m.bias, mean=0, std=0.001)
-
-
-def init_zeros(m):
-    if (
-        isinstance(m, torch.nn.Conv2d)
-        or isinstance(m, torch.nn.ConvTranspose2d)
-        or isinstance(m, torch.nn.Conv3d)
-        or isinstance(m, torch.nn.ConvTranspose3d)
-    ):
-        torch.nn.init.zeros_(m.weight)
-        truncated_normal_(m.bias, mean=0, std=0.1)
-
-
-def conv_nd(ndims=2, **kwargs):
-    """Generate a 2D or 3D convolution
-
-    Args:
-        ndims (int, optional): 2 or 3 dimensions. Defaults to 2.
-
-    Raises:
-        NotImplementedError: Raised if ndims is not in 2 or 3 dimensions.
-
-    Returns:
-        torch.nn.Conv: The convolution.
-    """
-
-    if ndims == 2:
-        return torch.nn.Conv2d(**kwargs)
-    elif ndims == 3:
-        return torch.nn.Conv3d(**kwargs)
-
-    raise NotImplementedError("Only 2 or 3 dimensions are supported")
-
+from .unet import init_weights, init_zeros, conv_nd
 
 class ResBlock(torch.nn.Module):
     """A residual block"""
