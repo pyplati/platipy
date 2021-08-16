@@ -25,13 +25,15 @@ from platipy.imaging.registration.deformable import (
     fast_symmetric_forces_demons_registration,
 )
 
+from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
-def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=5):
+
+def generate_field_shift(mask, vector_shift=(10, 10, 10), gaussian_smooth=5):
     """
     Shifts (moves) a structure defined using a binary mask.
 
     Args:
-        mask_image ([SimpleITK.Image]): The binary mask to shift.
+        mask ([SimpleITK.Image]): The binary mask to shift.
         vector_shift (tuple, optional): The displacement vector applied to the entire binary mask.
                                         Convention: (+/-, +/-, +/-) = (sup/inf, post/ant,
                                         left/right) shift.
@@ -45,9 +47,15 @@ def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=
         [SimpleITK.DisplacementFieldTransform]: The transform representing the shift.
         [SimpleITK.Image]: The displacement vector field representing the shift.
     """
+
+    mask_full = mask
+
+    size, index = label_to_roi(mask, expansion_mm=[x + 5 for x in vector_shift])
+    mask = crop_to_roi(mask, size, index)
+
     # Define array
     # Used for image array manipulations
-    mask_image_arr = sitk.GetArrayFromImage(mask_image)
+    mask_image_arr = sitk.GetArrayFromImage(mask)
 
     # The template deformation field
     # Used to generate transforms
@@ -56,14 +64,14 @@ def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=
     dvf_template = sitk.GetImageFromArray(dvf_arr)
 
     # Copy image information
-    dvf_template.CopyInformation(mask_image)
+    dvf_template.CopyInformation(mask)
 
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
-    mask_image_shift = apply_transform(
-        mask_image, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
+    mask_shift = apply_transform(
+        mask, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
     )
 
-    dvf_template = sitk.Mask(dvf_template, mask_image | mask_image_shift)
+    dvf_template = sitk.Mask(dvf_template, mask | mask_shift)
 
     # smooth
     if np.any(gaussian_smooth):
@@ -73,12 +81,15 @@ def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=
 
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
+    # Resample back to original image
+    dvf_template = sitk.Resample(dvf_template, mask_full)
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
-    mask_image_shift = apply_transform(
-        mask_image, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
+
+    mask_shift = apply_transform(
+        mask_full, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
     )
 
-    return mask_image_shift, dvf_tfm, dvf_template
+    return mask_shift, dvf_tfm, dvf_template
 
 
 def generate_field_asymmetric_contract(
@@ -229,7 +240,13 @@ def generate_field_expand(
         [SimpleITK.Image]: The displacement vector field representing the expansion.
     """
 
+    mask_full = mask
+
+    size, index = label_to_roi(mask, expansion_mm=[expand + gaussian_smooth] * 3)
+    mask = crop_to_roi(mask, size, index)
+
     if bone_mask is not False:
+        bone_mask = sitk.Resample(bone_mask, mask, sitk.Transform(), sitk.sitkNearestNeighbor)
         mask_original = mask + bone_mask
     else:
         mask_original = mask
@@ -299,10 +316,12 @@ def generate_field_expand(
 
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
+    # Resample back to original image
+    dvf_template = sitk.Resample(dvf_template, mask_full)
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
 
     mask_symmetric_expand = apply_transform(
-        mask, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
+        mask_full, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
     )
 
     return mask_symmetric_expand, dvf_tfm, dvf_template
