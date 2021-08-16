@@ -258,7 +258,7 @@ def generate_field_expand(
 
         roi_expand = [x + y for x, y in zip(roi_expand, gaussian_smooth)]
 
-    size, index = label_to_roi(mask, expansion_mm=[expand + gaussian_smooth] * 3)
+    size, index = label_to_roi(mask, expansion_mm=roi_expand)
     mask = crop_to_roi(mask, size, index)
 
     if bone_mask is not False:
