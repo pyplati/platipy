@@ -74,7 +74,7 @@ def convert_nifti(dcm_path, mask_input, output_file, color_map=cm.get_cmap("rain
             mask = sitk.ReadImage(str(mask))
 
         bool_arr = sitk.GetArrayFromImage(mask) != 0
-        bool_arr = np.transpose(bool_arr, (2, 1, 0))
+        bool_arr = np.transpose(bool_arr, (1, 2, 0))
         rtstruct.add_roi(mask=bool_arr, color=color, name=mask_name)
 
     rtstruct.save(str(output_file))

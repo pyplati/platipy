@@ -22,14 +22,27 @@ import matplotlib.pyplot as plt
 from platipy.imaging.utils.crop import label_to_roi
 
 
+class VisualiseImage:
+    """Class to represent visualisation of an image"""
+
+    def __init__(self, image, aspect, interpolation, origin, colormap, clim):
+        self.image = image
+        self.aspect = aspect
+        self.interpolation = interpolation
+        self.origin = origin
+        self.colormap = colormap
+        self.clim = clim
+
+
 class VisualiseContour:
     """Class to represent the visualiation of a contour"""
 
-    def __init__(self, image, name, color=None, linewidth=2):
+    def __init__(self, image, name, color=None, linewidth=2, linestyle="solid"):
         self.image = image
         self.name = name
         self.color = color
         self.linewidth = linewidth
+        self.linestyle = linestyle
 
 
 class VisualiseScalarOverlay:
@@ -287,6 +300,20 @@ def project_onto_arbitrary_plane(
     default_value=-1000,
     resample_interpolation=2,
 ):
+    """[summary]
+
+    Args:
+        image ([type]): [description]
+        projection_name (str, optional): [description]. Defaults to "mean".
+        projection_axis (int, optional): [description]. Defaults to 0.
+        rotation_axis (list, optional): [description]. Defaults to [1, 0, 0].
+        rotation_angle (int, optional): [description]. Defaults to 0.
+        default_value (int, optional): [description]. Defaults to -1000.
+        resample_interpolation (int, optional): [description]. Defaults to 2.
+
+    Returns:
+        [type]: [description]
+    """
 
     projection_dict = {
         "sum": sitk.SumProjection,
