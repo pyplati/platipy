@@ -50,7 +50,16 @@ def generate_field_shift(mask, vector_shift=(10, 10, 10), gaussian_smooth=5):
 
     mask_full = mask
 
-    size, index = label_to_roi(mask, expansion_mm=[x + 5 for x in vector_shift])
+    roi_expand = [x + 5 for x in vector_shift]
+
+    if np.any(gaussian_smooth):
+
+        if not hasattr(gaussian_smooth, "__iter__"):
+            gaussian_smooth = (gaussian_smooth,) * 3
+
+        roi_expand = [x + y for x, y in zip(roi_expand, gaussian_smooth)]
+
+    size, index = label_to_roi(mask, expansion_mm=roi_expand)
     mask = crop_to_roi(mask, size, index)
 
     # Define array
@@ -75,10 +84,6 @@ def generate_field_shift(mask, vector_shift=(10, 10, 10), gaussian_smooth=5):
 
     # smooth
     if np.any(gaussian_smooth):
-
-        if not hasattr(gaussian_smooth, "__iter__"):
-            gaussian_smooth = (gaussian_smooth,) * 3
-
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
     # Resample back to original image
@@ -223,24 +228,35 @@ def generate_field_expand(
     dilation kernel.
 
     Args:
-        mask ([SimpleITK.Image]): The binary mask to expand.
-        bone_mask ([SimpleITK.Image, optional]): A binary mask defining regions where we expect
-                                                 restricted deformations.
-        vector_asymmetric_extend (int |tuple, optional): The expansion vector applied to the entire
-                                                         binary mask.
-                                                    Convention: (z,y,x) size of expansion kernel.
-                                                    Defined in millimetres.
-                                                    Defaults to 3.
+        mask (SimpleITK.Image): The binary mask to expand.
+        bone_mask (SimpleITK.Image, optional): A binary mask defining regions where we expect
+          restricted deformations.
+        expand (int |tuple, optional): The expansion vector applied to the entire binary mask.
+          Convention: (z,y,x) size of expansion kernel.
+          Defined in millimetres.
+          Defaults to 3.
         gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the
-                                                deformation vector field. Defaults to 5.
+          deformation vector field. Defaults to 5.
 
     Returns:
-        [SimpleITK.Image]: The binary mask following the expansion.
-        [SimpleITK.DisplacementFieldTransform]: The transform representing the expansion.
-        [SimpleITK.Image]: The displacement vector field representing the expansion.
+        SimpleITK.Image: The binary mask following the expansion.
+        SimpleITK.DisplacementFieldTransform: The transform representing the expansion.
+        SimpleITK.Image: The displacement vector field representing the expansion.
     """
 
     mask_full = mask
+
+    if not hasattr(expand, "__iter__"):
+        expand = (expand,) * 3
+
+    roi_expand = expand
+
+    if np.any(gaussian_smooth):
+
+        if not hasattr(gaussian_smooth, "__iter__"):
+            gaussian_smooth = (gaussian_smooth,) * 3
+
+        roi_expand = [x + y for x, y in zip(roi_expand, gaussian_smooth)]
 
     size, index = label_to_roi(mask, expansion_mm=[expand + gaussian_smooth] * 3)
     mask = crop_to_roi(mask, size, index)
@@ -252,9 +268,6 @@ def generate_field_expand(
         mask_original = mask
 
     # Use binary erosion to create a smaller volume
-    if not hasattr(expand, "__iter__"):
-        expand = (expand,) * 3
-
     expand = np.array(expand)
 
     # Convert voxels to millimetres
@@ -310,10 +323,6 @@ def generate_field_expand(
 
     # smooth
     if np.any(gaussian_smooth):
-
-        if not hasattr(gaussian_smooth, "__iter__"):
-            gaussian_smooth = (gaussian_smooth,) * 3
-
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
     # Resample back to original image
