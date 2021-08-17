@@ -461,7 +461,7 @@ if __name__ == "__main__":
     arg_parser.add_argument("--experiment", type=str, default="default", help="Name of experiment")
     arg_parser.add_argument("--working_dir", type=str, default="./working")
     arg_parser.add_argument("--num_observers", type=int, default=5)
-    arg_parser.add_argument("--spacing", nargs="+", type=int, default=[1, 1, 1])
+    arg_parser.add_argument("--spacing", nargs="+", type=float, default=[1, 1, 1])
     arg_parser.add_argument("--offline", type=bool, default=False)
     arg_parser.add_argument("--comet_api_key", type=str, default=None)
     arg_parser.add_argument("--comet_workspace", type=str, default=None)

@@ -205,7 +205,7 @@ class UNetDataModule(pl.LightningDataModule):
         localise_model_path = None
         if self.crop_using_localise_model:
             localise_model_path = Path(self.crop_using_localise_model.format(fold=self.fold))
-            if localise_model_path.name.isdir():
+            if localise_model_path.is_dir():
                 localise_model_path = next(localise_model_path.glob("*.ckpt"))
 
             logger.info(f"Using localise model: {localise_model_path}")

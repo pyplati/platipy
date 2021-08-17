@@ -141,18 +141,24 @@ class NiftiDataset(torch.utils.data.Dataset):
             logger.debug(f"Generating images for case: {case_id}")
             img = sitk.ReadImage(img_path)
 
-            img = preprocess_image(img, spacing=spacing, crop_to_mm=crop_to_mm)
-
             if crop_using_localise_model:
                 localise_model = LocaliseUNet.load_from_checkpoint(crop_using_localise_model)
                 localise_model.eval()
                 localise_pred = localise_model.infer(img)
+                print(localise_pred.GetSize())
+                img = preprocess_image(img, spacing=spacing, crop_to_mm=crop_to_mm)
                 localise_pred = resample_mask_to_image(img, localise_pred)
 
                 size, index = label_to_roi(localise_pred)
-                index = [i - int((100 - s) / 2) for i, s in zip(index, size)]
+                print(size)
+                print(index)
+                index = [i - int((g - s) / 2) for i, s, g in zip(index, size, localise_voxel_grid_size)]
                 size = localise_voxel_grid_size
+                print(size)
+                print(index)
                 img = crop_to_roi(img, size, index)
+            else:
+                img = preprocess_image(img, spacing=spacing, crop_to_mm=crop_to_mm)
 
             observers = []
             for obs, structure_path in enumerate(structure_paths):

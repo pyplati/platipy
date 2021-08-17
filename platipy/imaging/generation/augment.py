@@ -25,6 +25,7 @@ import numpy as np
 
 from loguru import logger
 
+import matplotlib.pyplot as plt
 from platipy.imaging import ImageVisualiser
 
 from platipy.imaging.generation.dvf import (
@@ -352,6 +353,7 @@ def augment_data(args):
 
             figure_path = augmented_case_path.joinpath("aug.png")
             fig.savefig(figure_path, bbox_inches="tight")
+            plt.close()
 
 
 if __name__ == "__main__":
