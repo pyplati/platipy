@@ -2,21 +2,27 @@ from matplotlib import cm
 import numpy as np
 import SimpleITK as sitk
 
+import matplotlib.colors as mcolors
+
 
 def write_nrrd_structure_set(
-    masks, output_file="structure_set.nrrd", color_map=cm.get_cmap("rainbow")
+    masks,
+    output_file="structure_set.nrrd",
+    color_map=cm.get_cmap("rainbow"),
 ):
     """Write an nrrd structure given a set of masks. Useful for reading in Slicer.
 
     Args:
         masks (dict): Key is structure name, value is SimpleITK.Image
         output_file (str, optional): The path to write the nrrd file. Defaults to
-                                     "structure_set.nrrd".
-        color_map (matplotlib.colors.Colormap, optional): Colormap to use for output. Defaults to
-                                     cm.get_cmap("rainbow").
+            "structure_set.nrrd".
+        color_map (matplotlib.colors.Colormap | dict, optional): Colormap to use for output.
+            Can also use a dictionary with keys as structure names and values as colors.
+            Defaults to cm.get_cmap("rainbow").
 
     Raises:
         AttributeError: masks must be a dict
+        ValueError: color_map must be a matplotlib colormap or a dictionary
     """
 
     if not isinstance(masks, dict):
@@ -27,6 +33,7 @@ def write_nrrd_structure_set(
     structure_names = []
     structure_values = []
     structure_layers = []
+
     for structure_name in masks:
         mask = masks[structure_name]
 
@@ -76,7 +83,13 @@ def write_nrrd_structure_set(
 
     structure_count = 0
     for name in structure_names:
-        color = color_map(hash(name) % 256)
+        if isinstance(color_map, (mcolors.ListedColormap, mcolors.LinearSegmentedColormap)):
+            color = color_map(hash(name) % 256)
+        elif isinstance(color_map, dict):
+            color = color_map[name]
+        else:
+            raise ValueError("color_map must be either a matplotlib colormap or a dictionary!")
+
         color = color[:3]
         color = [str(c) for c in color]
 
