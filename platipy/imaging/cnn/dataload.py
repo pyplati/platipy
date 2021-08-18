@@ -31,7 +31,9 @@ class UNetDataModule(pl.LightningDataModule):
         k_folds=5,
         batch_size=5,
         num_workers=4,
-        crop_to_mm=128,
+        crop_to_grid_size_xy=128,
+        intensity_scaling="window",
+        intensity_window=[-500, 500],
         num_observers=5,
         spacing=[1, 1, 1],
         contour_mask_kernel=3,
@@ -62,9 +64,11 @@ class UNetDataModule(pl.LightningDataModule):
 
         self.batch_size = batch_size
         self.num_workers = num_workers
-        self.crop_to_mm = crop_to_mm
+        self.crop_to_grid_size_xy = crop_to_grid_size_xy
         self.num_observers = num_observers
         self.spacing = spacing
+        self.intensity_scaling = intensity_scaling
+        self.intensity_window = intensity_window
         self.contour_mask_kernel = contour_mask_kernel
 
         self.crop_using_localise_model = crop_using_localise_model
@@ -84,7 +88,7 @@ class UNetDataModule(pl.LightningDataModule):
         parser = parent_parser.add_argument_group("Data Loader")
         parser.add_argument("--data_dir", type=str, default="./data")
         parser.add_argument("--augmented_dir", type=str, default=None)
-        parser.add_argument("--augment_onfly", type=bool, default=True)
+        parser.add_argument("--augment_on_fly", type=bool, default=True)
         parser.add_argument("--fold", type=int, default=0)
         parser.add_argument("--k_folds", type=int, default=5)
         parser.add_argument("--batch_size", type=int, default=5)
@@ -95,7 +99,9 @@ class UNetDataModule(pl.LightningDataModule):
         parser.add_argument("--augmented_case_glob", type=str, default=None)
         parser.add_argument("--augmented_image_glob", type=str, default=None)
         parser.add_argument("--augmented_label_glob", type=str, default=None)
-        parser.add_argument("--crop_to_mm", type=int, default=128)
+        parser.add_argument("--crop_to_grid_size_xy", type=int, default=128)
+        parser.add_argument("--intensity_scaling", type=str, default="window")
+        parser.add_argument("--intensity_window", nargs="+", type=int, default=[-500, 500])
         parser.add_argument("--contour_mask_kernel", type=int, default=5)
         parser.add_argument("--crop_using_localise_model", type=str, default=None)
         parser.add_argument(
@@ -201,7 +207,7 @@ class UNetDataModule(pl.LightningDataModule):
             for case in self.test_cases
         ]
 
-        crop_to_mm = None
+        crop_to_grid_size = None
         localise_model_path = None
         if self.crop_using_localise_model:
             localise_model_path = Path(self.crop_using_localise_model.format(fold=self.fold))
@@ -209,40 +215,44 @@ class UNetDataModule(pl.LightningDataModule):
                 localise_model_path = next(localise_model_path.glob("*.ckpt"))
 
             logger.info(f"Using localise model: {localise_model_path}")
+            crop_to_grid_size = self.localise_voxel_grid_size
         else:
-            crop_to_mm = self.crop_to_mm
+            crop_to_grid_size = self.crop_to_grid_size_xy
 
         self.training_set = NiftiDataset(
             train_data,
             self.working_dir,
-            augment_on_the_fly=self.augment_on_fly,
+            augment_on_fly=self.augment_on_fly,
             spacing=self.spacing,
-            crop_to_mm=crop_to_mm,
+            crop_to_grid_size=crop_to_grid_size,
             crop_using_localise_model=localise_model_path,
-            localise_voxel_grid_size=self.localise_voxel_grid_size,
             contour_mask_kernel=self.contour_mask_kernel,
+            intensity_scaling=self.intensity_scaling,
+            intensity_window=self.intensity_window,
             ndims=self.ndims,
         )
         self.validation_set = NiftiDataset(
             validation_data,
             self.working_dir,
-            augment_on_the_fly=False,
+            augment_on_fly=False,
             spacing=self.spacing,
-            crop_to_mm=crop_to_mm,
+            crop_to_grid_size=crop_to_grid_size,
             crop_using_localise_model=localise_model_path,
-            localise_voxel_grid_size=self.localise_voxel_grid_size,
             contour_mask_kernel=self.contour_mask_kernel,
+            intensity_scaling=self.intensity_scaling,
+            intensity_window=self.intensity_window,
             ndims=self.ndims,
         )
         self.test_set = NiftiDataset(
             test_data,
             self.working_dir,
-            augment_on_the_fly=False,
+            augment_on_fly=False,
             spacing=self.spacing,
-            crop_to_mm=crop_to_mm,
+            crop_to_grid_size=crop_to_grid_size,
             crop_using_localise_model=localise_model_path,
-            localise_voxel_grid_size=self.localise_voxel_grid_size,
             contour_mask_kernel=self.contour_mask_kernel,
+            intensity_scaling=self.intensity_scaling,
+            intensity_window=self.intensity_window,
             ndims=self.ndims,
         )
 

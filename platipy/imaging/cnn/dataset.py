@@ -61,13 +61,14 @@ class NiftiDataset(torch.utils.data.Dataset):
         self,
         data,
         working_dir,
-        augment_on_the_fly=True,
+        augment_on_fly=True,
         spacing=[1, 1, 1],
-        crop_to_mm=None,
         crop_using_localise_model=None,
-        localise_voxel_grid_size=[100, 100, 100],
+        crop_to_grid_size=128,
         contour_mask_kernel=5,
         combine_observers=None,
+        intensity_scaling="window",
+        intensity_window=[-500, 500],
         ndims=2,
     ):
         """Prepare a dataset from Nifti images/labels
@@ -79,12 +80,9 @@ class NiftiDataset(torch.utils.data.Dataset):
             working_dir (str|path): Working directory where to write prepared files.
         """
 
-        if crop_to_mm is not None and crop_using_localise_model is not None:
-            raise AttributeError("Only one of crop_to_mm or crop_using_localise_model may be set")
-
         self.data = data
         self.transforms = None
-        if augment_on_the_fly:
+        if augment_on_fly:
             self.transforms = prepare_transforms()
         self.slices = []
         self.working_dir = Path(working_dir)
@@ -145,20 +143,23 @@ class NiftiDataset(torch.utils.data.Dataset):
                 localise_model = LocaliseUNet.load_from_checkpoint(crop_using_localise_model)
                 localise_model.eval()
                 localise_pred = localise_model.infer(img)
-                print(localise_pred.GetSize())
-                img = preprocess_image(img, spacing=spacing, crop_to_mm=crop_to_mm)
+
+                img = preprocess_image(img, spacing=spacing, crop_to_grid_size_xy=None)
                 localise_pred = resample_mask_to_image(img, localise_pred)
 
                 size, index = label_to_roi(localise_pred)
-                print(size)
-                print(index)
-                index = [i - int((g - s) / 2) for i, s, g in zip(index, size, localise_voxel_grid_size)]
-                size = localise_voxel_grid_size
-                print(size)
-                print(index)
+
+                if not hasattr(crop_to_grid_size, "__iter__"):
+                    crop_to_grid_size = (crop_to_grid_size,) * 3
+
+                index = [i - int((g - s) / 2) for i, s, g in zip(index, size, crop_to_grid_size)]
+                size = crop_to_grid_size
+
                 img = crop_to_roi(img, size, index)
             else:
-                img = preprocess_image(img, spacing=spacing, crop_to_mm=crop_to_mm)
+                img = preprocess_image(
+                    img, spacing=spacing, crop_to_grid_size_xy=crop_to_grid_size, intensity_scaling=intensity_scaling, intensity_window=intensity_window
+                )
 
             observers = []
             for obs, structure_path in enumerate(structure_paths):

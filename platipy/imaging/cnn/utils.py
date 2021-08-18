@@ -29,24 +29,60 @@ def get_contour_mask(masks, kernel=5):
     return union_mask - intersection_mask
 
 
-def preprocess_image(img, spacing=[1, 1, 1], crop_to_mm=128):
+def preprocess_image(
+    img,
+    spacing=[1, 1, 1],
+    crop_to_grid_size_xy=128,
+    intensity_scaling="window",
+    intensity_window=[-500, 500],
+):
+    """Preprocess an image to prepare it for use in a CNN.
 
-    img = sitk.Cast(img, sitk.sitkFloat32)
-    img = sitk.IntensityWindowing(
-        img, windowMinimum=-500.0, windowMaximum=500.0, outputMinimum=-1.0, outputMaximum=1.0
-    )
+    Args:
+        img (sitk.Image): [description]
+        spacing (list, optional): [description]. Defaults to [1, 1, 1].
+        crop_to_grid_size_xy (int|list, optional): Crop to the center grid of this size in x and y
+          direction. May be int value which will be use for both x and y size. Or a list containing
+          two int values for x and y. Defaults to 128.
+        intensity_scaling (str, optional): How to scale the intensity values. Should be one of
+        'norm' (center mean and unit variance), 'window' (map window [min max] to [-1 1]), 'none'
+        (no intensity scaling applied). Defaults to "window".
+        intensity_window (list, optional): List with min and max values to be used when
+          intensity_scaling is 'window'. Not used otherwise. Defaults to [-500, 500].
+
+    Returns:
+        sitk.Image: The preprocessed image.
+    """
+
+    if intensity_scaling == "norm":
+        img = sitk.Normalize(img)
+    elif intensity_scaling == "window":
+        img = sitk.Cast(img, sitk.sitkFloat32)
+        img = sitk.IntensityWindowing(
+            img,
+            windowMinimum=intensity_window[0],
+            windowMaximum=intensity_window[1],
+            outputMinimum=-1.0,
+            outputMaximum=1.0,
+        )
+    elif intensity_scaling != "none" and intensity_scaling is not None:
+        raise ValueError("intensity_scaling should be one of: 'norm', 'window', 'none'")
 
     new_size = sitk.VectorUInt32(3)
     new_size[0] = int(img.GetSize()[0] * (img.GetSpacing()[0] / spacing[0]))
     new_size[1] = int(img.GetSize()[1] * (img.GetSpacing()[1] / spacing[1]))
     new_size[2] = int(img.GetSize()[2] * (img.GetSpacing()[2] / spacing[2]))
 
-    if crop_to_mm:
-        if new_size[0] < crop_to_mm:
-            new_size[0] = crop_to_mm
+    if crop_to_grid_size_xy:
 
-        if new_size[1] < crop_to_mm:
-            new_size[1] = crop_to_mm
+        if not hasattr(crop_to_grid_size_xy, "__iter__"):
+            crop_to_grid_size_xy = (crop_to_grid_size_xy,) * 2
+
+        if new_size[0] < crop_to_grid_size_xy[0]:
+            new_size[0] = crop_to_grid_size_xy[0]
+
+        if new_size[1] < crop_to_grid_size_xy[1]:
+            new_size[1] = crop_to_grid_size_xy[1]
 
     img = sitk.Resample(
         img,
@@ -60,14 +96,14 @@ def preprocess_image(img, spacing=[1, 1, 1], crop_to_mm=128):
         img.GetPixelID(),
     )
 
-    if crop_to_mm:
+    if crop_to_grid_size_xy:
         center_x = img.GetSize()[0] / 2
-        x_from = int(center_x - crop_to_mm / 2)
-        x_to = x_from + crop_to_mm
+        x_from = int(center_x - crop_to_grid_size_xy[0] / 2)
+        x_to = x_from + crop_to_grid_size_xy[0]
 
         center_y = img.GetSize()[1] / 2
-        y_from = int(center_y - crop_to_mm / 2)
-        y_to = y_from + crop_to_mm
+        y_from = int(center_y - crop_to_grid_size_xy[1] / 2)
+        y_to = y_from + crop_to_grid_size_xy[1]
 
         img = img[x_from:x_to, y_from:y_to, :]
 
@@ -75,6 +111,15 @@ def preprocess_image(img, spacing=[1, 1, 1], crop_to_mm=128):
 
 
 def resample_mask_to_image(img, mask):
+    """Repsample a mask to the space of the image supplied.
+
+    Args:
+        img (sitk.Image): Image to sample to space of.
+        mask (sitk.Image): Mask to resample.
+
+    Returns:
+        sitk.Image: The resampled mask.
+    """
 
     return sitk.Resample(
         mask,
