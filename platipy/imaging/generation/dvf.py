@@ -16,6 +16,8 @@
 import numpy as np
 import SimpleITK as sitk
 
+from loguru import logger
+
 from platipy.imaging.registration.utils import (
     apply_transform,
     convert_mask_to_reg_structure,
@@ -59,6 +61,9 @@ def generate_field_shift(mask, vector_shift=(10, 10, 10), gaussian_smooth=5):
 
         roi_expand = [x + y for x, y in zip(roi_expand, gaussian_smooth)]
 
+    # Make sure the expansion meets a minimum size (1cm)
+    roi_expand = [max(e, 10) for e in roi_expand]
+    
     size, index = label_to_roi(mask, expansion_mm=roi_expand)
     mask = crop_to_roi(mask, size, index)
 
@@ -258,6 +263,9 @@ def generate_field_expand(
 
         roi_expand = [x + y for x, y in zip(roi_expand, gaussian_smooth)]
 
+    # Make sure the expansion meets a minimum size (1cm)
+    roi_expand = [max(e, 10) for e in roi_expand]
+
     size, index = label_to_roi(mask, expansion_mm=roi_expand)
     mask = crop_to_roi(mask, size, index)
 
@@ -279,17 +287,17 @@ def generate_field_expand(
 
     # If all negative: erode
     if np.all(np.array(expand) <= 0):
-        print("All factors negative: shrinking only.")
+        logger.debug("All factors negative: shrinking only.")
         mask_expand = sitk.BinaryErode(mask, np.abs(expand).astype(int).tolist(), sitk.sitkBall)
 
     # If all positive: dilate
     elif np.all(np.array(expand) >= 0):
-        print("All factors positive: expansion only.")
+        logger.debug("All factors positive: expansion only.")
         mask_expand = sitk.BinaryDilate(mask, np.abs(expand).astype(int).tolist(), sitk.sitkBall)
 
     # Otherwise: sequential operations
     else:
-        print("Mixed factors: shrinking and expansion.")
+        logger.debug("Mixed factors: shrinking and expansion.")
         expansion_kernel = expand * (expand > 0)
         shrink_kernel = expand * (expand < 0)
 
