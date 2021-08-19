@@ -26,7 +26,7 @@ import numpy as np
 from loguru import logger
 
 import matplotlib.pyplot as plt
-#from platipy.imaging import ImageVisualiser
+from platipy.imaging import ImageVisualiser
 
 from platipy.imaging.generation.dvf import (
     generate_field_shift,
@@ -40,6 +40,9 @@ from platipy.imaging.generation.mask import (
 from platipy.imaging.registration.utils import apply_transform
 
 from platipy.imaging.utils.lung import detect_holes
+from platipy.imaging.label.utils import get_union_mask
+from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
+
 
 def apply_augmentation(image, augmentation, masks=[]):
 
@@ -55,7 +58,7 @@ def apply_augmentation(image, augmentation, masks=[]):
             "DeformableAugment's"
         )
 
-    #transforms = []
+    # transforms = []
     transform = None
     dvf = None
     for aug in augmentation:
@@ -65,7 +68,7 @@ def apply_augmentation(image, augmentation, masks=[]):
 
         logger.debug(str(aug))
         tfm, field = aug.augment()
-        #transforms.append(tfm)
+        # transforms.append(tfm)
 
         if dvf is None:
             dvf = field
@@ -74,8 +77,8 @@ def apply_augmentation(image, augmentation, masks=[]):
             dvf += field
             transform = sitk.CompositeTransform([transform, tfm])
 
-    #transform = sitk.CompositeTransform(transforms)
-    #del transforms
+    # transform = sitk.CompositeTransform(transforms)
+    # del transforms
 
     image_deformed = apply_transform(
         image,
@@ -289,13 +292,13 @@ def augment_data(args):
 
         logger.info(f"Augmenting for case: {case}")
 
-        ct_image = sitk.ReadImage(str(data[case]["image"]))
+        ct_image_original = sitk.ReadImage(str(data[case]["image"]))
 
         if args.enable_fill_holes:
 
             logger.debug("Finding holes")
-            ct_image = sitk.ReadImage(str(data[case]["image"]))
-            label_image, labels = detect_holes(ct_image)
+            ct_image_original = sitk.ReadImage(str(data[case]["image"]))
+            label_image, labels = detect_holes(ct_image_original)
 
         # Get list of structures to generate augmentations off
         logger.debug("Collecting structures")
@@ -308,28 +311,41 @@ def augment_data(args):
             all_masks.append(mask)
             all_names.append(structure_path.name.replace(".nii.gz", ""))
 
+        logger.debug("Cropping to regions around all structures")
+        union_mask = get_union_mask(all_masks)
+        size, index = label_to_roi(union_mask, expansion_mm=[25, 25, 25])
+
+        for m, mask in enumerate(all_masks):
+            all_masks[m] = crop_to_roi(mask, size, index)
+
         # Generate x random augmentations per case
         for i in range(args.augmentations_per_case):
 
             logger.debug(f"Generating augmentation {i}")
 
             ct_image = sitk.ReadImage(str(data[case]["image"]))
+            ct_image = crop_to_roi(ct_image, size, index)
 
             if args.enable_fill_holes:
 
                 logger.debug("Filling holes")
 
-                for label in labels[1:]: # Skip first hole since likely air around body
+                for label in labels[1:]:  # Skip first hole since likely air around body
 
-                    if random.random() > args.fill_probability: continue
+                    if random.random() > args.fill_probability:
+                        continue
 
                     hole = label_image == label["label"]
-                    hole_dilate = sitk.BinaryDilate(hole, (2,2,2), sitk.sitkBall)
+                    hole_dilate = sitk.BinaryDilate(hole, (2, 2, 2), sitk.sitkBall)
                     contour_points = sitk.BinaryContour(hole_dilate)
-                    fill_value = np.median(sitk.GetArrayFromImage(ct_image)[sitk.GetArrayFromImage(contour_points)==1])
+                    fill_value = np.median(
+                        sitk.GetArrayFromImage(ct_image)[
+                            sitk.GetArrayFromImage(contour_points) == 1
+                        ]
+                    )
 
                     ct_arr = sitk.GetArrayFromImage(ct_image)
-                    ct_arr[sitk.GetArrayFromImage(hole_dilate)==1] = fill_value
+                    ct_arr[sitk.GetArrayFromImage(hole_dilate) == 1] = fill_value
                     ct_filled = sitk.GetImageFromArray(ct_arr)
                     ct_filled.CopyInformation(ct_image)
 
@@ -358,24 +374,32 @@ def augment_data(args):
                 )
 
             augmented_image_path = augmented_case_path.joinpath("CT.nii.gz")
+            ct_image_original[
+                index[0] : index[0] + size[0],
+                index[1] : index[1] + size[1],
+                index[2] : index[2] + size[2],
+            ] = augmented_image
             sitk.WriteImage(augmented_image, str(augmented_image_path))
 
-            #vis = ImageVisualiser(image=ct_image, figure_size_in=6)
-            #vis.add_comparison_overlay(augmented_image)
-            #if dvf is not None:
-            #    vis.add_vector_overlay(dvf, arrow_scale=1, subsample=(4, 12, 12))
+            vis = ImageVisualiser(image=ct_image, figure_size_in=6)
+            vis.add_comparison_overlay(augmented_image)
+            if dvf is not None:
+                vis.add_vector_overlay(dvf, arrow_scale=1, subsample=(4, 12, 12))
             for mask_name, mask, augmented_mask in zip(all_names, all_masks, augmented_masks):
-                #vis.add_contour({f"{mask_name}": mask, f"{mask_name} (augmented)": augmented_mask})
+                vis.add_contour({f"{mask_name}": mask, f"{mask_name} (augmented)": augmented_mask})
 
                 logger.debug(f"Applying augmentation to mask: {mask_name}")
                 augmented_mask_path = augmented_case_path.joinpath(f"{mask_name}.nii.gz")
+                augmented_mask = sitk.Resample(
+                    augmented_mask, ct_image_original, sitk.Transform, sitk.sitkNearestNeighbor
+                )
                 sitk.WriteImage(augmented_mask, str(augmented_mask_path))
 
-            #fig = vis.show()
+            fig = vis.show()
 
-            #figure_path = augmented_case_path.joinpath("aug.png")
-            #fig.savefig(figure_path, bbox_inches="tight")
-            #plt.close()
+            figure_path = augmented_case_path.joinpath("aug.png")
+            fig.savefig(figure_path, bbox_inches="tight")
+            plt.close()
 
 
 if __name__ == "__main__":
