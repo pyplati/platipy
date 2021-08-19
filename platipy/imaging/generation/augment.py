@@ -294,12 +294,6 @@ def augment_data(args):
 
         ct_image_original = sitk.ReadImage(str(data[case]["image"]))
 
-        if args.enable_fill_holes:
-
-            logger.debug("Finding holes")
-            ct_image_original = sitk.ReadImage(str(data[case]["image"]))
-            label_image, labels = detect_holes(ct_image_original)
-
         # Get list of structures to generate augmentations off
         logger.debug("Collecting structures")
         all_masks = []
@@ -314,9 +308,15 @@ def augment_data(args):
         logger.debug("Cropping to regions around all structures")
         union_mask = get_union_mask(all_masks)
         size, index = label_to_roi(union_mask, expansion_mm=[25, 25, 25])
+        ct_image = crop_to_roi(ct_image_original, size, index)
 
         for m, mask in enumerate(all_masks):
             all_masks[m] = crop_to_roi(mask, size, index)
+
+        if args.enable_fill_holes:
+
+            logger.debug("Finding holes")
+            label_image, labels = detect_holes(ct_image)
 
         # Generate x random augmentations per case
         for i in range(args.augmentations_per_case):
