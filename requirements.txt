@@ -8,6 +8,7 @@ pynetdicom == 1.5.7
 flask == 1.1.2
 flask-restful == 0.3.8
 flask-sqlalchemy == 2.4.4
+SQLAlchemy < 1.4.0
 celery == 4.4.7
 redis == 3.5.3
 loguru == 0.5.3
