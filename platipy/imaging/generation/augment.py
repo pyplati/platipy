@@ -26,7 +26,7 @@ import numpy as np
 from loguru import logger
 
 import matplotlib.pyplot as plt
-from platipy.imaging import ImageVisualiser
+#from platipy.imaging import ImageVisualiser
 
 from platipy.imaging.generation.dvf import (
     generate_field_shift,
@@ -55,23 +55,27 @@ def apply_augmentation(image, augmentation, masks=[]):
             "DeformableAugment's"
         )
 
-    transforms = []
+    #transforms = []
+    transform = None
     dvf = None
     for aug in augmentation:
 
         if not isinstance(aug, DeformableAugment):
             raise AttributeError("Each augmentation must be of type DeformableAugment")
 
+        logger.debug(str(aug))
         tfm, field = aug.augment()
-        transforms.append(tfm)
+        #transforms.append(tfm)
 
         if dvf is None:
             dvf = field
+            transform = tfm
         else:
             dvf += field
+            transform = sitk.CompositeTransform([transform, tfm])
 
-    transform = sitk.CompositeTransform(transforms)
-    del transforms
+    #transform = sitk.CompositeTransform(transforms)
+    #del transforms
 
     image_deformed = apply_transform(
         image,
@@ -158,6 +162,9 @@ class ShiftAugment(DeformableAugment):
         )
         return transform, dvf
 
+    def __str__(self):
+        return f"Shift with vector: {self.vector_shift}, gauss: {self.gaussian_smooth}"
+
 
 class ExpandAugment(DeformableAugment):
     def __init__(self, mask, vector_expand=(10, 10, 10), gaussian_smooth=5, bone_mask=False):
@@ -178,12 +185,15 @@ class ExpandAugment(DeformableAugment):
 
         return transform, dvf
 
+    def __str__(self):
+        return f"Expand with vector: {self.vector_expand}, smooth: {self.gaussian_smooth}"
+
 
 class ContractAugment(DeformableAugment):
     def __init__(self, mask, vector_contract=(10, 10, 10), gaussian_smooth=5, bone_mask=False):
 
         self.mask = mask
-        self.contract = [int(-x / s) for x, s in zip(vector_contract, mask.GetSpacing())]
+        self.vector_contract = [int(-x / s) for x, s in zip(vector_contract, mask.GetSpacing())]
         self.gaussian_smooth = gaussian_smooth
         self.bone_mask = bone_mask
 
@@ -192,10 +202,13 @@ class ContractAugment(DeformableAugment):
         _, transform, dvf = generate_field_expand(
             self.mask,
             bone_mask=self.bone_mask,
-            expand=self.contract,
+            expand=self.vector_contract,
             gaussian_smooth=self.gaussian_smooth,
         )
         return transform, dvf
+
+    def __str__(self):
+        return f"Contract with vector: {self.vector_contract}, smooth: {self.gaussian_smooth}"
 
 
 def augment_data(args):
@@ -280,26 +293,12 @@ def augment_data(args):
 
         if args.enable_fill_holes:
 
+            logger.debug("Finding holes")
+            ct_image = sitk.ReadImage(str(data[case]["image"]))
             label_image, labels = detect_holes(ct_image)
 
-            for label in labels[1:]: # Skip first hole since likely air around body
-
-
-                if random.random() > args.fill_probability: continue
-
-                hole = label_image == label["label"]
-                hole_dilate = sitk.BinaryDilate(hole, (2,2,2), sitk.sitkBall)
-                contour_points = sitk.BinaryContour(hole_dilate)
-                fill_value = np.median(sitk.GetArrayFromImage(ct_image)[sitk.GetArrayFromImage(contour_points)==1])
-
-                ct_arr = sitk.GetArrayFromImage(ct_image)
-                ct_arr[sitk.GetArrayFromImage(hole_dilate)==1] = fill_value
-                ct_filled = sitk.GetImageFromArray(ct_arr)
-                ct_filled.CopyInformation(ct_image)
-
-                ct_image = ct_filled
-
         # Get list of structures to generate augmentations off
+        logger.debug("Collecting structures")
         all_masks = []
         all_names = []
         for structure_path in data[case]["label"]:
@@ -309,14 +308,37 @@ def augment_data(args):
             all_masks.append(mask)
             all_names.append(structure_path.name.replace(".nii.gz", ""))
 
-        # Generate 10 random augmentations per case
+        # Generate x random augmentations per case
         for i in range(args.augmentations_per_case):
 
-            logger.debug("Generating augmentation")
+            logger.debug(f"Generating augmentation {i}")
+
+            ct_image = sitk.ReadImage(str(data[case]["image"]))
+
+            if args.enable_fill_holes:
+
+                logger.debug("Filling holes")
+
+                for label in labels[1:]: # Skip first hole since likely air around body
+
+                    if random.random() > args.fill_probability: continue
+
+                    hole = label_image == label["label"]
+                    hole_dilate = sitk.BinaryDilate(hole, (2,2,2), sitk.sitkBall)
+                    contour_points = sitk.BinaryContour(hole_dilate)
+                    fill_value = np.median(sitk.GetArrayFromImage(ct_image)[sitk.GetArrayFromImage(contour_points)==1])
+
+                    ct_arr = sitk.GetArrayFromImage(ct_image)
+                    ct_arr[sitk.GetArrayFromImage(hole_dilate)==1] = fill_value
+                    ct_filled = sitk.GetImageFromArray(ct_arr)
+                    ct_filled.CopyInformation(ct_image)
+
+                    ct_image = ct_filled
 
             augmented_case_path = output_dir.joinpath(case, f"augment_{i}")
             augmented_case_path.mkdir(exist_ok=True, parents=True)
 
+            logger.debug("Generating random augmentations")
             augmentation = generate_random_augmentation(ct_image, all_masks, augmentation_types)
 
             dvf = None
@@ -338,22 +360,22 @@ def augment_data(args):
             augmented_image_path = augmented_case_path.joinpath("CT.nii.gz")
             sitk.WriteImage(augmented_image, str(augmented_image_path))
 
-            vis = ImageVisualiser(image=ct_image, figure_size_in=6)
-            vis.add_comparison_overlay(augmented_image)
-            if dvf is not None:
-                vis.add_vector_overlay(dvf, arrow_scale=1, subsample=(4, 12, 12))
+            #vis = ImageVisualiser(image=ct_image, figure_size_in=6)
+            #vis.add_comparison_overlay(augmented_image)
+            #if dvf is not None:
+            #    vis.add_vector_overlay(dvf, arrow_scale=1, subsample=(4, 12, 12))
             for mask_name, mask, augmented_mask in zip(all_names, all_masks, augmented_masks):
-                vis.add_contour({f"{mask_name}": mask, f"{mask_name} (augmented)": augmented_mask})
+                #vis.add_contour({f"{mask_name}": mask, f"{mask_name} (augmented)": augmented_mask})
 
                 logger.debug(f"Applying augmentation to mask: {mask_name}")
                 augmented_mask_path = augmented_case_path.joinpath(f"{mask_name}.nii.gz")
                 sitk.WriteImage(augmented_mask, str(augmented_mask_path))
 
-            fig = vis.show()
+            #fig = vis.show()
 
-            figure_path = augmented_case_path.joinpath("aug.png")
-            fig.savefig(figure_path, bbox_inches="tight")
-            plt.close()
+            #figure_path = augmented_case_path.joinpath("aug.png")
+            #fig.savefig(figure_path, bbox_inches="tight")
+            #plt.close()
 
 
 if __name__ == "__main__":
