@@ -73,7 +73,7 @@ class LocaliseUNet(pl.LightningModule):
     def infer(self, img):
 
         pp_img = preprocess_image(
-            img, spacing=self.hparams.spacing, crop_to_mm=self.hparams.crop_to_mm
+            img, spacing=self.hparams.spacing, crop_to_grid_size_xy=self.hparams.crop_to_mm
         )
 
         preds = []
@@ -189,14 +189,6 @@ class LocaliseUNet(pl.LightningModule):
             color_dict = {}
             obs_dict = {}
 
-            com = None
-            try:
-                com = get_com(pred)
-            except:
-                com = [int(i / 2) for i in pred.GetSize()]
-
-            img_vis = ImageVisualiser(img, cut=com, figure_size_in=16, window=[-1.0, 1.0])
-
             for _, observer in enumerate(cases[case]["observers"]):
                 mask_arrs = []
                 for z in slices:
@@ -212,6 +204,15 @@ class LocaliseUNet(pl.LightningModule):
                 mask.CopyInformation(img)
                 obs_dict[f"manual_{observer}"] = mask
                 color_dict[f"manual_{observer}"] = [0.7, 0.2, 0.2]
+
+            com = None
+            try:
+                com = get_com(mask)
+            except:
+                com = [int(i / 2) for i in mask.GetSize()]
+
+            img_vis = ImageVisualiser(img, cut=com, figure_size_in=16)
+            img_vis.set_limits_from_label(mask, expansion=[0, 0, 0])
 
             contour_dict = {**obs_dict}
             contour_dict["pred"] = pred

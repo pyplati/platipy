@@ -54,10 +54,10 @@ def preprocess_image(
         sitk.Image: The preprocessed image.
     """
 
+    img = sitk.Cast(img, sitk.sitkFloat32)
     if intensity_scaling == "norm":
         img = sitk.Normalize(img)
     elif intensity_scaling == "window":
-        img = sitk.Cast(img, sitk.sitkFloat32)
         img = sitk.IntensityWindowing(
             img,
             windowMinimum=intensity_window[0],
@@ -160,6 +160,9 @@ def get_metrics(target, pred):
     result["DSC"] = lomif.GetDiceCoefficient()
 
     if sitk.GetArrayFromImage(pred).sum() == 0:
+        result["HD"] = 1000
+        result["ASD"] = 100
+    elif sitk.GetArrayFromImage(target).sum() == 0:
         result["HD"] = 1000
         result["ASD"] = 100
     else:

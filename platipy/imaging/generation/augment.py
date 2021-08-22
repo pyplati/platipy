@@ -89,11 +89,13 @@ def apply_augmentation(image, augmentation, masks=[]):
 
     masks_deformed = []
     for mask in masks:
-        masks_deformed.append(
-            apply_transform(
-                mask, transform=transform, default_value=0, interpolator=sitk.sitkNearestNeighbor
-            )
+        def_mask = apply_transform(
+            mask, transform=transform, default_value=0, interpolator=sitk.sitkNearestNeighbor
         )
+
+        def_mask = sitk.BinaryMorphologicalClosing(def_mask, [3, 3, 3])
+
+        masks_deformed.append(def_mask)
 
     if masks:
         return image_deformed, masks_deformed, dvf
@@ -379,7 +381,7 @@ def augment_data(args):
                 index[1] : index[1] + size[1],
                 index[2] : index[2] + size[2],
             ] = augmented_image
-            sitk.WriteImage(augmented_image, str(augmented_image_path))
+            sitk.WriteImage(ct_image_original, str(augmented_image_path))
 
             vis = ImageVisualiser(image=ct_image, figure_size_in=6)
             vis.add_comparison_overlay(augmented_image)
@@ -391,7 +393,7 @@ def augment_data(args):
                 logger.debug(f"Applying augmentation to mask: {mask_name}")
                 augmented_mask_path = augmented_case_path.joinpath(f"{mask_name}.nii.gz")
                 augmented_mask = sitk.Resample(
-                    augmented_mask, ct_image_original, sitk.Transform, sitk.sitkNearestNeighbor
+                    augmented_mask, ct_image_original, sitk.Transform(), sitk.sitkNearestNeighbor
                 )
                 sitk.WriteImage(augmented_mask, str(augmented_mask_path))
 

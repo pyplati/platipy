@@ -27,7 +27,7 @@ from pytorch_lightning.loggers import CometLogger
 
 import torch
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import LearningRateMonitor
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 
 from argparse import ArgumentParser
 
@@ -426,6 +426,16 @@ def main(args, config_json_path=None):
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
     trainer.callbacks.append(lr_monitor)
+
+    # Save the best model
+    checkpoint_callback = ModelCheckpoint(
+        monitor="probnet_DSC",
+        dirpath=args.default_root_dir,
+        filename="probunet-{epoch:02d}-{DSC:.2f}",
+        save_top_k=1,
+        mode="max",
+    )
+    trainer.callbacks.append(checkpoint_callback)
 
     trainer.fit(prob_unet, data_module)
 

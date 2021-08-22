@@ -68,6 +68,7 @@ def main(args, config_json_path=None):
             comet_logger.experiment.log_code(config_json_path)
 
     dict_args = vars(args)
+    dict_args["validation_sampler"] = "batch"
 
     data_module = UNetDataModule(**dict_args)
 

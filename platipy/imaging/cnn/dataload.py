@@ -39,6 +39,7 @@ class UNetDataModule(pl.LightningDataModule):
         contour_mask_kernel=3,
         crop_using_localise_model=None,
         localise_voxel_grid_size=[100, 100, 100],
+        validation_sampler="observer", # observer or batch
         ndims=2,
         **kwargs,
     ):
@@ -54,6 +55,7 @@ class UNetDataModule(pl.LightningDataModule):
         self.augmented_image_glob = augmented_image_glob
         self.augmented_label_glob = augmented_label_glob
 
+        print(augment_on_fly)
         self.augment_on_fly = augment_on_fly
         self.fold = fold
         self.k_folds = k_folds
@@ -77,6 +79,7 @@ class UNetDataModule(pl.LightningDataModule):
         self.training_set = None
         self.validation_set = None
         self.test_set = None
+        self.validation_sampler = validation_sampler
 
         self.ndims = ndims
 
@@ -219,10 +222,14 @@ class UNetDataModule(pl.LightningDataModule):
         else:
             crop_to_grid_size = self.crop_to_grid_size_xy
 
+        augment_on_fly = self.augment_on_fly
+        if self.ndims == 3:
+           augment_on_fly = False
+
         self.training_set = NiftiDataset(
             train_data,
             self.working_dir,
-            augment_on_fly=self.augment_on_fly,
+            augment_on_fly=augment_on_fly,
             spacing=self.spacing,
             crop_to_grid_size=crop_to_grid_size,
             crop_using_localise_model=localise_model_path,
@@ -265,12 +272,20 @@ class UNetDataModule(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
-        return torch.utils.data.DataLoader(
-            self.validation_set,
-            batch_sampler=torch.utils.data.BatchSampler(
-                ObserverSampler(self.validation_set, self.num_observers),
-                batch_size=self.num_observers,
-                drop_last=False,
-            ),
-            num_workers=self.num_workers,
-        )
+        if self.validation_sampler == "observer":
+            return torch.utils.data.DataLoader(
+                self.validation_set,
+                batch_sampler=torch.utils.data.BatchSampler(
+                    ObserverSampler(self.validation_set, self.num_observers),
+                    batch_size=self.num_observers,
+                    drop_last=False,
+                ),
+                num_workers=self.num_workers,
+            )
+        else:
+            return torch.utils.data.DataLoader(
+                self.validation_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )

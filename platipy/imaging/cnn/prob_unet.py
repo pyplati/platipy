@@ -233,8 +233,9 @@ class ProbabilisticUnet(torch.nn.Module):
         self.prior_latent_space = None
         self.unet_features = None
 
-        self._moving_avg = None
-        self.register_buffer("_lambda", torch.zeros(1, requires_grad=False))
+        if self.loss_type == "geco":
+            self._moving_avg = None
+            self.register_buffer("_lambda", torch.zeros(1, requires_grad=False))
 
     def forward(self, img, seg=None, training=False):
         """

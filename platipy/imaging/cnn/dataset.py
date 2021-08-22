@@ -153,7 +153,13 @@ class NiftiDataset(torch.utils.data.Dataset):
                     crop_to_grid_size = (crop_to_grid_size,) * 3
 
                 index = [i - int((g - s) / 2) for i, s, g in zip(index, size, crop_to_grid_size)]
+
                 size = crop_to_grid_size
+                img_size = img.GetSize()
+                for i in range(3):
+                    if index[i] + size[i] >= img_size[i]:
+                        index[i] = img_size[i] - size[i] - 1
+                    if index[i] < 0: index[i] = 0
 
                 img = crop_to_roi(img, size, index)
             else:
@@ -205,7 +211,7 @@ class NiftiDataset(torch.utils.data.Dataset):
                     else:
                         label_slice = label
                     label_file = self.label_dir.joinpath(f"{case_id}_{obs}_{z_slice}.npy")
-                    np.save(label_file, sitk.GetArrayFromImage(label_slice))
+                    np.save(label_file, sitk.GetArrayFromImage(label_slice).astype(np.int8))
                     self.slices.append(
                         {
                             "z": z_slice,
@@ -236,7 +242,7 @@ class NiftiDataset(torch.utils.data.Dataset):
             contour_mask = seg.get_arr()[:, :, 1].squeeze()
 
         img = torch.FloatTensor(img)
-        label = torch.LongTensor(label)
+        label = torch.IntTensor(label)
         contour_mask = torch.FloatTensor(contour_mask)
 
         return (
