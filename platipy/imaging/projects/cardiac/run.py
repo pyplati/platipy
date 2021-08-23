@@ -143,15 +143,15 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "vote_params": None,
         "optimal_threshold": {
             "AORTICVALVE": 0.5,
-            "ASCENDINGAORTA": 0.5,
-            "LEFTATRIUM": 0.5,
-            "LEFTVENTRICLE": 0.5,
+            "ASCENDINGAORTA": 0.44,
+            "LEFTATRIUM": 0.40,
+            "LEFTVENTRICLE": 0.45,
             "MITRALVALVE": 0.5,
-            "PULMONARYARTERY": 0.5,
+            "PULMONARYARTERY": 0.46,
             "PULMONICVALVE": 0.5,
-            "RIGHTATRIUM": 0.5,
-            "RIGHTVENTRICLE": 0.5,
-            "SVC": 0.5,
+            "RIGHTATRIUM": 0.38,
+            "RIGHTVENTRICLE": 0.42,
+            "SVC": 0.44,
             "TRICUSPIDVALVE": 0.5,
             "WHOLEHEART": 0.5,
         },
@@ -240,6 +240,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
             "SVC",
         ],
     },
+    "return_atlas_guide_structure": False,
     "return_as_cropped": False,
 }
 
@@ -670,6 +671,12 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     template_img_prob = sitk.Cast((img * 0), sitk.sitkFloat64)
 
     vote_structures = settings["label_fusion_settings"]["optimal_threshold"].keys()
+
+    # We also generate another version of the guide_structure using the atlas contours
+    # We *can* return this, but probably don't want to
+    # Here this check is performed
+    if not settings["return_atlas_guide_structure"]:
+        combined_label_dict[guide_structure_name] = guide_structure
 
     for structure_name in vote_structures:
 
