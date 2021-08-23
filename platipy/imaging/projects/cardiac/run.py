@@ -671,6 +671,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     template_img_prob = sitk.Cast((img * 0), sitk.sitkFloat64)
 
     vote_structures = settings["label_fusion_settings"]["optimal_threshold"].keys()
+    vote_structures = [i for i in vote_structures if i in atlas_structure_list]
 
     for structure_name in vote_structures:
 
@@ -687,7 +688,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
             # We also generate another version of the guide_structure using the atlas contours
             # We *can* return this, but probably don't want to
             # Here this check is performed
-            if not settings["return_atlas_guide_structure"]:
+            if not settings["return_atlas_guide_structure"] and guide_structure is not None:
                 results[guide_structure_name] = guide_structure
                 results_prob[guide_structure_name] = guide_structure
 
@@ -713,7 +714,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
             results_prob[structure_name] = paste_prob_img
 
             # Un-crop the guide structure
-            if not settings["return_atlas_guide_structure"]:
+            if not settings["return_atlas_guide_structure"] and guide_structure is not None:
                 guide_structure = sitk.Paste(
                     template_img_binary,
                     guide_structure,
