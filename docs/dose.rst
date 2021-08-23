@@ -1,5 +1,5 @@
 #####################
-Dose Volumes
+Dose
 #####################
 
 Dose Volume Histograms (DVH)

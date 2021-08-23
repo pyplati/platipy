@@ -10,9 +10,13 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+
+# pylint: disable=invalid-name
+
 import os
 import sys
 import shutil
+import datetime
 
 sys.path.insert(0, os.path.abspath("platipy"))
 
@@ -21,7 +25,8 @@ html_theme = "furo"
 # -- Project information -----------------------------------------------------
 
 project = "PlatiPy"
-copyright = "2021, Ingham Institute, University of New South Wales, University of Sydney"
+year = datetime.datetime.now().year
+copyright = f"{year}, Ingham Institute, University of New South Wales, University of Sydney"
 author = "Phillip Chlap & Rob Finnegan"
 
 
@@ -53,8 +58,6 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "site"]
 html_static_path = ["_static"]
 
 html_show_sphinx = False
-
-print("Copy example notebooks into docs/_examples")
 
 shutil.rmtree("_examples", ignore_errors=True)
 os.mkdir("_examples")
