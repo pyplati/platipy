@@ -12,9 +12,7 @@ from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 
 from loguru import logger
 
-from platipy.imaging.cnn.localise_net import LocaliseUNet
 from platipy.imaging.cnn.utils import preprocess_image, resample_mask_to_image, get_contour_mask
-from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 from platipy.imaging.label.utils import get_union_mask, get_intersection_mask
 
 
@@ -140,31 +138,19 @@ class NiftiDataset(torch.utils.data.Dataset):
             img = sitk.ReadImage(img_path)
 
             if crop_using_localise_model:
-                localise_model = LocaliseUNet.load_from_checkpoint(crop_using_localise_model)
-                localise_model.eval()
-                localise_pred = localise_model.infer(img)
-
-                img = preprocess_image(img, spacing=spacing, crop_to_grid_size_xy=None)
-                localise_pred = resample_mask_to_image(img, localise_pred)
-
-                size, index = label_to_roi(localise_pred)
-
-                if not hasattr(crop_to_grid_size, "__iter__"):
-                    crop_to_grid_size = (crop_to_grid_size,) * 3
-
-                index = [i - int((g - s) / 2) for i, s, g in zip(index, size, crop_to_grid_size)]
-
-                size = crop_to_grid_size
-                img_size = img.GetSize()
-                for i in range(3):
-                    if index[i] + size[i] >= img_size[i]:
-                        index[i] = img_size[i] - size[i] - 1
-                    if index[i] < 0: index[i] = 0
-
-                img = crop_to_roi(img, size, index)
+                crop_using_localise_model(
+                    img,
+                    crop_using_localise_model,
+                    spacing=spacing,
+                    crop_to_grid_size=crop_to_grid_size,
+                )
             else:
                 img = preprocess_image(
-                    img, spacing=spacing, crop_to_grid_size_xy=crop_to_grid_size, intensity_scaling=intensity_scaling, intensity_window=intensity_window
+                    img,
+                    spacing=spacing,
+                    crop_to_grid_size_xy=crop_to_grid_size,
+                    intensity_scaling=intensity_scaling,
+                    intensity_window=intensity_window,
                 )
 
             observers = []

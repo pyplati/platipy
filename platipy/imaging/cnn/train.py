@@ -36,10 +36,16 @@ import matplotlib.pyplot as plt
 from platipy.imaging.cnn.prob_unet import ProbabilisticUnet
 from platipy.imaging.cnn.unet import l2_regularisation
 from platipy.imaging.cnn.dataload import UNetDataModule
-from platipy.imaging.cnn.utils import postprocess_mask, get_metrics
+from platipy.imaging.cnn.utils import (
+    preprocess_image,
+    postprocess_mask,
+    get_metrics,
+    crop_using_localise_model,
+)
 
 from platipy.imaging import ImageVisualiser
 from platipy.imaging.label.utils import get_com
+
 
 class ProbUNet(pl.LightningModule):
     def __init__(
@@ -119,6 +125,95 @@ class ProbUNet(pl.LightningModule):
         )
 
         return [optimizer], [scheduler]
+
+    def infer(
+        self, img, num_samples=1, sample_strategy="mean", latent_dim=True, spaced_range=[-1.5, 1.5]
+    ):
+        # sample strategy in "mean", "random", "spaced"
+
+        if not hasattr(latent_dim, "__iter__"):
+            latent_dim = [
+                latent_dim,
+            ] * self.hparams.latent_dim
+
+        if sample_strategy == "mean":
+            samples = [{"name": "mean", "std_dev_from_mean": [0.0] * len(latent_dim), "preds": []}]
+        elif sample_strategy == "random":
+            samples = [
+                {
+                    "name": f"random_{i}",
+                    "std_dev_from_mean": torch.Tensor(
+                        [np.random.normal(0, 1.0, 1)[0] if d else 0.0 for d in latent_dim]
+                    ),
+                    "preds": [],
+                }
+                for i in range(num_samples)
+            ]
+        elif sample_strategy == "spaced":
+            samples = [
+                {
+                    "name": f"spaced_{s}",
+                    "std_dev_from_mean": torch.Tensor([s if d else 0.0 for d in latent_dim]),
+                    "preds": [],
+                }
+                for s in np.linspace(spaced_range[0], spaced_range[1], num_samples)
+            ]
+
+        with torch.no_grad():
+
+            if self.hparams.crop_using_localise_model:
+                localise_path = self.hparams.crop_using_localise_model.format(
+                    fold=self.hparams.fold
+                )
+                img = crop_using_localise_model(
+                    img,
+                    localise_path,
+                    spacing=self.hparams.spacing,
+                    crop_to_grid_size=self.hparams.localise_voxel_grid_size,
+                )
+            else:
+                img = preprocess_image(
+                    img,
+                    spacing=self.hparams.spacing,
+                    crop_to_grid_size_xy=self.hparams.crop_to_grid_size,
+                    intensity_scaling=self.hparams.intensity_scaling,
+                    intensity_window=self.hparams.intensity_window,
+                )
+
+            img_arr = sitk.GetArrayFromImage(img)
+            for z in range(img_arr.shape[0]):
+
+                x = torch.Tensor(img_arr[z, :, :])
+                x = x.unsqueeze(0)
+                x = x.unsqueeze(0)
+                self.prob_unet.forward(x)
+
+                for sample in samples:
+                    if sample["name"] == "mean":
+                        y = self.prob_unet.sample(testing=True, use_mean=True)
+                    else:
+                        y = self.prob_unet.sample(
+                            testing=True,
+                            use_mean=False,
+                            sample_x_stddev_from_mean=sample["std_dev_from_mean"],
+                        )
+
+                    y = y.squeeze(0)
+                    y = np.argmax(y.cpu().detach().numpy(), axis=0)
+                    sample["preds"].append(y)
+
+        result = {}
+        for sample in samples:
+            pred = sitk.GetImageFromArray(np.stack(sample["preds"]))
+            pred = sitk.Cast(pred, sitk.sitkUInt8)
+
+            pred.CopyInformation(img)
+            pred = postprocess_mask(pred)
+            pred = sitk.Resample(pred, img, sitk.Transform(), sitk.sitkNearestNeighbor)
+
+            result[sample["name"]] = pred
+
+        return result
 
     def training_step(self, batch, _):
 
@@ -309,7 +404,7 @@ class ProbUNet(pl.LightningModule):
                 color_dict[f"auto_{self.stddevs[idx]}"] = cmap(observer / 5)
 
             img_vis = ImageVisualiser(
-                img, cut=get_com(mask), figure_size_in=16, window=[-1.0, 1.0]
+                img, cut=get_com(mask), figure_size_in=16, window=[-0.3, 1.0]
             )
 
             contour_dict = {**obs_dict, **pred_dict}

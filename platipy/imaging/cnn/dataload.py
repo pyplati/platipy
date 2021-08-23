@@ -81,6 +81,9 @@ class UNetDataModule(pl.LightningDataModule):
         self.test_set = None
         self.validation_sampler = validation_sampler
 
+        self.validation_data = []
+        self.test_data = []
+
         self.ndims = ndims
 
         print(f"Training fold {self.fold}")
@@ -184,7 +187,7 @@ class UNetDataModule(pl.LightningDataModule):
                     for augmented_case in augmented_cases
                 ]
 
-        validation_data = [
+        self.validation_data = [
             {
                 "id": case,
                 "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
@@ -197,7 +200,7 @@ class UNetDataModule(pl.LightningDataModule):
             for case in self.validation_cases
         ]
 
-        test_data = [
+        self.test_data = [
             {
                 "id": case,
                 "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
@@ -239,7 +242,7 @@ class UNetDataModule(pl.LightningDataModule):
             ndims=self.ndims,
         )
         self.validation_set = NiftiDataset(
-            validation_data,
+            self.validation_data,
             self.working_dir,
             augment_on_fly=False,
             spacing=self.spacing,
@@ -251,7 +254,7 @@ class UNetDataModule(pl.LightningDataModule):
             ndims=self.ndims,
         )
         self.test_set = NiftiDataset(
-            test_data,
+            self.test_data,
             self.working_dir,
             augment_on_fly=False,
             spacing=self.spacing,

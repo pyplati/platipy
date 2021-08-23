@@ -19,7 +19,6 @@ import SimpleITK as sitk
 import numpy as np
 
 import comet_ml  # pylint: disable=unused-import
-from pytorch_lightning.loggers import CometLogger
 
 import torch
 import pytorch_lightning as pl
