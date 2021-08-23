@@ -28,6 +28,7 @@ from platipy.imaging.projects.cardiac.run import (
     run_cardiac_segmentation,
     CARDIAC_SETTINGS_DEFAULTS,
 )
+from loguru import logger
 
 
 @pytest.fixture
@@ -225,9 +226,11 @@ def test_cardiac_structure_guided_service(cardiac_data):
         auto_mask = output["WHOLEHEART"]
         gt_mask = sitk.Cast(cardiac_data[infer_case]["WHOLEHEART"], auto_mask.GetPixelID())
         label_overlap_filter.Execute(auto_mask, gt_mask)
+        logger.info("WH DSC" + str(label_overlap_filter.GetDiceCoefficient()))
         assert label_overlap_filter.GetDiceCoefficient() > 0.9
 
         auto_mask = output["SUBSTRUCTURE"]
         gt_mask = sitk.Cast(cardiac_data[infer_case]["SUBSTRUCTURE"], auto_mask.GetPixelID())
         label_overlap_filter.Execute(auto_mask, gt_mask)
+        logger.info("SS DSC" + str(label_overlap_filter.GetDiceCoefficient()))
         assert label_overlap_filter.GetDiceCoefficient() > 0.9
