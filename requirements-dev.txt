@@ -1,7 +1,7 @@
 pylint == 2.7.0
 pylint_flask_sqlalchemy == 0.2.0
 black == 20.8b1
-jupyterlab == 3.0.9
+jupyterlab == 3.0.17
 watchdog == 2.0.2
 argh == 0.26.2
 sphinx == 3.5.1
