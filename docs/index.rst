@@ -18,7 +18,7 @@ PlatiPy documentation
     :hidden:
 
     _examples/visualise
-    _examples/dose_analysis
+    _examples/dvh_analysis
     
 .. toctree::
     :caption: Reference
