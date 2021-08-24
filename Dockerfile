@@ -10,6 +10,9 @@ WORKDIR /home/service
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
+COPY requirements-backend.txt requirements-backend.txt
+RUN pip install -r requirements-backend.txt
+
 COPY requirements-dev.txt requirements-dev.txt
 RUN pip install -r requirements-dev.txt
 
