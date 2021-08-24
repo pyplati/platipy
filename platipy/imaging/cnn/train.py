@@ -44,7 +44,7 @@ from platipy.imaging.cnn.utils import (
 )
 
 from platipy.imaging import ImageVisualiser
-from platipy.imaging.label.utils import get_com
+from platipy.imaging.label.utils import get_com, get_union_mask, get_intersection_mask
 
 
 class ProbUNet(pl.LightningModule):
@@ -127,7 +127,13 @@ class ProbUNet(pl.LightningModule):
         return [optimizer], [scheduler]
 
     def infer(
-        self, img, num_samples=1, sample_strategy="mean", latent_dim=True, spaced_range=[-1.5, 1.5]
+        self,
+        img,
+        num_samples=1,
+        sample_strategy="mean",
+        latent_dim=True,
+        spaced_range=[-1.5, 1.5],
+        preprocess=True,
     ):
         # sample strategy in "mean", "random", "spaced"
 
@@ -161,24 +167,25 @@ class ProbUNet(pl.LightningModule):
 
         with torch.no_grad():
 
-            if self.hparams.crop_using_localise_model:
-                localise_path = self.hparams.crop_using_localise_model.format(
-                    fold=self.hparams.fold
-                )
-                img = crop_using_localise_model(
-                    img,
-                    localise_path,
-                    spacing=self.hparams.spacing,
-                    crop_to_grid_size=self.hparams.localise_voxel_grid_size,
-                )
-            else:
-                img = preprocess_image(
-                    img,
-                    spacing=self.hparams.spacing,
-                    crop_to_grid_size_xy=self.hparams.crop_to_grid_size,
-                    intensity_scaling=self.hparams.intensity_scaling,
-                    intensity_window=self.hparams.intensity_window,
-                )
+            if preprocess:
+                if self.hparams.crop_using_localise_model:
+                    localise_path = self.hparams.crop_using_localise_model.format(
+                        fold=self.hparams.fold
+                    )
+                    img = crop_using_localise_model(
+                        img,
+                        localise_path,
+                        spacing=self.hparams.spacing,
+                        crop_to_grid_size=self.hparams.localise_voxel_grid_size,
+                    )
+                else:
+                    img = preprocess_image(
+                        img,
+                        spacing=self.hparams.spacing,
+                        crop_to_grid_size_xy=self.hparams.crop_to_grid_size,
+                        intensity_scaling=self.hparams.intensity_scaling,
+                        intensity_window=self.hparams.intensity_window,
+                    )
 
             img_arr = sitk.GetArrayFromImage(img)
             for z in range(img_arr.shape[0]):
@@ -214,6 +221,92 @@ class ProbUNet(pl.LightningModule):
             result[sample["name"]] = pred
 
         return result
+
+    def validate(self, img, manual_observers, samples, mean, matching_type="best"):
+
+        metrics = {"DSC": "max", "HD": "min", "ASD": "min"}
+
+        contour_cmap = "coolwarm"
+
+        intersection_mask = get_intersection_mask(manual_observers)
+        union_mask = get_union_mask(manual_observers)
+        vis = ImageVisualiser(img, cut=get_com(union_mask), window=[-200, 700])
+        vis.add_contour(
+            intersection_mask, name="intersection", color=[0.13, 0.67, 0.275], linewidth=3
+        )
+        vis.add_contour(union_mask, name="union", color=[0.13, 0.67, 0.275], linewidth=3)
+        vis.add_contour(
+            samples,
+            show_legend=False,
+            linewidth=1.5,
+            color={
+                s: c
+                for s, c in zip(
+                    samples, plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(samples)))
+                )
+            },
+        )
+        vis.add_contour(
+            mean, color=plt.cm.get_cmap(contour_cmap)(0.5), linewidth=3, show_legend=False
+        )
+        vis.add_contour(
+            manual_observers, color=[0.13, 0.67, 0.275], linewidth=0.5, show_legend=False
+        )
+
+        vis.set_limits_from_label(union_mask, expansion=30)
+
+        fig = vis.show()
+
+        first_obs = manual_observers[list(manual_observers.keys())[0]]
+        for s in samples:
+            samples[s] = sitk.Resample(
+                samples[s], first_obs, sitk.Transform(), sitk.sitkNearestNeighbor
+            )
+            mean["mean"] = sitk.Resample(
+                mean["mean"], first_obs, sitk.Transform(), sitk.sitkNearestNeighbor
+            )
+
+        sim = {k: np.zeros((len(samples), len(manual_observers))) for k in metrics}
+        msim = {k: np.zeros((len(samples), len(manual_observers))) for k in metrics}
+        for sid, samp in enumerate(samples):
+            for oid, obs in enumerate(manual_observers):
+                sample_metrics = get_metrics(manual_observers[obs], samples[samp])
+                mean_metrics = get_metrics(manual_observers[obs], mean["mean"])
+
+                for k in sample_metrics:
+                    sim[k][sid, oid] = sample_metrics[k]
+                    msim[k][sid, oid] = mean_metrics[k]
+
+        result = {"probnet": {k: [] for k in metrics}, "unet": {k: [] for k in metrics}}
+        for k in sim:
+
+            val = sim[k]
+            if matching_type == "hungarian":
+                if metrics[k] == "max":
+                    val = -val
+                row_idx, col_idx = linear_sum_assignment(val)
+                prob_unet_mean = sim[k][row_idx, col_idx].mean()
+            else:
+                if metrics[k] == "max":
+                    prob_unet_mean = val.max()
+                else:
+                    prob_unet_mean = val.min()
+            result["probnet"][k].append(prob_unet_mean)
+
+            val = msim[k]
+            if matching_type == "hungarian":
+                if metrics[k] == "max":
+                    val = -val
+                row_idx, col_idx = linear_sum_assignment(val)
+                unet_mean = msim[k][row_idx, col_idx].mean()
+            else:
+                if metrics[k] == "max":
+                    unet_mean = val.max()
+                else:
+                    unet_mean = val.min()
+            result["unet"][k].append(unet_mean)
+
+        return result, fig
 
     def training_step(self, batch, _):
 
@@ -256,7 +349,6 @@ class ProbUNet(pl.LightningModule):
 
         if self.validation_directory is None:
             self.validation_directory = Path(tempfile.mkdtemp())
-            print(self.validation_directory)
 
         with torch.set_grad_enabled(False):
             x, y, _, info = batch
@@ -273,31 +365,11 @@ class ProbUNet(pl.LightningModule):
                 )
                 np.save(mask_file, y[s].squeeze(0).cpu().numpy())
 
-                self.prob_unet.forward(x[s].unsqueeze(0))
-                sample = self.prob_unet.sample(
-                    testing=True,
-                    use_mean=False,
-                    sample_x_stddev_from_mean=self.stddevs[s],
-                )
-                sample_file = self.validation_directory.joinpath(
-                    f"sample_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
-                )
-                sample = np.argmax(sample.squeeze(0).cpu().numpy(), axis=0)
-                np.save(sample_file, sample)
-
-                mean = self.prob_unet.sample(testing=True, use_mean=True)
-                mean_file = self.validation_directory.joinpath(
-                    f"mean_{info['case'][s]}_{info['z'][s]}.npy"
-                )
-                mean = np.argmax(mean.squeeze(0).cpu().numpy(), axis=0)
-                np.save(mean_file, mean)
-
         return info
 
     def validation_epoch_end(self, validation_step_outputs):
 
         cases = {}
-        cmap = plt.cm.get_cmap("Set2")
         for info in validation_step_outputs:
 
             for case, z, observer in zip(info["case"], info["z"], info["observer"]):
@@ -310,7 +382,7 @@ class ProbUNet(pl.LightningModule):
                     if not observer in cases[case]["observers"]:
                         cases[case]["observers"].append(observer.item())
 
-        metrics = ["JI", "DSC", "HD", "ASD"]
+        metrics = ["DSC", "HD", "ASD"]
         computed_metrics = {
             **{f"probnet_{m}": [] for m in metrics},
             **{f"unet_{m}": [] for m in metrics},
@@ -319,141 +391,66 @@ class ProbUNet(pl.LightningModule):
         for case in cases:
 
             img_arrs = []
-            mean_arrs = []
             slices = []
 
             if self.hparams.ndims == 2:
                 for z in range(cases[case]["slices"] + 1):
                     img_file = self.validation_directory.joinpath(f"img_{case}_{z}.npy")
-                    mean_file = self.validation_directory.joinpath(f"mean_{case}_{z}.npy")
                     if img_file.exists():
                         img_arrs.append(np.load(img_file))
-                        mean_arrs.append(np.load(mean_file))
                         slices.append(z)
 
-                # if len(slices) < 5:
-                # Likely initial sanity check
-                #    continue
-
                 img_arr = np.stack(img_arrs)
-                mean_arr = np.stack(mean_arrs)
 
             else:
                 img_file = self.validation_directory.joinpath(f"img_{case}_0.npy")
-                mean_file = self.validation_directory.joinpath(f"mean_{case}_0.npy")
                 img_arr = np.load(img_file)
-                mean_arr = np.load(mean_file)
             img = sitk.GetImageFromArray(img_arr)
             img.SetSpacing(self.hparams.spacing)
 
-            mean = sitk.GetImageFromArray(mean_arr)
-            mean = sitk.Cast(mean, sitk.sitkUInt8)
-            mean = postprocess_mask(mean)
-            mean.CopyInformation(img)
-            # sitk.WriteImage(mean, f"val_mean_{case}_mean.nii.gz")
+            mean = self.infer(img, num_samples=1, sample_strategy="mean", preprocess=True)
+            samples = self.infer(
+                img,
+                sample_strategy="spaced",
+                num_samples=5,
+                spaced_range=[-1.5, 1.5],
+                preprocess=True,
+            )
 
-            obs_dict = {}
-            pred_dict = {}
-            color_dict = {}
-            observers = []
-            samples = []
-            for idx, observer in enumerate(cases[case]["observers"]):
+            observers = {}
+            for _, observer in enumerate(cases[case]["observers"]):
 
                 if self.hparams.ndims == 2:
                     mask_arrs = []
-                    sample_arrs = []
                     for z in slices:
                         mask_file = self.validation_directory.joinpath(
                             f"mask_{case}_{z}_{observer}.npy"
                         )
-                        sample_file = self.validation_directory.joinpath(
-                            f"sample_{case}_{z}_{observer}.npy"
-                        )
 
                         mask_arrs.append(np.load(mask_file))
-                        sample_arrs.append(np.load(sample_file))
 
                     mask_arr = np.stack(mask_arrs)
-                    sample_arr = np.stack(sample_arrs)
 
                 else:
                     mask_file = self.validation_directory.joinpath(
                         f"mask_{case}_{z}_{observer}.npy"
                     )
-                    sample_file = self.validation_directory.joinpath(
-                        f"sample_{case}_{z}_{observer}.npy"
-                    )
                     mask_arr = np.load(mask_file)
-                    sample_arr = np.load(sample_file)
 
                 mask = sitk.GetImageFromArray(mask_arr)
                 mask = sitk.Cast(mask, sitk.sitkUInt8)
                 mask.CopyInformation(img)
-                sitk.WriteImage(mask, f"val_mask_{case}_{observer}.nii.gz")
-                observers.append(mask)
-                obs_dict[f"manual_{observer}"] = mask
-                color_dict[f"manual_{observer}"] = [0.5, 0.5, 0.5]
+                observers[f"manual_{observer}"] = mask
 
-                sample = sitk.GetImageFromArray(sample_arr)
-                sample = sitk.Cast(sample, sitk.sitkUInt8)
-                sample = postprocess_mask(sample)
-                sample.CopyInformation(img)
-                sitk.WriteImage(sample, f"val_sample_{case}_{observer}.nii.gz")
-                samples.append(sample)
-                pred_dict[f"auto_{self.stddevs[idx]}"] = sample
-                color_dict[f"auto_{self.stddevs[idx]}"] = cmap(observer / 5)
+            result, fig = self.validate(img, observers, samples, mean, matching_type="best")
 
-            img_vis = ImageVisualiser(
-                img, cut=get_com(mask), figure_size_in=16, window=[-0.3, 1.0]
-            )
-
-            contour_dict = {**obs_dict, **pred_dict}
-            contour_dict["auto_mean"] = mean
-            color_dict["auto_mean"] = [0.0, 0.0, 0.0]
-
-            img_vis.add_contour(contour_dict, color=color_dict)
-            fig = img_vis.show()
             figure_path = f"valid_{case}.png"
             fig.savefig(figure_path, dpi=300)
             plt.close("all")
 
-            try:
-                self.logger.experiment.log_image(figure_path)
-            except AttributeError:
-                # Likely offline mode
-                pass
-
-            sim = {k: np.zeros((len(observers), len(samples))) for k in metrics}
-            msim = {k: np.zeros((len(observers), len(samples))) for k in metrics}
-            for sid, samp in enumerate(samples):
-                for oid, obs in enumerate(observers):
-                    sample_metrics = get_metrics(obs, samp)
-                    mean_metrics = get_metrics(obs, mean)
-
-                    for k in sample_metrics:
-                        sim[k][sid, oid] = sample_metrics[k]
-                        msim[k][sid, oid] = mean_metrics[k]
-
-            result = {"probnet": {k: [] for k in metrics}, "unet": {k: [] for k in metrics}}
-            for k in sim:
-
-                val = sim[k]
-                if not k.endswith("D"):
-                    val = -val
-                row_idx, col_idx = linear_sum_assignment(val)
-                prob_unet_mean = sim[k][row_idx, col_idx].mean()
-                result["probnet"][k].append(prob_unet_mean)
-
-                val = msim[k]
-                if not k.endswith("D"):
-                    val = -val
-                row_idx, col_idx = linear_sum_assignment(val)
-                unet_mean = msim[k][row_idx, col_idx].mean()
-                result["unet"][k].append(unet_mean)
-
             for t in result:
-                for m in result[t]:
-                    computed_metrics[f"{t}_{m}"].append(np.array(result[t][m]).mean())
+                for m in metrics:
+                    computed_metrics[f"{t}_{m}"]+=result[t][m]
 
         for cm in computed_metrics:
             self.log(
