@@ -121,6 +121,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../visualiser.html">Image Visualiser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dicom.html">DICOM Conversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dose.html">Dose</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../registration.html">Registration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../utils.html">Utilities</a></li>
@@ -191,7 +192,7 @@ debugging.  Defaults to <code class="docutils literal notranslate"><span class="
 </dd></dl>
 <dl class="py function">
 <dt id="platipy.imaging.visualisation.animation.generate_animation_from_image_sequence">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.animation.</span></code><code class="sig-name descname"><span class="pre">generate_animation_from_image_sequence</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">image_list,</span> <span class="pre">output_file='animation.gif',</span> <span class="pre">fps=10,</span> <span class="pre">contour_list=None,</span> <span class="pre">scalar_list=None,</span> <span class="pre">figure_size_in=6,</span> <span class="pre">image_cmap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;,</span> <span class="pre">contour_cmap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;,</span> <span class="pre">scalar_cmap=&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;,</span> <span class="pre">image_window=[-1000,</span> <span class="pre">800],</span> <span class="pre">scalar_min=None,</span> <span class="pre">scalar_max=None,</span> <span class="pre">scalar_alpha=0.5,</span> <span class="pre">image_origin='lower'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.animation.generate_animation_from_image_sequence" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.animation.</span></code><code class="sig-name descname"><span class="pre">generate_animation_from_image_sequence</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">image_list,</span> <span class="pre">output_file='animation.gif',</span> <span class="pre">fps=10,</span> <span class="pre">contour_list=None,</span> <span class="pre">scalar_list=None,</span> <span class="pre">figure_size_in=6,</span> <span class="pre">image_cmap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;,</span> <span class="pre">contour_cmap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;,</span> <span class="pre">scalar_cmap=&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;,</span> <span class="pre">image_window=[-1000,</span> <span class="pre">800],</span> <span class="pre">scalar_min=None,</span> <span class="pre">scalar_max=None,</span> <span class="pre">scalar_alpha=0.5,</span> <span class="pre">image_origin='lower',</span> <span class="pre">contour_kwargs={}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.animation.generate_animation_from_image_sequence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates an animation from a list of images, with optional scalar overlay and contours.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -278,7 +279,27 @@ Defaults to [-1000, 800].</p></li>
 <dl class="py function">
 <dt id="platipy.imaging.visualisation.utils.project_onto_arbitrary_plane">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.utils.</span></code><code class="sig-name descname"><span class="pre">project_onto_arbitrary_plane</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample_interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.utils.project_onto_arbitrary_plane" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>[summary]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</p></li>
+<li><p><strong>projection_name</strong> (<em>str</em><em>, </em><em>optional</em>) – [description]. Defaults to “mean”.</p></li>
+<li><p><strong>projection_axis</strong> (<em>int</em><em>, </em><em>optional</em>) – [description]. Defaults to 0.</p></li>
+<li><p><strong>rotation_axis</strong> (<em>list</em><em>, </em><em>optional</em>) – [description]. Defaults to [1, 0, 0].</p></li>
+<li><p><strong>rotation_angle</strong> (<em>int</em><em>, </em><em>optional</em>) – [description]. Defaults to 0.</p></li>
+<li><p><strong>default_value</strong> (<em>int</em><em>, </em><em>optional</em>) – [description]. Defaults to -1000.</p></li>
+<li><p><strong>resample_interpolation</strong> (<em>int</em><em>, </em><em>optional</em>) – [description]. Defaults to 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>[description]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>[type]</p>
+</dd>
+</dl>
+</dd></dl>
 <dl class="py function">
 <dt id="platipy.imaging.visualisation.utils.reorientate_vector_field">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.utils.</span></code><code class="sig-name descname"><span class="pre">reorientate_vector_field</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_cor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_sag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.utils.reorientate_vector_field" title="Permalink to this definition">¶</a></dt>
@@ -365,7 +386,7 @@ This is necessary after converting from sitk.Image to np.array</p>
 <span id="platipy-imaging-visualisation-visualiser-module"></span><h2>platipy.imaging.visualisation.visualiser module<a class="headerlink" href="#module-platipy.imaging.visualisation.visualiser" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.visualiser.</span></code><code class="sig-name descname"><span class="pre">ImageVisualiser</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">image,</span> <span class="pre">cut=None,</span> <span class="pre">axis='ortho',</span> <span class="pre">window=[-250,</span> <span class="pre">500],</span> <span class="pre">figure_size_in=10,</span> <span class="pre">limits=None,</span> <span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;,</span> <span class="pre">origin='normal',</span> <span class="pre">projection=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.visualiser.</span></code><code class="sig-name descname"><span class="pre">ImageVisualiser</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">image</span></em>, <em class="sig-param"><span class="pre">cut=None</span></em>, <em class="sig-param"><span class="pre">axis='ortho'</span></em>, <em class="sig-param"><span class="pre">window=None</span></em>, <em class="sig-param"><span class="pre">figure_size_in=10</span></em>, <em class="sig-param"><span class="pre">limits=None</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">origin='normal'</span></em>, <em class="sig-param"><span class="pre">projection=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class to assist with visualising images and overlaying contours, scalars and bounding
 boxes.</p>

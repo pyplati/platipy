@@ -121,6 +121,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../visualiser.html">Image Visualiser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dicom.html">DICOM Conversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dose.html">Dose</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../registration.html">Registration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../utils.html">Utilities</a></li>
@@ -285,7 +286,7 @@ labels: a list of holes detected and some of their properties</p>
 <span id="platipy-imaging-utils-valve-module"></span><h2>platipy.imaging.utils.valve module<a class="headerlink" href="#module-platipy.imaging.utils.valve" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="platipy.imaging.utils.valve.generate_valve_from_great_vessel">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.valve.</span></code><code class="sig-name descname"><span class="pre">generate_valve_from_great_vessel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_great_vessel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_ventricle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_dilation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(4,</span> <span class="pre">4,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_erosion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(3,</span> <span class="pre">3,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_to_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.valve.generate_valve_from_great_vessel" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.valve.</span></code><code class="sig-name descname"><span class="pre">generate_valve_from_great_vessel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_great_vessel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_ventricle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valve_thickness_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.valve.generate_valve_from_great_vessel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a geometrically-defined valve.
 This function is suitable for the pulmonic and aortic valves.</p>
 <dl class="field-list simple">
@@ -294,10 +295,7 @@ This function is suitable for the pulmonic and aortic valves.</p>
 <li><p><strong>label_great_vessel</strong> (<em>SimpleITK.Image</em>) – The binary mask for the great vessel
 (pulmonary artery or ascending aorta)</p></li>
 <li><p><strong>label_ventricle</strong> (<em>SimpleITK.Image</em>) – The binary mask for the ventricle (left or right)</p></li>
-<li><p><strong>initial_dilation</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Initial dilation, larger values increase the valve
-size. Defaults to (4, 4, 5).</p></li>
-<li><p><strong>final_erosion</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Final erosion, larger values decrease the valve size.
-Defaults to (3, 3, 3).</p></li>
+<li><p><strong>valve_thickness_mm</strong> (<em>int</em><em>, </em><em>optional</em>) – Valve thickness, in millimetres. Defaults to 8.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -310,34 +308,17 @@ Defaults to (3, 3, 3).</p></li>
 </dd></dl>
 <dl class="py function">
 <dt id="platipy.imaging.utils.valve.generate_valve_using_cylinder">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.valve.</span></code><code class="sig-name descname"><span class="pre">generate_valve_using_cylinder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_atrium</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_ventricle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_wh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[[0.763383999,</span> <span class="pre">-</span> <span class="pre">1.15883572,</span> <span class="pre">2.12311297],</span> <span class="pre">[0.00421062525,</span> <span class="pre">-</span> <span class="pre">0.000395014189,</span> <span class="pre">0.00113108043]]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.valve.generate_valve_using_cylinder" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.valve.</span></code><code class="sig-name descname"><span class="pre">generate_valve_using_cylinder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_atrium</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_ventricle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.valve.generate_valve_using_cylinder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a geometrically-defined valve.
 This function is suitable for the tricuspid and mitral valves.</p>
-<p>Note: the shift parameters have been determined empirically.
-For the mitral valve, use the defaults.
-For the tricuspid valve, use np.zeros((2,3))</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label_atrium</strong> (<em>SimpleITK.Image</em>) – The binary mask for the (left or right) atrium.</p></li>
 <li><p><strong>label_ventricle</strong> (<em>SimpleITK.Image</em>) – The binary mask for the (left or right) ventricle.</p></li>
-<li><p><strong>label_wh</strong> (<em>SimpleITK.Image</em>) – The binary mask for the whole heart. Used to scale the shift.</p></li>
 <li><p><strong>radius_mm</strong> (<em>int</em><em>, </em><em>optional</em>) – The valve radius, in mm. Defaults to 15.</p></li>
-<li><p><strong>height_mm</strong> (<em>int</em><em>, </em><em>optional</em>) – The valve height (i.e. perpendicular extend), in mm.
+<li><p><strong>height_mm</strong> (<em>int</em><em>, </em><em>optional</em>) – The valve height (i.e. perpendicular extent), in mm.
 Defaults to 10.</p></li>
-<li><p><strong>shift_parameters</strong> (<em>list</em><em>, </em><em>optional</em>) – <dl>
-<dt>Shift parameters, which are the intercept (first row) and gradient (second row)</dt><dd><p>of a linear function that maps whole heart volume to 3D shift
-(axial, coronal, sagittal). Set to zero to not use.
-Defaults to</p>
-<blockquote>
-<div><dl class="simple">
-<dt>[ [7.63383999e-01, -1.15883572e00, 2.12311297e00],</dt><dd><p>[4.21062525e-03, -3.95014189e-04, 1.13108043e-03], ].</p>
-</dd>
-</dl>
-</div></blockquote>
-</dd>
-</dl>
-</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

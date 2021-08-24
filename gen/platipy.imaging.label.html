@@ -121,6 +121,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../visualiser.html">Image Visualiser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dicom.html">DICOM Conversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dose.html">Dose</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cli.html">Command Line Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../registration.html">Registration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../utils.html">Utilities</a></li>
@@ -259,6 +260,22 @@ sigmaSurfaceDistance</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.label.comparison.compute_volume">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_volume</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the volume in cubic centimetres</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<em>SimpleITK.Image</em>) – A binary mask.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The volume (in cubic centimetres)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -433,6 +450,12 @@ Output: p_lat, p_long, grid_values (, fig)</p>
 </dl>
 </dd></dl>
 <dl class="py function">
+<dt id="platipy.imaging.label.utils.correct_volume_overlap">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">correct_volume_overlap</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_label_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.correct_volume_overlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Label structures by primes
+Smallest prime = largest volume</p>
+</dd></dl>
+<dl class="py function">
 <dt id="platipy.imaging.label.utils.generate_primes">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">generate_primes</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.generate_primes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate an infinite sequence of prime numbers.</p>
@@ -463,11 +486,35 @@ False.</p></li>
 <dl class="py function">
 <dt id="platipy.imaging.label.utils.prime_decode_image">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">prime_decode_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prime_encoded_image</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.prime_decode_image" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Decode a prime-encoded image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>prime_encoded_image</strong> (<em>SimpleITK.Image</em>) – A prime-encoded image.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of binary masks.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list [SimpleITK.Image]</p>
+</dd>
+</dl>
+</dd></dl>
 <dl class="py function">
 <dt id="platipy.imaging.label.utils.prime_encode_structure_list">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">prime_encode_structure_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.prime_encode_structure_list" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Encode a list of structures using prime labels</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>structure_list</strong> (<em>list</em><em> [</em><em>SimpleITK.Image</em><em>]</em>) – A list of binary masks.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The prime-encoded structure</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>SimpleITK.Image</p>
+</dd>
+</dl>
+</dd></dl>
 <dl class="py function">
 <dt id="platipy.imaging.label.utils.vectorised_transform_index_to_physical_point">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">vectorised_transform_index_to_physical_point</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.vectorised_transform_index_to_physical_point" title="Permalink to this definition">¶</a></dt>
