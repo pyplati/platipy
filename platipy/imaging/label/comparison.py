@@ -18,6 +18,18 @@ import SimpleITK as sitk
 
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
+def compute_volume(label):
+    """Computes the volume in cubic centimetres
+
+    Args:
+        label (SimpleITK.Image): A binary mask.
+
+    Returns:
+        float: The volume (in cubic centimetres)
+    """
+
+    return sitk.GetArrayFromImage(label).sum() * np.product(label.GetSpacing()) / 1000
+
 
 def compute_surface_metrics(label_a, label_b, verbose=False):
     """Compute surface distance metrics between two labels. Surface metrics computed are:

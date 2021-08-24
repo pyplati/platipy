@@ -143,15 +143,15 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "vote_params": None,
         "optimal_threshold": {
             "AORTICVALVE": 0.5,
-            "ASCENDINGAORTA": 0.5,
-            "LEFTATRIUM": 0.5,
-            "LEFTVENTRICLE": 0.5,
+            "ASCENDINGAORTA": 0.44,
+            "LEFTATRIUM": 0.40,
+            "LEFTVENTRICLE": 0.45,
             "MITRALVALVE": 0.5,
-            "PULMONARYARTERY": 0.5,
+            "PULMONARYARTERY": 0.46,
             "PULMONICVALVE": 0.5,
-            "RIGHTATRIUM": 0.5,
-            "RIGHTVENTRICLE": 0.5,
-            "SVC": 0.5,
+            "RIGHTATRIUM": 0.38,
+            "RIGHTVENTRICLE": 0.42,
+            "SVC": 0.44,
             "TRICUSPIDVALVE": 0.5,
             "WHOLEHEART": 0.5,
         },
@@ -240,6 +240,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
             "SVC",
         ],
     },
+    "return_atlas_guide_structure": False,
     "return_as_cropped": False,
 }
 
@@ -394,12 +395,10 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
         img_crop = crop_to_roi(img, crop_box_size, crop_box_index)
 
-    logger.info(
-        f"Calculated crop box\n\
-                {crop_box_index}\n\
-                {crop_box_size}\n\n\
-                Volume reduced by factor {np.product(img.GetSize())/np.product(crop_box_size)}"
-    )
+    logger.info("Calculated crop box:")
+    logger.info(f"  > {crop_box_index}")
+    logger.info(f"  > {crop_box_size}")
+    logger.info(f"  > Vol reduction = {np.product(img.GetSize())/np.product(crop_box_size):.2f}")
 
     """
     Step 2 - Rigid registration of target images
@@ -670,6 +669,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     template_img_prob = sitk.Cast((img * 0), sitk.sitkFloat64)
 
     vote_structures = settings["label_fusion_settings"]["optimal_threshold"].keys()
+    vote_structures = [i for i in vote_structures if i in atlas_structure_list]
 
     for structure_name in vote_structures:
 
@@ -682,6 +682,13 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         if return_as_cropped:
             results[structure_name] = binary_struct
             results_prob[structure_name] = probability_map
+
+            # We also generate another version of the guide_structure using the atlas contours
+            # We *can* return this, but probably don't want to
+            # Here this check is performed
+            if (not settings["return_atlas_guide_structure"]) and (guide_structure is not None):
+                results[guide_structure_name] = guide_structure
+                results_prob[guide_structure_name] = guide_structure
 
         else:
             # Un-crop binary structure
@@ -703,6 +710,18 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
                 crop_box_index,
             )
             results_prob[structure_name] = paste_prob_img
+
+            # Un-crop the guide structure
+            if (not settings["return_atlas_guide_structure"]) and (guide_structure is not None):
+                new_guide_structure = sitk.Paste(
+                    template_img_binary,
+                    guide_structure,
+                    guide_structure.GetSize(),
+                    (0, 0, 0),
+                    crop_box_index,
+                )
+                results[guide_structure_name] = new_guide_structure
+                results_prob[guide_structure_name] = new_guide_structure
 
     for structure_name in vessel_spline_settings["vessel_name_list"]:
         binary_struct = segmented_vessel_dict[structure_name]
@@ -820,6 +839,9 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         ]
 
         for structure_name in postprocessing_settings["structures_for_binaryfillhole"]:
+
+            if structure_name not in results.keys():
+                continue
 
             contour_s = results[structure_name]
             contour_s = sitk.RelabelComponent(sitk.ConnectedComponent(contour_s)) == 1
