@@ -408,13 +408,13 @@ class ProbUNet(pl.LightningModule):
             img = sitk.GetImageFromArray(img_arr)
             img.SetSpacing(self.hparams.spacing)
 
-            mean = self.infer(img, num_samples=1, sample_strategy="mean", preprocess=True)
+            mean = self.infer(img, num_samples=1, sample_strategy="mean", preprocess=False)
             samples = self.infer(
                 img,
                 sample_strategy="spaced",
                 num_samples=5,
                 spaced_range=[-1.5, 1.5],
-                preprocess=True,
+                preprocess=False,
             )
 
             observers = {}
