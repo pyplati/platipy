@@ -45,6 +45,9 @@ def prepare_transforms():
                 ],
                 random_order=True,
             ),
+            sometimes(iaa.CoarseDropout(
+                        (0.03, 0.15), size_percent=(0.02, 0.1)
+                    ))
         ],
         random_order=True,
     )
