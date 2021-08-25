@@ -11,14 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pathlib import Path
 
 import numpy as np
 import SimpleITK as sitk
 
-from platipy.imaging.cnn.localise_net import LocaliseUNet
 from platipy.imaging.label.utils import get_union_mask, get_intersection_mask
-from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 from platipy.imaging.label.comparison import (
     compute_metric_dsc,
     compute_metric_hd,
@@ -130,55 +127,6 @@ def preprocess_image(
         img = img[x_from:x_to, y_from:y_to, :]
 
     return img
-
-
-def crop_using_localise_model(
-    img, localise_model, spacing=[1, 1, 1], crop_to_grid_size=[100, 100, 100]
-):
-    """Crops an image using a LocaliseUNet
-
-    Args:
-        img (SimpleITK.Image): The image to crop
-        localise_model (str|Path|LocaliseUNet): The LocaliseUNet or path to checkpoint of
-          LocaliseUNet.
-        spacing (list, optional): The image spacing (mm) to resample to. Defaults to [1,1,1].
-        crop_to_grid_size (list, optional): The size of the grid to crop to. Defaults to
-          [100,100,100].
-
-    Returns:
-        SimpleITK.Image: The cropped image.
-    """
-
-    if isinstance(localise_model, str):
-        localise_model = Path(localise_model)
-
-    if isinstance(localise_model, Path):
-        if localise_model.is_dir():
-            # Find the first actual model checkpoint in this directory
-            localise_model = next(localise_model.glob("*.ckpt"))
-
-        localise_model = LocaliseUNet.load_from_checkpoint(localise_model)
-
-    localise_model.eval()
-    localise_pred = localise_model.infer(img)
-
-    img = preprocess_image(img, spacing=spacing, crop_to_grid_size_xy=None)
-    localise_pred = resample_mask_to_image(img, localise_pred)
-    size, index = label_to_roi(localise_pred)
-
-    if not hasattr(crop_to_grid_size, "__iter__"):
-        crop_to_grid_size = (crop_to_grid_size,) * 3
-
-    index = [i - int((g - s) / 2) for i, s, g in zip(index, size, crop_to_grid_size)]
-    size = crop_to_grid_size
-    img_size = img.GetSize()
-    for i in range(3):
-        if index[i] + size[i] >= img_size[i]:
-            index[i] = img_size[i] - size[i] - 1
-        if index[i] < 0:
-            index[i] = 0
-
-    return crop_to_roi(img, size, index)
 
 
 def resample_mask_to_image(img, mask):
