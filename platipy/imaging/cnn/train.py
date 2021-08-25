@@ -36,11 +36,11 @@ import matplotlib.pyplot as plt
 from platipy.imaging.cnn.prob_unet import ProbabilisticUnet
 from platipy.imaging.cnn.unet import l2_regularisation
 from platipy.imaging.cnn.dataload import UNetDataModule
+from platipy.imaging.cnn.dataset import crop_img_using_localise_model
 from platipy.imaging.cnn.utils import (
     preprocess_image,
     postprocess_mask,
-    get_metrics,
-    crop_using_localise_model,
+    get_metrics
 )
 
 from platipy.imaging import ImageVisualiser
@@ -143,14 +143,14 @@ class ProbUNet(pl.LightningModule):
             ] * self.hparams.latent_dim
 
         if sample_strategy == "mean":
-            samples = [{"name": "mean", "std_dev_from_mean": [0.0] * len(latent_dim), "preds": []}]
+            samples = [{"name": "mean", "std_dev_from_mean": torch.Tensor([0.0] * len(latent_dim)).to(self.device), "preds": []}]
         elif sample_strategy == "random":
             samples = [
                 {
                     "name": f"random_{i}",
                     "std_dev_from_mean": torch.Tensor(
                         [np.random.normal(0, 1.0, 1)[0] if d else 0.0 for d in latent_dim]
-                    ),
+                    ).to(self.device),
                     "preds": [],
                 }
                 for i in range(num_samples)
@@ -159,7 +159,7 @@ class ProbUNet(pl.LightningModule):
             samples = [
                 {
                     "name": f"spaced_{s}",
-                    "std_dev_from_mean": torch.Tensor([s if d else 0.0 for d in latent_dim]),
+                    "std_dev_from_mean": torch.Tensor([s if d else 0.0 for d in latent_dim]).to(self.device),
                     "preds": [],
                 }
                 for s in np.linspace(spaced_range[0], spaced_range[1], num_samples)
@@ -172,7 +172,7 @@ class ProbUNet(pl.LightningModule):
                     localise_path = self.hparams.crop_using_localise_model.format(
                         fold=self.hparams.fold
                     )
-                    img = crop_using_localise_model(
+                    img = crop_img_using_localise_model(
                         img,
                         localise_path,
                         spacing=self.hparams.spacing,
@@ -188,9 +188,13 @@ class ProbUNet(pl.LightningModule):
                     )
 
             img_arr = sitk.GetArrayFromImage(img)
-            for z in range(img_arr.shape[0]):
+            if self.hparams.ndims == 2:
+               slices = [img_arr[z, :, :] for z in range(img_arr.shape[0])]
+            else:
+               slices = [img_arr]
+            for i in slices:
 
-                x = torch.Tensor(img_arr[z, :, :])
+                x = torch.Tensor(i).to(self.device)
                 x = x.unsqueeze(0)
                 x = x.unsqueeze(0)
                 self.prob_unet.forward(x)
@@ -211,7 +215,12 @@ class ProbUNet(pl.LightningModule):
 
         result = {}
         for sample in samples:
-            pred = sitk.GetImageFromArray(np.stack(sample["preds"]))
+
+            pred_arr = sample["preds"][0]
+            if len(sample["preds"]) > 1:
+                pred_arr = np.stack(sample["preds"])
+
+            pred = sitk.GetImageFromArray(pred_arr)
             pred = sitk.Cast(pred, sitk.sitkUInt8)
 
             pred.CopyInformation(img)

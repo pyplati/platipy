@@ -183,17 +183,17 @@ def get_metrics(target, pred):
     result = {}
     result["DSC"] = compute_metric_dsc(target, pred)
 
-    target_pixels = sitk.GetArrayFromImage(target).sum()
-    pred_pixels = sitk.GetArrayFromImage(pred).sum()
+    target_pixels = sitk.GetArrayFromImage(target)
+    pred_pixels = sitk.GetArrayFromImage(pred)
 
-    if pred_pixels == 0 and target_pixels == 0:
+    if pred_pixels.max() == 0 and target_pixels.max() == 0:
         result["HD"] = 0
         result["ASD"] = 0
-    elif pred_pixels == 0 or target_pixels == 0:
+    elif pred_pixels.max() == 0 or target_pixels.max() == 0 or pred_pixels.min() == 1 or target_pixels.min() == 1:
         result["HD"] = 1000
         result["ASD"] = 100
     else:
-        result["HD"] = compute_metric_hd(target, pred)
-        result["ASD"] = compute_metric_masd(target, pred)
+        result["HD"] = compute_metric_hd(target, pred, auto_crop=False)
+        result["ASD"] = compute_metric_masd(target, pred, auto_crop=False)
 
     return result
