@@ -239,14 +239,21 @@ class ProbUNet(pl.LightningModule):
 
         intersection_mask = get_intersection_mask(manual_observers)
         union_mask = get_union_mask(manual_observers)
-        vis = ImageVisualiser(img, cut=get_com(union_mask), window=[-200, 700])
+        vis = ImageVisualiser(img, cut=get_com(union_mask), window=[-200, 700], figure_size_in=16)
+
+        vis.add_contour(
+            mean, color=plt.cm.get_cmap(contour_cmap)(0.5), linewidth=3, show_legend=False
+        )
+        vis.add_contour(
+            manual_observers, color=[0.13, 0.67, 0.275], linewidth=0.5, show_legend=False
+        )
+
         vis.add_contour(
             intersection_mask, name="intersection", color=[0.13, 0.67, 0.275], linewidth=3
         )
         vis.add_contour(union_mask, name="union", color=[0.13, 0.67, 0.275], linewidth=3)
         vis.add_contour(
             samples,
-            show_legend=False,
             linewidth=1.5,
             color={
                 s: c
@@ -255,25 +262,10 @@ class ProbUNet(pl.LightningModule):
                 )
             },
         )
-        vis.add_contour(
-            mean, color=plt.cm.get_cmap(contour_cmap)(0.5), linewidth=3, show_legend=False
-        )
-        vis.add_contour(
-            manual_observers, color=[0.13, 0.67, 0.275], linewidth=0.5, show_legend=False
-        )
 
         vis.set_limits_from_label(union_mask, expansion=30)
 
         fig = vis.show()
-
-        first_obs = manual_observers[list(manual_observers.keys())[0]]
-        for s in samples:
-            samples[s] = sitk.Resample(
-                samples[s], first_obs, sitk.Transform(), sitk.sitkNearestNeighbor
-            )
-            mean["mean"] = sitk.Resample(
-                mean["mean"], first_obs, sitk.Transform(), sitk.sitkNearestNeighbor
-            )
 
         sim = {k: np.zeros((len(samples), len(manual_observers))) for k in metrics}
         msim = {k: np.zeros((len(samples), len(manual_observers))) for k in metrics}
@@ -457,6 +449,12 @@ class ProbUNet(pl.LightningModule):
             fig.savefig(figure_path, dpi=300)
             plt.close("all")
 
+            try:
+                self.logger.experiment.log_image(figure_path)
+            except AttributeError:
+                # Likely offline mode
+                pass
+
             for t in result:
                 for m in metrics:
                     computed_metrics[f"{t}_{m}"]+=result[t][m]
@@ -532,7 +530,7 @@ def main(args, config_json_path=None):
     checkpoint_callback = ModelCheckpoint(
         monitor="probnet_DSC",
         dirpath=args.default_root_dir,
-        filename="probunet-{epoch:02d}-{DSC:.2f}",
+        filename="probunet-{fold}-{epoch:02d}-{probnet_DSC:.2f}",
         save_top_k=1,
         mode="max",
     )
