@@ -82,6 +82,7 @@ def write_nrrd_structure_set(
     )
 
     structure_count = 0
+
     for name in structure_names:
         if isinstance(color_map, (mcolors.ListedColormap, mcolors.LinearSegmentedColormap)):
             color = color_map(hash(name) % 256)

@@ -444,7 +444,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
                 reference_image=img_crop,
                 transform=initial_tfm,
                 default_value=0,
-                interpolator=sitk.sitkNearestNeighbor,
+                interpolator=sitk.sitkLinear,
             )
 
             expanded_atlas_guide_structure = extend_mask(
