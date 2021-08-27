@@ -364,6 +364,7 @@ class NiftiDataset(torch.utils.data.Dataset):
 
         self.data = data
         self.transforms = None
+        self.ndims = ndims
         if augment_on_fly:
             if self.ndims == 2:
                 self.transforms = prepare_transforms()
@@ -371,7 +372,6 @@ class NiftiDataset(torch.utils.data.Dataset):
                 self.transforms = prepare_3d_transforms()
         self.slices = []
         self.working_dir = Path(working_dir)
-        self.ndims = ndims
 
         self.img_dir = working_dir.joinpath("img")
         self.label_dir = working_dir.joinpath("label")
