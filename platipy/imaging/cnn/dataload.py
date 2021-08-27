@@ -226,8 +226,6 @@ class UNetDataModule(pl.LightningDataModule):
             crop_to_grid_size = self.crop_to_grid_size_xy
 
         augment_on_fly = self.augment_on_fly
-        if self.ndims == 3:
-           augment_on_fly = False
 
         self.training_set = NiftiDataset(
             train_data,

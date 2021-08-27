@@ -26,10 +26,213 @@ from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 
 from loguru import logger
 
+import math
+import random
+from scipy.ndimage import affine_transform
+from scipy.ndimage.filters import gaussian_filter, median_filter
+
 from platipy.imaging.cnn.utils import preprocess_image, resample_mask_to_image, get_contour_mask
 from platipy.imaging.label.utils import get_union_mask, get_intersection_mask
 from platipy.imaging.cnn.localise_net import LocaliseUNet
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
+
+
+class GaussianNoise:
+    def __init__(self, mu=0.0, sigma=0.0, probability=1.0):
+
+        self.mu = mu
+        self.sigma = sigma
+        self.probability = probability
+
+        if not hasattr(self.mu, "__iter__"):
+            self.mu = (self.mu,) * 2
+
+        if not hasattr(self.sigma, "__iter__"):
+            self.sigma = (self.sigma,) * 2
+
+    def apply(self, img, masks=[]):
+
+        if random.random() > self.probability:
+            # Don't augment this time
+            return img, masks
+
+        mean = random.uniform(self.mu[0], self.mu[1])
+        sigma = random.uniform(self.sigma[0], self.sigma[1])
+
+        gaussian = np.random.normal(mean, sigma, img.shape)
+        return img + gaussian, masks
+
+
+class GaussianBlur:
+    def __init__(self, sigma=0.0, probability=1.0):
+
+        self.sigma = sigma
+        self.probability = probability
+
+        if not hasattr(self.sigma, "__iter__"):
+            self.sigma = (self.sigma,) * 2
+
+    def apply(self, img, masks=[]):
+
+        if random.random() > self.probability:
+            # Don't augment this time
+            return img, masks
+
+        sigma = random.uniform(self.sigma[0], self.sigma[1])
+
+        return gaussian_filter(img, sigma=sigma), masks
+
+
+class MedianBlur:
+    def __init__(self, size=1.0, probability=1.0):
+
+        self.size = size
+        self.probability = probability
+
+        if not hasattr(self.size, "__iter__"):
+            self.size = (self.size,) * 2
+
+    def apply(self, img, masks=[]):
+
+        if random.random() > self.probability:
+            # Don't augment this time
+            return img, masks
+
+        size = random.uniform(self.size[0], self.size[1])
+
+        return median_filter(img, size=size), masks
+
+
+DIMS = ["ax", "cor", "sag"]
+
+
+class Affine:
+    def __init__(
+        self,
+        scale={"ax": 1.0, "cor": 1.0, "sag": 1.0},
+        translate_percent={"ax": 0.0, "cor": 0.0, "sag": 0.0},
+        rotate={"ax": 0.0, "cor": 0.0, "sag": 0.0},
+        shear={"ax": 0.0, "cor": 0.0, "sag": 0.0},
+        mode="constant",
+        cval=-1,
+        probability=1.0,
+    ):
+
+        self.scale = scale
+        self.translate_percent = translate_percent
+        self.rotate = rotate
+        self.shear = shear
+        self.probability = probability
+
+        for d in self.rotate:
+            if not hasattr(self.rotate[d], "__iter__"):
+                self.rotate[d] = (self.rotate[d],) * 2
+
+        for d in self.scale:
+            if not hasattr(self.scale[d], "__iter__"):
+                self.scale[d] = (self.scale[d],) * 2
+
+        for d in self.translate_percent:
+            if not hasattr(self.translate_percent[d], "__iter__"):
+                self.translate_percent[d] = (self.translate_percent[d],) * 2
+
+        for d in self.shear:
+            if not hasattr(self.shear[d], "__iter__"):
+                self.shear[d] = (self.shear[d],) * 2
+
+        for d in self.scale:
+            if not hasattr(self.scale[d], "__iter__"):
+                self.scale[d] = (self.scale[d],) * 2
+
+    def get_rot(self, theta, d):
+        if d == "ax":
+            return np.matrix(
+                [
+                    [1, 0, 0, 0],
+                    [0, math.cos(theta), -math.sin(theta), 0],
+                    [0, math.sin(theta), math.cos(theta), 0],
+                    [0, 0, 0, 1],
+                ]
+            )
+
+        if d == "cor":
+            return np.matrix(
+                [
+                    [math.cos(theta), 0, math.sin(theta), 0],
+                    [0, 1, 0, 0],
+                    [-math.sin(theta), 0, math.cos(theta), 0],
+                    [0, 0, 0, 1],
+                ]
+            )
+
+        if d == "sag":
+            return np.matrix(
+                [
+                    [math.cos(theta), -math.sin(theta), 0, 0],
+                    [math.sin(theta), math.cos(theta), 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1],
+                ]
+            )
+
+    def get_shear(self, shear):
+
+        mat = np.identity(4)
+        mat[0, 1] = shear[1]
+        mat[0, 2] = shear[2]
+        mat[1, 0] = shear[0]
+        mat[1, 2] = shear[2]
+        mat[2, 0] = shear[0]
+        mat[2, 1] = shear[1]
+
+        return mat
+
+    def apply(self, img, masks=[]):
+
+        if random.random() > self.probability:
+            # Don't augment this time
+            return img, masks
+
+        deg_to_rad = math.pi / 180
+
+        t_prerot = np.identity(4)
+        t_postrot = np.identity(4)
+        for i, d in enumerate(DIMS):
+            t_prerot[i, -1] = -img.shape[i] / 2
+            t_postrot[i, -1] = img.shape[i] / 2
+
+        t = t_postrot
+
+        for i, d in enumerate(DIMS):
+            t = t * self.get_rot(
+                random.uniform(self.rotate[d][0], self.rotate[d][1]) * deg_to_rad, d
+            )
+
+        for i, d in enumerate(DIMS):
+            scale = np.identity(4)
+            scale[i, i] = 1 / random.uniform(self.scale[d][0], self.scale[d][1])
+            t = t * scale
+
+        shear = []
+        for i, d in enumerate(DIMS):
+            shear.append(random.uniform(self.shear[d][0], self.shear[d][1]))
+
+        t = t * self.get_shear(shear)
+
+        t = t * t_prerot
+
+        for i, d in enumerate(DIMS):
+            trans = [p * img.shape[i] for p in self.translate_percent[d]]
+            translation = np.identity(4)
+            translation[i, -1] = random.uniform(trans[0], trans[1])
+            t = t * translation
+
+        augmented_image = affine_transform(img, t, mode="mirror")
+        augmented_masks = []
+        for mask in masks:
+            augmented_masks.append(affine_transform(mask, t, mode="nearest"))
+
+        return augmented_image, augmented_masks
 
 
 def crop_img_using_localise_model(
@@ -79,6 +282,21 @@ def crop_img_using_localise_model(
             index[i] = 0
 
     return crop_to_roi(img, size, index)
+
+
+def prepare_3d_transforms():
+    affine_aug = Affine(
+        translate_percent={"ax": [-0.1, 0.1], "cor": [-0.1, 0.1], "sag": [-0.1, 0.1]},
+        rotate={"ax": [-10.0, 10.0], "cor": [-10.0, 10.0], "sag": [-10.0, 10.0]},
+        scale={"ax": [0.8, 1.2], "cor": [0.8, 1.2], "sag": [0.8, 1.2]},
+        shear={"ax": [0.0, 0.2], "cor": [0.0, 0.2], "sag": [0.0, 0.2]},
+        probability=0.5,
+    )
+    gaussian_blur = GaussianBlur(sigma=[0.0, 1.0], probability=0.33)
+    median_blur = MedianBlur(size=[1, 3], probability=0.5)
+    gaussian_noise = GaussianNoise(sigma=[0, 0.2], probability=0.5)
+
+    return [affine_aug, gaussian_blur, median_blur, gaussian_noise]
 
 
 def prepare_transforms():
@@ -147,7 +365,10 @@ class NiftiDataset(torch.utils.data.Dataset):
         self.data = data
         self.transforms = None
         if augment_on_fly:
-            self.transforms = prepare_transforms()
+            if self.ndims == 2:
+                self.transforms = prepare_transforms()
+            else:
+                self.transforms = prepare_3d_transforms()
         self.slices = []
         self.working_dir = Path(working_dir)
         self.ndims = ndims
@@ -285,13 +506,20 @@ class NiftiDataset(torch.utils.data.Dataset):
         contour_mask = np.load(self.slices[index]["contour_mask"])
 
         if self.transforms:
-            seg_arr = np.concatenate(
-                (np.expand_dims(label, 2), np.expand_dims(contour_mask, 2)), 2
-            )
-            segmap = SegmentationMapsOnImage(seg_arr, shape=label.shape)
-            img, seg = self.transforms(image=img, segmentation_maps=segmap)
-            label = seg.get_arr()[:, :, 0].squeeze()
-            contour_mask = seg.get_arr()[:, :, 1].squeeze()
+            if self.ndims == 2:
+                seg_arr = np.concatenate(
+                    (np.expand_dims(label, 2), np.expand_dims(contour_mask, 2)), 2
+                )
+                segmap = SegmentationMapsOnImage(seg_arr, shape=label.shape)
+                img, seg = self.transforms(image=img, segmentation_maps=segmap)
+                label = seg.get_arr()[:, :, 0].squeeze()
+                contour_mask = seg.get_arr()[:, :, 1].squeeze()
+            else:
+                masks = [label, contour_mask]
+                for aug in self.transforms:
+                    img, masks = aug.apply(img, masks)
+                label = masks[0]
+                contour_mask = masks[1]
 
         img = torch.FloatTensor(img)
         label = torch.IntTensor(label)
