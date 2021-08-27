@@ -98,7 +98,7 @@ class MedianBlur:
             # Don't augment this time
             return img, masks
 
-        size = random.uniform(self.size[0], self.size[1])
+        size = random.randint(self.size[0], self.size[1])
 
         return median_filter(img, size=size), masks
 
