@@ -134,7 +134,7 @@ def contour_comparison(
         rows = s_select
 
     # Compute some metrics
-    columns = ("DSC", "MDA\n[mm]", "HD\n[mm]", r"$\Delta$V" + "\n" + r"[cm$^{3}$]")
+    columns = ("DSC", "MDA\n[mm]", "HD\n[mm]", "Vol.\nRatio")
     cell_text = []
     for s, row in zip(s_select, rows):
         cell_text.append(
@@ -142,9 +142,15 @@ def contour_comparison(
                 f"{compute_metric_dsc(contour_dict_a[s],contour_dict_b[s]):.2f}",
                 f"{compute_metric_masd(contour_dict_a[s],contour_dict_b[s]):.2f}",
                 f"{compute_metric_hd(contour_dict_a[s],contour_dict_b[s]):.2f}",
-                f"{compute_volume(contour_dict_a[s])/compute_volume(contour_dict_b[s]):.2f}",
+                f"{compute_volume(contour_dict_b[s])/compute_volume(contour_dict_a[s]):.2f}",
             ]
         )
+
+    # If there are no labels we can make the table bigger
+    if title == "" and subsubtitle == "" and subsubtitle == "":
+        v_extent = 0.88
+    else:
+        v_extent = 0.7
 
     # Create the table
     table = ax.table(
@@ -153,7 +159,7 @@ def contour_comparison(
         rowColours=plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select))),
         colLabels=columns,
         fontsize=10,
-        bbox=[0.3, 0.15, 0.65, 0.6],
+        bbox=[0.35, 0.1, 0.63, v_extent],
     )
 
     # Some nice formatting
@@ -168,12 +174,12 @@ def contour_comparison(
     # Geometry fixes
     for row in range(len(rows) + 1):
 
-        table[row, 0].set_width(0.2)
-        table[row, 1].set_width(0.2)
-        table[row, 2].set_width(0.2)
-        table[row, 3].set_width(0.2)
+        table[row, 0].set_width(0.1)
+        table[row, 1].set_width(0.1)
+        table[row, 2].set_width(0.1)
+        table[row, 3].set_width(0.1)
         if row > 0:
-            table[row, -1].set_width(0.2)
+            table[row, -1].set_width(0.1)
 
     for col in range(len(columns)):
         table[0, col].set_height(0.075)
@@ -191,19 +197,20 @@ def contour_comparison(
         va="top",
         size=fs + 4,
     )
-    ax.text(0.95, 0.90, subtitle, color="darkgreen", ha="right", va="top", size=fs + 2)
-    ax.text(0.95, 0.85, subsubtitle, color="k", ha="right", va="top", size=fs + 2)
+    ax.text(0.95, 0.92, subtitle, color="darkgreen", ha="right", va="top", size=fs + 2)
+    ax.text(0.95, 0.87, subsubtitle, color="k", ha="right", va="top", size=fs + 2)
 
     # Insert legend
     _solid = mlines.Line2D([], [], color="k", label=contour_label_a)
     _dashed = mlines.Line2D([], [], color="k", linestyle="dashed", label=contour_label_b)
     ax.legend(
         handles=[_solid, _dashed],
-        bbox_to_anchor=(0.3, 0.02, 0.65, 0.1),
+        bbox_to_anchor=(0.35, 0.02, 0.63, 0.1),
         ncol=2,
         mode="expand",
         borderaxespad=0.0,
         fontsize=fs,
+        loc="lower left",
     )
 
     # Return the figure
