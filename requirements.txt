@@ -1,23 +1,15 @@
-numpy == 1.19.5
-SimpleITK == 2.0.2
-vtk == 9.0.1
-scikit-image == 0.17.2
-click == 7.1.2
-pydicom == 2.1.2
-pynetdicom == 1.5.7
-flask == 1.1.2
-flask-restful == 0.3.8
-flask-sqlalchemy == 2.4.4
-SQLAlchemy < 1.4.0
-celery == 4.4.7
-redis == 3.5.3
-loguru == 0.5.3
-psutil == 5.8.0
-gunicorn == 20.0.4
-requests == 2.25.1
-pandas == 1.1.5
-pymedphys == 0.37.1
-rt_utils == 1.1.4
-ipywidgets == 7.6.3
-matplotlib == 3.3.4
+numpy >= 1.19.5
+SimpleITK >= 2.0.2
+vtk >= 9.0.1
+scikit-image >= 0.17.2, < 0.18.0
+click >= 7.1.2
+pydicom >= 2.1.2
+pynetdicom >= 1.5.7
+loguru >= 0.5.3
+requests >= 2.25.1
+pandas >= 1.1.5
+pymedphys >= 0.37.1
+rt_utils >= 1.1.4
+ipywidgets >= 7.6.3
+matplotlib >= 3.3.4, < 3.4.0
 seaborn >= 0.11.1

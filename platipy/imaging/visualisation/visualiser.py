@@ -459,7 +459,7 @@ class ImageVisualiser:
             lower = nda.min()
 
             # Check if we *probably* have a CT
-            if lower < -1000:
+            if lower < -900:
                 # Just set a decent CT window
                 # Somewhere around soft tissue
                 window = (-250, 600)
@@ -689,7 +689,7 @@ class ImageVisualiser:
             lower = nda_original.min()
 
             # Check if we *probably* have a CT
-            if lower < -1000:
+            if lower < -900:
                 # Just set a decent CT window
                 # Somewhere around soft tissue
                 window = (-250, 600)
