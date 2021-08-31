@@ -61,16 +61,16 @@ if "ATLAS_PATH" in os.environ:
 CARDIAC_SETTINGS_DEFAULTS = {
     "atlas_settings": {
         "atlas_id_list": [
-            "BREAST_03",
-            "BREAST_05",
-            "BREAST_08",
-            "BREAST_10",
-            "BREAST_11",
-            "BREAST_12",
-            "BREAST_13",
-            "BREAST_16",
-            "BREAST_24",
-            "BREAST_35",
+            "03",
+            "05",
+            "08",
+            "10",
+            "11",
+            "12",
+            "13",
+            "16",
+            "24",
+            "35",
         ],
         "atlas_structure_list": [
             "AORTICVALVE",
