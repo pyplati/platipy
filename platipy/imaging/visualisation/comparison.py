@@ -21,6 +21,7 @@ import SimpleITK as sitk
 
 import matplotlib.lines as mlines
 import matplotlib as plt
+import matplotlib.colors as mcolors
 
 
 from platipy.imaging.label.comparison import (
@@ -89,6 +90,26 @@ def contour_comparison(
         s_vol = [sitk.GetArrayFromImage(contour_dict_a[s]).sum() for s in s_select]
         structure_for_com = s_select[np.argmax(s_vol)]
 
+    # Colormap options
+    if isinstance(contour_cmap, (mcolors.ListedColormap, mcolors.LinearSegmentedColormap)):
+        colors_a = {
+            s + "a": c
+            for s, c in zip(
+                s_select, plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select)))
+            )
+        }
+
+        colors_b = {
+            s + "b": c
+            for s, c in zip(
+                s_select, plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select)))
+            )
+        }
+
+    elif isinstance(contour_cmap, dict):
+        colors_a = {s + "a": contour_cmap[s] for s in s_select}
+        colors_b = {s + "b": contour_cmap[s] for s in s_select}
+
     # Visualise!
     vis = ImageVisualiser(img, cut=get_com(contour_dict_a[structure_for_com]), **img_vis_kw)
 
@@ -96,24 +117,14 @@ def contour_comparison(
     vis.add_contour(
         {s + "a": contour_dict_a[s] for s in s_select},
         show_legend=False,
-        color={
-            s + "a": c
-            for s, c in zip(
-                s_select, plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select)))
-            )
-        },
+        color=colors_a,
     )
 
     # Add contour set B
     vis.add_contour(
         {s + "b": contour_dict_b[s] for s in s_select},
         show_legend=False,
-        color={
-            s + "b": c
-            for s, c in zip(
-                s_select, plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select)))
-            )
-        },
+        color=colors_b,
         linestyle="dashed",
     )
 
@@ -156,7 +167,9 @@ def contour_comparison(
     table = ax.table(
         cellText=cell_text,
         rowLabels=rows,
-        rowColours=plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select))),
+        rowColours=list(
+            colors_a.values()
+        ),  # plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select))),
         colLabels=columns,
         fontsize=10,
         bbox=[0.35, 0.1, 0.63, v_extent],
