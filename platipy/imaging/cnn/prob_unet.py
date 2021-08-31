@@ -436,7 +436,10 @@ class ProbabilisticUnet(torch.nn.Module):
             reconstruction_threshold = self.loss_params["kappa"]
 
             contour_threshold = None
-            if "kappa_contour" in self.loss_params:
+            if (
+                "kappa_contour" in self.loss_params
+                and self.loss_params["kappa_contour"] is not None
+            ):
                 contour_threshold = self.loss_params["kappa_contour"]
 
                 contour_loss, contour_loss_mean, _ = self.reconstruction_loss(
