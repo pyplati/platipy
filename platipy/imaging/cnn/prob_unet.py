@@ -461,6 +461,7 @@ class ProbabilisticUnet(torch.nn.Module):
 
                 rc = self._rec_moving_avg - reconstruction_threshold
 
+                cc = 0
                 if contour_threshold:
                     cl = contour_loss_mean.detach()
                     if self._contour_moving_avg is None:
