@@ -231,7 +231,7 @@ class ProbUNet(pl.LightningModule):
 
         return result
 
-    def validate(self, img, manual_observers, samples, mean, matching_type="best"):
+    def validate(self, img, manual_observers, samples, mean, matching_type="best", window=[-0.5,1.0]):
 
         metrics = {"DSC": "max", "HD": "min", "ASD": "min"}
 
@@ -239,7 +239,7 @@ class ProbUNet(pl.LightningModule):
 
         intersection_mask = get_intersection_mask(manual_observers)
         union_mask = get_union_mask(manual_observers)
-        vis = ImageVisualiser(img, cut=get_com(union_mask), window=[-200, 700], figure_size_in=16)
+        vis = ImageVisualiser(img, cut=get_com(union_mask), figure_size_in=16, window=window)
 
         vis.add_contour(
             mean, color=plt.cm.get_cmap(contour_cmap)(0.5), linewidth=3, show_legend=False
