@@ -417,7 +417,7 @@ class ProbabilisticUnet(torch.nn.Module):
         #                loss_mask = loss_mask.unsqueeze(1).repeat((1, self.num_classes, 1, 1))
 
         # Here we use the posterior sample sampled above
-        reconstruction_loss, rec_loss_mean, mask = self.reconstruction_loss(
+        reconstruction_loss, rec_loss_mean, _ = self.reconstruction_loss(
             segm,
             reconstruct_posterior_mean=reconstruct_posterior_mean,
             z_posterior=z_posterior,
@@ -439,7 +439,7 @@ class ProbabilisticUnet(torch.nn.Module):
             if "kappa_contour" in self.loss_params:
                 contour_threshold = self.loss_params["kappa_contour"]
 
-                contour_loss, contour_loss_mean, mask = self.reconstruction_loss(
+                contour_loss, contour_loss_mean, _ = self.reconstruction_loss(
                     segm,
                     reconstruct_posterior_mean=reconstruct_posterior_mean,
                     z_posterior=z_posterior,
