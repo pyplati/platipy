@@ -486,29 +486,28 @@ class ProbabilisticUnet(torch.nn.Module):
                         torch.exp(torch.Tensor([rc, cc]).to(rc.device)) * self._lambda
                     ).clamp(lambda_lower, lambda_upper)
 
-            # If not using the contour loss part, set lambda of that to zero
-            if contour_threshold is None:
-                self._lambda[1] = 0.0
-
             # pylint: disable=access-member-before-definition
-            loss = (
-                (self._lambda[0] * reconstruction_loss) + (self._lambda[1] * contour_loss) + kl_div
-            )
+            loss = (self._lambda[0] * reconstruction_loss) + kl_div
 
-            return {
+            result = {
                 "loss": loss,
                 "rec_loss": reconstruction_loss,
-                "contour_loss": contour_loss,
                 "kl_div": kl_div,
                 "lambda_rec": self._lambda[0],
-                "lambda_contour": self._lambda[1],
-                "moving_avg_rec": self._rec_moving_avg,
-                "moving_avg_contour": self._contour_moving_avg,
+                "moving_avg": self._rec_moving_avg,
                 "reconstruction_threshold": reconstruction_threshold,
-                "contour_threshold": contour_threshold,
                 "rec_constraint": rc,
-                "contour_constraint": cc,
             }
+
+            if contour_threshold is not None:
+                loss = loss + (self._lambda[1] * contour_loss)
+                result["contour_loss"] = contour_loss
+                result["contour_threshold"] = contour_threshold
+                result["contour_constraint"] = cc
+                result["moving_avg_contour"] = self._contour_moving_avg
+                result["lambda_contour"] = self._lambda[1]
+
+            return result
 
         else:
             raise NotImplementedError("Loss must be 'elbo' or 'geco'")
