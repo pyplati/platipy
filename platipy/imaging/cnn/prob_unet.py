@@ -480,7 +480,7 @@ class ProbabilisticUnet(torch.nn.Module):
                     self._lambda[1] = lambda_upper
                 else:
                     self._lambda = (  # pylint: disable=attribute-defined-outside-init
-                        torch.exp(torch.Tensor([rc, cc])) * self._lambda
+                        torch.exp(torch.Tensor([rc, cc]).to(rc.device)) * self._lambda
                     ).clamp(lambda_lower, lambda_upper)
 
             # If not using the contour loss part, set lambda of that to zero
