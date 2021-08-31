@@ -37,11 +37,7 @@ from platipy.imaging.cnn.prob_unet import ProbabilisticUnet
 from platipy.imaging.cnn.unet import l2_regularisation
 from platipy.imaging.cnn.dataload import UNetDataModule
 from platipy.imaging.cnn.dataset import crop_img_using_localise_model
-from platipy.imaging.cnn.utils import (
-    preprocess_image,
-    postprocess_mask,
-    get_metrics
-)
+from platipy.imaging.cnn.utils import preprocess_image, postprocess_mask, get_metrics
 
 from platipy.imaging import ImageVisualiser
 from platipy.imaging.label.utils import get_com, get_union_mask, get_intersection_mask
@@ -67,6 +63,7 @@ class ProbUNet(pl.LightningModule):
             loss_params = {
                 "kappa": self.hparams.kappa,
                 "clamp_rec": self.hparams.clamp_rec,
+                "kappa_contour": self.hparams.kappa_contour,
             }
 
         loss_params["top_k_percentage"] = self.hparams.top_k_percentage
@@ -103,10 +100,11 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--loss_type", type=str, default="elbo")
         parser.add_argument("--beta", type=float, default=1.0)
         parser.add_argument("--kappa", type=float, default=0.02)
+        parser.add_argument("--kappa_contour", type=float, default=None)
         parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
         parser.add_argument("--top_k_percentage", type=float, default=None)
         parser.add_argument("--contour_loss_lambda_threshold", type=float, default=None)
-        parser.add_argument("--contour_loss_weight", type=float, default=0.0)
+        parser.add_argument("--contour_loss_weight", type=float, default=0.0)  # no longer used
         parser.add_argument("--epochs_all_rec", type=int, default=0)
 
         return parent_parser
@@ -143,7 +141,13 @@ class ProbUNet(pl.LightningModule):
             ] * self.hparams.latent_dim
 
         if sample_strategy == "mean":
-            samples = [{"name": "mean", "std_dev_from_mean": torch.Tensor([0.0] * len(latent_dim)).to(self.device), "preds": []}]
+            samples = [
+                {
+                    "name": "mean",
+                    "std_dev_from_mean": torch.Tensor([0.0] * len(latent_dim)).to(self.device),
+                    "preds": [],
+                }
+            ]
         elif sample_strategy == "random":
             samples = [
                 {
@@ -159,7 +163,9 @@ class ProbUNet(pl.LightningModule):
             samples = [
                 {
                     "name": f"spaced_{s}",
-                    "std_dev_from_mean": torch.Tensor([s if d else 0.0 for d in latent_dim]).to(self.device),
+                    "std_dev_from_mean": torch.Tensor([s if d else 0.0 for d in latent_dim]).to(
+                        self.device
+                    ),
                     "preds": [],
                 }
                 for s in np.linspace(spaced_range[0], spaced_range[1], num_samples)
@@ -189,9 +195,9 @@ class ProbUNet(pl.LightningModule):
 
             img_arr = sitk.GetArrayFromImage(img)
             if self.hparams.ndims == 2:
-               slices = [img_arr[z, :, :] for z in range(img_arr.shape[0])]
+                slices = [img_arr[z, :, :] for z in range(img_arr.shape[0])]
             else:
-               slices = [img_arr]
+                slices = [img_arr]
             for i in slices:
 
                 x = torch.Tensor(i).to(self.device)
@@ -457,7 +463,7 @@ class ProbUNet(pl.LightningModule):
 
             for t in result:
                 for m in metrics:
-                    computed_metrics[f"{t}_{m}"]+=result[t][m]
+                    computed_metrics[f"{t}_{m}"] += result[t][m]
 
         for cm in computed_metrics:
             self.log(

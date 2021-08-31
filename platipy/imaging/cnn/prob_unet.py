@@ -23,8 +23,7 @@ from platipy.imaging.cnn.unet import UNet, Conv, init_weights, conv_nd
 
 
 class Encoder(torch.nn.Module):
-    """Encoder part of the probabilistic UNet
-    """
+    """Encoder part of the probabilistic UNet"""
 
     def __init__(
         self, input_channels, filters_per_layer=[64 * (2 ** x) for x in range(5)], ndims=2
@@ -72,7 +71,7 @@ class AxisAlignedConvGaussian(torch.nn.Module):
             out_channels=2 * self.latent_dim,
             kernel_size=1,
             stride=1,
-            ndims=ndims
+            ndims=ndims,
         )
 
         self.ndims = ndims
@@ -234,8 +233,9 @@ class ProbabilisticUnet(torch.nn.Module):
         self.unet_features = None
 
         if self.loss_type == "geco":
-            self._moving_avg = None
-            self.register_buffer("_lambda", torch.zeros(1, requires_grad=False))
+            self._rec_moving_avg = None
+            self._contour_moving_avg = None
+            self.register_buffer("_lambda", torch.zeros(2, requires_grad=False))
 
     def forward(self, img, seg=None, training=False):
         """
@@ -323,8 +323,6 @@ class ProbabilisticUnet(torch.nn.Module):
         mask=None,
         top_k_percentage=None,
         deterministic=True,
-        weight_mask=None,
-        weight_mask_weighting=0.0,
     ):
 
         criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
@@ -382,16 +380,6 @@ class ProbabilisticUnet(torch.nn.Module):
             mask.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
         )
 
-        if weight_mask is not None:
-            weight_mask = torch.reshape(weight_mask, (-1,))
-            weight_mask = weight_mask.unsqueeze(1).repeat((1, num_classes))
-            weight_mask = (
-                weight_mask.reshape((batch_size, -1, num_classes))
-                .transpose(-1, 1)
-                .reshape((batch_size, -1))
-            )
-            mask = mask + (weight_mask * weight_mask_weighting)
-
         ce_sum_per_instance = torch.sum(mask * xe, axis=1)
         ce_sum = torch.mean(ce_sum_per_instance, axis=0)
         ce_mean = torch.sum(mask * xe) / torch.sum(mask)
@@ -418,14 +406,14 @@ class ProbabilisticUnet(torch.nn.Module):
         if "top_k_percentage" in self.loss_params:
             top_k_percentage = self.loss_params["top_k_percentage"]
 
-        loss_mask = None
-        if self.loss_params["contour_loss_lambda_threshold"]:
-            if (
-                self._lambda  # pylint: disable=access-member-before-definition
-                <= self.loss_params["contour_loss_lambda_threshold"]
-                and not use_max_lambda
-            ):
-                loss_mask = mask
+        # loss_mask = None
+        # if self.loss_params["contour_loss_lambda_threshold"]:
+        #     if (
+        #         self._lambda  # pylint: disable=access-member-before-definition
+        #         <= self.loss_params["contour_loss_lambda_threshold"]
+        #         and not use_max_lambda
+        #     ):
+        #         loss_mask = mask
         #                loss_mask = loss_mask.unsqueeze(1).repeat((1, self.num_classes, 1, 1))
 
         # Here we use the posterior sample sampled above
@@ -434,9 +422,6 @@ class ProbabilisticUnet(torch.nn.Module):
             reconstruct_posterior_mean=reconstruct_posterior_mean,
             z_posterior=z_posterior,
             top_k_percentage=top_k_percentage,
-            mask=loss_mask,
-            weight_mask=mask,
-            weight_mask_weighting=self.loss_params["contour_loss_weight"],
         )
 
         if self.loss_type == "elbo":
@@ -448,48 +433,77 @@ class ProbabilisticUnet(torch.nn.Module):
             }
         elif self.loss_type == "geco":
 
-            num_pixels = mask.sum().item()
-            batch_size = segm.shape[0]
-            reconstruction_threshold = (self.loss_params["kappa"] * num_pixels) / batch_size
             reconstruction_threshold = self.loss_params["kappa"]
+
+            contour_threshold = None
+            if "kappa_contour" in self.loss_params:
+                contour_threshold = self.loss_params["kappa_contour"]
+
+                contour_loss, contour_loss_mean, mask = self.reconstruction_loss(
+                    segm,
+                    reconstruct_posterior_mean=reconstruct_posterior_mean,
+                    z_posterior=z_posterior,
+                    top_k_percentage=top_k_percentage,
+                    mask=mask,
+                )
 
             with torch.no_grad():
 
-                rl = rec_loss_mean.detach()
                 moving_avg_factor = 0.8
-                if self._moving_avg is None:
-                    self._moving_avg = rl
+
+                rl = rec_loss_mean.detach()
+                if self._rec_moving_avg is None:
+                    self._rec_moving_avg = rl
                 else:
-                    self._moving_avg = self._moving_avg * moving_avg_factor + rl * (
+                    self._rec_moving_avg = self._rec_moving_avg * moving_avg_factor + rl * (
                         1 - moving_avg_factor
                     )
 
-                rc = self._moving_avg - reconstruction_threshold
+                rc = self._rec_moving_avg - reconstruction_threshold
+
+                if contour_threshold:
+                    cl = contour_loss_mean.detach()
+                    if self._contour_moving_avg is None:
+                        self._contour_moving_avg = rl
+                    else:
+                        self._contour_moving_avg = self._moving_avg * moving_avg_factor + cl * (
+                            1 - moving_avg_factor
+                        )
+
+                    cc = self._contour_moving_avg - contour_threshold
+
                 lambda_lower = self.loss_params["clamp_rec"][0]
                 lambda_upper = self.loss_params["clamp_rec"][1]
                 if use_max_lambda:
-                    self._lambda = torch.Tensor(  # pylint: disable=attribute-defined-outside-init
-                        [lambda_upper]
-                    ).to(rc.device)
+                    self._lambda[0] = lambda_upper
+                    self._lambda[1] = lambda_upper
                 else:
                     self._lambda = (  # pylint: disable=attribute-defined-outside-init
-                        torch.exp(rc) * self._lambda
+                        torch.exp(torch.Tensor([rc, cc])) * self._lambda
                     ).clamp(lambda_lower, lambda_upper)
 
+            # If not using the contour loss part, set lambda of that to zero
+            if contour_threshold is None:
+                self._lambda[1] = 0.0
+
+            # pylint: disable=access-member-before-definition
             loss = (
-                self._lambda
-                * reconstruction_loss  # pylint: disable=access-member-before-definition
-                + kl_div
+                (self._lambda[0] * reconstruction_loss) + (self._lambda[1] * contour_loss) + kl_div
             )
 
             return {
                 "loss": loss,
                 "rec_loss": reconstruction_loss,
+                "contour_loss": contour_loss,
                 "kl_div": kl_div,
-                "lambda": self._lambda,
-                "moving_avg": self._moving_avg,
+                "lambda_rec": self._lambda[0],
+                "lambda_contour": self._lambda[1],
+                "moving_avg_rec": self._rec_moving_avg,
+                "moving_avg_contour": self._contour_moving_avg,
                 "reconstruction_threshold": reconstruction_threshold,
+                "contour_threshold": contour_threshold,
                 "rec_constraint": rc,
+                "contour_constraint": cc,
             }
 
         else:
