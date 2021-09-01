@@ -315,6 +315,52 @@ class ProbabilisticUnet(torch.nn.Module):
             torch.ones(score.shape[0]).to(score.device),
         )
 
+    def prepare_mask(
+        self,
+        mask,
+        top_k_percentage,
+        deterministic,
+        num_classes,
+        device,
+        batch_size,
+        n_pixels_in_batch,
+        xe,
+    ):
+        if mask is None or mask.sum() == 0:
+            mask = torch.ones(n_pixels_in_batch)
+        else:
+            #            assert (
+            #                mask.shape == segm.shape
+            #            ), f"The loss mask shape differs from the target shape: {mask.shape} vs. {segm.shape}."
+            mask = torch.reshape(mask, (-1,))
+        mask = mask.to(device)
+
+        if top_k_percentage is not None:
+
+            assert 0.0 < top_k_percentage <= 1.0
+            k_pixels = int(n_pixels_in_batch * top_k_percentage)
+
+            with torch.no_grad():
+                norm_xe = xe / torch.sum(xe)
+                if deterministic:
+                    score = torch.log(norm_xe)
+                else:
+                    # TODO Gumbel trick
+                    raise NotImplementedError("Still need to implement Gumbel trick")
+
+                score = score + torch.log(mask.unsqueeze(1).repeat((1, num_classes)))
+
+                top_k_mask = self.topk_mask(score, k_pixels)
+                top_k_mask = top_k_mask.to(device)
+                mask = mask * top_k_mask
+
+        mask = mask.unsqueeze(1).repeat((1, num_classes))
+        mask = (
+            mask.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
+        )
+
+        return mask
+
     def reconstruction_loss(
         self,
         segm,
@@ -343,41 +389,44 @@ class ProbabilisticUnet(torch.nn.Module):
         y_flat = torch.transpose(reconstruction, 1, -1).reshape((-1, num_classes))
         t_flat = torch.transpose(segm, 1, -1).reshape((-1, num_classes))
         n_pixels_in_batch = y_flat.shape[0]
-        if mask is None or mask.sum() == 0:
-            mask = torch.ones(n_pixels_in_batch)
-        else:
-            #            assert (
-            #                mask.shape == segm.shape
-            #            ), f"The loss mask shape differs from the target shape: {mask.shape} vs. {segm.shape}."
-            mask = torch.reshape(mask, (-1,))
-        mask = mask.to(y_flat.device)
+        batch_size = segm.shape[0]
 
         xe = criterion(input=y_flat, target=t_flat)
-
-        if top_k_percentage is not None:
-
-            assert 0.0 < top_k_percentage <= 1.0
-            k_pixels = int(n_pixels_in_batch * top_k_percentage)
-
-            with torch.no_grad():
-                norm_xe = xe / torch.sum(xe)
-                if deterministic:
-                    score = torch.log(norm_xe)
-                else:
-                    # TODO Gumbel trick
-                    raise NotImplementedError("Still need to implement Gumbel trick")
-
-                score = score + torch.log(mask.unsqueeze(1).repeat((1, num_classes)))
-
-                top_k_mask = self.topk_mask(score, k_pixels)
-                top_k_mask = top_k_mask.to(y_flat.device)
-                mask = mask * top_k_mask
-
-        batch_size = segm.shape[0]
         xe = xe.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
-        mask = mask.unsqueeze(1).repeat((1, num_classes))
-        mask = (
-            mask.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
+
+        # If multiple masks supplied, compute a loss for each mask
+        if hasattr(mask, "__iter__"):
+            ce_sums = []
+            ce_means = []
+            masks = []
+            for this_mask in masks:
+                this_mask = self.prepare_mask(
+                    this_mask,
+                    top_k_percentage,
+                    deterministic,
+                    num_classes,
+                    y_flat.device,
+                    batch_size,
+                    n_pixels_in_batch,
+                    xe,
+                )
+
+                ce_sum_per_instance = torch.sum(this_mask * xe, axis=1)
+                ce_sums.append(torch.mean(ce_sum_per_instance, axis=0))
+                ce_means.append(torch.sum(this_mask * xe) / torch.sum(this_mask))
+                masks.append(this_mask)
+
+            return ce_sums, ce_means, masks
+
+        mask = self.prepare_mask(
+            mask,
+            top_k_percentage,
+            deterministic,
+            num_classes,
+            y_flat.device,
+            batch_size,
+            n_pixels_in_batch,
+            xe,
         )
 
         ce_sum_per_instance = torch.sum(mask * xe, axis=1)
@@ -416,13 +465,28 @@ class ProbabilisticUnet(torch.nn.Module):
         #         loss_mask = mask
         #                loss_mask = loss_mask.unsqueeze(1).repeat((1, self.num_classes, 1, 1))
 
+        loss_mask = None
+        reconstruction_threshold = self.loss_params["kappa"]
+        contour_threshold = None
+        if "kappa_contour" in self.loss_params and self.loss_params["kappa_contour"] is not None:
+            loss_mask = [None, mask]
+            contour_threshold = self.loss_params["kappa_contour"]
+
         # Here we use the posterior sample sampled above
-        reconstruction_loss, rec_loss_mean, _ = self.reconstruction_loss(
+        rec_loss, rec_loss_mean, _ = self.reconstruction_loss(
             segm,
             reconstruct_posterior_mean=reconstruct_posterior_mean,
             z_posterior=z_posterior,
             top_k_percentage=top_k_percentage,
+            mask=loss_mask,
         )
+
+        # If using contour mask in loss, we get back those in a list. Unpack here.
+        if contour_threshold:
+            contour_loss = rec_loss[1]
+            contour_loss_mean = rec_loss_mean[1]
+            reconstruction_loss = rec_loss[0]
+            rec_loss_mean = rec_loss_mean[0]
 
         if self.loss_type == "elbo":
 
@@ -432,23 +496,6 @@ class ProbabilisticUnet(torch.nn.Module):
                 "kl_div": kl_div,
             }
         elif self.loss_type == "geco":
-
-            reconstruction_threshold = self.loss_params["kappa"]
-
-            contour_threshold = None
-            if (
-                "kappa_contour" in self.loss_params
-                and self.loss_params["kappa_contour"] is not None
-            ):
-                contour_threshold = self.loss_params["kappa_contour"]
-
-                contour_loss, contour_loss_mean, _ = self.reconstruction_loss(
-                    segm,
-                    reconstruct_posterior_mean=reconstruct_posterior_mean,
-                    z_posterior=z_posterior,
-                    top_k_percentage=top_k_percentage,
-                    mask=mask,
-                )
 
             with torch.no_grad():
 
