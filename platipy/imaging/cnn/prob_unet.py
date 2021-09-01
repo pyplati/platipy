@@ -470,8 +470,9 @@ class ProbabilisticUnet(torch.nn.Module):
                     if self._contour_moving_avg is None:
                         self._contour_moving_avg = rl
                     else:
-                        self._contour_moving_avg = self._moving_avg * moving_avg_factor + cl * (
-                            1 - moving_avg_factor
+                        self._contour_moving_avg = (
+                            self._contour_moving_avg * moving_avg_factor
+                            + cl * (1 - moving_avg_factor)
                         )
 
                     cc = self._contour_moving_avg - contour_threshold
