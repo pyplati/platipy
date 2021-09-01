@@ -47,7 +47,7 @@ def rotate_image(
 
     Args:
         img (SimpleITK.Image): The image to rotate
-        rotation_centre (tuple, optional): The centre of rotation (in image coordinates).
+        rotation_centre (tuple, optional): The centre of rotation (in physical coordinates).
             Defaults to (0, 0, 0).
         rotation_axis (tuple, optional): The axis of rotation. Defaults to (1, 0, 0).
         rotation_angle_radians (float, optional): The angle of rotation. Defaults to 0.
