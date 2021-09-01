@@ -425,7 +425,7 @@ class NiftiDataset(torch.utils.data.Dataset):
             img = sitk.ReadImage(img_path)
 
             if crop_using_localise_model:
-                crop_img_using_localise_model(
+                img = crop_img_using_localise_model(
                     img,
                     crop_using_localise_model,
                     spacing=spacing,
