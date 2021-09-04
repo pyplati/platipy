@@ -399,7 +399,7 @@ class ProbabilisticUnet(torch.nn.Module):
             ce_sums = []
             ce_means = []
             masks = []
-            for this_mask in masks:
+            for this_mask in mask:
                 this_mask = self.prepare_mask(
                     this_mask,
                     top_k_percentage,
