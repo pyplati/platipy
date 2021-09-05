@@ -484,7 +484,9 @@ def main(args, config_json_path=None):
 
     args.working_dir = Path(args.working_dir)
     args.working_dir = args.working_dir.joinpath(args.experiment)
-    args.default_root_dir = str(args.working_dir)
+    #args.default_root_dir = str(args.working_dir)
+    args.fold_dir = args.working_dir.joinpath(f"fold_{args.fold}")
+    args.default_root_dir = str(args.fold_dir)
 
     comet_api_key = None
     comet_workspace = None
@@ -536,7 +538,7 @@ def main(args, config_json_path=None):
     checkpoint_callback = ModelCheckpoint(
         monitor="probnet_DSC",
         dirpath=args.default_root_dir,
-        filename="probunet-{fold}-{epoch:02d}-{probnet_DSC:.2f}",
+        filename="probunet-{epoch:02d}-{probnet_DSC:.2f}",
         save_top_k=1,
         mode="max",
     )
