@@ -237,7 +237,9 @@ class ProbUNet(pl.LightningModule):
 
         return result
 
-    def validate(self, img, manual_observers, samples, mean, matching_type="best", window=[-0.5,1.0]):
+    def validate(
+        self, img, manual_observers, samples, mean, matching_type="best", window=[-0.5, 1.0]
+    ):
 
         metrics = {"DSC": "max", "HD": "min", "ASD": "min"}
 
@@ -484,7 +486,7 @@ def main(args, config_json_path=None):
 
     args.working_dir = Path(args.working_dir)
     args.working_dir = args.working_dir.joinpath(args.experiment)
-    #args.default_root_dir = str(args.working_dir)
+    # args.default_root_dir = str(args.working_dir)
     args.fold_dir = args.working_dir.joinpath(f"fold_{args.fold}")
     args.default_root_dir = str(args.fold_dir)
 

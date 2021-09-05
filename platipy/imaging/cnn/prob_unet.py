@@ -473,7 +473,7 @@ class ProbabilisticUnet(torch.nn.Module):
             contour_threshold = self.loss_params["kappa_contour"]
 
         # Here we use the posterior sample sampled above
-        rec_loss, rec_loss_mean, _ = self.reconstruction_loss(
+        _, rec_loss_mean, _ = self.reconstruction_loss(
             segm,
             reconstruct_posterior_mean=reconstruct_posterior_mean,
             z_posterior=z_posterior,
@@ -483,9 +483,9 @@ class ProbabilisticUnet(torch.nn.Module):
 
         # If using contour mask in loss, we get back those in a list. Unpack here.
         if contour_threshold:
-            contour_loss = rec_loss[1]
+            contour_loss = rec_loss_mean[1]
             contour_loss_mean = rec_loss_mean[1]
-            reconstruction_loss = rec_loss[0]
+            reconstruction_loss = rec_loss_mean[0]
             rec_loss_mean = rec_loss_mean[0]
 
         if self.loss_type == "elbo":

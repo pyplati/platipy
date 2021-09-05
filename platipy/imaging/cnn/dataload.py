@@ -39,7 +39,7 @@ class UNetDataModule(pl.LightningDataModule):
         contour_mask_kernel=3,
         crop_using_localise_model=None,
         localise_voxel_grid_size=[100, 100, 100],
-        validation_sampler="observer", # observer or batch
+        validation_sampler="observer",  # observer or batch
         ndims=2,
         **kwargs,
     ):
@@ -55,7 +55,6 @@ class UNetDataModule(pl.LightningDataModule):
         self.augmented_image_glob = augmented_image_glob
         self.augmented_label_glob = augmented_label_glob
 
-        print(augment_on_fly)
         self.augment_on_fly = augment_on_fly
         self.fold = fold
         self.k_folds = k_folds
