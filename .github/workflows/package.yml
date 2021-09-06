@@ -29,7 +29,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
-        name: Build and push
+        name: Build and Push Base
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -38,3 +38,24 @@ jobs:
           tags: |
             platipy/platipy:latest
             ghcr.io/pyplati/platipy:latest
+      -
+        name: Build and Push Cardiac
+        uses: docker/build-push-action@v2
+        with:
+          context: platipy/imaging/projects/cardiac
+          platforms: linux/amd64
+          push: true
+          tags: |
+            platipy/platipy:cardiac
+            ghcr.io/pyplati/platipy:cardiac
+      -
+        name: Build and Push Bronchus
+        uses: docker/build-push-action@v2
+        with:
+          context: platipy/imaging/projects/bronchus
+          platforms: linux/amd64
+          push: true
+          tags: |
+            platipy/platipy:bronchus
+            ghcr.io/pyplati/platipy:bronchus
+  
