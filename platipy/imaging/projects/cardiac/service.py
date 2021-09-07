@@ -115,7 +115,7 @@ def cardiac_structure_guided_service(data_objects, working_dir, settings):
 
         wholeheart = sitk.ReadImage(data_object.children[0].path)
 
-        results = run_cardiac_segmentation(img, wholeheart, settings)
+        results, _ = run_cardiac_segmentation(img, wholeheart, settings)
 
         # Save resulting masks and add to output for service
         for output in results:
