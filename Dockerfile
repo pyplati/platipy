@@ -16,7 +16,8 @@ RUN pip install -r requirements-backend.txt
 COPY requirements-dev.txt requirements-dev.txt
 RUN pip install -r requirements-dev.txt
 
-COPY ./platipy platipy
+# COPY ./platipy platipy
+RUN pip install platipy
 
 COPY entrypoint.sh /entrypoint.sh
 
