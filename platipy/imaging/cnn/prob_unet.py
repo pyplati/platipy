@@ -548,7 +548,7 @@ class ProbabilisticUnet(torch.nn.Module):
             }
 
             if contour_threshold is not None:
-                loss = loss + (self._lambda[1] * contour_loss)
+                result["loss"] = result["loss"] + (self._lambda[1] * contour_loss)
                 result["contour_loss"] = contour_loss
                 result["contour_threshold"] = contour_threshold
                 result["contour_constraint"] = cc
