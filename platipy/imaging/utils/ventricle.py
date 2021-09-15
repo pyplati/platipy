@@ -20,9 +20,9 @@ import SimpleITK as sitk
 
 from platipy.imaging.label.utils import get_com
 
-from platipy.imaging.utils.geometry import vector_angle, rotate_image
-
 from platipy.imaging.utils.crop import crop_to_roi, label_to_roi
+
+from platipy.imaging.utils.geometry import vector_angle
 
 
 def extract(template_img, angles, angle_min, angle_max, loc_x, loc_y, cw=False):
@@ -52,11 +52,15 @@ def extract(template_img, angles, angle_min, angle_max, loc_x, loc_y, cw=False):
 def generate_left_ventricle_segments(
     contours,
     label_left_ventricle="LEFTVENTRICLE",
+    label_left_atrium="LEFTATRIUM",
     label_right_ventricle="RIGHTVENTRICLE",
     label_mitral_valve="MITRALVALVE",
     label_heart="WHOLEHEART",
     myocardium_thickness_mm=10,
-    edge_correction_mm=0,
+    hole_fill_mm=3,
+    optimiser_tol_degrees=1,
+    optimiser_max_iter=10,
+    optimiser_verbose=False,
 ):
     """
     Generates the 17 segments of the left vetricle
@@ -87,19 +91,23 @@ def generate_left_ventricle_segments(
         label defining the segment (SimpleITK.Image) as values.
     """
 
-    """
-    Crop the images
-    Rotate to the cardiac axis
-    """
+    # Initial set up
     working_contours = copy.deepcopy(contours)
     output_contours = {}
+    overall_transform_list = []
 
     # Some conversions
     erode_img = [
         int(myocardium_thickness_mm / i)
         for i in working_contours[label_left_ventricle].GetSpacing()
     ]
+    hole_fill_img = [int(hole_fill_mm / i) for i in working_contours[label_heart].GetSpacing()]
 
+    """
+    Module 1 - Preparation
+    Crop the images
+    Rotate to the cardiac axis
+    """
     # Crop to the smallest volume possible to make it FAST
     cb_size, cb_index = label_to_roi(
         working_contours[label_heart] > 0,
@@ -110,7 +118,9 @@ def generate_left_ventricle_segments(
         working_contours[label] = crop_to_roi(contours[label], cb_size, cb_index)
 
     # Initially we should reorient based on the cardiac axis
-    label_orient = (working_contours[label_heart]) > 0  # + working_contours[label_left_atrium]
+    label_orient = (
+        working_contours[label_left_ventricle] + working_contours[label_left_atrium]
+    ) > 0
 
     lsf = sitk.LabelShapeStatisticsImageFilter()  # this will be used throughout
     lsf.Execute(label_orient)
@@ -122,33 +132,92 @@ def generate_left_ventricle_segments(
     if cardiac_axis[2] < 0:
         cardiac_axis = -1 * cardiac_axis
 
-    rotation_angle = vector_angle(cardiac_axis, (0, 0, 1))
-    rotation_axis = np.cross(cardiac_axis, (0, 0, 1))
-    rotation_centre = get_com(working_contours[label_heart], real_coords=True)
+    rotation_angle = vector_angle(cardiac_axis[::-1], (0, 0, 1))
+    rotation_axis = np.cross(cardiac_axis[::-1], (0, 0, 1))
+    rotation_centre = get_com(label_orient, real_coords=True)
+
+    rotation_transform = sitk.VersorRigid3DTransform()
+    rotation_transform.SetCenter(rotation_centre)
+    rotation_transform.SetRotation(rotation_axis, rotation_angle)
+
+    overall_transform_list.append(rotation_transform)
 
     for label in contours:
-        working_contours[label] = rotate_image(
+        working_contours[label] = sitk.Resample(
             working_contours[label],
-            rotation_centre=rotation_centre,
-            rotation_axis=rotation_axis,
-            rotation_angle_radians=rotation_angle,
-            interpolation=sitk.sitkNearestNeighbor,
-            default_value=0,
+            rotation_transform,
+            sitk.sitkNearestNeighbor,
+            0,
+            working_contours[label].GetPixelID(),
         )
 
     """
-    Compute the myocardium for the whole LV volume
+    Module 2 - LV orientation alignment
+    We use a very simple optimisation regime to enable robust computation of the LV apex
+    We compute the vector from the MV COM to the LV apex
+    This will be used for orientation (i.e. the long axis)
+    """
+    optimiser_tol_radians = optimiser_tol_degrees * np.pi / 180
 
-    Divide this volume into thirds (from MV COM -> LV apex)
+    n = 0
 
-    Iterate through each slice
-        1. Find the anterior insertion of the RV
-        This defines theta_0
-        2. Find the centre of the LV slice
-        This defines r_0 (origin)
-        3. Convert each myocardium label loc to polar coords
-        4. Assign each label to the appropriate LV segments    
-        
+    while n < optimiser_max_iter and np.abs(rotation_angle) > optimiser_tol_radians:
+
+        n += 1
+
+        # Find the LV apex
+        lv_locations = np.where(sitk.GetArrayViewFromImage(working_contours[label_left_ventricle]))
+        lv_apex_z = lv_locations[0].min()
+        lv_apex_y = lv_locations[1][lv_locations[0] == lv_apex_z].mean()
+        lv_apex_x = lv_locations[2][lv_locations[0] == lv_apex_z].mean()
+        lv_apex_loc = np.array([lv_apex_x, lv_apex_y, lv_apex_z])
+
+        # Get the MV COM
+        mv_com = np.array(get_com(working_contours[label_mitral_valve], real_coords=True))
+
+        # Define the LV axis
+        lv_apex_loc_img = np.array(
+            working_contours[label_left_ventricle].TransformContinuousIndexToPhysicalPoint(
+                lv_apex_loc.tolist()
+            )
+        )
+        lv_axis = lv_apex_loc_img - mv_com
+
+        # Compute the rotation parameters
+        rotation_axis = np.cross(lv_axis, (0, 0, 1))
+        rotation_angle = vector_angle(lv_axis, (0, 0, 1))
+        rotation_centre = 0.5 * (
+            mv_com + lv_apex_loc_img
+        )  # get_com(working_contours[label_left_ventricle], real_coords=True)
+
+        rotation_transform = sitk.VersorRigid3DTransform()
+        rotation_transform.SetCenter(rotation_centre)
+        rotation_transform.SetRotation(rotation_axis, rotation_angle)
+
+        overall_transform_list.append(rotation_transform)
+
+        if optimiser_verbose:
+            print("N:               ", n)
+            print("LV apex:         ", lv_apex_loc_img)
+            print("MV COM:          ", mv_com)
+            print("LV axis:         ", lv_axis)
+            print("Rotation axis:   ", rotation_axis)
+            print("Rotation centre: ", rotation_centre)
+            print("Rotation angle:  ", rotation_angle)
+
+        for label in contours:
+            working_contours[label] = sitk.Resample(
+                working_contours[label],
+                rotation_transform,
+                sitk.sitkNearestNeighbor,
+                0,
+                working_contours[label].GetPixelID(),
+            )
+
+    """
+    Module 3 - Compute the myocardium for the whole LV volume
+
+    Divide this volume into thirds (from MV COM -> LV apex)        
     """
 
     # First, let's just extract the myocardium
@@ -165,21 +234,17 @@ def generate_left_ventricle_segments(
     # For the limits, we will use the centre of mass of the MV to the LV apex
     # The inner limit is used to assign the top portion (basal) of the LV to the anterior segment
     lsf.Execute(label_lv_inner)
-    _, _, inf_limit_lv, _, _, _ = lsf.GetRegion(1)
-
-    lsf.Execute(label_lv_myo)
-    _, _, inf_limit_lv_myo, _, _, extent_lv_myo = lsf.GetRegion(1)
-    sup_limit_lv_myo = inf_limit_lv_myo + extent_lv_myo
+    _, _, inf_limit_lv, _, _, extent = lsf.GetRegion(1)
 
     com_mv, _, _ = get_com(working_contours[label_mitral_valve])
 
-    extent = sup_limit_lv_myo - inf_limit_lv  # com_mv - inf_limit_lv
+    extent = com_mv - inf_limit_lv
     dc = int(extent / 3)
 
     # Define limits (cut LV into thirds)
     apical_extent = inf_limit_lv + dc
     mid_extent = inf_limit_lv + 2 * dc
-    basal_extent = inf_limit_lv + 3 * dc
+    basal_extent = com_mv  # more complete coverage
 
     # Segment 17
     label_lv_myo_apex = label_lv_myo * 1  # make a copy
@@ -201,8 +266,56 @@ def generate_left_ventricle_segments(
     label_lv_myo_basal[:, :, basal_extent:] = 0
 
     """
-    Now we generate the segments
+    Module 4 - Generate 17 segments
+
+        1. Find the basal (anterior) insertion of the RV
+            This defines theta_0
+        2. Find the baseline angle for the apical section
+            This defines thera_0_apical
+        3. Iterate though each section (apical, mid, basal):
+            a. Convert each myocardium label loc to polar coords
+            b. Assign each label to the appropriate LV segments
     """
+
+    # We need the angle for the basal RV insertion
+    # This is the most counter-clockwise RV location
+    # First, retrieve the most basal 5 slices
+    loc_rv_z, loc_rv_y, loc_rv_x = np.where(
+        sitk.GetArrayViewFromImage(working_contours[label_right_ventricle])
+    )
+    loc_rv_z_basal = np.arange(mid_extent, mid_extent + 5)
+
+    theta_rv_insertion = []
+    for z in loc_rv_z_basal:
+        # Now get all the x and y positions
+        loc_rv_basal_x = loc_rv_x[np.where(np.in1d(loc_rv_z, z))]
+        loc_rv_basal_y = loc_rv_y[np.where(np.in1d(loc_rv_z, z))]
+
+        # Now define the LV COM on each slice
+        lv_com = get_com(working_contours[label_left_ventricle][:, :, int(z)])
+        lv_com_basal_x = lv_com[1]
+        lv_com_basal_y = lv_com[0]
+
+        # Compute the angle
+        theta_rv = np.arctan2(lv_com_basal_y - loc_rv_basal_y, loc_rv_basal_x - lv_com_basal_x)
+        theta_rv[theta_rv < 0] += 2 * np.pi
+        theta_rv_insertion.append(theta_rv.min())
+
+    theta_0 = np.median(theta_rv_insertion)
+
+    # We also need the angle in the apical section for accurate segmentation
+    lv_com_apical_list = []
+    rv_com_apical_list = []
+    for n in range(inf_limit_lv, apical_extent):
+        lv_com_apical_list.append(get_com(working_contours[label_left_ventricle][:, :, n]))
+        rv_com_apical_list.append(get_com(working_contours[label_right_ventricle][:, :, n]))
+
+    lv_com_apical = np.mean(lv_com_apical_list, axis=0)
+    rv_com_apical = np.mean(rv_com_apical_list, axis=0)
+
+    theta_0_apical = np.arctan2(
+        lv_com_apical[0] - rv_com_apical[0], rv_com_apical[1] - lv_com_apical[1]
+    )
 
     for i in range(17):
         working_contours[i + 1] = 0 * working_contours[label_heart]
@@ -223,28 +336,27 @@ def generate_left_ventricle_segments(
         y_0, x_0 = get_com(label_lv_myo_slice)
 
         # Compute the angle(s)
-        theta = -1.0 * np.arctan2(loc_y - y_0, loc_x - x_0)
+        theta = -np.arctan2(loc_y - y_0, loc_x - x_0) - theta_0_apical
         # Convert to [0,2*np.pi]
         theta[theta < 0] += 2 * np.pi
 
         # Now assign to different segments
         working_contours[13][:, :, n] = extract(
-            label_lv_myo_slice, theta, 1 * np.pi / 4, 3 * np.pi / 4, loc_x, loc_y
-        )
-        working_contours[14][:, :, n] = extract(
-            label_lv_myo_slice, theta, 3 * np.pi / 4, 5 * np.pi / 4, loc_x, loc_y
-        )
-        working_contours[15][:, :, n] = extract(
             label_lv_myo_slice, theta, 5 * np.pi / 4, 7 * np.pi / 4, loc_x, loc_y
         )
-        working_contours[16][:, :, n] = extract(
+        working_contours[14][:, :, n] = extract(
             label_lv_myo_slice, theta, 1 * np.pi / 4, 7 * np.pi / 4, loc_x, loc_y, cw=True
+        )
+        working_contours[15][:, :, n] = extract(
+            label_lv_myo_slice, theta, 1 * np.pi / 4, 3 * np.pi / 4, loc_x, loc_y
+        )
+        working_contours[16][:, :, n] = extract(
+            label_lv_myo_slice, theta, 3 * np.pi / 4, 5 * np.pi / 4, loc_x, loc_y
         )
 
     # Second up - mid slices
     for n in range(apical_extent, mid_extent):
 
-        label_rv_slice = working_contours[label_right_ventricle][:, :, n]
         label_lv_myo_slice = label_lv_myo[:, :, n]
 
         # We will need numpy arrays here
@@ -254,19 +366,8 @@ def generate_left_ventricle_segments(
         # Now the origin
         y_0, x_0 = get_com(label_lv_myo_slice)
 
-        # We need the angle for the anterior RV insertion
-        # First, locate the tip
-        _, loc_rv_y, loc_rv_x = np.where(
-            sitk.GetArrayViewFromImage(working_contours[label_right_ventricle])
-        )
-        loc_rv_tip_x = loc_rv_x.max()
-        loc_rv_tip_y = np.median(loc_rv_y[np.where(loc_rv_x == loc_rv_tip_x)]).astype(int)
-
-        # Second, compute the angle
-        theta_0 = np.arctan2(loc_rv_tip_y - y_0, loc_rv_tip_x - x_0)
-
         # Compute the angle(s)
-        theta = theta_0 - np.arctan2(loc_y - y_0, loc_x - x_0)
+        theta = -np.arctan2(loc_y - y_0, loc_x - x_0) - theta_0
         # Convert to [0,2*np.pi]
         theta[theta < 0] += 2 * np.pi
 
@@ -293,7 +394,6 @@ def generate_left_ventricle_segments(
     # Third up - basal slices
     for n in range(mid_extent, basal_extent):
 
-        label_rv_slice = working_contours[label_right_ventricle][:, :, n]
         label_lv_myo_slice = label_lv_myo[:, :, n]
 
         # We will need numpy arrays here
@@ -303,24 +403,8 @@ def generate_left_ventricle_segments(
         # Now the origin
         y_0, x_0 = get_com(label_lv_myo_slice)
 
-        # We need the angle for the anterior RV insertion
-        # First, locate the tip
-        if sitk.GetArrayViewFromImage(label_rv_slice).sum() == 0:
-            # Use the last slice value
-            # i.e. do nothing this iteration
-            pass
-        else:
-            _, loc_rv_y, loc_rv_x = np.where(
-                sitk.GetArrayViewFromImage(working_contours[label_right_ventricle])
-            )
-            loc_rv_tip_x = loc_rv_x.max()
-            loc_rv_tip_y = np.median(loc_rv_y[np.where(loc_rv_x == loc_rv_tip_x)]).astype(int)
-
-        # Second, compute the angle
-        theta_0 = np.arctan2(loc_rv_tip_y - y_0, loc_rv_tip_x - x_0)
-
         # Compute the angle(s)
-        theta = theta_0 - np.arctan2(loc_y - y_0, loc_x - x_0)
+        theta = -np.arctan2(loc_y - y_0, loc_x - x_0) - theta_0
         # Convert to [0,2*np.pi]
         theta[theta < 0] += 2 * np.pi
 
@@ -344,29 +428,29 @@ def generate_left_ventricle_segments(
             label_lv_myo_slice, theta, 5 * np.pi / 3, 2 * np.pi, loc_x, loc_y
         )
 
+    """
+    Module 5 - re-orientation into image space
+
+    We perform the total inverse transformation, and paste the labels back into the image space
+    """
+    # Compute the total transform
+    overall_transform = sitk.CompositeTransform(overall_transform_list)
+    inverse_transform = overall_transform.GetInverse()
+
     # Rotate back to the original reference space
     for segment in range(17):
-        new_structure = rotate_image(
+        new_structure = sitk.Resample(
             working_contours[segment + 1],
-            rotation_centre=rotation_centre,
-            rotation_axis=rotation_axis,
-            rotation_angle_radians=-1.0 * rotation_angle,
-            interpolation=sitk.sitkNearestNeighbor,
-            default_value=0,
+            inverse_transform,
+            sitk.sitkNearestNeighbor,
+            0,
         )
 
-        #     new_structure = sitk.BinaryMorphologicalClosing(new_structure, hole_fill_img)
-        #     new_structure = sitk.RelabelComponent(sitk.ConnectedComponent(new_structure)) == 1
-        if edge_correction_mm > 0:
-            new_structure = sitk.BinaryErode(
-                new_structure,
-                [int(edge_correction_mm / j) for j in new_structure.GetSpacing()[:2]]
-                + [
-                    0,
-                ],
-            )
+        if hole_fill_mm > 0:
+            new_structure = sitk.BinaryMorphologicalClosing(new_structure, hole_fill_img)
+
         new_structure = sitk.Paste(
-            contours[label_heart],
+            contours[label_heart] * 0,
             new_structure,
             new_structure.GetSize(),
             (0, 0, 0),
