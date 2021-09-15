@@ -162,7 +162,7 @@ class ProbUNet(pl.LightningModule):
         elif sample_strategy == "spaced":
             samples = [
                 {
-                    "name": f"spaced_{s}",
+                    "name": f"spaced_{s:.2f}",
                     "std_dev_from_mean": torch.Tensor([s if d else 0.0 for d in latent_dim]).to(
                         self.device
                     ),
@@ -233,7 +233,7 @@ class ProbUNet(pl.LightningModule):
             pred = postprocess_mask(pred)
             pred = sitk.Resample(pred, img, sitk.Transform(), sitk.sitkNearestNeighbor)
 
-            result[sample["name"]] = pred
+            result[sample['name']] = pred
 
         return result
 
