@@ -36,15 +36,17 @@ bg = torch.zeros(c.shape)
 labels = torch.cat([fg, bg], axis=1)
 
 hpunet = HierarchicalProbabilisticUnet(
-    channels_per_block=channels_per_block,
+    filters_per_layer=channels_per_block,
     latent_dims=[1],
-    loss_kwargs={
-        "type": "geco",
-        "top_k_percentage": 0.02,
+    loss_type="geco",
+    loss_params={
+        # "top_k_percentage": 0.02,
+        "top_k_percentage": None,
         "deterministic_top_k": False,
         "kappa": 0.05,
         "decay": 0.99,
         "rate": 1e-2,
+        "clamp_rec": [0.001, 10000],
         "beta": 5,
     },
 )
@@ -77,7 +79,7 @@ def _get_placeholders():
 def test_shape_of_sample():
     hpu_net = HierarchicalProbabilisticUnet(
         latent_dims=_LATENT_DIMS,
-        channels_per_block=_CHANNELS_PER_BLOCK,
+        filters_per_layer=_CHANNELS_PER_BLOCK,
         num_classes=_NUM_CLASSES,
     )
     img, _ = _get_placeholders()
@@ -89,7 +91,7 @@ def test_shape_of_sample():
 def test_shape_of_reconstruction():
     hpu_net = HierarchicalProbabilisticUnet(
         latent_dims=_LATENT_DIMS,
-        channels_per_block=_CHANNELS_PER_BLOCK,
+        filters_per_layer=_CHANNELS_PER_BLOCK,
         num_classes=_NUM_CLASSES,
     )
     img, seg = _get_placeholders()
@@ -100,7 +102,7 @@ def test_shape_of_reconstruction():
 def test_shapes_in_prior():
     hpu_net = HierarchicalProbabilisticUnet(
         latent_dims=_LATENT_DIMS,
-        channels_per_block=_CHANNELS_PER_BLOCK,
+        filters_per_layer=_CHANNELS_PER_BLOCK,
         num_classes=_NUM_CLASSES,
     )
     img, _ = _get_placeholders()
@@ -147,7 +149,7 @@ def test_shapes_in_prior():
 def test_shape_of_kl():
     hpu_net = HierarchicalProbabilisticUnet(
         latent_dims=_LATENT_DIMS,
-        channels_per_block=_CHANNELS_PER_BLOCK,
+        filters_per_layer=_CHANNELS_PER_BLOCK,
         num_classes=_NUM_CLASSES,
     )
     img, seg = _get_placeholders()
