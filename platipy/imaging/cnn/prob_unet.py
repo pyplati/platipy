@@ -288,19 +288,13 @@ class ProbabilisticUnet(torch.nn.Module):
                 z_posterior = self.posterior_latent_space.rsample()
         return self.fcomb.forward(self.unet_features, z_posterior)
 
-    def kl_divergence(self, analytic=True, z_posterior=None):
+    def kl_divergence(self):
         """
         Calculate the KL divergence between the posterior and prior KL(Q||P)
-        analytic: calculate KL analytically or via sampling from the posterior
         """
-        if analytic:
-            kl_div = kl.kl_divergence(self.posterior_latent_space, self.prior_latent_space)
-        else:
-            if z_posterior is None:
-                z_posterior = self.posterior_latent_space.rsample()
-            log_posterior_prob = self.posterior_latent_space.log_prob(z_posterior)
-            log_prior_prob = self.prior_latent_space.log_prob(z_posterior)
-            kl_div = log_posterior_prob - log_prior_prob
+
+        kl_div = kl.kl_divergence(self.posterior_latent_space, self.prior_latent_space)
+
         return kl_div
 
     def topk_mask(self, score, k):
@@ -364,7 +358,6 @@ class ProbabilisticUnet(torch.nn.Module):
     def reconstruction_loss(
         self,
         segm,
-        reconstruct_posterior_mean=False,
         z_posterior=None,
         mask=None,
         top_k_percentage=None,
@@ -376,13 +369,7 @@ class ProbabilisticUnet(torch.nn.Module):
         if z_posterior is None:
             z_posterior = self.posterior_latent_space.rsample()
 
-        reconstruction = self.reconstruct(
-            use_posterior_mean=reconstruct_posterior_mean, z_posterior=z_posterior
-        )
-
-        segm = torch.unsqueeze(segm, dim=1)
-        not_seg = segm.logical_not()
-        segm = torch.cat((not_seg, segm), dim=1).float()
+        reconstruction = self.reconstruct(use_posterior_mean=False, z_posterior=z_posterior)
 
         #####
         num_classes = reconstruction.shape[1]
@@ -435,35 +422,18 @@ class ProbabilisticUnet(torch.nn.Module):
 
         return ce_sum, ce_mean, mask
 
-    def loss(
-        self,
-        segm,
-        analytic_kl=True,
-        reconstruct_posterior_mean=False,
-        mask=None,
-        use_max_lambda=False,
-    ):
+    def loss(self, segm, mask=None):
         """
         Calculate the evidence lower bound of the log-likelihood of P(Y|X)
         """
 
         z_posterior = self.posterior_latent_space.rsample()
 
-        kl_div = torch.mean(self.kl_divergence(analytic=analytic_kl, z_posterior=z_posterior))
+        kl_div = torch.mean(self.kl_divergence())
 
         top_k_percentage = None
         if "top_k_percentage" in self.loss_params:
             top_k_percentage = self.loss_params["top_k_percentage"]
-
-        # loss_mask = None
-        # if self.loss_params["contour_loss_lambda_threshold"]:
-        #     if (
-        #         self._lambda  # pylint: disable=access-member-before-definition
-        #         <= self.loss_params["contour_loss_lambda_threshold"]
-        #         and not use_max_lambda
-        #     ):
-        #         loss_mask = mask
-        #                loss_mask = loss_mask.unsqueeze(1).repeat((1, self.num_classes, 1, 1))
 
         loss_mask = None
         reconstruction_threshold = self.loss_params["kappa"]
@@ -475,7 +445,6 @@ class ProbabilisticUnet(torch.nn.Module):
         # Here we use the posterior sample sampled above
         _, rec_loss_mean, _ = self.reconstruction_loss(
             segm,
-            reconstruct_posterior_mean=reconstruct_posterior_mean,
             z_posterior=z_posterior,
             top_k_percentage=top_k_percentage,
             mask=loss_mask,
@@ -487,6 +456,8 @@ class ProbabilisticUnet(torch.nn.Module):
             contour_loss_mean = rec_loss_mean[1]
             reconstruction_loss = rec_loss_mean[0]
             rec_loss_mean = rec_loss_mean[0]
+        else:
+            reconstruction_loss = rec_loss_mean
 
         if self.loss_type == "elbo":
 
@@ -526,13 +497,9 @@ class ProbabilisticUnet(torch.nn.Module):
 
                 lambda_lower = self.loss_params["clamp_rec"][0]
                 lambda_upper = self.loss_params["clamp_rec"][1]
-                if use_max_lambda:
-                    self._lambda[0] = lambda_upper
-                    self._lambda[1] = lambda_upper
-                else:
-                    self._lambda = (  # pylint: disable=attribute-defined-outside-init
-                        torch.exp(torch.Tensor([rc, cc]).to(rc.device)) * self._lambda
-                    ).clamp(lambda_lower, lambda_upper)
+                self._lambda = (  # pylint: disable=attribute-defined-outside-init
+                    torch.exp(torch.Tensor([rc, cc]).to(rc.device)) * self._lambda
+                ).clamp(lambda_lower, lambda_upper)
 
             # pylint: disable=access-member-before-definition
             loss = (self._lambda[0] * reconstruction_loss) + kl_div
