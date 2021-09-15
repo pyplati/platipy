@@ -16,21 +16,25 @@ import numpy as np
 import SimpleITK as sitk
 
 
-def vector_angle(v1, v2):
+def vector_angle(v1, v2, smallest=True):
     """Return the angle between two vectors
 
     Args:
-        v1 ([np.array]): A three-dimensional vector
-        v2 ([np.array]): A three-dimensional vector
+        v1 (np.array): A three-dimensional vector
+        v2 (np.array): A three-dimensional vector
+        smallest (bool, optional): If True, the angle is the smallest (i.e. ignoring direction).
+            If False, direction is taken into account, so angle can be obtuse. Defaults to True.
 
     Returns:
-        [float]: The angle in radians
+        float: The angle in radians
     """
     v1 = np.array(v1)
     v2 = np.array(v2)
     v1_norm = v1 / np.linalg.norm(v1)
     v2_norm = v2 / np.linalg.norm(v2)
     dot_product = np.dot(v1_norm, v2_norm)
+    if smallest:
+        dot_product = np.abs(dot_product)
     angle = np.arccos(dot_product)
     return angle
 
@@ -55,7 +59,7 @@ def rotate_image(
         default_value (int, optional): Default value. Defaults to 0.
 
     Returns:
-        SimpleITK.Image:
+        SimpleITK.Image: The rotated image, resampled into the original space.
     """
 
     # Define the transform, using predefined centre of rotation and given angle
