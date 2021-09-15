@@ -22,6 +22,7 @@ import torch
 
 from .unet import init_weights, init_zeros, conv_nd
 
+
 class ResBlock(torch.nn.Module):
     """A residual block"""
 
@@ -494,12 +495,13 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         self,
         input_channels=1,
         num_classes=2,
-        channels_per_block=None,
+        filters_per_layer=None,
         down_channels_per_block=None,
         latent_dims=(1, 1, 1, 1),
         convs_per_block=3,
         blocks_per_level=3,
-        loss_kwargs=None,
+        loss_type="elbo",
+        loss_params={"beta": 1},
         ndims=2,
     ):
         """Initialize the Hierarchical Probabilistic UNet
@@ -508,7 +510,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             input_channels (int, optional): The number of channels in the image (1 for
                                             greyscale and 3 for RGB). Defaults to 1.
             num_classes (int, optional): The number of classes to predict. Defaults to 2.
-            channels_per_block (list, optional): A list of channels to use in blocks of each
+            filters_per_layer (list, optional): A list of channels to use in blocks of each
                                                  layer the amount of filters layer. Defaults
                                                  to None.
             down_channels_per_block (list, optional): [description]. Defaults to None.
@@ -525,7 +527,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         super(HierarchicalProbabilisticUnet, self).__init__()
 
         base_channels = 24
-        default_channels_per_block = (
+        default_filters_per_layer = (
             base_channels,
             2 * base_channels,
             4 * base_channels,
@@ -535,15 +537,15 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             8 * base_channels,
             8 * base_channels,
         )
-        if channels_per_block is None:
-            channels_per_block = default_channels_per_block
+        if filters_per_layer is None:
+            filters_per_layer = default_filters_per_layer
         if down_channels_per_block is None:
-            down_channels_per_block = [int(i / 2) for i in channels_per_block]
+            down_channels_per_block = [int(i / 2) for i in filters_per_layer]
 
         self._prior = _HierarchicalCore(
             input_channels=input_channels,
             latent_dims=latent_dims,
-            channels_per_block=channels_per_block,
+            channels_per_block=filters_per_layer,
             down_channels_per_block=down_channels_per_block,
             convs_per_block=convs_per_block,
             blocks_per_level=blocks_per_level,
@@ -553,7 +555,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         self._posterior = _HierarchicalCore(
             input_channels=input_channels + num_classes,
             latent_dims=latent_dims,
-            channels_per_block=channels_per_block,
+            channels_per_block=filters_per_layer,
             down_channels_per_block=down_channels_per_block,
             convs_per_block=convs_per_block,
             blocks_per_level=blocks_per_level,
@@ -562,7 +564,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         self._f_comb = _StitchingDecoder(
             latent_dims=latent_dims,
-            channels_per_block=channels_per_block,
+            channels_per_block=filters_per_layer,
             num_classes=num_classes,
             down_channels_per_block=down_channels_per_block,
             convs_per_block=convs_per_block,
@@ -572,22 +574,13 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         self._cache = None
 
-        if loss_kwargs is None:
-            self._loss_kwargs = {
-                "type": "elbo",
-                "kappa": 0.05,
-                "decay": 0.99,
-                "rate": 1e-2,
-                "beta": 1.0,
-            }
-        else:
-            self._loss_kwargs = loss_kwargs
+        self.loss_type = loss_type
+        self.loss_params = loss_params
 
-        if self._loss_kwargs["type"] == "geco":
-            # self._moving_average = ExponentialMovingAverage(decay=self._loss_kwargs["decay"])
-            # self._geco_loss = GECOLoss(target_ratio, alpha=0.5)
-            self._ema = None
-            self.register_buffer("_multiplier", torch.zeros(1, requires_grad=False))
+        if self.loss_type == "geco":
+            self._rec_moving_avg = None
+            self._contour_moving_avg = None
+            self.register_buffer("_lambda", torch.zeros(2, requires_grad=False))
 
         self._q_sample = None
         self._q_sample_mean = None
@@ -698,28 +691,131 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         return kl
 
-    def rec_loss(self, img, seg):
-        """Cross-entropy reconstruction loss employed in the ELBO-/ GECO-objective.
+    def topk_mask(self, score, k):
+        """Returns a mask for the top-k elements in score."""
 
-        Args:
-            img (torch.Tensor): A tensor of shape (b, c, h, w).
-            seg (torch.Tensor): A tensor of shape (b, num_classes, h, w).
+        values, _ = torch.topk(score, 1, axis=0)
+        _, indices = torch.topk(values, k, axis=1)
+        return torch.scatter_add(
+            torch.zeros(score.shape[1]).to(score.device),
+            0,
+            indices.reshape(-1),
+            torch.ones(score.shape[1]).to(score.device),
+        )
 
-        Returns:
-            dict: A dictionary holding the mean and the pixelwise sum of the loss
-        """
-        reconstruction = self.reconstruct(img, seg, mean=False)
+    def prepare_mask(
+        self,
+        mask,
+        top_k_percentage,
+        deterministic,
+        num_classes,
+        device,
+        batch_size,
+        n_pixels_in_batch,
+        xe,
+    ):
+        if mask is None or mask.sum() == 0:
+            mask = torch.ones(n_pixels_in_batch)
+        else:
+            #            assert (
+            #                mask.shape == segm.shape
+            #            ), f"The loss mask shape differs from the target shape: {mask.shape} vs. {segm.shape}."
+            mask = torch.reshape(mask, (-1,))
+        mask = mask.to(device)
+        mask = mask.repeat((1, num_classes))
+
+        if top_k_percentage is not None:
+
+            assert 0.0 < top_k_percentage <= 1.0
+            k_pixels = int(n_pixels_in_batch * top_k_percentage)
+
+            with torch.no_grad():
+                norm_xe = xe / torch.sum(xe)
+                if deterministic:
+                    score = torch.log(norm_xe)
+                else:
+                    # TODO Gumbel trick
+                    raise NotImplementedError("Still need to implement Gumbel trick")
+                # score = score + torch.log(mask)
+                score = score + torch.log(mask)
+
+                top_k_mask = self.topk_mask(score, k_pixels)
+                top_k_mask = top_k_mask.to(device)
+                mask = mask * top_k_mask
+
+        mask = mask.repeat(batch_size, 1)
+
+        return mask
+
+    def reconstruction_loss(
+        self,
+        img,
+        segm,
+        mask=None,
+        top_k_percentage=None,
+        deterministic=True,
+    ):
 
         criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
-        reconstruction_loss = criterion(input=reconstruction, target=seg)
-        reconstruction_loss_sum = torch.sum(reconstruction_loss)
-        reconstruction_loss_mean = torch.mean(reconstruction_loss)
 
-        mask = torch.ones(torch.numel(img))
+        reconstruction = self.reconstruct(img, segm)
 
-        return {"mean": reconstruction_loss_mean, "sum": reconstruction_loss_sum, "mask": mask}
+        # segm = torch.unsqueeze(segm, dim=1)
+        # not_seg = segm.logical_not()
+        # segm = torch.cat((not_seg, segm), dim=1).float()
 
-    def loss(self, img, seg):
+        #####
+        num_classes = reconstruction.shape[1]
+        y_flat = torch.transpose(reconstruction, 1, -1).reshape((-1, num_classes))
+        t_flat = torch.transpose(segm, 1, -1).reshape((-1, num_classes))
+        batch_size = segm.shape[0]
+
+        xe = criterion(input=y_flat, target=t_flat)
+        xe = xe.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
+        n_pixels_in_batch = int(xe.shape[1] / num_classes)
+
+        # If multiple masks supplied, compute a loss for each mask
+        if hasattr(mask, "__iter__"):
+            ce_sums = []
+            ce_means = []
+            masks = []
+            for this_mask in mask:
+                this_mask = self.prepare_mask(
+                    this_mask,
+                    top_k_percentage,
+                    deterministic,
+                    num_classes,
+                    y_flat.device,
+                    batch_size,
+                    n_pixels_in_batch,
+                    xe,
+                )
+
+                ce_sum_per_instance = torch.sum(this_mask * xe, axis=1)
+                ce_sums.append(torch.mean(ce_sum_per_instance, axis=0))
+                ce_means.append(torch.sum(this_mask * xe) / torch.sum(this_mask))
+                masks.append(this_mask)
+
+            return ce_sums, ce_means, masks
+
+        mask = self.prepare_mask(
+            mask,
+            top_k_percentage,
+            deterministic,
+            num_classes,
+            y_flat.device,
+            batch_size,
+            n_pixels_in_batch,
+            xe,
+        )
+
+        ce_sum_per_instance = torch.sum(mask * xe, axis=1)
+        ce_sum = torch.mean(ce_sum_per_instance, axis=0)
+        ce_mean = torch.sum(mask * xe) / torch.sum(mask)
+
+        return ce_sum, ce_mean, mask
+
+    def loss(self, img, seg, mask=None):
         """The full training objective, either ELBO or GECO.
 
         Args:
@@ -732,51 +828,104 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         Returns:
             dict: A dictionary holding the loss (with key 'loss')
         """
-        summaries = {}
-        rec_loss = self.rec_loss(img, seg)
-
+        kl_summaries = {}
         kl_dict = self.kl(img, seg)
         kl_sum = torch.sum(torch.stack([kl for _, kl in kl_dict.items()], axis=-1))
-
-        summaries["rec_loss_mean"] = rec_loss["mean"]
-        summaries["rec_loss_sum"] = rec_loss["sum"]
-        summaries["kl_sum"] = kl_sum
         for level, kl in kl_dict.items():
-            summaries["kl_{}".format(level)] = kl
+            kl_summaries[f"kl_{level}"] = kl
 
-        # Set up a regular ELBO objective.
-        if self._loss_kwargs["type"] == "elbo":
-            loss = rec_loss["sum"] + self._loss_kwargs["beta"] * kl_sum
-            summaries["elbo_loss"] = loss
+        top_k_percentage = None
+        if "top_k_percentage" in self.loss_params:
+            top_k_percentage = self.loss_params["top_k_percentage"]
 
-        # Set up a GECO objective (ELBO with a reconstruction constraint).
-        elif self._loss_kwargs["type"] == "geco":
+        loss_mask = None
+        reconstruction_threshold = self.loss_params["kappa"]
+        contour_threshold = None
+        if "kappa_contour" in self.loss_params and self.loss_params["kappa_contour"] is not None:
+            loss_mask = [None, mask]
+            contour_threshold = self.loss_params["kappa_contour"]
 
-            loss = rec_loss["sum"] * self._multiplier + self._loss_kwargs["beta"] * kl_sum
-            # ma_rec_loss = self._moving_average(rec_loss["sum"])
-            if self._ema is None:
-                self._ema = rec_loss["sum"].detach().mean(0)
-            else:
-                # alpha = self._loss_kwargs["alpha"]
-                self._ema = (self._ema * 0.5 + rec_loss["sum"].detach() * (1 - 0.5)).mean(0)
+        # Here we use the posterior sample sampled above
+        _, rec_loss_mean, _ = self.reconstruction_loss(
+            img,
+            seg,
+            top_k_percentage=top_k_percentage,
+            mask=loss_mask,
+        )
 
-            mask_sum_per_instance = torch.sum(rec_loss["mask"], -1)
-            num_valid_pixels = torch.mean(mask_sum_per_instance)
-            reconstruction_threshold = self._loss_kwargs["kappa"] * num_valid_pixels
-            rec_constraint = self._ema - reconstruction_threshold
-            speed = 1
-            if rec_constraint > 0:
-                speed = 2
-            self._multiplier = (speed * rec_constraint * self._multiplier).clamp(1e-5, 1e2)
-            # loss = rec_loss["sum"] * self._multiplier + self._loss_kwargs["beta"] * kl_sum
-
-            summaries["geco_loss"] = loss
-            # summaries["ma_rec_loss_mean"] = ma_rec_loss / num_valid_pixels
-            summaries["num_valid_pixels"] = num_valid_pixels
-            summaries["lagmul"] = self._multiplier
+        # If using contour mask in loss, we get back those in a list. Unpack here.
+        if contour_threshold:
+            contour_loss = rec_loss_mean[1]
+            contour_loss_mean = rec_loss_mean[1]
+            reconstruction_loss = rec_loss_mean[0]
+            rec_loss_mean = rec_loss_mean[0]
         else:
-            raise NotImplementedError(
-                "Loss type {} not implemeted!".format(self._loss_kwargs["type"])
-            )
+            reconstruction_loss = rec_loss_mean
 
-        return dict(supervised_loss=loss, summaries=summaries)
+        if self.loss_type == "elbo":
+
+            return {
+                "loss": reconstruction_loss + self.loss_params["beta"] * kl_sum,
+                "rec_loss": reconstruction_loss,
+                "kl_div": kl_sum,
+            }
+        elif self.loss_type == "geco":
+
+            with torch.no_grad():
+
+                moving_avg_factor = 0.8
+
+                rl = rec_loss_mean.detach()
+                if self._rec_moving_avg is None:
+                    self._rec_moving_avg = rl
+                else:
+                    self._rec_moving_avg = self._rec_moving_avg * moving_avg_factor + rl * (
+                        1 - moving_avg_factor
+                    )
+
+                rc = self._rec_moving_avg - reconstruction_threshold
+
+                cc = 0
+                if contour_threshold:
+                    cl = contour_loss_mean.detach()
+                    if self._contour_moving_avg is None:
+                        self._contour_moving_avg = rl
+                    else:
+                        self._contour_moving_avg = (
+                            self._contour_moving_avg * moving_avg_factor
+                            + cl * (1 - moving_avg_factor)
+                        )
+
+                    cc = self._contour_moving_avg - contour_threshold
+
+                lambda_lower = self.loss_params["clamp_rec"][0]
+                lambda_upper = self.loss_params["clamp_rec"][1]
+                self._lambda = (  # pylint: disable=attribute-defined-outside-init
+                    torch.exp(torch.Tensor([rc, cc]).to(rc.device)) * self._lambda
+                ).clamp(lambda_lower, lambda_upper)
+
+            # pylint: disable=access-member-before-definition
+            loss = (self._lambda[0] * reconstruction_loss) + kl_sum
+
+            result = {
+                "loss": loss,
+                "rec_loss": reconstruction_loss,
+                "kl_div": kl_sum,
+                "lambda_rec": self._lambda[0],
+                "moving_avg": self._rec_moving_avg,
+                "reconstruction_threshold": reconstruction_threshold,
+                "rec_constraint": rc,
+            }
+
+            if contour_threshold is not None:
+                result["loss"] = result["loss"] + (self._lambda[1] * contour_loss)
+                result["contour_loss"] = contour_loss
+                result["contour_threshold"] = contour_threshold
+                result["contour_constraint"] = cc
+                result["moving_avg_contour"] = self._contour_moving_avg
+                result["lambda_contour"] = self._lambda[1]
+
+            return result
+
+        else:
+            raise NotImplementedError("Loss must be 'elbo' or 'geco'")

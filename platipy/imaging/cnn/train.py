@@ -34,6 +34,7 @@ from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 
 from platipy.imaging.cnn.prob_unet import ProbabilisticUnet
+from platipy.imaging.cnn.hierarchical_prob_unet import HierarchicalProbabilisticUnet
 from platipy.imaging.cnn.unet import l2_regularisation
 from platipy.imaging.cnn.dataload import UNetDataModule
 from platipy.imaging.cnn.dataset import crop_img_using_localise_model
@@ -70,16 +71,27 @@ class ProbUNet(pl.LightningModule):
         loss_params["contour_loss_lambda_threshold"] = self.hparams.contour_loss_lambda_threshold
         loss_params["contour_loss_weight"] = self.hparams.contour_loss_weight
 
-        self.prob_unet = ProbabilisticUnet(
-            self.hparams.input_channels,
-            self.hparams.num_classes,
-            self.hparams.filters_per_layer,
-            self.hparams.latent_dim,
-            self.hparams.no_convs_fcomb,
-            self.hparams.loss_type,
-            loss_params,
-            self.hparams.ndims,
-        )
+        if self.hparams.prob_type == "prob":
+            self.prob_unet = ProbabilisticUnet(
+                self.hparams.input_channels,
+                self.hparams.num_classes,
+                self.hparams.filters_per_layer,
+                self.hparams.latent_dim,
+                self.hparams.no_convs_fcomb,
+                self.hparams.loss_type,
+                loss_params,
+                self.hparams.ndims,
+            )
+        elif self.hparams.prob_type == "hierarchical":
+            self.prob_unet = HierarchicalProbabilisticUnet(
+                self.hparams.input_channels,
+                self.hparams.num_classes,
+                self.hparams.filters_per_layer,
+                self.hparams.down_channels_per_block,
+                [self.hparams.latent_dim] * (len(self.hparams.filters_per_layer) - 1),
+                loss_params,
+                self.hparams.ndims,
+            )
 
         self.validation_directory = None
 
@@ -88,13 +100,13 @@ class ProbUNet(pl.LightningModule):
     @staticmethod
     def add_model_specific_args(parent_parser):
         parser = parent_parser.add_argument_group("Probabilistic UNet")
+        parser.add_argument("--prob_type", type=str, default="prob")
         parser.add_argument("--learning_rate", type=float, default=1e-5)
         parser.add_argument("--lr_lambda", type=float, default=0.99)
         parser.add_argument("--input_channels", type=int, default=1)
         parser.add_argument("--num_classes", type=int, default=2)
-        parser.add_argument(
-            "--filters_per_layer", nargs="+", type=int, default=[64 * (2 ** x) for x in range(5)]
-        )
+        parser.add_argument("--down_channels_per_block", nargs="+", type=int, default=None)
+        parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
         parser.add_argument("--latent_dim", type=int, default=6)
         parser.add_argument("--no_convs_fcomb", type=int, default=4)
         parser.add_argument("--loss_type", type=str, default="elbo")
@@ -105,7 +117,7 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--top_k_percentage", type=float, default=None)
         parser.add_argument("--contour_loss_lambda_threshold", type=float, default=None)
         parser.add_argument("--contour_loss_weight", type=float, default=0.0)  # no longer used
-        parser.add_argument("--epochs_all_rec", type=int, default=0)
+        parser.add_argument("--epochs_all_rec", type=int, default=0)  # no longer used
 
         return parent_parser
 
@@ -321,11 +333,14 @@ class ProbUNet(pl.LightningModule):
 
         x, y, m, _ = batch
 
+        # Add background layer for one-hot encoding
+        y = torch.unsqueeze(y, dim=1)
+        not_y = y.logical_not()
+        y = torch.cat((not_y, y), dim=1).float()
+
         self.prob_unet.forward(x, y, training=True)
 
-        use_max_lambda = self.current_epoch < self.hparams.epochs_all_rec
-
-        loss = self.prob_unet.loss(y, analytic_kl=True, mask=m, use_max_lambda=use_max_lambda)
+        loss = self.prob_unet.loss(y, mask=m)
         reg_loss = (
             l2_regularisation(self.prob_unet.posterior)
             + l2_regularisation(self.prob_unet.prior)
