@@ -105,8 +105,11 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--lr_lambda", type=float, default=0.99)
         parser.add_argument("--input_channels", type=int, default=1)
         parser.add_argument("--num_classes", type=int, default=2)
+        parser.add_argument(
+            "--filters_per_layer", nargs="+", type=int, default=[64 * (2 ** x) for x in range(5)]
+        )
         parser.add_argument("--down_channels_per_block", nargs="+", type=int, default=None)
-        parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
+#        parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
         parser.add_argument("--latent_dim", type=int, default=6)
         parser.add_argument("--no_convs_fcomb", type=int, default=4)
         parser.add_argument("--loss_type", type=str, default="elbo")
@@ -185,6 +188,8 @@ class ProbUNet(pl.LightningModule):
 
         with torch.no_grad():
 
+            print(img.GetSize())
+
             if preprocess:
                 if self.hparams.crop_using_localise_model:
                     localise_path = self.hparams.crop_using_localise_model.format(
@@ -204,6 +209,8 @@ class ProbUNet(pl.LightningModule):
                         intensity_scaling=self.hparams.intensity_scaling,
                         intensity_window=self.hparams.intensity_window,
                     )
+
+            print(img.GetSize())
 
             img_arr = sitk.GetArrayFromImage(img)
             if self.hparams.ndims == 2:
@@ -227,6 +234,7 @@ class ProbUNet(pl.LightningModule):
                             sample_x_stddev_from_mean=sample["std_dev_from_mean"],
                         )
 
+                    print(y.shape)
                     y = y.squeeze(0)
                     y = np.argmax(y.cpu().detach().numpy(), axis=0)
                     sample["preds"].append(y)
@@ -237,7 +245,8 @@ class ProbUNet(pl.LightningModule):
             pred_arr = sample["preds"][0]
             if len(sample["preds"]) > 1:
                 pred_arr = np.stack(sample["preds"])
-
+            print(pred_arr.shape)
+            print(img.GetSize())
             pred = sitk.GetImageFromArray(pred_arr)
             pred = sitk.Cast(pred, sitk.sitkUInt8)
 
