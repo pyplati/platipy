@@ -126,13 +126,17 @@ class UNetDataModule(pl.LightningDataModule):
         cases.sort()
         random.shuffle(cases)  # will be consistent for same value of 'seed everything'
         cases_per_fold = math.ceil(len(cases) / self.k_folds)
+        print(cases_per_fold)
         for f in range(self.k_folds):
 
             if self.fold == f:
                 val_test_cases = cases[f * cases_per_fold : (f + 1) * cases_per_fold]
 
-                self.validation_cases = val_test_cases[: int(len(val_test_cases) / 2)]
-                self.test_cases = val_test_cases[int(len(val_test_cases) / 2) :]
+                if len(val_test_cases) == 1:
+                    self.validation_cases = val_test_cases
+                else:
+                    self.validation_cases = val_test_cases[: int(len(val_test_cases) / 2)]
+                    self.test_cases = val_test_cases[int(len(val_test_cases) / 2) :]
             else:
                 self.train_cases += cases[f * cases_per_fold : (f + 1) * cases_per_fold]
 

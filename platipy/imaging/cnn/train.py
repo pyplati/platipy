@@ -84,13 +84,15 @@ class ProbUNet(pl.LightningModule):
             )
         elif self.hparams.prob_type == "hierarchical":
             self.prob_unet = HierarchicalProbabilisticUnet(
-                self.hparams.input_channels,
-                self.hparams.num_classes,
-                self.hparams.filters_per_layer,
-                self.hparams.down_channels_per_block,
-                [self.hparams.latent_dim] * (len(self.hparams.filters_per_layer) - 1),
-                loss_params,
-                self.hparams.ndims,
+                input_channels=self.hparams.input_channels,
+                num_classes=self.hparams.num_classes,
+                filters_per_layer=self.hparams.filters_per_layer,
+                down_channels_per_block=self.hparams.down_channels_per_block,
+                latent_dims=[self.hparams.latent_dim] * (len(self.hparams.filters_per_layer) - 1),
+                convs_per_block=self.hparams.convs_per_block,
+                loss_type=self.hparams.loss_type,
+                loss_params=loss_params,
+                ndims=self.hparams.ndims,
             )
 
         self.validation_directory = None
@@ -109,9 +111,10 @@ class ProbUNet(pl.LightningModule):
             "--filters_per_layer", nargs="+", type=int, default=[64 * (2 ** x) for x in range(5)]
         )
         parser.add_argument("--down_channels_per_block", nargs="+", type=int, default=None)
-#        parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
+        #        parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
         parser.add_argument("--latent_dim", type=int, default=6)
         parser.add_argument("--no_convs_fcomb", type=int, default=4)
+        parser.add_argument("--convs_per_block", type=int, default=3)
         parser.add_argument("--loss_type", type=str, default="elbo")
         parser.add_argument("--beta", type=float, default=1.0)
         parser.add_argument("--kappa", type=float, default=0.02)
@@ -188,8 +191,6 @@ class ProbUNet(pl.LightningModule):
 
         with torch.no_grad():
 
-            print(img.GetSize())
-
             if preprocess:
                 if self.hparams.crop_using_localise_model:
                     localise_path = self.hparams.crop_using_localise_model.format(
@@ -210,8 +211,6 @@ class ProbUNet(pl.LightningModule):
                         intensity_window=self.hparams.intensity_window,
                     )
 
-            print(img.GetSize())
-
             img_arr = sitk.GetArrayFromImage(img)
             if self.hparams.ndims == 2:
                 slices = [img_arr[z, :, :] for z in range(img_arr.shape[0])]
@@ -222,19 +221,31 @@ class ProbUNet(pl.LightningModule):
                 x = torch.Tensor(i).to(self.device)
                 x = x.unsqueeze(0)
                 x = x.unsqueeze(0)
-                self.prob_unet.forward(x)
+
+                if self.hparams.prob_type == "prob":
+                    self.prob_unet.forward(x)
 
                 for sample in samples:
-                    if sample["name"] == "mean":
-                        y = self.prob_unet.sample(testing=True, use_mean=True)
-                    else:
-                        y = self.prob_unet.sample(
-                            testing=True,
-                            use_mean=False,
-                            sample_x_stddev_from_mean=sample["std_dev_from_mean"],
-                        )
 
-                    print(y.shape)
+                    if self.hparams.prob_type == "prob":
+                        if sample["name"] == "mean":
+                            y = self.prob_unet.sample(testing=True, use_mean=True)
+                        else:
+                            y = self.prob_unet.sample(
+                                testing=True,
+                                use_mean=False,
+                                sample_x_stddev_from_mean=sample["std_dev_from_mean"],
+                            )
+                    else:
+                        if sample["name"] == "mean":
+                            y = self.prob_unet.sample(x, mean=True)
+                        else:
+                            y = self.prob_unet.sample(
+                                x,
+                                mean=False,
+                                std_devs_from_mean=sample["std_dev_from_mean"],
+                            )
+
                     y = y.squeeze(0)
                     y = np.argmax(y.cpu().detach().numpy(), axis=0)
                     sample["preds"].append(y)
@@ -243,10 +254,11 @@ class ProbUNet(pl.LightningModule):
         for sample in samples:
 
             pred_arr = sample["preds"][0]
+
+            if self.hparams.ndims == 2:
+                pred_arr = np.expand_dims(pred_arr, 0)
             if len(sample["preds"]) > 1:
                 pred_arr = np.stack(sample["preds"])
-            print(pred_arr.shape)
-            print(img.GetSize())
             pred = sitk.GetImageFromArray(pred_arr)
             pred = sitk.Cast(pred, sitk.sitkUInt8)
 
@@ -254,7 +266,7 @@ class ProbUNet(pl.LightningModule):
             pred = postprocess_mask(pred)
             pred = sitk.Resample(pred, img, sitk.Transform(), sitk.sitkNearestNeighbor)
 
-            result[sample['name']] = pred
+            result[sample["name"]] = pred
 
         return result
 

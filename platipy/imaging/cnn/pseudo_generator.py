@@ -10,9 +10,14 @@ from platipy.imaging.generation.image import insert_sphere
 from platipy.imaging import ImageVisualiser
 
 
-def generate_pseudo_data(data_dir="data"):
+def generate_pseudo_data(data_dir="data", cases=5, size=(24, 32, 32)):
 
     test_data_directory = Path(data_dir)
+
+    if test_data_directory.exists():
+        print("Data directory already exists, won't regenerate")
+        return
+
     image_directory = test_data_directory.joinpath("images")
     label_directory = test_data_directory.joinpath("labels")
     slice_directory = test_data_directory.joinpath("slices")
@@ -21,13 +26,15 @@ def generate_pseudo_data(data_dir="data"):
     label_directory.mkdir(parents=True, exist_ok=True)
     slice_directory.mkdir(parents=True, exist_ok=True)
 
-    for case, sphere_rad in enumerate(range(10, 30)):
+    for case, sphere_rad in enumerate(range(5, 5 + cases)):
 
-        xpos = random.randint(50, 80)
-        ypos = random.randint(50, 80)
+        xpos = random.randint(6, 24)
+        ypos = random.randint(6, 24)
 
-        mask_arr = np.zeros((80, 128, 128))
-        mask_arr = insert_sphere(mask_arr, sp_radius=sphere_rad, sp_centre=(30, ypos, xpos))
+        mask_arr = np.zeros(size)
+        mask_arr = insert_sphere(
+            mask_arr, sp_radius=sphere_rad, sp_centre=(int(size[0] / 2), ypos, xpos)
+        )
 
         mask = sitk.GetImageFromArray(mask_arr)
         mask = sitk.Cast(mask, sitk.sitkUInt8)
@@ -43,14 +50,16 @@ def generate_pseudo_data(data_dir="data"):
 
         sitk.WriteImage(ct, str(image_directory.joinpath(f"{case}.nii.gz")))
 
-        vis = ImageVisualiser(ct, cut=(30, ypos, xpos))
+        vis = ImageVisualiser(ct, cut=(int(size[0] / 2), ypos, xpos))
         masks = {}
 
         for obs_id, obs in enumerate(range(-4, 5, 2)):
             obs_rad = sphere_rad + obs
 
-            mask_arr = np.zeros((80, 128, 128))
-            mask_arr = insert_sphere(mask_arr, sp_radius=obs_rad, sp_centre=(30, ypos, xpos))
+            mask_arr = np.zeros(size)
+            mask_arr = insert_sphere(
+                mask_arr, sp_radius=obs_rad, sp_centre=(int(size[0] / 2), ypos, xpos)
+            )
 
             mask = sitk.GetImageFromArray(mask_arr)
             mask.CopyInformation(ct)

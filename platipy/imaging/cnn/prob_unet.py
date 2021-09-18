@@ -92,7 +92,7 @@ class AxisAlignedConvGaussian(torch.nn.Module):
 
         x = img
         if seg is not None:
-            seg = torch.unsqueeze(seg, dim=1)
+            # seg = torch.unsqueeze(seg, dim=1)
             x = torch.cat((img, seg), dim=1)
 
         encoding = self.encoder(x)
@@ -221,7 +221,7 @@ class ProbabilisticUnet(torch.nn.Module):
             input_channels, filters_per_layer, latent_dim, ndims=ndims
         )
         self.posterior = AxisAlignedConvGaussian(
-            input_channels + 1, filters_per_layer, latent_dim, ndims=ndims
+            input_channels + num_classes, filters_per_layer, latent_dim, ndims=ndims
         )
         self.fcomb = Fcomb(filters_per_layer, latent_dim, num_classes, no_convs_fcomb, ndims=ndims)
 
@@ -436,11 +436,15 @@ class ProbabilisticUnet(torch.nn.Module):
             top_k_percentage = self.loss_params["top_k_percentage"]
 
         loss_mask = None
-        reconstruction_threshold = self.loss_params["kappa"]
         contour_threshold = None
-        if "kappa_contour" in self.loss_params and self.loss_params["kappa_contour"] is not None:
-            loss_mask = [None, mask]
-            contour_threshold = self.loss_params["kappa_contour"]
+        if self.loss_type == "geco":
+            reconstruction_threshold = self.loss_params["kappa"]
+            if (
+                "kappa_contour" in self.loss_params
+                and self.loss_params["kappa_contour"] is not None
+            ):
+                loss_mask = [None, mask]
+                contour_threshold = self.loss_params["kappa_contour"]
 
         # Here we use the posterior sample sampled above
         _, rec_loss_mean, _ = self.reconstruction_loss(
