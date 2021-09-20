@@ -60,7 +60,7 @@ def generate_left_ventricle_segments(
     hole_fill_mm=3,
     optimiser_tol_degrees=1,
     optimiser_max_iter=10,
-    optimiser_verbose=False,
+    verbose=False,
 ):
     """
     Generates the 17 segments of the left vetricle
@@ -68,9 +68,11 @@ def generate_left_ventricle_segments(
     This functions works as follows:
         1.  Heart volume is rotated to align the long axis to the z Cartesian (physical) space.
             Usually means it aligns with the axial axis (for normal simulation CT)
-        2.  Left ventricle is divided into thirds along the long axis
-        3.  Myocardium is defined as the outer 10mm
-        4.  Geometric operations are used to define the segments
+        2.  An optimiser adjusts the orientation to refine this alignment to the vector defined by
+            MV COM - LV apex axis (long axis)
+        3.  Left ventricle is divided into thirds along the long axis
+        4.  Myocardium is defined as the outer 10mm
+        5.  Geometric operations are used to define the segments
         6.  Everything is rotated back to the normal orientation
         7.  Some post-processing *magic*
 
@@ -78,21 +80,35 @@ def generate_left_ventricle_segments(
         contours (dict): A dictionary containing strings (label names) as keys and SimpleITK.Image
             (masks) as values. Must contain at least the LV, RV, MV, and whole heart.
         label_left_ventricle (str): The name for the left ventricle mask (contour)
+        label_left_atrium (str): The name for the left atrium mask (contour)
         label_right_ventricle (str): The name for the right ventricle mask (contour)
         label_mitral_valve (str): The name for the mitral valve mask (contour)
         label_heart (str): The name for the heart mask (contour)
-        myocardium_thickness_mm (int, optional): Moycardial thickness, in millimetres.
+        myocardium_thickness_mm (float, optional): Moycardial thickness, in millimetres.
             Defaults to 10.
-        edge_correction_mm (float, optional): Can be used to give a bit of separation between
-            segments. Defaults to 1.
+        hole_fill_mm (float, optional): Holes smaller than this get filled in. Defaults to 3.
+        optimiser_tol_degrees (float, optional): Optimiser tolerance (change in angle per iter).
+            Defaults to 1, which typically requires 3-4 iterations.
+        optimiser_max_iter (int, optional): Maximum optimiser iterations. Defaults to 10
+        verbose (bool, optional): Print of information for debugging. Defaults to False.
 
     Returns:
         dict : The left ventricle segment dictionary, with labels (int) as keys and the binary
         label defining the segment (SimpleITK.Image) as values.
     """
 
+    if verbose:
+        print("Beginning LV segmentation algorithm.")
+
     # Initial set up
-    working_contours = copy.deepcopy(contours)
+    label_list = [
+        label_left_ventricle,
+        label_left_atrium,
+        label_right_ventricle,
+        label_mitral_valve,
+        label_heart,
+    ]
+    working_contours = copy.deepcopy({s: contours[s] for s in label_list})
     output_contours = {}
     overall_transform_list = []
 
@@ -117,6 +133,12 @@ def generate_left_ventricle_segments(
     for label in contours:
         working_contours[label] = crop_to_roi(contours[label], cb_size, cb_index)
 
+    if verbose:
+        print("Module 1: Cropping and initial alignment.")
+        vol_before = np.product(contours[label_heart].GetSpacing())
+        vol_after = np.product(working_contours[label_heart].GetSpacing())
+        print(f"  Images cropped. Volume reduction: {vol_before/vol_after:.3f}")
+
     # Initially we should reorient based on the cardiac axis
     label_orient = (
         working_contours[label_left_ventricle] + working_contours[label_left_atrium]
@@ -135,6 +157,13 @@ def generate_left_ventricle_segments(
     rotation_angle = vector_angle(cardiac_axis[::-1], (0, 0, 1))
     rotation_axis = np.cross(cardiac_axis[::-1], (0, 0, 1))
     rotation_centre = get_com(label_orient, real_coords=True)
+
+    if verbose:
+        print("  Alignment computed.")
+        print("    Cardiac axis:    ", cardiac_axis)
+        print("    Rotation axis:   ", rotation_axis)
+        print("    Rotation angle:  ", rotation_angle)
+        print("    Rotation centre: ", rotation_centre)
 
     rotation_transform = sitk.VersorRigid3DTransform()
     rotation_transform.SetCenter(rotation_centre)
@@ -160,6 +189,11 @@ def generate_left_ventricle_segments(
     optimiser_tol_radians = optimiser_tol_degrees * np.pi / 180
 
     n = 0
+
+    if verbose:
+        print("Module 2: LV orientation alignment.")
+        print("  Optimiser tolerance (degrees) =", optimiser_tol_degrees)
+        print("  Beginning alignment process")
 
     while n < optimiser_max_iter and np.abs(rotation_angle) > optimiser_tol_radians:
 
@@ -196,14 +230,14 @@ def generate_left_ventricle_segments(
 
         overall_transform_list.append(rotation_transform)
 
-        if optimiser_verbose:
-            print("N:               ", n)
-            print("LV apex:         ", lv_apex_loc_img)
-            print("MV COM:          ", mv_com)
-            print("LV axis:         ", lv_axis)
-            print("Rotation axis:   ", rotation_axis)
-            print("Rotation centre: ", rotation_centre)
-            print("Rotation angle:  ", rotation_angle)
+        if verbose:
+            print("    N:               ", n)
+            print("    LV apex:         ", lv_apex_loc_img)
+            print("    MV COM:          ", mv_com)
+            print("    LV axis:         ", lv_axis)
+            print("    Rotation axis:   ", rotation_axis)
+            print("    Rotation centre: ", rotation_centre)
+            print("    Rotation angle:  ", rotation_angle)
 
         for label in contours:
             working_contours[label] = sitk.Resample(
@@ -219,6 +253,9 @@ def generate_left_ventricle_segments(
 
     Divide this volume into thirds (from MV COM -> LV apex)        
     """
+
+    if verbose:
+        print("Module 3: Myocardium generation.")
 
     # First, let's just extract the myocardium
     label_lv_inner = sitk.BinaryErode(working_contours[label_left_ventricle], erode_img)
@@ -245,6 +282,14 @@ def generate_left_ventricle_segments(
     apical_extent = inf_limit_lv + dc
     mid_extent = inf_limit_lv + 2 * dc
     basal_extent = com_mv  # more complete coverage
+
+    if verbose:
+        print("  Apex (long axis) slice:      ", inf_limit_lv)
+        print("  Apical section extent slice: ", apical_extent)
+        print("  Mid section extent slice:    ", mid_extent)
+        print("  Basal section extent slice:  ", basal_extent)
+        print("    DeltaCut (DC): ", dc)
+        print("    Extent:        ", extent)
 
     # Segment 17
     label_lv_myo_apex = label_lv_myo * 1  # make a copy
@@ -277,6 +322,9 @@ def generate_left_ventricle_segments(
             b. Assign each label to the appropriate LV segments
     """
 
+    if verbose:
+        print("Module 4: Segment generation.")
+
     # We need the angle for the basal RV insertion
     # This is the most counter-clockwise RV location
     # First, retrieve the most basal 5 slices
@@ -284,6 +332,9 @@ def generate_left_ventricle_segments(
         sitk.GetArrayViewFromImage(working_contours[label_right_ventricle])
     )
     loc_rv_z_basal = np.arange(mid_extent, mid_extent + 5)
+
+    if verbose:
+        print("  RV basal slices: ", loc_rv_z_basal)
 
     theta_rv_insertion = []
     for z in loc_rv_z_basal:
@@ -303,6 +354,9 @@ def generate_left_ventricle_segments(
 
     theta_0 = np.median(theta_rv_insertion)
 
+    if verbose:
+        print("  RV insertion angle (basal section): ", theta_0)
+
     # We also need the angle in the apical section for accurate segmentation
     lv_com_apical_list = []
     rv_com_apical_list = []
@@ -317,11 +371,16 @@ def generate_left_ventricle_segments(
         lv_com_apical[0] - rv_com_apical[0], rv_com_apical[1] - lv_com_apical[1]
     )
 
+    if verbose:
+        print(" Apical LV-RV COM angle: ", theta_0_apical)
+
     for i in range(17):
         working_contours[i + 1] = 0 * working_contours[label_heart]
 
     working_contours[17] = label_lv_myo_apex
 
+    if verbose:
+        print("  Computing apical segments")
     # We are now going to compute the segments in cylindical sections
     # First up - apical slices
     for n in range(inf_limit_lv, apical_extent):
@@ -354,6 +413,8 @@ def generate_left_ventricle_segments(
             label_lv_myo_slice, theta, 3 * np.pi / 4, 5 * np.pi / 4, loc_x, loc_y
         )
 
+    if verbose:
+        print("  Computing mid segments")
     # Second up - mid slices
     for n in range(apical_extent, mid_extent):
 
@@ -391,6 +452,8 @@ def generate_left_ventricle_segments(
             label_lv_myo_slice, theta, 5 * np.pi / 3, 2 * np.pi, loc_x, loc_y
         )
 
+    if verbose:
+        print("  Computing basal segments")
     # Third up - basal slices
     for n in range(mid_extent, basal_extent):
 
@@ -433,6 +496,10 @@ def generate_left_ventricle_segments(
 
     We perform the total inverse transformation, and paste the labels back into the image space
     """
+
+    if verbose:
+        print("  Module 5: Re-orientation.")
+
     # Compute the total transform
     overall_transform = sitk.CompositeTransform(overall_transform_list)
     inverse_transform = overall_transform.GetInverse()
@@ -458,5 +525,8 @@ def generate_left_ventricle_segments(
         )
 
         output_contours[segment + 1] = new_structure
+
+    if verbose:
+        print("Complete!")
 
     return output_contours
