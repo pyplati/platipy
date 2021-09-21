@@ -366,7 +366,10 @@ class ProbUNet(pl.LightningModule):
         else:
             self.prob_unet.forward(x, y)
 
-        loss = self.prob_unet.loss(y, mask=m)
+        if self.hparams.prob_type == "prob":
+            loss = self.prob_unet.loss(y, mask=m)
+        else:
+            loss = self.prob_unet.loss(x, y, mask=m)
         reg_loss = (
             l2_regularisation(self.prob_unet.posterior)
             + l2_regularisation(self.prob_unet.prior)
