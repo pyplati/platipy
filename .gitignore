@@ -146,3 +146,8 @@ converted/
 
 # Don't include html docs in repo
 docs/site/
+
+*.npy
+*.nii.gz
+
+test_prob*/
