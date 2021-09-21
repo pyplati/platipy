@@ -430,6 +430,7 @@ class ProbabilisticUnet(torch.nn.Module):
         z_posterior = self.posterior_latent_space.rsample()
 
         kl_div = torch.mean(self.kl_divergence())
+        kl_div = torch.clamp(kl_div,0.0,100.0)
 
         top_k_percentage = None
         if "top_k_percentage" in self.loss_params:
@@ -501,9 +502,15 @@ class ProbabilisticUnet(torch.nn.Module):
 
                 lambda_lower = self.loss_params["clamp_rec"][0]
                 lambda_upper = self.loss_params["clamp_rec"][1]
+                lambda_lower_contour = self.loss_params["clamp_contour"][0]
+                lambda_upper_contour = self.loss_params["clamp_contour"][1]
+
                 self._lambda = (  # pylint: disable=attribute-defined-outside-init
                     torch.exp(torch.Tensor([rc, cc]).to(rc.device)) * self._lambda
-                ).clamp(lambda_lower, lambda_upper)
+                )
+
+                self._lambda[0] = self._lambda[0].clamp(lambda_lower, lambda_upper)
+                self._lambda[1] = self._lambda[1].clamp(lambda_lower_contour, lambda_upper_contour)
 
             # pylint: disable=access-member-before-definition
             loss = (self._lambda[0] * reconstruction_loss) + kl_div

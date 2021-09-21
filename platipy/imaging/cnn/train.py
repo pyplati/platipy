@@ -64,6 +64,7 @@ class ProbUNet(pl.LightningModule):
             loss_params = {
                 "kappa": self.hparams.kappa,
                 "clamp_rec": self.hparams.clamp_rec,
+                "clamp_contour": self.hparams.clamp_contour,
                 "kappa_contour": self.hparams.kappa_contour,
             }
 
@@ -111,7 +112,6 @@ class ProbUNet(pl.LightningModule):
             "--filters_per_layer", nargs="+", type=int, default=[64 * (2 ** x) for x in range(5)]
         )
         parser.add_argument("--down_channels_per_block", nargs="+", type=int, default=None)
-        #        parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
         parser.add_argument("--latent_dim", type=int, default=6)
         parser.add_argument("--no_convs_fcomb", type=int, default=4)
         parser.add_argument("--convs_per_block", type=int, default=3)
@@ -120,6 +120,7 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--kappa", type=float, default=0.02)
         parser.add_argument("--kappa_contour", type=float, default=None)
         parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
+        parser.add_argument("--clamp_contour", nargs="+", type=float, default=[1e-3, 1e3])
         parser.add_argument("--top_k_percentage", type=float, default=None)
         parser.add_argument("--contour_loss_lambda_threshold", type=float, default=None)
         parser.add_argument("--contour_loss_weight", type=float, default=0.0)  # no longer used
