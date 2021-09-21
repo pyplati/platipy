@@ -360,7 +360,11 @@ class ProbUNet(pl.LightningModule):
         not_y = y.logical_not()
         y = torch.cat((not_y, y), dim=1).float()
 
-        self.prob_unet.forward(x, y, training=True)
+        # self.prob_unet.forward(x, y, training=True)
+        if self.hparams.prob_type == "prob":
+            self.prob_unet.forward(x, y, training=True)
+        else:
+            self.prob_unet.forward(x, y)
 
         loss = self.prob_unet.loss(y, mask=m)
         reg_loss = (
