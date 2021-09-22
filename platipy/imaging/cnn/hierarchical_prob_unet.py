@@ -429,7 +429,7 @@ class _StitchingDecoder(torch.nn.Module):
         self._start_level = num_latents + 1
         self._num_levels = len(self._channels_per_block)
 
-        self.decoder_layers = torch.nn.ModuleList()
+        self.layers = torch.nn.ModuleList()
         decoder_in_channels = None
         for level in range(self._start_level, self._num_levels, 1):
 
@@ -451,8 +451,8 @@ class _StitchingDecoder(torch.nn.Module):
                 )
                 decoder_in_channels = channels_per_block[::-1][level]
 
-            self.decoder_layers.append(torch.nn.Sequential(*layer))
-        self.decoder_layers.apply(init_weights)
+            self.layers.append(torch.nn.Sequential(*layer))
+        self.layers.apply(init_weights)
 
         if decoder_in_channels is None:
             decoder_in_channels = channels_per_block[::-1][self._num_levels - 1]
@@ -477,13 +477,13 @@ class _StitchingDecoder(torch.nn.Module):
             torch.Tensor: The stiched output
         """
 
-        for level in range(len(self.decoder_layers)):
+        for level in range(len(self.layers)):
             enc_level = self._start_level + level
             decoder_features = resize_up(decoder_features, scale=2)
             decoder_features = torch.cat(
                 [decoder_features, encoder_features[::-1][enc_level]], axis=1
             )
-            decoder_features = self.decoder_layers[level](decoder_features)
+            decoder_features = self.layers[level](decoder_features)
 
         return self.final_layer(decoder_features)
 
@@ -542,7 +542,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         if down_channels_per_block is None:
             down_channels_per_block = [int(i / 2) for i in filters_per_layer]
 
-        self._prior = _HierarchicalCore(
+        self.prior = _HierarchicalCore(
             input_channels=input_channels,
             latent_dims=latent_dims,
             channels_per_block=filters_per_layer,
@@ -552,7 +552,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             ndims=ndims,
         )
 
-        self._posterior = _HierarchicalCore(
+        self.posterior = _HierarchicalCore(
             input_channels=input_channels + num_classes,
             latent_dims=latent_dims,
             channels_per_block=filters_per_layer,
@@ -562,7 +562,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             ndims=ndims,
         )
 
-        self._f_comb = _StitchingDecoder(
+        self.fcomb = _StitchingDecoder(
             latent_dims=latent_dims,
             channels_per_block=filters_per_layer,
             num_classes=num_classes,
@@ -606,11 +606,11 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             # No need to recompute
             return
 
-        self._q_sample = self._posterior(input_tensor, mean=False)
-        self._q_sample_mean = self._posterior(input_tensor, mean=True)
-        self._p_sample = self._prior(img, mean=False, z_q=None)
-        self._p_sample_z_q = self._prior(img, z_q=self._q_sample["used_latents"])
-        self._p_sample_z_q_mean = self._prior(img, z_q=self._q_sample_mean["used_latents"])
+        self._q_sample = self.posterior(input_tensor, mean=False)
+        self._q_sample_mean = self.posterior(input_tensor, mean=True)
+        self._p_sample = self.prior(img, mean=False, z_q=None)
+        self._p_sample_z_q = self.prior(img, z_q=self._q_sample["used_latents"])
+        self._p_sample_z_q_mean = self.prior(img, z_q=self._q_sample_mean["used_latents"])
         self._cache = input_tensor
 
     def sample(self, img, mean=False, std_devs_from_mean=0.0, z_q=None):
@@ -637,10 +637,10 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             torch.Tensor: A segmentation tensor of shape (b, num_classes, h, w).
         """
 
-        prior_out = self._prior(img, mean, std_devs_from_mean, z_q)
+        prior_out = self.prior(img, mean, std_devs_from_mean, z_q)
         encoder_features = prior_out["encoder_features"]
         decoder_features = prior_out["decoder_features"]
-        return self._f_comb(encoder_features, decoder_features)
+        return self.fcomb(encoder_features, decoder_features)
 
     def reconstruct(self, img, seg, mean=False):
         """Reconstruct a segmentation using the posterior.
@@ -663,7 +663,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             prior_out = self._p_sample_z_q
         encoder_features = prior_out["encoder_features"]
         decoder_features = prior_out["decoder_features"]
-        return self._f_comb(encoder_features, decoder_features)
+        return self.fcomb(encoder_features, decoder_features)
 
     def kl(self, img, seg):
         """Kullback-Leibler divergence between the posterior and the prior.
@@ -694,13 +694,13 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
     def topk_mask(self, score, k):
         """Returns a mask for the top-k elements in score."""
 
-        values, _ = torch.topk(score, 1, axis=0)
-        _, indices = torch.topk(values, k, axis=1)
+        values, _ = torch.topk(score, 1, axis=1)
+        _, indices = torch.topk(values, k, axis=0)
         return torch.scatter_add(
-            torch.zeros(score.shape[1]).to(score.device),
+            torch.zeros(score.shape[0]).to(score.device),
             0,
             indices.reshape(-1),
-            torch.ones(score.shape[1]).to(score.device),
+            torch.ones(score.shape[0]).to(score.device),
         )
 
     def prepare_mask(
@@ -722,7 +722,6 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             #            ), f"The loss mask shape differs from the target shape: {mask.shape} vs. {segm.shape}."
             mask = torch.reshape(mask, (-1,))
         mask = mask.to(device)
-        mask = mask.repeat((1, num_classes))
 
         if top_k_percentage is not None:
 
@@ -736,14 +735,17 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
                 else:
                     # TODO Gumbel trick
                     raise NotImplementedError("Still need to implement Gumbel trick")
-                # score = score + torch.log(mask)
-                score = score + torch.log(mask)
+
+                score = score + torch.log(mask.unsqueeze(1).repeat((1, num_classes)))
 
                 top_k_mask = self.topk_mask(score, k_pixels)
                 top_k_mask = top_k_mask.to(device)
                 mask = mask * top_k_mask
 
-        mask = mask.repeat(batch_size, 1)
+        mask = mask.unsqueeze(1).repeat((1, num_classes))
+        mask = (
+            mask.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
+        )
 
         return mask
 
@@ -760,19 +762,15 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
         reconstruction = self.reconstruct(img, segm)
 
-        # segm = torch.unsqueeze(segm, dim=1)
-        # not_seg = segm.logical_not()
-        # segm = torch.cat((not_seg, segm), dim=1).float()
-
         #####
         num_classes = reconstruction.shape[1]
         y_flat = torch.transpose(reconstruction, 1, -1).reshape((-1, num_classes))
         t_flat = torch.transpose(segm, 1, -1).reshape((-1, num_classes))
+        n_pixels_in_batch = y_flat.shape[0]
         batch_size = segm.shape[0]
 
         xe = criterion(input=y_flat, target=t_flat)
         xe = xe.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
-        n_pixels_in_batch = int(xe.shape[1] / num_classes)
 
         # If multiple masks supplied, compute a loss for each mask
         if hasattr(mask, "__iter__"):

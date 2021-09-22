@@ -57,7 +57,7 @@ def test_prob_unet_2d_elbo(trainer_arg_parser):
             "--num_workers",
             "1",
             "--limit_train_batches",
-            "0.01",
+            "0.025",
             "--loss_type",
             "elbo",
             "--prob_type",
@@ -84,7 +84,7 @@ def test_prob_unet_3d_elbo(trainer_arg_parser):
             "--num_workers",
             "1",
             "--limit_train_batches",
-            "0.05",
+            "0.1",
             "--loss_type",
             "elbo",
             "--prob_type",
@@ -113,7 +113,7 @@ def test_prob_unet_2d_geco(trainer_arg_parser):
             "--num_workers",
             "1",
             "--limit_train_batches",
-            "0.01",
+            "0.025",
             "--loss_type",
             "geco",
             "--prob_type",
@@ -140,7 +140,7 @@ def test_prob_unet_3d_geco(trainer_arg_parser):
             "--num_workers",
             "1",
             "--limit_train_batches",
-            "0.05",
+            "0.1",
             "--loss_type",
             "geco",
             "--prob_type",
@@ -169,7 +169,7 @@ def test_hierarchical_prob_unet_2d_geco(trainer_arg_parser):
             "--num_workers",
             "1",
             "--limit_train_batches",
-            "0.01",
+            "0.025",
             "--loss_type",
             "geco",
             "--prob_type",
@@ -181,6 +181,35 @@ def test_hierarchical_prob_unet_2d_geco(trainer_arg_parser):
             "--filters_per_layer",
             "2",
             "4",
+        ]
+    )
+
+    main(args)
+
+
+def test_hierarchical_prob_unet_2d_geco_contour(trainer_arg_parser):
+
+    args = trainer_arg_parser.parse_args(
+        [
+            "--working_dir",
+            "test_prob_unet_2d_geco",
+            "--num_workers",
+            "1",
+            "--limit_train_batches",
+            "0.025",
+            "--loss_type",
+            "geco",
+            "--prob_type",
+            "hierarchical",
+            "--max_epochs",
+            "1",
+            "--ndims",
+            "2",
+            "--filters_per_layer",
+            "2",
+            "4",
+            "--kappa_contour",
+            "0.01",
         ]
     )
 

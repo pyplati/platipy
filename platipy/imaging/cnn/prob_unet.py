@@ -430,7 +430,7 @@ class ProbabilisticUnet(torch.nn.Module):
         z_posterior = self.posterior_latent_space.rsample()
 
         kl_div = torch.mean(self.kl_divergence())
-        kl_div = torch.clamp(kl_div,0.0,100.0)
+        kl_div = torch.clamp(kl_div, 0.0, 100.0)
 
         top_k_percentage = None
         if "top_k_percentage" in self.loss_params:
