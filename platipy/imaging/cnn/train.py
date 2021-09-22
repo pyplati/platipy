@@ -370,15 +370,19 @@ class ProbUNet(pl.LightningModule):
             loss = self.prob_unet.loss(y, mask=m)
         else:
             loss = self.prob_unet.loss(x, y, mask=m)
-        reg_loss = (
-            l2_regularisation(self.prob_unet.posterior)
-            + l2_regularisation(self.prob_unet.prior)
-            + l2_regularisation(self.prob_unet.fcomb.layers)
-        )
-        training_loss = loss["loss"] + 1e-5 * reg_loss
+
+        training_loss = loss["loss"]
+
+        if self.hparams.prob_type == "prob":
+            reg_loss = (
+                l2_regularisation(self.prob_unet.posterior)
+                + l2_regularisation(self.prob_unet.prior)
+                + l2_regularisation(self.prob_unet.fcomb.layers)
+            )
+            training_loss = training_loss + 1e-5 * reg_loss
         self.log(
             "training_loss",
-            training_loss,
+            training_loss.detach(),
             on_step=True,
             on_epoch=False,
             prog_bar=True,
@@ -390,7 +394,7 @@ class ProbUNet(pl.LightningModule):
                 continue
             self.log(
                 k,
-                loss[k],
+                loss[k].detach() if isinstance(loss[k], torch.Tensor) else loss[k],
                 on_step=True,
                 on_epoch=False,
                 prog_bar=True,
