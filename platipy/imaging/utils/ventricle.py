@@ -25,7 +25,18 @@ from platipy.imaging.utils.crop import crop_to_roi, label_to_roi
 from platipy.imaging.utils.geometry import vector_angle
 
 
-def extract(template_img, angles, angle_min, angle_max, loc_x, loc_y, cw=False):
+def extract(
+    template_img,
+    angles,
+    radii,
+    angle_min,
+    angle_max,
+    loc_x,
+    loc_y,
+    cw=False,
+    radius_min=0,
+    min_area_mm2=25,
+):
     """
     Utility function to extract relevant voxels from a mask based on polar coordinates
     """
@@ -35,16 +46,26 @@ def extract(template_img, angles, angle_min, angle_max, loc_x, loc_y, cw=False):
     segment_arr = np.zeros_like(template_arr)
 
     # Define the condition list
+    radius_min = radius_min
+
     if cw:
         in_segment_condition = (angles <= angle_min) | (angles >= angle_max)
+        in_segment_condition &= radii >= radius_min
     else:
         in_segment_condition = (angles <= angle_max) & (angles >= angle_min)
+        in_segment_condition &= radii >= radius_min
 
     # Extract matching voxels
     segment_arr[loc_y[in_segment_condition], loc_x[in_segment_condition]] = 1
+
     # Convert to image
     segment_img = sitk.GetImageFromArray(segment_arr)
     segment_img.CopyInformation(template_img)
+
+    # Make sure area exceeds lower bound
+    area = segment_arr.sum() * np.product(segment_img.GetSpacing())
+    if area < min_area_mm2:
+        segment_img *= 0
 
     return segment_img
 
@@ -60,6 +81,7 @@ def generate_left_ventricle_segments(
     hole_fill_mm=3,
     optimiser_tol_degrees=1,
     optimiser_max_iter=10,
+    min_area_mm2=50,
     verbose=False,
 ):
     """
@@ -399,18 +421,50 @@ def generate_left_ventricle_segments(
         # Convert to [0,2*np.pi]
         theta[theta < 0] += 2 * np.pi
 
+        # Compute the radii
+        radii = np.sqrt((loc_y - y_0) ** 2 + (loc_x - x_0) ** 2)
+
         # Now assign to different segments
         working_contours[13][:, :, n] = extract(
-            label_lv_myo_slice, theta, 5 * np.pi / 4, 7 * np.pi / 4, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            5 * np.pi / 4,
+            7 * np.pi / 4,
+            loc_x,
+            loc_y,
+            min_area_mm2=min_area_mm2,
         )
         working_contours[14][:, :, n] = extract(
-            label_lv_myo_slice, theta, 1 * np.pi / 4, 7 * np.pi / 4, loc_x, loc_y, cw=True
+            label_lv_myo_slice,
+            theta,
+            radii,
+            1 * np.pi / 4,
+            7 * np.pi / 4,
+            loc_x,
+            loc_y,
+            cw=True,
+            min_area_mm2=min_area_mm2,
         )
         working_contours[15][:, :, n] = extract(
-            label_lv_myo_slice, theta, 1 * np.pi / 4, 3 * np.pi / 4, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            1 * np.pi / 4,
+            3 * np.pi / 4,
+            loc_x,
+            loc_y,
+            min_area_mm2=min_area_mm2,
         )
         working_contours[16][:, :, n] = extract(
-            label_lv_myo_slice, theta, 3 * np.pi / 4, 5 * np.pi / 4, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            3 * np.pi / 4,
+            5 * np.pi / 4,
+            loc_x,
+            loc_y,
+            min_area_mm2=min_area_mm2,
         )
 
     if verbose:
@@ -432,24 +486,62 @@ def generate_left_ventricle_segments(
         # Convert to [0,2*np.pi]
         theta[theta < 0] += 2 * np.pi
 
+        # Compute the radii
+        radii = np.sqrt((loc_y - y_0) ** 2 + (loc_x - x_0) ** 2)
+
         # Now assign to different segments
         working_contours[8][:, :, n] = extract(
-            label_lv_myo_slice, theta, 0, np.pi / 3, loc_x, loc_y
+            label_lv_myo_slice, theta, radii, 0, np.pi / 3, loc_x, loc_y, min_area_mm2=min_area_mm2
         )
         working_contours[9][:, :, n] = extract(
-            label_lv_myo_slice, theta, 1 * np.pi / 3, 2 * np.pi / 3, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            1 * np.pi / 3,
+            2 * np.pi / 3,
+            loc_x,
+            loc_y,
+            min_area_mm2=min_area_mm2,
         )
         working_contours[10][:, :, n] = extract(
-            label_lv_myo_slice, theta, 2 * np.pi / 3, 3 * np.pi / 3, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            2 * np.pi / 3,
+            3 * np.pi / 3,
+            loc_x,
+            loc_y,
+            min_area_mm2=min_area_mm2,
         )
         working_contours[11][:, :, n] = extract(
-            label_lv_myo_slice, theta, 3 * np.pi / 3, 4 * np.pi / 3, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            3 * np.pi / 3,
+            4 * np.pi / 3,
+            loc_x,
+            loc_y,
+            min_area_mm2=min_area_mm2,
         )
         working_contours[12][:, :, n] = extract(
-            label_lv_myo_slice, theta, 4 * np.pi / 3, 5 * np.pi / 3, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            4 * np.pi / 3,
+            5 * np.pi / 3,
+            loc_x,
+            loc_y,
+            min_area_mm2=min_area_mm2,
         )
         working_contours[7][:, :, n] = extract(
-            label_lv_myo_slice, theta, 5 * np.pi / 3, 2 * np.pi, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            5 * np.pi / 3,
+            2 * np.pi,
+            loc_x,
+            loc_y,
+            min_area_mm2=min_area_mm2,
         )
 
     if verbose:
@@ -471,24 +563,75 @@ def generate_left_ventricle_segments(
         # Convert to [0,2*np.pi]
         theta[theta < 0] += 2 * np.pi
 
+        # Compute the radii
+        radii = np.sqrt((loc_y - y_0) ** 2 + (loc_x - x_0) ** 2)
+
         # Now assign to different segments
         working_contours[2][:, :, n] = extract(
-            label_lv_myo_slice, theta, 0, np.pi / 3, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            0,
+            np.pi / 3,
+            loc_x,
+            loc_y,
+            radius_min=15,
+            min_area_mm2=min_area_mm2,
         )
         working_contours[3][:, :, n] = extract(
-            label_lv_myo_slice, theta, 1 * np.pi / 3, 2 * np.pi / 3, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            1 * np.pi / 3,
+            2 * np.pi / 3,
+            loc_x,
+            loc_y,
+            radius_min=15,
+            min_area_mm2=min_area_mm2,
         )
         working_contours[4][:, :, n] = extract(
-            label_lv_myo_slice, theta, 2 * np.pi / 3, 3 * np.pi / 3, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            2 * np.pi / 3,
+            3 * np.pi / 3,
+            loc_x,
+            loc_y,
+            radius_min=15,
+            min_area_mm2=min_area_mm2,
         )
         working_contours[5][:, :, n] = extract(
-            label_lv_myo_slice, theta, 3 * np.pi / 3, 4 * np.pi / 3, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            3 * np.pi / 3,
+            4 * np.pi / 3,
+            loc_x,
+            loc_y,
+            radius_min=15,
+            min_area_mm2=min_area_mm2,
         )
         working_contours[6][:, :, n] = extract(
-            label_lv_myo_slice, theta, 4 * np.pi / 3, 5 * np.pi / 3, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            4 * np.pi / 3,
+            5 * np.pi / 3,
+            loc_x,
+            loc_y,
+            radius_min=15,
+            min_area_mm2=min_area_mm2,
         )
         working_contours[1][:, :, n] = extract(
-            label_lv_myo_slice, theta, 5 * np.pi / 3, 2 * np.pi, loc_x, loc_y
+            label_lv_myo_slice,
+            theta,
+            radii,
+            5 * np.pi / 3,
+            2 * np.pi,
+            loc_x,
+            loc_y,
+            radius_min=15,
+            min_area_mm2=min_area_mm2,
         )
 
     """
