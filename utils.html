@@ -475,7 +475,7 @@ Defaults to [0, 0, 0].</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>img</strong> (<em>SimpleITK.Image</em>) – The image to rotate</p></li>
-<li><p><strong>rotation_centre</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The centre of rotation (in image coordinates).
+<li><p><strong>rotation_centre</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The centre of rotation (in physical coordinates).
 Defaults to (0, 0, 0).</p></li>
 <li><p><strong>rotation_axis</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The axis of rotation. Defaults to (1, 0, 0).</p></li>
 <li><p><strong>rotation_angle_radians</strong> (<em>float</em><em>, </em><em>optional</em>) – The angle of rotation. Defaults to 0.</p></li>
@@ -484,7 +484,7 @@ Defaults to (0, 0, 0).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>The rotated image, resampled into the original space.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>SimpleITK.Image</p>
@@ -493,20 +493,22 @@ Defaults to (0, 0, 0).</p></li>
 </dd></dl>
 <dl class="py function">
 <dt id="platipy.imaging.utils.geometry.vector_angle">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.geometry.</span></code><code class="sig-name descname"><span class="pre">vector_angle</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.geometry.vector_angle" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.geometry.</span></code><code class="sig-name descname"><span class="pre">vector_angle</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smallest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.geometry.vector_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the angle between two vectors</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>v1</strong> (<em>[</em><em>np.array</em><em>]</em>) – A three-dimensional vector</p></li>
-<li><p><strong>v2</strong> (<em>[</em><em>np.array</em><em>]</em>) – A three-dimensional vector</p></li>
+<li><p><strong>v1</strong> (<em>np.array</em>) – A three-dimensional vector</p></li>
+<li><p><strong>v2</strong> (<em>np.array</em>) – A three-dimensional vector</p></li>
+<li><p><strong>smallest</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the angle is the smallest (i.e. ignoring direction).
+If False, direction is taken into account, so angle can be obtuse. Defaults to True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The angle in radians</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>[float]</p>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -515,7 +517,7 @@ Defaults to (0, 0, 0).</p></li>
 <span id="io"></span><h2>IO<a class="headerlink" href="#module-platipy.imaging.utils.io" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="platipy.imaging.utils.io.write_nrrd_structure_set">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.io.</span></code><code class="sig-name descname"><span class="pre">write_nrrd_structure_set</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">masks</span></em>, <em class="sig-param"><span class="pre">output_file='structure_set.nrrd'</span></em>, <em class="sig-param"><span class="pre">color_map=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.io.write_nrrd_structure_set" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.io.</span></code><code class="sig-name descname"><span class="pre">write_nrrd_structure_set</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">masks</span></em>, <em class="sig-param"><span class="pre">output_file='structure_set.nrrd'</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.io.write_nrrd_structure_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write an nrrd structure given a set of masks. Useful for reading in Slicer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -523,7 +525,7 @@ Defaults to (0, 0, 0).</p></li>
 <li><p><strong>masks</strong> (<em>dict</em>) – Key is structure name, value is SimpleITK.Image</p></li>
 <li><p><strong>output_file</strong> (<em>str</em><em>, </em><em>optional</em>) – The path to write the nrrd file. Defaults to
 “structure_set.nrrd”.</p></li>
-<li><p><strong>color_map</strong> (<em>matplotlib.colors.Colormap | dict</em><em>, </em><em>optional</em>) – Colormap to use for output.
+<li><p><strong>colormap</strong> (<em>matplotlib.colors.Colormap | dict</em><em>, </em><em>optional</em>) – Colormap to use for output.
 Can also use a dictionary with keys as structure names and values as colors.
 Defaults to cm.get_cmap(“rainbow”).</p></li>
 </ul>
@@ -531,7 +533,7 @@ Defaults to cm.get_cmap(“rainbow”).</p></li>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>AttributeError</strong> – masks must be a dict</p></li>
-<li><p><strong>ValueError</strong> – color_map must be a matplotlib colormap or a dictionary</p></li>
+<li><p><strong>ValueError</strong> – colormap must be a matplotlib colormap or a dictionary</p></li>
 </ul>
 </dd>
 </dl>
