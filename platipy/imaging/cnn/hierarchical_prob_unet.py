@@ -32,7 +32,7 @@ class ResBlock(torch.nn.Module):
         output_channels,
         n_down_channels=None,
         activation_fn=torch.nn.ReLU,
-        convs_per_block=3,
+        convs_per_block=2,
         ndims=2,
     ):
         """Create a residual block
@@ -45,7 +45,7 @@ class ResBlock(torch.nn.Module):
             activation_fn (torch.nn.Module, optional): The activation function to apply. Defaults
                                                        to torch.nn.ReLU.
             convs_per_block (int, optional): The number of convolutions to perform within the
-                                             block. Defaults to 3.
+                                             block. Defaults to 2.
             ndims (int,  optional): Specify whether to use 2 or 3 dimensions. Defaults to 2.
         """
 
@@ -86,7 +86,7 @@ class ResBlock(torch.nn.Module):
             layers.append(resize_outgoing)
 
         self._layers = torch.nn.Sequential(*layers)
-        self._layers.apply(init_weights)
+#        self._layers.apply(init_weights)
 
         self._resize_skip = None
 
@@ -98,7 +98,7 @@ class ResBlock(torch.nn.Module):
                 kernel_size=1,
                 padding=0,
             )
-            self._resize_skip.apply(init_weights)
+ #           self._resize_skip.apply(init_weights)
 
     def forward(self, input_features):
 
@@ -169,8 +169,8 @@ class _HierarchicalCore(torch.nn.Module):
         channels_per_block,
         down_channels_per_block=None,
         activation_fn=torch.nn.ReLU,
-        convs_per_block=3,
-        blocks_per_level=3,
+        convs_per_block=2,
+        blocks_per_level=1,
         ndims=2,
     ):
         """Initializes a HierarchicalCore.
@@ -190,9 +190,9 @@ class _HierarchicalCore(torch.nn.Module):
             activation_fn (torch.nn.Module, optional): A callable activation function. Defaults to
                                                        torch.nn.ReLU.
             convs_per_block (int, optional): An integer specifying the number of convolutional
-                                             layers. Defaults to 3.
+                                             layers. Defaults to 2.
             blocks_per_level (int, optional): An integer specifying the number of residual blocks
-                                              per level. Defaults to 3.
+                                              per level. Defaults to 1.
             ndims (int,  optional): Specify whether to use 2 or 3 dimensions. Defaults to 2.
         """
 
@@ -233,7 +233,7 @@ class _HierarchicalCore(torch.nn.Module):
 
             self.encoder_layers.append(torch.nn.Sequential(*layer))
 
-        self.encoder_layers.apply(init_weights)
+  #      self.encoder_layers.apply(init_weights)
 
         # Iterate the ascending levels in the (truncated) U-Net decoder.
         self.decoder_layers = torch.nn.ModuleList()
@@ -272,8 +272,8 @@ class _HierarchicalCore(torch.nn.Module):
 
             self.decoder_layers.append(torch.nn.Sequential(*layer))
 
-        self._mu_logsigma_blocks.apply(init_zeros)
-        self.decoder_layers.apply(init_weights)
+     #   self._mu_logsigma_blocks.apply(init_zeros)
+     #   self.decoder_layers.apply(init_weights)
 
     def forward(self, inputs, mean=False, std_devs_from_mean=0.0, z_q=None):
         """Forward pass to sample from the module as specified.
@@ -339,8 +339,8 @@ class _HierarchicalCore(torch.nn.Module):
             latent_dim = self._latent_dims[level]
             mu_logsigma = self._mu_logsigma_blocks[level](decoder_features)
 
-            mu = mu_logsigma[:, :latent_dim]
-            log_sigma = mu_logsigma[:, latent_dim:]
+            mu = mu_logsigma[:, :latent_dim].clamp(-1000, 1000)
+            log_sigma = mu_logsigma[:, latent_dim:].clamp(-10, 10)
 
             dist = torch.distributions.Independent(
                 torch.distributions.Normal(loc=mu, scale=torch.exp(log_sigma)), 1
@@ -386,8 +386,8 @@ class _StitchingDecoder(torch.nn.Module):
         num_classes,
         down_channels_per_block=None,
         activation_fn=torch.nn.ReLU,
-        convs_per_block=3,
-        blocks_per_level=3,
+        convs_per_block=2,
+        blocks_per_level=1,
         ndims=2,
     ):
         """Initializes a StichtingDecoder.
@@ -409,9 +409,9 @@ class _StitchingDecoder(torch.nn.Module):
             initializers ([type], optional): [description]. Defaults to None.
             regularizers ([type], optional): [description]. Defaults to None.
             convs_per_block (int, optional): An integer specifying the number of convolutional
-                                             layers. Defaults to 3.
+                                             layers. Defaults to 2.
             blocks_per_level (int, optional): An integer specifying the number of residual blocks
-                                              per level. Defaults to 3.
+                                              per level. Defaults to 1.
             ndims (int,  optional): Specify whether to use 2 or 3 dimensions. Defaults to 2.
         """
         super(_StitchingDecoder, self).__init__()
@@ -452,7 +452,7 @@ class _StitchingDecoder(torch.nn.Module):
                 decoder_in_channels = channels_per_block[::-1][level]
 
             self.layers.append(torch.nn.Sequential(*layer))
-        self.layers.apply(init_weights)
+   #     self.layers.apply(init_weights)
 
         if decoder_in_channels is None:
             decoder_in_channels = channels_per_block[::-1][self._num_levels - 1]
@@ -464,7 +464,7 @@ class _StitchingDecoder(torch.nn.Module):
             kernel_size=1,
             padding=0,
         )
-        self.final_layer.apply(init_weights)
+    #    self.final_layer.apply(init_weights)
 
     def forward(self, encoder_features, decoder_features):
         """Forward pass through the stiching decoder
@@ -498,8 +498,8 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         filters_per_layer=None,
         down_channels_per_block=None,
         latent_dims=(1, 1, 1, 1),
-        convs_per_block=3,
-        blocks_per_level=3,
+        convs_per_block=2,
+        blocks_per_level=1,
         loss_type="elbo",
         loss_params={"beta": 1},
         ndims=2,
@@ -517,9 +517,9 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             latent_dims (tuple, optional): The number of latent dimensions at each layer.
                                            Defaults to (1, 1, 1, 1).
             convs_per_block (int, optional): An integer specifying the number of convolutional
-                                             layers. Defaults to 3. Defaults to 3.
+                                             layers. Defaults to 3. Defaults to 2.
             blocks_per_level (int, optional): An integer specifying the number of residual
-                                              blocks per level. Defaults to 3.
+                                              blocks per level. Defaults to 1.
             loss_kwargs (dict, optional): Dictionary of argument used by loss function.
                                           Defaults to None.
             ndims (int,  optional): Specify whether to use 2 or 3 dimensions. Defaults to 2.
@@ -571,6 +571,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             blocks_per_level=blocks_per_level,
             ndims=ndims,
         )
+        self.ndims = ndims
 
         self._cache = None
 
@@ -686,7 +687,14 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
         kl = {}
         for level, (p, q) in enumerate(zip(p_dists, q_dists)):
             kl_per_pixel = torch.distributions.kl.kl_divergence(p, q)
-            kl_per_instance = torch.sum(kl_per_pixel, [1, 2])
+
+            if self.ndims == 2:
+                kl_per_instance = torch.sum(kl_per_pixel, [1, 2])
+            else:
+                kl_per_instance = torch.sum(kl_per_pixel, [1, 2, 3])
+
+            kl_clamp = img.shape[2:].numel() * 10
+            kl_per_instance = kl_per_instance.clamp(0, kl_clamp)
             kl[level] = torch.mean(kl_per_instance)
 
         return kl
@@ -837,7 +845,8 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
             top_k_percentage = self.loss_params["top_k_percentage"]
 
         loss_mask = None
-        reconstruction_threshold = self.loss_params["kappa"]
+        if "kappa" in self.loss_params:
+            reconstruction_threshold = self.loss_params["kappa"]
         contour_threshold = None
         if "kappa_contour" in self.loss_params and self.loss_params["kappa_contour"] is not None:
             loss_mask = [None, mask]
@@ -871,7 +880,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
 
             with torch.no_grad():
 
-                moving_avg_factor = 0.8
+                moving_avg_factor = 0.5
 
                 rl = rec_loss_mean.detach()
                 if self._rec_moving_avg is None:
@@ -901,12 +910,14 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
                 lambda_lower_contour = self.loss_params["clamp_contour"][0]
                 lambda_upper_contour = self.loss_params["clamp_contour"][1]
 
-                self._lambda = (  # pylint: disable=attribute-defined-outside-init
-                    torch.exp(torch.Tensor([rc, cc]).to(rc.device)) * self._lambda
-                )
+                self._lambda[0] = (torch.exp(rc) * self._lambda[0]).clamp(lambda_lower, lambda_upper)
+                if self._lambda[0].isnan(): self._lambda[0] = lambda_upper
+                if contour_threshold:
+                    lambda_lower_contour = self.loss_params["clamp_contour"][0]
+                    lambda_upper_contour = self.loss_params["clamp_contour"][1]
 
-                self._lambda[0] = self._lambda[0].clamp(lambda_lower, lambda_upper)
-                self._lambda[1] = self._lambda[1].clamp(lambda_lower_contour, lambda_upper_contour)
+                    self._lambda[1] = (torch.exp(cc) * self._lambda[1]).clamp(lambda_lower_contour, lambda_upper_contour)
+                    if self._lambda[1].isnan(): self._lambda[1] = lambda_upper_contour
 
             # pylint: disable=access-member-before-definition
             loss = (self._lambda[0] * reconstruction_loss) + kl_sum
@@ -928,6 +939,7 @@ class HierarchicalProbabilisticUnet(torch.nn.Module):
                 result["contour_constraint"] = cc
                 result["moving_avg_contour"] = self._contour_moving_avg
                 result["lambda_contour"] = self._lambda[1]
+            result = {**result, **kl_summaries}
 
             return result
 

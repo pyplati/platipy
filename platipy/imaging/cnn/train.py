@@ -91,14 +91,16 @@ class ProbUNet(pl.LightningModule):
                 down_channels_per_block=self.hparams.down_channels_per_block,
                 latent_dims=[self.hparams.latent_dim] * (len(self.hparams.filters_per_layer) - 1),
                 convs_per_block=self.hparams.convs_per_block,
+                blocks_per_level=self.hparams.blocks_per_level,
                 loss_type=self.hparams.loss_type,
                 loss_params=loss_params,
                 ndims=self.hparams.ndims,
             )
 
         self.validation_directory = None
+        self.kl_div = None
 
-        self.stddevs = np.linspace(-2, 2, self.hparams.num_observers)
+        self.stddevs = np.linspace(-3, 3, self.hparams.num_observers)
 
     @staticmethod
     def add_model_specific_args(parent_parser):
@@ -114,7 +116,8 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--down_channels_per_block", nargs="+", type=int, default=None)
         parser.add_argument("--latent_dim", type=int, default=6)
         parser.add_argument("--no_convs_fcomb", type=int, default=4)
-        parser.add_argument("--convs_per_block", type=int, default=3)
+        parser.add_argument("--convs_per_block", type=int, default=2)
+        parser.add_argument("--blocks_per_level", type=int, default=1)
         parser.add_argument("--loss_type", type=str, default="elbo")
         parser.add_argument("--beta", type=float, default=1.0)
         parser.add_argument("--kappa", type=float, default=0.02)
@@ -179,6 +182,8 @@ class ProbUNet(pl.LightningModule):
                 for i in range(num_samples)
             ]
         elif sample_strategy == "spaced":
+            if self.hparams.prob_type == "hierarchical":
+                latent_dim = [True] * (len(self.hparams.filters_per_layer) - 1)
             samples = [
                 {
                     "name": f"spaced_{s:.2f}",
@@ -243,7 +248,7 @@ class ProbUNet(pl.LightningModule):
                         else:
                             y = self.prob_unet.sample(
                                 x,
-                                mean=False,
+                                mean=True,
                                 std_devs_from_mean=sample["std_dev_from_mean"],
                             )
 
@@ -389,6 +394,8 @@ class ProbUNet(pl.LightningModule):
             logger=True,
         )
 
+        self.kl_div = loss["kl_div"].detach().cpu()
+
         for k in loss:
             if k == "loss":
                 continue
@@ -464,15 +471,18 @@ class ProbUNet(pl.LightningModule):
                 img_arr = np.load(img_file)
             img = sitk.GetImageFromArray(img_arr)
             img.SetSpacing(self.hparams.spacing)
-
-            mean = self.infer(img, num_samples=1, sample_strategy="mean", preprocess=False)
-            samples = self.infer(
-                img,
-                sample_strategy="spaced",
-                num_samples=5,
-                spaced_range=[-1.5, 1.5],
-                preprocess=False,
-            )
+            try:
+                mean = self.infer(img, num_samples=1, sample_strategy="mean", preprocess=False)
+                samples = self.infer(
+                    img,
+                    sample_strategy="spaced",
+                    num_samples=5,
+                    spaced_range=[-1.5, 1.5],
+                    preprocess=False,
+                )
+            except Exception as e:
+                print(f"ERROR DURING VALIDATION INFERENCE: {e}")
+                return
 
             observers = {}
             for _, observer in enumerate(cases[case]["observers"]):
@@ -499,7 +509,11 @@ class ProbUNet(pl.LightningModule):
                 mask.CopyInformation(img)
                 observers[f"manual_{observer}"] = mask
 
-            result, fig = self.validate(img, observers, samples, mean, matching_type="best")
+            try:
+                result, fig = self.validate(img, observers, samples, mean, matching_type="best")
+            except Exception as e:
+                print(f"ERROR DURING VALIDATION VALIDATE: {e}")
+                return
 
             figure_path = f"valid_{case}.png"
             fig.savefig(figure_path, dpi=300)
@@ -514,6 +528,11 @@ class ProbUNet(pl.LightningModule):
             for t in result:
                 for m in metrics:
                     computed_metrics[f"{t}_{m}"] += result[t][m]
+
+        if self.kl_div:
+            p = np.array(computed_metrics["probnet_DSC"]).mean()
+            u = np.array(computed_metrics["unet_DSC"]).mean()
+            computed_metrics["scaled_DSC"] = ((p + u) / 2) + (p-u) - self.kl_div
 
         for cm in computed_metrics:
             self.log(
@@ -586,9 +605,9 @@ def main(args, config_json_path=None):
 
     # Save the best model
     checkpoint_callback = ModelCheckpoint(
-        monitor="probnet_DSC",
+        monitor="scaled_DSC",
         dirpath=args.default_root_dir,
-        filename="probunet-{epoch:02d}-{probnet_DSC:.2f}",
+        filename="probunet-{epoch:02d}-{scaled_DSC:.2f}",
         save_top_k=1,
         mode="max",
     )
