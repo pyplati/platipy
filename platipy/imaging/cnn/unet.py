@@ -43,6 +43,27 @@ def conv_nd(ndims=2, **kwargs):
     raise NotImplementedError("Only 2 or 3 dimensions are supported")
 
 
+def dropout_nd(ndims=2, **kwargs):
+    """Get a 2D or 3D dropout layer
+
+    Args:
+        ndims (int, optional): 2 or 3 dimensions. Defaults to 2.
+
+    Raises:
+        NotImplementedError: Raised if ndims is not in 2 or 3 dimensions.
+
+    Returns:
+        torch.nn.Dropout: The dropout layer
+    """
+
+    if ndims == 2:
+        return torch.nn.Dropout2d(**kwargs)
+    elif ndims == 3:
+        return torch.nn.Dropout3d(**kwargs)
+
+    raise NotImplementedError("Only 2 or 3 dimensions are supported")
+
+
 def init_weights(m):
     if (
         isinstance(m, torch.nn.Conv2d)
@@ -136,7 +157,9 @@ def resize_up_func(in_channels, out_channels, scale=2, ndims=2):
 
 
 class Conv(torch.nn.Module):
-    def __init__(self, input_channels, output_channels, up_down_sample=0, ndims=2):
+    def __init__(
+        self, input_channels, output_channels, up_down_sample=0, dropout_probability=0.2, ndims=2
+    ):
 
         super(Conv, self).__init__()
 
@@ -160,6 +183,7 @@ class Conv(torch.nn.Module):
             )
         )
         layers.append(nn.ReLU(inplace=True))
+        layers.append(dropout_nd(ndims=ndims, p=dropout_probability))
         layers.append(
             conv_nd(
                 ndims=ndims,
@@ -169,6 +193,7 @@ class Conv(torch.nn.Module):
                 padding=1,
             )
         )
+        layers.append(dropout_nd(ndims=ndims, p=dropout_probability))
         layers.append(nn.ReLU(inplace=True))
         self.layers = nn.Sequential(*layers)
 
