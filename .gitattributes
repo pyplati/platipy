@@ -4,6 +4,9 @@
 
 $.dcm binary
 *.tar.gz binary
+*.png binary
+*.ttf binary
+*.woff binary
 
 *.ipynb filter=nbstripout
 *.ipynb diff=ipynb

@@ -56,7 +56,7 @@ class ImageVisualiser:
         image,
         cut=None,
         axis="ortho",
-        window=[-250, 500],
+        window=None,
         figure_size_in=10,
         limits=None,
         colormap=plt.cm.get_cmap("Greys_r"),
@@ -144,6 +144,7 @@ class ImageVisualiser:
         color=None,
         colormap=plt.cm.get_cmap("rainbow"),
         linewidth=2,
+        linestyle="solid",
         show_legend=True,
     ):
         """Add a contour as overlay
@@ -182,6 +183,7 @@ class ImageVisualiser:
                     contour_name,
                     color=contour_color,
                     linewidth=linewidth,
+                    linestyle=linestyle,
                 )
                 self.__contours.append(visualise_contour)
 
@@ -191,7 +193,9 @@ class ImageVisualiser:
             if name is None:
                 name = "contour"
 
-            visualise_contour = VisualiseContour(contour, name, color=color, linewidth=linewidth)
+            visualise_contour = VisualiseContour(
+                contour, name, color=color, linewidth=linewidth, linestyle=linestyle
+            )
             self.__contours.append(visualise_contour)
         else:
 
@@ -448,6 +452,22 @@ class ImageVisualiser:
 
         (ax_size, cor_size, sag_size) = nda.shape[:3]
 
+        window = self.__window
+        if window is None:
+            # We will choose it ourselves!
+
+            lower = nda.min()
+
+            # Check if we *probably* have a CT
+            if lower < -900:
+                # Just set a decent CT window
+                # Somewhere around soft tissue
+                window = (-250, 600)
+
+            # Otherwise just pick a reasonable upper limit
+            else:
+                upper = np.percentile(nda, 99)
+                window = (lower, upper - lower)
         try:
             logger.info(
                 f"Found a (z,y,x,{nda.shape[3]}) dimensional array - assuming this is an RGB"
@@ -461,6 +481,11 @@ class ImageVisualiser:
 
         sp_plane, _, sp_slice = image.GetSpacing()
         asp = (1.0 * sp_slice) / sp_plane
+
+        if self.__projection is True:
+            projection = "max"
+        else:
+            projection = self.__projection
 
         if self.__axis == "ortho":
             figure_size = (
@@ -497,19 +522,28 @@ class ImageVisualiser:
 
             else:
                 ax_img_proj = project_onto_arbitrary_plane(
-                    image, projection_axis=2, projection_name="mean", default_value=int(nda.min())
+                    image,
+                    projection_axis=2,
+                    projection_name=projection,
+                    default_value=int(nda.min()),
                 )
                 ax_img = sitk.GetArrayFromImage(ax_img_proj)
                 ax_img = (ax_img - ax_img.min()) / (ax_img.max() - ax_img.min())
 
                 cor_img_proj = project_onto_arbitrary_plane(
-                    image, projection_axis=1, projection_name="mean", default_value=int(nda.min())
+                    image,
+                    projection_axis=1,
+                    projection_name=projection,
+                    default_value=int(nda.min()),
                 )
                 cor_img = sitk.GetArrayFromImage(cor_img_proj)
                 cor_img = (cor_img - cor_img.min()) / (cor_img.max() - cor_img.min())
 
                 sag_img_proj = project_onto_arbitrary_plane(
-                    image, projection_axis=0, projection_name="mean", default_value=int(nda.min())
+                    image,
+                    projection_axis=0,
+                    projection_name=projection,
+                    default_value=int(nda.min()),
                 )
                 sag_img = sitk.GetArrayFromImage(sag_img_proj)
                 sag_img = (sag_img - sag_img.min()) / (sag_img.max() - sag_img.min())
@@ -520,7 +554,7 @@ class ImageVisualiser:
                 interpolation="none",
                 origin={"normal": "upper", "reversed": "lower"}[self.__origin],
                 cmap=self.__colormap,
-                clim=(self.__window[0], self.__window[0] + self.__window[1]),
+                clim=(window[0], window[0] + window[1]),
             )
             cor_view = ax_cor.imshow(
                 cor_img,
@@ -528,7 +562,7 @@ class ImageVisualiser:
                 aspect=asp,
                 interpolation="none",
                 cmap=self.__colormap,
-                clim=(self.__window[0], self.__window[0] + self.__window[1]),
+                clim=(window[0], window[0] + window[1]),
             )
             sag_view = ax_sag.imshow(
                 sag_img,
@@ -536,7 +570,7 @@ class ImageVisualiser:
                 aspect=asp,
                 interpolation="none",
                 cmap=self.__colormap,
-                clim=(self.__window[0], self.__window[0] + self.__window[1]),
+                clim=(window[0], window[0] + window[1]),
             )
 
             ax_ax.axis("off")
@@ -603,7 +637,7 @@ class ImageVisualiser:
                 disp_img_proj = project_onto_arbitrary_plane(
                     image,
                     projection_axis={"x": 0, "y": 1, "z": 2}[self.__axis],
-                    projection_name="mean",
+                    projection_name=projection,
                     default_value=int(nda.min()),
                 )
                 disp_img = sitk.GetArrayFromImage(disp_img_proj)
@@ -616,7 +650,7 @@ class ImageVisualiser:
                 interpolation="none",
                 origin=org,
                 cmap=self.__colormap,
-                clim=(self.__window[0], self.__window[0] + self.__window[1]),
+                clim=(window[0], window[0] + window[1]),
             )
             ax.axis("off")
 
@@ -649,6 +683,21 @@ class ImageVisualiser:
         asp = (1.0 * sp_slice) / sp_plane
 
         window = self.__window
+        if window is None:
+            # We will choose it ourselves!
+
+            lower = nda_original.min()
+
+            # Check if we *probably* have a CT
+            if lower < -900:
+                # Just set a decent CT window
+                # Somewhere around soft tissue
+                window = (-250, 600)
+
+            # Otherwise just pick a reasonable upper limit
+            else:
+                upper = np.percentile(nda_original, 99)
+                window = (lower, upper - lower)
 
         if self.__axis == "ortho":
             figure_size = (
@@ -795,7 +844,7 @@ class ImageVisualiser:
 
         if limits is not None:
             if self.__axis == "ortho":
-                ax_ax, _, ax_cor, ax_sag = self.__figure.axes[:4]
+                ax_ax, ax_blank, ax_cor, ax_sag = self.__figure.axes[:4]
                 cax_list = self.__figure.axes[4:]
 
                 ax_orig_0, ax_orig_1 = ax_cor.get_ylim()
@@ -847,6 +896,9 @@ class ImageVisualiser:
 
                 ax_ax.set_position(gs[0].get_position(self.__figure))
                 ax_ax.set_subplotspec(gs[0])
+
+                ax_blank.set_position(gs[1].get_position(self.__figure))
+                ax_blank.set_subplotspec(gs[1])
 
                 ax_cor.set_position(gs[2].get_position(self.__figure))
                 ax_cor.set_subplotspec(gs[2])
@@ -906,6 +958,8 @@ class ImageVisualiser:
 
         plot_dict = {}
         color_dict = {}
+        lw_dict = {}
+        ls_dict = {}
 
         color_gen_index = 0
 
@@ -921,7 +975,8 @@ class ImageVisualiser:
                 color_dict[contour.name] = color_map[color_gen_index % 255]
                 color_gen_index += 1
 
-        linewidths = [contour.linewidth for contour in self.__contours]
+            lw_dict[contour.name] = contour.linewidth
+            ls_dict[contour.name] = contour.linestyle
 
         # Test types of axes
         axes = self.__figure.axes[:4]
@@ -933,6 +988,11 @@ class ImageVisualiser:
             for c_name in plot_dict:
                 if not self.__projection:
                     contour_disp = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s)
+
+                    # Force a single pixel to 1 to display all contours
+                    # even if they aren't defined on a particular slice
+                    if contour_disp.sum() == 0:
+                        contour_disp[0, 0] = 1
 
                 else:
                     contour_disp_proj = project_onto_arbitrary_plane(
@@ -947,9 +1007,10 @@ class ImageVisualiser:
                     ax.contour(
                         contour_disp,
                         colors=[color_dict[c_name]],
-                        levels=[0],
+                        levels=[0.5],
                         # alpha=0.8,
-                        linewidths=linewidths,
+                        linewidths=lw_dict[c_name],
+                        linestyles=ls_dict[c_name],
                         label=c_name,
                         origin="lower",
                     )
@@ -972,6 +1033,15 @@ class ImageVisualiser:
                     contour_ax = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_ax)
                     contour_cor = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_cor)
                     contour_sag = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_sag)
+
+                    # Force a single pixel to 1 to display all contours
+                    # even if they aren't defined on a particular slice
+                    if contour_ax.sum() == 0:
+                        contour_ax[0, 0] = 1
+                    if contour_cor.sum() == 0:
+                        contour_cor[0, 0] = 1
+                    if contour_sag.sum() == 0:
+                        contour_sag[0, 0] = 1
 
                 else:
                     contour_ax_proj = project_onto_arbitrary_plane(
@@ -1000,8 +1070,9 @@ class ImageVisualiser:
 
                 temp = ax_ax.contour(
                     contour_ax,
-                    levels=[0],
-                    linewidths=linewidths,
+                    levels=[0.5],
+                    linewidths=lw_dict[c_name],
+                    linestyles=ls_dict[c_name],
                     colors=[color_dict[c_name]],
                     origin="lower",
                 )
@@ -1009,15 +1080,17 @@ class ImageVisualiser:
 
                 ax_cor.contour(
                     contour_cor,
-                    levels=[0],
-                    linewidths=linewidths,
+                    levels=[0.5],
+                    linewidths=lw_dict[c_name],
+                    linestyles=ls_dict[c_name],
                     colors=[color_dict[c_name]],
                     origin="lower",
                 )
                 ax_sag.contour(
                     contour_sag,
-                    levels=[0],
-                    linewidths=linewidths,
+                    levels=[0.5],
+                    linewidths=lw_dict[c_name],
+                    linestyles=ls_dict[c_name],
                     colors=[color_dict[c_name]],
                     origin="lower",
                 )
@@ -1038,12 +1111,12 @@ class ImageVisualiser:
 
             alpha = scalar.alpha
 
-            if scalar.max_value:
+            if scalar.max_value is not False:
                 s_max = scalar.max_value
             else:
                 s_max = nda.max()
 
-            if scalar.min_value:
+            if scalar.min_value is not False:
                 s_min = scalar.min_value
             else:
                 s_min = nda.min()
@@ -1060,10 +1133,10 @@ class ImageVisualiser:
             else:
                 norm = None
 
-            # nda = nda / nda.max()
             nda = np.ma.masked_less_equal(nda, s_min)
 
             sp_plane, _, sp_slice = scalar_image.GetSpacing()
+
             asp = (1.0 * sp_slice) / sp_plane
 
             # Test types of axes
@@ -1096,6 +1169,27 @@ class ImageVisualiser:
                     cbar.solids.set_alpha(1)
                     if scalar.discrete_levels:
                         cbar.set_ticks(np.linspace(s_min, s_max, scalar.discrete_levels + 1))
+
+                        if scalar.mid_ticks:
+
+                            delta_tick = (s_max - s_min) / scalar.discrete_levels
+                            cbar.set_ticks(
+                                np.linspace(
+                                    s_min + delta_tick / 2,
+                                    s_max - delta_tick / 2,
+                                    scalar.discrete_levels,
+                                )
+                            )
+                            cbar.set_ticklabels(np.linspace(s_min, s_max, scalar.discrete_levels))
+
+                        else:
+                            cbar.set_ticks(
+                                np.linspace(
+                                    s_min,
+                                    s_max,
+                                    scalar.discrete_levels + 1,
+                                )
+                            )
 
                     f_x, f_y = self.__figure.get_size_inches()
                     self.__figure.set_size_inches(f_x * 1.15, f_y)

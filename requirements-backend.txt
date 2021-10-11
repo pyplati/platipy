@@ -1,0 +1,7 @@
+flask >= 1.1.2
+flask-restful >= 0.3.8
+flask-sqlalchemy >= 2.4.4
+celery >= 4.4.7
+redis >= 3.5.3
+psutil >= 5.8.0
+gunicorn >= 20.0.4
