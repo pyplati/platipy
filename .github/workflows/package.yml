@@ -1,35 +1,32 @@
 name: Package
 
-on: workflow_dispatch
+on:   
+  repository_dispatch:
+    types: [docker]
 
 jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
-      -
-        name: Set up QEMU
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
-      -
-        name: Set up Docker Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      -
-        name: Login to DockerHub
+      - name: Login to DockerHub
         uses: docker/login-action@v1 
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Login to GitHub Container Registry
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v1 
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      -
-        name: Build and Push Base
+
+      - name: Build and Push Base
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -38,24 +35,72 @@ jobs:
           tags: |
             platipy/platipy:latest
             ghcr.io/pyplati/platipy:latest
-      -
-        name: Build and Push Cardiac
+
+      - name: Build and Push nnUNet Docker Image
         uses: docker/build-push-action@v2
         with:
-          context: platipy/imaging/projects/cardiac
+          context: services/nnunet
+          platforms: linux/amd64
+          push: true
+          tags: |
+            platipy/platipy:nnunet
+            ghcr.io/pyplati/platipy:nnunet
+
+      - name: Build and Push Cardiac Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: services/cardiac
           platforms: linux/amd64
           push: true
           tags: |
             platipy/platipy:cardiac
             ghcr.io/pyplati/platipy:cardiac
-      -
-        name: Build and Push Bronchus
+      - name: Build and Push Bronchus Docker Image
         uses: docker/build-push-action@v2
         with:
-          context: platipy/imaging/projects/bronchus
+          context: services/bronchus
           platforms: linux/amd64
           push: true
           tags: |
             platipy/platipy:bronchus
             ghcr.io/pyplati/platipy:bronchus
-  
+    
+      - name: Build and Push Pinnacle Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: services/pinnacle
+          platforms: linux/amd64
+          push: true
+          tags: |
+            platipy/platipy:pinnacle
+            ghcr.io/pyplati/platipy:pinnacle
+
+      - name: Build and Push MRI Dixon Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: services/mridixon
+          platforms: linux/amd64
+          push: true
+          tags: |
+            platipy/platipy:mridixon
+            ghcr.io/pyplati/platipy:mridixon
+
+      - name: Build and Push Radiomics Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: services/radiomics
+          platforms: linux/amd64
+          push: true
+          tags: |
+            platipy/platipy:radiomics
+            ghcr.io/pyplati/platipy:radiomics
+
+      - name: Build and Push DIRQA Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: services/dirqa
+          platforms: linux/amd64
+          push: true
+          tags: |
+            platipy/platipy:dirqa
+            ghcr.io/pyplati/platipy:dirqa
