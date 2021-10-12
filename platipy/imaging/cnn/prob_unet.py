@@ -39,7 +39,7 @@ class Encoder(torch.nn.Module):
             down_sample = 0 if idx == 0 else -2
 
             layers.append(
-                Conv(input_filters, output_filters, up_down_sample=down_sample, ndims=ndims)
+                Conv(input_filters, output_filters, up_down_sample=down_sample, ndims=ndims, dropout_probability=0.2)
             )
 
         self.layers = torch.nn.Sequential(*layers)
@@ -113,8 +113,9 @@ class AxisAlignedConvGaussian(torch.nn.Module):
         if self.ndims == 3:
             mu_log_sigma = torch.squeeze(mu_log_sigma, dim=2)
 
-        mu = mu_log_sigma[:, : self.latent_dim]
-        log_sigma = mu_log_sigma[:, self.latent_dim :]
+
+        mu = mu_log_sigma[:, :self.latent_dim].clamp(-1000, 1000)
+        log_sigma = mu_log_sigma[:, self.latent_dim:].clamp(-10, 10)
 
         # This is a multivariate normal with diagonal covariance matrix sigma
         # https://github.com/pytorch/pytorch/pull/11178
@@ -205,6 +206,7 @@ class ProbabilisticUnet(torch.nn.Module):
         loss_type="elbo",
         loss_params={"beta": 1},
         ndims=2,
+        dropout_probability=0.2,
     ):
         super(ProbabilisticUnet, self).__init__()
 
@@ -215,7 +217,7 @@ class ProbabilisticUnet(torch.nn.Module):
         self.z_prior_sample = 0
 
         self.unet = UNet(
-            input_channels, num_classes, filters_per_layer, final_layer=False, ndims=ndims
+            input_channels, num_classes, filters_per_layer, final_layer=False, dropout_probability=dropout_probability, ndims=ndims
         )
         self.prior = AxisAlignedConvGaussian(
             input_channels, filters_per_layer, latent_dim, ndims=ndims
@@ -430,7 +432,7 @@ class ProbabilisticUnet(torch.nn.Module):
         z_posterior = self.posterior_latent_space.rsample()
 
         kl_div = torch.mean(self.kl_divergence())
-        kl_div = torch.clamp(kl_div, 0.0, 100.0)
+        #kl_div = torch.clamp(kl_div, 0.0, 100.0)
 
         top_k_percentage = None
         if "top_k_percentage" in self.loss_params:
@@ -502,15 +504,15 @@ class ProbabilisticUnet(torch.nn.Module):
 
                 lambda_lower = self.loss_params["clamp_rec"][0]
                 lambda_upper = self.loss_params["clamp_rec"][1]
-                lambda_lower_contour = self.loss_params["clamp_contour"][0]
-                lambda_upper_contour = self.loss_params["clamp_contour"][1]
 
-                self._lambda = (  # pylint: disable=attribute-defined-outside-init
-                    torch.exp(torch.Tensor([rc, cc]).to(rc.device)) * self._lambda
-                )
+                self._lambda[0] = (torch.exp(rc) * self._lambda[0]).clamp(lambda_lower, lambda_upper)
+                if self._lambda[0].isnan(): self._lambda[0] = lambda_upper
+                if contour_threshold:
+                    lambda_lower_contour = self.loss_params["clamp_contour"][0]
+                    lambda_upper_contour = self.loss_params["clamp_contour"][1]
 
-                self._lambda[0] = self._lambda[0].clamp(lambda_lower, lambda_upper)
-                self._lambda[1] = self._lambda[1].clamp(lambda_lower_contour, lambda_upper_contour)
+                    self._lambda[1] = (torch.exp(cc) * self._lambda[1]).clamp(lambda_lower_contour, lambda_upper_contour)
+                    if self._lambda[1].isnan(): self._lambda[1] = lambda_upper_contour
 
             # pylint: disable=access-member-before-definition
             loss = (self._lambda[0] * reconstruction_loss) + kl_div

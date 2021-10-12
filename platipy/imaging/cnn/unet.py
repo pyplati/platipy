@@ -74,7 +74,6 @@ def init_weights(m):
         torch.nn.init.kaiming_normal_(m.weight, mode="fan_in", nonlinearity="relu")
         truncated_normal_(m.bias, mean=0, std=0.001)
 
-
 def l2_regularisation(m):
     l2_reg = None
 
@@ -158,7 +157,7 @@ def resize_up_func(in_channels, out_channels, scale=2, ndims=2):
 
 class Conv(torch.nn.Module):
     def __init__(
-        self, input_channels, output_channels, up_down_sample=0, dropout_probability=0.2, ndims=2
+        self, input_channels, output_channels, up_down_sample=0, dropout_probability=None, ndims=2
     ):
 
         super(Conv, self).__init__()
@@ -183,7 +182,8 @@ class Conv(torch.nn.Module):
             )
         )
         layers.append(nn.ReLU(inplace=True))
-        layers.append(dropout_nd(ndims=ndims, p=dropout_probability))
+        if dropout_probability:
+            layers.append(dropout_nd(ndims=ndims, p=dropout_probability))
         layers.append(
             conv_nd(
                 ndims=ndims,
@@ -193,7 +193,8 @@ class Conv(torch.nn.Module):
                 padding=1,
             )
         )
-        layers.append(dropout_nd(ndims=ndims, p=dropout_probability))
+        if dropout_probability:
+            layers.append(dropout_nd(ndims=ndims, p=dropout_probability))
         layers.append(nn.ReLU(inplace=True))
         self.layers = nn.Sequential(*layers)
 
@@ -218,6 +219,7 @@ class UNet(nn.Module):
         filters_per_layer=[64 * (2 ** x) for x in range(5)],
         final_layer=True,
         ndims=2,
+        dropout_probability=None
     ):
 
         super(UNet, self).__init__()
@@ -229,7 +231,7 @@ class UNet(nn.Module):
             down_sample = 0 if idx == 0 else -2
 
             self.encoder.append(
-                Conv(input_filters, output_filters, up_down_sample=down_sample, ndims=ndims)
+                Conv(input_filters, output_filters, up_down_sample=down_sample, dropout_probability=dropout_probability, ndims=ndims)
             )
 
         reversed_filters = list(reversed(filters_per_layer))
@@ -242,7 +244,7 @@ class UNet(nn.Module):
             input_filters = layer_filters
             output_filters = reversed_filters[idx + 1]
 
-            self.decoder.append(Conv(input_filters, output_filters, up_down_sample=2, ndims=ndims))
+            self.decoder.append(Conv(input_filters, output_filters, up_down_sample=2, dropout_probability=dropout_probability, ndims=ndims))
 
         self.final = None
         if final_layer:
