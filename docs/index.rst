@@ -18,6 +18,7 @@ PlatiPy documentation
     :hidden:
 
     _examples/visualise
+    _examples/dvh_analysis
     
 .. toctree::
     :caption: Reference
@@ -26,6 +27,7 @@ PlatiPy documentation
 
     visualiser
     dicom
+    dose
     cli
     registration
     utils
