@@ -79,7 +79,8 @@ class VisualiseVectorOverlay:
     def __init__(
         self,
         image,
-        name,
+        min_value=False,
+        max_value=False,
         colormap=plt.cm.get_cmap("Spectral"),
         alpha=0.75,
         arrow_scale=0.25,
@@ -88,9 +89,11 @@ class VisualiseVectorOverlay:
         color_function="perpendicular",
         invert_field=True,
         show_colorbar=True,
+        name="input",
     ):
         self.image = image
-        self.name = name
+        self.min_value = min_value
+        self.max_value = max_value
         self.colormap = colormap
         self.alpha = alpha
         self.arrow_scale = arrow_scale
@@ -99,6 +102,7 @@ class VisualiseVectorOverlay:
         self.color_function = color_function
         self.invert_field = invert_field
         self.show_colorbar = show_colorbar
+        self.name = name
 
 
 class VisualiseComparisonOverlay:

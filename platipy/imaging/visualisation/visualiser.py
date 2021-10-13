@@ -288,7 +288,8 @@ class ImageVisualiser:
     def add_vector_overlay(
         self,
         vector_image,
-        name=None,
+        min_value=False,
+        max_value=False,
         colormap=plt.cm.get_cmap("Spectral"),
         alpha=0.75,
         arrow_scale=0.25,
@@ -296,6 +297,7 @@ class ImageVisualiser:
         subsample=4,
         color_function="perpendicular",
         show_colorbar=True,
+        name=None,
     ):
         """Overlay a vector field on to the existing image
 
@@ -332,7 +334,8 @@ class ImageVisualiser:
 
             visualise_vector_field = VisualiseVectorOverlay(
                 vector_image,
-                name,
+                min_value=min_value,
+                max_value=max_value,
                 colormap=colormap,
                 alpha=alpha,
                 arrow_scale=arrow_scale,
@@ -340,6 +343,7 @@ class ImageVisualiser:
                 subsample=subsample,
                 color_function=color_function,
                 show_colorbar=show_colorbar,
+                name=name,
             )
             self.__vector_overlays.append(visualise_vector_field)
         else:
@@ -528,7 +532,7 @@ class ImageVisualiser:
                     default_value=int(nda.min()),
                 )
                 ax_img = sitk.GetArrayFromImage(ax_img_proj)
-                ax_img = (ax_img - ax_img.min()) / (ax_img.max() - ax_img.min())
+                # ax_img = (ax_img - ax_img.min()) / (ax_img.max() - ax_img.min())
 
                 cor_img_proj = project_onto_arbitrary_plane(
                     image,
@@ -537,7 +541,7 @@ class ImageVisualiser:
                     default_value=int(nda.min()),
                 )
                 cor_img = sitk.GetArrayFromImage(cor_img_proj)
-                cor_img = (cor_img - cor_img.min()) / (cor_img.max() - cor_img.min())
+                # cor_img = (cor_img - cor_img.min()) / (cor_img.max() - cor_img.min())
 
                 sag_img_proj = project_onto_arbitrary_plane(
                     image,
@@ -546,7 +550,7 @@ class ImageVisualiser:
                     default_value=int(nda.min()),
                 )
                 sag_img = sitk.GetArrayFromImage(sag_img_proj)
-                sag_img = (sag_img - sag_img.min()) / (sag_img.max() - sag_img.min())
+                # sag_img = (sag_img - sag_img.min()) / (sag_img.max() - sag_img.min())
 
             ax_view = ax_ax.imshow(
                 ax_img,
@@ -1320,6 +1324,8 @@ class ImageVisualiser:
             color_function = vector.color_function
             invert_field = vector.invert_field
             alpha = vector.alpha
+            min_value = vector.min_value
+            max_value = vector.max_value
 
             inverse_vector_image = image  # sitk.InvertDisplacementField(image)
             vector_nda = sitk.GetArrayFromImage(inverse_vector_image)
@@ -1359,6 +1365,11 @@ class ImageVisualiser:
                         vector_plot_x ** 2 + vector_plot_y ** 2 + vector_plot_z ** 2
                     )
 
+                if ~max_value:
+                    max_value = vector_color.max()
+                if ~min_value:
+                    min_value = vector_color.min()
+
                 sp_vector = ax.quiver(
                     plot_x_loc,
                     plot_y_loc,
@@ -1372,6 +1383,7 @@ class ImageVisualiser:
                     minlength=0,
                     linewidth=1,
                     alpha=alpha,
+                    clim=[min_value, max_value],
                 )
 
                 if vector.show_colorbar:
@@ -1414,6 +1426,11 @@ class ImageVisualiser:
                             vector_plot_x ** 2 + vector_plot_y ** 2 + vector_plot_z ** 2
                         )
 
+                    if max_value == False:
+                        max_value = vector_color.max()
+                    if min_value == False:
+                        min_value = vector_color.min()
+
                     sp_vector = plot_axes.quiver(
                         plot_x_loc,
                         plot_y_loc,
@@ -1426,6 +1443,7 @@ class ImageVisualiser:
                         width=arrow_width,
                         minlength=0,
                         linewidth=1,
+                        clim=[min_value, max_value],
                     )
 
                 if vector.show_colorbar:

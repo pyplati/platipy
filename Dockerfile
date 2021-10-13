@@ -3,6 +3,7 @@ FROM ubuntu:20.04
 RUN apt-get update; DEBIAN_FRONTEND="noninteractive" apt-get install -y redis-server git python3-pip libgl1-mesa-glx libsm6 libxext6 libxrender-dev libglib2.0-0 pandoc
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN pip install --upgrade pip
 
 WORKDIR /home/service
 
@@ -15,7 +16,8 @@ RUN pip install -r requirements-backend.txt
 COPY requirements-dev.txt requirements-dev.txt
 RUN pip install -r requirements-dev.txt
 
-COPY ./platipy platipy
+# COPY ./platipy platipy
+RUN pip install platipy
 
 COPY entrypoint.sh /entrypoint.sh
 
