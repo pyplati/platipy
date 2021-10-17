@@ -9,6 +9,8 @@ def write_nrrd_structure_set(
     masks,
     output_file="structure_set.nrrd",
     color_map=cm.get_cmap("rainbow"),
+    use_compression=True,
+    compression_level=5,
 ):
     """Write an nrrd structure given a set of masks. Useful for reading in Slicer.
 
@@ -113,4 +115,9 @@ def write_nrrd_structure_set(
 
         structure_count += 1
 
-    sitk.WriteImage(struct_im, str(output_file))
+    sitk.WriteImage(
+        struct_im,
+        str(output_file),
+        useCompression=use_compression,
+        compressionLevel=compression_level,
+    )
