@@ -9,6 +9,8 @@ def write_nrrd_structure_set(
     masks,
     output_file="structure_set.nrrd",
     colormap=cm.get_cmap("rainbow"),
+    use_compression=True,
+    compression_level=9,
 ):
     """Write an nrrd structure given a set of masks. Useful for reading in Slicer.
 
@@ -19,6 +21,10 @@ def write_nrrd_structure_set(
         colormap (matplotlib.colors.Colormap | dict, optional): Colormap to use for output.
             Can also use a dictionary with keys as structure names and values as colors.
             Defaults to cm.get_cmap("rainbow").
+        use_compression (bool, optional): Used by SimpleITK's WriteImage function to enable
+            compression when writing output file. Defaults to True.
+        compression_level (int, optional): Used by SimpleITK's WriteImage function to specify how
+            much compression to use. Should be an integer between 0-9. Defaults to 9.
 
     Raises:
         AttributeError: masks must be a dict
@@ -113,4 +119,9 @@ def write_nrrd_structure_set(
 
         structure_count += 1
 
-    sitk.WriteImage(struct_im, str(output_file))
+    sitk.WriteImage(
+        struct_im,
+        str(output_file),
+        useCompression=use_compression,
+        compressionLevel=compression_level,
+    )
