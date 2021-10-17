@@ -20,11 +20,13 @@ import os
 import SimpleITK as sitk
 from loguru import logger
 
+# Need include celery here to be able to from Docker container
+# pylint: disable=unused-import
 from platipy.backend import app, DataObject, celery
 
 from platipy.imaging.projects.bronchus.run import (
     run_bronchus_segmentation,
-    BRONCHUS_SETTINGS_DEFAULTS
+    BRONCHUS_SETTINGS_DEFAULTS,
 )
 
 
@@ -43,9 +45,7 @@ def bronchus_service(data_objects, working_dir, settings):
         # Read the image series
         load_path = data_object.path
         if data_object.type == "DICOM":
-            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(
-                data_object.path
-            )
+            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(data_object.path)
 
         img = sitk.ReadImage(load_path)
         results = run_bronchus_segmentation(img, settings)
@@ -56,9 +56,7 @@ def bronchus_service(data_objects, working_dir, settings):
             mask_file = os.path.join(working_dir, "{0}.nii.gz".format(output))
             sitk.WriteImage(results[output], mask_file)
 
-            output_data_object = DataObject(
-                type="FILE", path=mask_file, parent=data_object
-            )
+            output_data_object = DataObject(type="FILE", path=mask_file, parent=data_object)
             output_objects.append(output_data_object)
 
         # If the input was a DICOM, then we can use it to generate an output RTStruct

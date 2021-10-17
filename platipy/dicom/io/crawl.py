@@ -27,6 +27,17 @@ from loguru import logger
 from datetime import datetime
 
 
+def flatten(itr):
+    if type(itr) in (str, bytes, sitk.Image):
+        yield itr
+    else:
+        for x in itr:
+            try:
+                yield from flatten(x)
+            except TypeError:
+                yield x
+
+
 def get_suv_bw_scale_factor(ds):
     # Modified from
     # https://qibawiki.rsna.org/images/6/62/SUV_vendorneutral_pseudocode_happypathonly_20180626_DAC.pdf
@@ -505,22 +516,41 @@ def process_dicom_series(
                         sequence_dict[var].append(dcm_name)
 
             except AttributeError:
-                logger.warning(
-                    "    MRI sequence name not found. The SeriesDescription will be used instead."
-                )
+                try:
+                    logger.warning(
+                        "    MRI sequence name not found. The SeriesDescription will be used instead."
+                    )
 
-                sequence_names = np.unique(
-                    [pydicom.read_file(x).SeriesDescription for x in dicom_file_list]
-                )
+                    sequence_names = np.unique(
+                        [pydicom.read_file(x).SeriesDescription for x in dicom_file_list]
+                    )
 
-                sequence_dict = {}
-                for dcm_name in dicom_file_list:
-                    dcm_obj = pydicom.read_file(dcm_name)
-                    var = dcm_obj.SeriesDescription
-                    if var not in sequence_dict.keys():
-                        sequence_dict[var] = [dcm_name]
-                    else:
-                        sequence_dict[var].append(dcm_name)
+                    sequence_dict = {}
+                    for dcm_name in dicom_file_list:
+                        dcm_obj = pydicom.read_file(dcm_name)
+                        var = dcm_obj.SeriesDescription
+                        if var not in sequence_dict.keys():
+                            sequence_dict[var] = [dcm_name]
+                        else:
+                            sequence_dict[var].append(dcm_name)
+
+                except AttributeError:
+                    logger.warning(
+                        "    MRI SeriesDescription not found. The AcquisitionComments will be used instead."
+                    )
+
+                    sequence_names = np.unique(
+                        [pydicom.read_file(x).AcquisitionComments for x in dicom_file_list]
+                    )
+
+                    sequence_dict = {}
+                    for dcm_name in dicom_file_list:
+                        dcm_obj = pydicom.read_file(dcm_name)
+                        var = dcm_obj.AcquisitionComments
+                        if var not in sequence_dict.keys():
+                            sequence_dict[var] = [dcm_name]
+                        else:
+                            sequence_dict[var].append(dcm_name)
 
             if initial_dicom.Manufacturer == "GE MEDICAL SYSTEMS":
                 # GE use the DICOM tag (0019, 10a2) [Raw data run number]
@@ -723,8 +753,11 @@ def write_output_data_to_disk(
             # If there is a list, we append an index as we write to disk
 
             if isinstance(field_list, (tuple, list)):
+                # Flatten
+                field_list_flat = list(flatten(field_list))
+
                 # Iterate
-                for suffix, file_to_write in enumerate(field_list):
+                for suffix, file_to_write in enumerate(field_list_flat):
                     field_filename = field_filename_base + f"_{suffix}"
 
                     # Some cleaning

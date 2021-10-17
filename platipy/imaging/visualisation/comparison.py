@@ -41,9 +41,9 @@ def contour_comparison(
     s_select=None,
     structure_for_com=None,
     structure_for_limits=None,
-    title="TITLE TEXT",
-    subtitle="SUBTITLE TEXT",
-    subsubtitle="SUBSUBTITLE TEXT",
+    title="",
+    subtitle="",
+    subsubtitle="",
     contour_cmap=plt.cm.get_cmap("rainbow"),
     structure_name_dict=None,
     img_vis_kw={},
@@ -162,6 +162,8 @@ def contour_comparison(
         v_extent = 0.88
     else:
         v_extent = 0.7
+
+    v_extent = min([v_extent, 0.1 * len(list(contour_dict_a.keys()))])
 
     # Create the table
     table = ax.table(
