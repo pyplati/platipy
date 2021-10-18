@@ -645,7 +645,7 @@ class ImageVisualiser:
                     default_value=int(nda.min()),
                 )
                 disp_img = sitk.GetArrayFromImage(disp_img_proj)
-                disp_img = (disp_img - disp_img.min()) / (disp_img.max() - disp_img.min())
+                # disp_img = (disp_img - disp_img.min()) / (disp_img.max() - disp_img.min())
 
             s = return_slice(self.__axis, self.__cut)
             ax_indiv = ax.imshow(
