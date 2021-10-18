@@ -21,6 +21,7 @@ jobs:
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
         echo "PYTHONPATH=`pwd`" >> $GITHUB_ENV
+
     - name: Autobump version
       run: |
         # from refs/tags/v1.2.3 get 1.2.3
@@ -30,6 +31,7 @@ jobs:
         grep "$PLACEHOLDER" "$VERSION_FILE"
         sed -i "s/$PLACEHOLDER/__version__ = \"${VERSION}\"/g" "$VERSION_FILE"
       shell: bash
+
     - name: Build package
       run: |
         pip install setuptools wheel
@@ -39,6 +41,7 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
+  
     - name: Build docs
       run: |
         sudo apt-get update -y && sudo apt-get install -y pandoc
@@ -48,3 +51,10 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./docs/site
+
+    - name: Build docker
+      uses: peter-evans/repository-dispatch@v1
+      with:
+        token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        repository: pyplati/platipy
+        event-type: docker
