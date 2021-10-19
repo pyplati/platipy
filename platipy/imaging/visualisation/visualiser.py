@@ -161,9 +161,9 @@ class ImageVisualiser:
             ValueError: If passing a dict for contour, all values must be sitk.Image.
         """
 
-        if isinstance(contour, dict):
+        self.__show_legend = show_legend
 
-            self.__show_legend = show_legend
+        if isinstance(contour, dict):
 
             if not all(map(lambda i: isinstance(i, sitk.Image), contour.values())):
                 raise ValueError("When passing dict, all values must be of type SimpleITK.Image")
@@ -192,6 +192,7 @@ class ImageVisualiser:
             # Use a default name if not specified
             if name is None:
                 name = "contour"
+                self.__show_legend = False
 
             visualise_contour = VisualiseContour(
                 contour, name, color=color, linewidth=linewidth, linestyle=linestyle
@@ -1008,7 +1009,7 @@ class ImageVisualiser:
                     contour_disp = sitk.GetArrayFromImage(contour_disp_proj)
 
                 try:
-                    ax.contour(
+                    temp = ax.contour(
                         contour_disp,
                         colors=[color_dict[c_name]],
                         levels=[0.5],
@@ -1018,6 +1019,7 @@ class ImageVisualiser:
                         label=c_name,
                         origin="lower",
                     )
+                    temp.collections[0].set_label(c_name)
                 except AttributeError:
                     pass
 
@@ -1583,3 +1585,22 @@ class ImageVisualiser:
                         bbox_to_anchor=(x_pos_legend, y_pos_legend),
                         fontsize=min([10, 16 * approx_font_scaling]),
                     )
+        else:
+            # these is probably only one axis
+            if self.__show_legend:
+                ax = self.__figure.axes[0]
+                ax_position = ax.get_position()
+
+                # top left corner is the default
+                y_pos_legend = 0.975 * ax_position.ymax
+                x_pos_legend = 0.025 * ax_position.xmax
+
+                approx_font_scaling = self.__figure_size / (
+                    len(self.__contours) + len(self.__bounding_boxes)
+                )
+
+                plt.figlegend(
+                    loc="upper left",
+                    bbox_to_anchor=(x_pos_legend, y_pos_legend),
+                    fontsize=min([10, 16 * approx_font_scaling]),
+                )
