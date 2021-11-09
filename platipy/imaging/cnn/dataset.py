@@ -406,8 +406,11 @@ class NiftiDataset(torch.utils.data.Dataset):
                             label_file = self.label_dir.joinpath(
                                 f"{case_id}_{structure}_{obs}_{z_slice}.npy"
                             )
-                            assert label_file.exists()
-                            labels.append(label_file)
+                            if label_file.exists():
+                                labels.append(label_file)
+                            else:
+                                print(label_file)
+                                labels.append(None)
 
                             contour_mask_file = self.contour_mask_dir.joinpath(
                                 f"{case_id}_{structure}_{z_slice}.npy"
@@ -453,15 +456,18 @@ class NiftiDataset(torch.utils.data.Dataset):
                 observers[obs] = {}
                 for structure in case["observers"][obs]:
                     structure_names.append(structure)
-                    structure_path = str(case["observers"][obs][structure])
-                    label = sitk.ReadImage(structure_path)
-                    label = resample_mask_to_image(img, label)
+                    structure_path = case["observers"][obs][structure]
+
+                    label = None
+                    if structure_path.exists():
+                        label = sitk.ReadImage(str(structure_path))
+                        label = resample_mask_to_image(img, label)
                     observers[obs][structure] = label
 
             contour_masks = {}
             for structure in structure_names:
                 contour_masks[structure] = get_contour_mask(
-                    [observers[obs][structure] for obs in case["observers"]],
+                    [observers[obs][structure] for obs in case["observers"] if observers[obs][structure] is not None],
                     kernel=contour_mask_kernel,
                 )
 
@@ -471,13 +477,13 @@ class NiftiDataset(torch.utils.data.Dataset):
                     if combine_observers == "union":
                         updated_observers[""][structure] = [
                             get_union_mask(
-                                [observers[obs][structure] for obs in case["observers"]]
+                                [observers[obs][structure] for obs in case["observers"] if observers[obs][structure] is not None]
                             )
                         ]
                     elif combine_observers == "intersection":
                         updated_observers[""][structure] = [
                             get_intersection_mask(
-                                [observers[obs][structure] for obs in case["observers"]]
+                                [observers[obs][structure] for obs in case["observers"] if observers[obs][structure] is not None]
                             )
                         ]
                     else:
@@ -502,7 +508,7 @@ class NiftiDataset(torch.utils.data.Dataset):
                 np.save(img_file, sitk.GetArrayFromImage(img_slice))
 
                 # Save the contour mask slice
-                contour_masks = []
+                cmasks = []
                 for structure in structure_names:
                     if ndims == 2:
                         contour_mask_slice = contour_masks[structure][:, :, z_slice]
@@ -512,12 +518,16 @@ class NiftiDataset(torch.utils.data.Dataset):
                         f"{case_id}_{structure}_{z_slice}.npy"
                     )
                     np.save(contour_mask_file, sitk.GetArrayFromImage(contour_mask_slice))
-                    contour_masks.append()
+                    cmasks.append(contour_mask_file)
 
                 for obs in observers:
 
                     labels = []
                     for structure in structure_names:
+
+                        if observers[obs][structure] is None:
+                            labels.append(None)
+                            continue
                         if ndims == 2:
                             label_slice = observers[obs][structure][:, :, z_slice]
                         else:
@@ -533,7 +543,7 @@ class NiftiDataset(torch.utils.data.Dataset):
                             "z": z_slice,
                             "image": img_file,
                             "labels": labels,
-                            "contour_masks": contour_masks,
+                            "contour_masks": cmasks,
                             "case": case_id,
                             "observer": obs,
                         }
@@ -545,7 +555,7 @@ class NiftiDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
 
         img = np.load(self.slices[index]["image"])
-        labels = [np.load(label_file) for label_file in self.slices[index]["labels"]]
+        labels = [np.load(label_file) if label_file else np.zeros(img.shape, dtype=np.ushort) for label_file in self.slices[index]["labels"]]
         contour_masks = [
             np.load(contour_mask_file) for contour_mask_file in self.slices[index]["contour_masks"]
         ]
@@ -570,6 +580,7 @@ class NiftiDataset(torch.utils.data.Dataset):
         contour_mask = torch.FloatTensor(
             np.concatenate([np.expand_dims(l, 0) for l in contour_masks], 0)
         )
+        label_present = [label is not None for label in self.slices[index]["labels"]]
 
         return (
             img.unsqueeze(0),
@@ -578,6 +589,7 @@ class NiftiDataset(torch.utils.data.Dataset):
             {
                 "case": str(self.slices[index]["case"]),
                 "observer": str(self.slices[index]["observer"]),
+                "label_present": label_present,
                 "z": self.slices[index]["z"],
             },
         )

@@ -126,6 +126,8 @@ def preprocess_image(
 
         img = img[x_from:x_to, y_from:y_to, :]
 
+    sitk.WriteImage(img, "tmp.nii.gz")
+
     return img
 
 

@@ -43,7 +43,7 @@ class LocaliseUNet(pl.LightningModule):
 
         self.unet = UNet(
             self.hparams.input_channels,
-            self.hparams.num_classes,
+            2, # num_classes is always 2 for the localise net, just separating forground from background
             filters_per_layer=[32, 64, 128],
             final_layer=True,
         )
@@ -55,7 +55,6 @@ class LocaliseUNet(pl.LightningModule):
         parser = parent_parser.add_argument_group("Localize UNet")
         parser.add_argument("--learning_rate", type=float, default=1e-3)
         parser.add_argument("--input_channels", type=int, default=1)
-        parser.add_argument("--num_classes", type=int, default=2)
 
         return parent_parser
 
@@ -130,7 +129,7 @@ class LocaliseUNet(pl.LightningModule):
                 img_file = self.validation_directory.joinpath(
                     f"img_{info['case'][s]}_{info['z'][s]}.npy"
                 )
-                np.save(img_file, x[0].squeeze(0).cpu().numpy())
+                np.save(img_file, x[s].squeeze(0).cpu().numpy())
 
                 mask_file = self.validation_directory.joinpath(
                     f"mask_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
@@ -141,6 +140,7 @@ class LocaliseUNet(pl.LightningModule):
                 pred_file = self.validation_directory.joinpath(
                     f"pred_{info['case'][s]}_{info['z'][s]}.npy"
                 )
+
                 pred = np.argmax(pred.squeeze(0).cpu().numpy(), axis=0)
                 np.save(pred_file, pred)
 
@@ -216,7 +216,7 @@ class LocaliseUNet(pl.LightningModule):
                 com = [int(i / 2) for i in mask.GetSize()]
 
             img_vis = ImageVisualiser(img, cut=com, figure_size_in=16)
-            img_vis.set_limits_from_label(mask, expansion=[0, 0, 0])
+            #img_vis.set_limits_from_label(mask, expansion=[0, 0, 0])
 
             contour_dict = {**obs_dict}
             contour_dict["pred"] = pred
@@ -246,4 +246,5 @@ class LocaliseUNet(pl.LightningModule):
                 on_epoch=True,
                 prog_bar=False,
                 logger=True,
+                batch_size=self.hparams.batch_size
             )
