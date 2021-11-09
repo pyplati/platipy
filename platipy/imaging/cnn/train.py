@@ -253,7 +253,7 @@ class ProbUNet(pl.LightningModule):
                             )
 
                     y = y.squeeze(0)
-                    y = np.argmax(y.cpu().detach().numpy(), axis=0)
+                    # y = np.argmax(y.cpu().detach().numpy(), axis=0)
                     sample["preds"].append(y)
 
         result = {}
@@ -265,14 +265,17 @@ class ProbUNet(pl.LightningModule):
                 pred_arr = np.expand_dims(pred_arr, 0)
             if len(sample["preds"]) > 1:
                 pred_arr = np.stack(sample["preds"])
-            pred = sitk.GetImageFromArray(pred_arr)
-            pred = sitk.Cast(pred, sitk.sitkUInt8)
 
-            pred.CopyInformation(img)
-            pred = postprocess_mask(pred)
-            pred = sitk.Resample(pred, img, sitk.Transform(), sitk.sitkNearestNeighbor)
+            for idx, structure in enumerate(self.hparams.structures):
+                pred = sitk.GetImageFromArray(pred_arr[idx])
+                pred = pred > 0.5  # Threshold softmax at 0.5
+                pred = sitk.Cast(pred, sitk.sitkUInt8)
 
-            result[sample["name"]] = pred
+                pred.CopyInformation(img)
+                pred = postprocess_mask(pred)
+                pred = sitk.Resample(pred, img, sitk.Transform(), sitk.sitkNearestNeighbor)
+
+                result[sample["name"]][structure] = pred
 
         return result
 
@@ -416,7 +419,6 @@ class ProbUNet(pl.LightningModule):
 
         with torch.set_grad_enabled(False):
             x, y, _, info = batch
-
             for s in range(y.shape[0]):
 
                 img_file = self.validation_directory.joinpath(
@@ -427,7 +429,7 @@ class ProbUNet(pl.LightningModule):
                 mask_file = self.validation_directory.joinpath(
                     f"mask_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
                 )
-                np.save(mask_file, y[s].squeeze(0).cpu().numpy())
+                np.save(mask_file, y[s].cpu().numpy())
 
         return info
 
@@ -439,12 +441,12 @@ class ProbUNet(pl.LightningModule):
             for case, z, observer in zip(info["case"], info["z"], info["observer"]):
 
                 if not case in cases:
-                    cases[case] = {"slices": z.item(), "observers": [observer.item()]}
+                    cases[case] = {"slices": z.item(), "observers": [observer]}
                 else:
                     if z.item() > cases[case]["slices"]:
                         cases[case]["slices"] = z.item()
                     if not observer in cases[case]["observers"]:
-                        cases[case]["observers"].append(observer.item())
+                        cases[case]["observers"].append(observer)
 
         metrics = ["DSC", "HD", "ASD"]
         computed_metrics = {
@@ -496,7 +498,7 @@ class ProbUNet(pl.LightningModule):
 
                         mask_arrs.append(np.load(mask_file))
 
-                    mask_arr = np.stack(mask_arrs)
+                    mask_arr = np.stack(mask_arrs, axis=1)
 
                 else:
                     mask_file = self.validation_directory.joinpath(
@@ -504,10 +506,12 @@ class ProbUNet(pl.LightningModule):
                     )
                     mask_arr = np.load(mask_file)
 
-                mask = sitk.GetImageFromArray(mask_arr)
-                mask = sitk.Cast(mask, sitk.sitkUInt8)
-                mask.CopyInformation(img)
-                observers[f"manual_{observer}"] = mask
+                observers[f"manual_{observer}"] = {}
+                for idx, structure in enumerate(self.hparams.structures):
+                    mask = sitk.GetImageFromArray(mask_arr[idx])
+                    mask = sitk.Cast(mask, sitk.sitkUInt8)
+                    mask.CopyInformation(img)
+                    observers[f"manual_{observer}"][structure] = mask
 
             try:
                 result, fig = self.validate(img, observers, samples, mean, matching_type="best")
@@ -532,7 +536,7 @@ class ProbUNet(pl.LightningModule):
         if self.kl_div:
             p = np.array(computed_metrics["probnet_DSC"]).mean()
             u = np.array(computed_metrics["unet_DSC"]).mean()
-            computed_metrics["scaled_DSC"] = ((p + u) / 2) + (p-u) - self.kl_div
+            computed_metrics["scaled_DSC"] = ((p + u) / 2) + (p - u) - self.kl_div
 
         for cm in computed_metrics:
             self.log(

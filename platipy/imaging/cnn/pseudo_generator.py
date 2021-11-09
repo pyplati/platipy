@@ -10,7 +10,16 @@ from platipy.imaging.generation.image import insert_sphere
 from platipy.imaging import ImageVisualiser
 
 
-def generate_pseudo_data(data_dir="data", cases=5, size=(24, 32, 32)):
+def generate_pseudo_data(data_dir="data", cases=5, size=(24, 32, 32), structures=["a", "b", "c"]):
+    """Generates some Pseudo data to use for testing the CNN code
+
+    Args:
+        data_dir (str, optional): Directory in which to store pseudo data. Defaults to "data".
+        cases (int, optional): Number of cases to generate data for. Defaults to 5.
+        size (tuple, optional): The size of the generated images. Defaults to (24, 32, 32).
+        structures (list, optional): A list of structure names to generate. Defaults to
+          ["a", "b", "c"].
+    """
 
     test_data_directory = Path(data_dir)
 
@@ -53,20 +62,33 @@ def generate_pseudo_data(data_dir="data", cases=5, size=(24, 32, 32)):
         vis = ImageVisualiser(ct, cut=(int(size[0] / 2), ypos, xpos))
         masks = {}
 
-        for obs_id, obs in enumerate(range(-4, 5, 2)):
-            obs_rad = sphere_rad + obs
+        for struct_id, structure in enumerate(structures):
 
-            mask_arr = np.zeros(size)
-            mask_arr = insert_sphere(
-                mask_arr, sp_radius=obs_rad, sp_centre=(int(size[0] / 2), ypos, xpos)
-            )
+            x_shift = y_shift = 0
+            if struct_id > 0:
+                if struct_id % 2 == 0:
+                    x_shift = struct_id
+                else:
+                    y_shift = struct_id
 
-            mask = sitk.GetImageFromArray(mask_arr)
-            mask.CopyInformation(ct)
-            mask = sitk.Cast(mask, sitk.sitkUInt8)
-            sitk.WriteImage(mask, str(label_directory.joinpath(f"{case}_{obs_id}.nii.gz")))
+            for obs_id, obs in enumerate(range(-4, 5, 2)):
+                obs_rad = sphere_rad + obs
 
-            masks[f"obs_{obs_id}_{obs_rad}"] = mask
+                mask_arr = np.zeros(size)
+                mask_arr = insert_sphere(
+                    mask_arr,
+                    sp_radius=obs_rad,
+                    sp_centre=(int(size[0] / 2), ypos + y_shift, xpos + x_shift),
+                )
+
+                mask = sitk.GetImageFromArray(mask_arr)
+                mask.CopyInformation(ct)
+                mask = sitk.Cast(mask, sitk.sitkUInt8)
+                sitk.WriteImage(
+                    mask, str(label_directory.joinpath(f"{case}_{structure}_{obs_id}.nii.gz"))
+                )
+
+                masks[f"struct_{structure}_obs_{obs_id}_{obs_rad}"] = mask
 
         vis.add_contour(masks)
         vis.show()

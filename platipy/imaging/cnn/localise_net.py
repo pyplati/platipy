@@ -103,7 +103,11 @@ class LocaliseUNet(pl.LightningModule):
 
         criterion = torch.nn.BCEWithLogitsLoss(reduction="mean")
 
+        # Take the max of all structure to combine into one big structure to localise
+        y = y.max(axis=1).values
         y = torch.unsqueeze(y, dim=1)
+
+        # Add a background for the localise UNet
         not_y = y.logical_not()
         y = torch.cat((not_y, y), dim=1).float()
 
@@ -119,6 +123,7 @@ class LocaliseUNet(pl.LightningModule):
 
         with torch.set_grad_enabled(False):
             x, y, _, info = batch
+            y = y.max(axis=1).values
 
             for s in range(y.shape[0]):
 
@@ -149,12 +154,12 @@ class LocaliseUNet(pl.LightningModule):
             for case, z, observer in zip(info["case"], info["z"], info["observer"]):
 
                 if not case in cases:
-                    cases[case] = {"slices": z.item(), "observers": [observer.item()]}
+                    cases[case] = {"slices": z.item(), "observers": [observer]}
                 else:
                     if z.item() > cases[case]["slices"]:
                         cases[case]["slices"] = z.item()
                     if not observer in cases[case]["observers"]:
-                        cases[case]["observers"].append(observer.item())
+                        cases[case]["observers"].append(observer)
 
         metrics = {"JI": [], "DSC": [], "HD": [], "ASD": []}
         for case in cases:

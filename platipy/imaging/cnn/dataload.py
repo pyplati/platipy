@@ -20,12 +20,14 @@ class UNetDataModule(pl.LightningDataModule):
         data_dir: str = "./data",
         augmented_dir: str = None,
         working_dir: str = "./working",
+        structures=["a", "b", "c"],
+        observers=["0", "1", "2", "3", "4"],
         case_glob="images/*.nii.gz",
         image_glob="images/{case}.nii.gz",
-        label_glob="labels/{case}_*.nii.gz",
+        label_glob="labels/{case}_{structure}_*.nii.gz",
         augmented_case_glob="{case}/*",
         augmented_image_glob="images/{augmented_case}.nii.gz",
-        augmented_label_glob="labels/{augmented_case}_*.nii.gz",
+        augmented_label_glob="labels/{augmented_case}_{structure}_*.nii.gz",
         augment_on_fly=True,
         fold=0,
         k_folds=5,
@@ -71,6 +73,8 @@ class UNetDataModule(pl.LightningDataModule):
         self.intensity_scaling = intensity_scaling
         self.intensity_window = intensity_window
         self.contour_mask_kernel = contour_mask_kernel
+        self.structures = structures
+        self.observers = observers
 
         self.crop_using_localise_model = crop_using_localise_model
         self.localise_voxel_grid_size = localise_voxel_grid_size
@@ -98,9 +102,13 @@ class UNetDataModule(pl.LightningDataModule):
         parser.add_argument("--k_folds", type=int, default=5)
         parser.add_argument("--batch_size", type=int, default=5)
         parser.add_argument("--num_workers", type=int, default=4)
+        parser.add_argument("--structures", nargs="+", type=str, default=["a", "b", "c"])
+        parser.add_argument("--observers", nargs="+", type=str, default=["0", "1", "2", "3", "4"])
         parser.add_argument("--case_glob", type=str, default="images/*.nii.gz")
         parser.add_argument("--image_glob", type=str, default="images/{case}.nii.gz")
-        parser.add_argument("--label_glob", type=str, default="labels/{case}_*.nii.gz")
+        parser.add_argument(
+            "--label_glob", type=str, default="labels/{case}_{structure}_{observer}.nii.gz"
+        )
         parser.add_argument("--augmented_case_glob", type=str, default=None)
         parser.add_argument("--augmented_image_glob", type=str, default=None)
         parser.add_argument("--augmented_label_glob", type=str, default=None)
@@ -126,7 +134,7 @@ class UNetDataModule(pl.LightningDataModule):
         cases.sort()
         random.shuffle(cases)  # will be consistent for same value of 'seed everything'
         cases_per_fold = math.ceil(len(cases) / self.k_folds)
-        print(cases_per_fold)
+
         for f in range(self.k_folds):
 
             if self.fold == f:
@@ -148,14 +156,22 @@ class UNetDataModule(pl.LightningDataModule):
             {
                 "id": case,
                 "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
-                "label": [
-                    p
-                    for p in self.data_dir.glob(self.label_glob.format(case=case))
-                    if not "_OLD" in p.name
-                ],
+                "observers": {
+                    observer: {
+                        structure: self.data_dir.joinpath(
+                            self.label_glob.format(
+                                case=case, structure=structure, observer=observer
+                            )
+                        )
+                        for structure in self.structures
+                    }
+                    for observer in self.observers
+                },
             }
             for case in self.train_cases
         ]
+
+        print(train_data)
 
         # If a directory with augmented data is specified, use that for training as well
         if self.augmented_dir is not None:
@@ -177,15 +193,20 @@ class UNetDataModule(pl.LightningDataModule):
                                 case=case, augmented_case=augmented_case
                             )
                         ),
-                        "label": [
-                            p
-                            for p in case_aug_dir.glob(
-                                self.augmented_label_glob.format(
-                                    case=case, augmented_case=augmented_case
+                        "observers": {
+                            observer: {
+                                structure: case_aug_dir.joinpath(
+                                    self.augmented_label_glob.format(
+                                        case=case,
+                                        augmented_case=augmented_case,
+                                        structure=structure,
+                                        observer=observer
+                                    )
                                 )
-                            )
-                            if not "_OLD" in p.name
-                        ],
+                                for structure in self.structures
+                            }
+                            for observer in self.observers
+                        },
                     }
                     for augmented_case in augmented_cases
                 ]
@@ -194,11 +215,17 @@ class UNetDataModule(pl.LightningDataModule):
             {
                 "id": case,
                 "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
-                "label": [
-                    p
-                    for p in self.data_dir.glob(self.label_glob.format(case=case))
-                    if not "_OLD" in p.name
-                ],
+                "observers": {
+                    observer: {
+                        structure: self.data_dir.joinpath(
+                            self.label_glob.format(
+                                case=case, structure=structure, observer=observer
+                            )
+                        )
+                        for structure in self.structures
+                    }
+                    for observer in self.observers
+                },
             }
             for case in self.validation_cases
         ]
@@ -207,11 +234,17 @@ class UNetDataModule(pl.LightningDataModule):
             {
                 "id": case,
                 "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
-                "label": [
-                    p
-                    for p in self.data_dir.glob(self.label_glob.format(case=case))
-                    if not "_OLD" in p.name
-                ],
+                "observers": {
+                    observer: {
+                        structure: self.data_dir.joinpath(
+                            self.label_glob.format(
+                                case=case, structure=structure, observer=observer
+                            )
+                        )
+                        for structure in self.structures
+                    }
+                    for observer in self.observers
+                },
             }
             for case in self.test_cases
         ]
