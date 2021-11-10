@@ -253,7 +253,7 @@ class ProbUNet(pl.LightningModule):
 
                     y = y.squeeze(0)
                     # y = np.argmax(y.cpu().detach().numpy(), axis=0)
-                    sample["preds"].append(y)
+                    sample["preds"].append(y.cpu().detach().numpy())
 
         result = {}
         for sample in samples:
@@ -283,78 +283,107 @@ class ProbUNet(pl.LightningModule):
     ):
 
         metrics = {"DSC": "max", "HD": "min", "ASD": "min"}
+        result = {}
 
-        contour_cmap = "coolwarm"
+        contour_cmaps = ["RdPu", "YlOrRd", "GnBu"]
+        structures = self.hparmas.structures
 
-        intersection_mask = get_intersection_mask(manual_observers)
-        union_mask = get_union_mask(manual_observers)
-        vis = ImageVisualiser(img, cut=get_com(union_mask), figure_size_in=16, window=window)
-
-        vis.add_contour(
-            mean, color=plt.cm.get_cmap(contour_cmap)(0.5), linewidth=3, show_legend=False
-        )
-        vis.add_contour(
-            manual_observers, color=[0.13, 0.67, 0.275], linewidth=0.5, show_legend=False
+        vis = ImageVisualiser(
+            img, cut=get_com(mean["mean"][structures[0]]), figure_size_in=16, window=window
         )
 
-        vis.add_contour(
-            intersection_mask, name="intersection", color=[0.13, 0.67, 0.275], linewidth=3
-        )
-        vis.add_contour(union_mask, name="union", color=[0.13, 0.67, 0.275], linewidth=3)
-        vis.add_contour(
-            samples,
-            linewidth=1.5,
-            color={
-                s: c
-                for s, c in zip(
-                    samples, plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(samples)))
-                )
-            },
-        )
+        mean_contours = {}
+        for idx, structure in enumerate(structures):
 
-        vis.set_limits_from_label(union_mask, expansion=30)
+            color_map = plt.cm.get_cmap(contour_cmaps[idx % len(len(structures))])
+            mean_contours[f"mean_{structure}"] = mean["mean"][structure]
+
+            vis.add_contour(mean_contours, color=color_map(0.35), linewidth=3, show_legend=False)
+
+            manual_color = color_map(0.9)
+
+            manual_observers_struct = {
+                f"{man_struct}_{structure}": manual_observers[man_struct][structure]
+                for man_struct in manual_observers
+            }
+
+            vis.add_contour(
+                manual_observers_struct, color=manual_color, linewidth=0.5, show_legend=False
+            )
+
+            intersection_mask = get_intersection_mask(manual_observers_struct)
+            union_mask = get_union_mask(manual_observers_struct)
+
+            vis.add_contour(
+                intersection_mask, name="intersection", color=manual_color, linewidth=3
+            )
+            vis.add_contour(union_mask, name="union", color=manual_color, linewidth=3)
+
+            samples_struct = {
+                f"{sample_struct}_{structure}": samples[sample_struct][structure]
+                for sample_struct in samples
+            }
+            vis.add_contour(
+                samples_struct,
+                linewidth=1.5,
+                color={
+                    s: c
+                    for s, c in zip(
+                        samples_struct, color_map(np.linspace(0.1, 0.7, len(samples_struct)))
+                    )
+                },
+            )
+
+            # vis.set_limits_from_label(union_mask, expansion=30)
+
+            sim = {
+                k: np.zeros((len(samples_struct), len(manual_observers_struct))) for k in metrics
+            }
+            msim = {
+                k: np.zeros((len(samples_struct), len(manual_observers_struct))) for k in metrics
+            }
+            for sid, samp in enumerate(samples_struct):
+                for oid, obs in enumerate(manual_observers_struct):
+                    sample_metrics = get_metrics(
+                        manual_observers_struct[obs], samples_struct[samp]
+                    )
+                    mean_metrics = get_metrics(manual_observers_struct[obs], mean["mean"])
+
+                    for k in sample_metrics:
+                        sim[k][sid, oid] = sample_metrics[k]
+                        msim[k][sid, oid] = mean_metrics[k]
+
+            result[f"probnet_{structure}"] = {k: [] for k in metrics}
+            result[f"unet_{structure}"] = {k: [] for k in metrics}
+            for k in sim:
+
+                val = sim[k]
+                if matching_type == "hungarian":
+                    if metrics[k] == "max":
+                        val = -val
+                    row_idx, col_idx = linear_sum_assignment(val)
+                    prob_unet_mean = sim[k][row_idx, col_idx].mean()
+                else:
+                    if metrics[k] == "max":
+                        prob_unet_mean = val.max()
+                    else:
+                        prob_unet_mean = val.min()
+                result[f"probnet_{structure}"][k].append(prob_unet_mean)
+
+                val = msim[k]
+                if matching_type == "hungarian":
+                    if metrics[k] == "max":
+                        val = -val
+                    row_idx, col_idx = linear_sum_assignment(val)
+                    unet_mean = msim[k][row_idx, col_idx].mean()
+                else:
+                    if metrics[k] == "max":
+                        unet_mean = val.max()
+                    else:
+                        unet_mean = val.min()
+                result[f"unet_{structure}"][k].append(unet_mean)
 
         fig = vis.show()
-
-        sim = {k: np.zeros((len(samples), len(manual_observers))) for k in metrics}
-        msim = {k: np.zeros((len(samples), len(manual_observers))) for k in metrics}
-        for sid, samp in enumerate(samples):
-            for oid, obs in enumerate(manual_observers):
-                sample_metrics = get_metrics(manual_observers[obs], samples[samp])
-                mean_metrics = get_metrics(manual_observers[obs], mean["mean"])
-
-                for k in sample_metrics:
-                    sim[k][sid, oid] = sample_metrics[k]
-                    msim[k][sid, oid] = mean_metrics[k]
-
-        result = {"probnet": {k: [] for k in metrics}, "unet": {k: [] for k in metrics}}
-        for k in sim:
-
-            val = sim[k]
-            if matching_type == "hungarian":
-                if metrics[k] == "max":
-                    val = -val
-                row_idx, col_idx = linear_sum_assignment(val)
-                prob_unet_mean = sim[k][row_idx, col_idx].mean()
-            else:
-                if metrics[k] == "max":
-                    prob_unet_mean = val.max()
-                else:
-                    prob_unet_mean = val.min()
-            result["probnet"][k].append(prob_unet_mean)
-
-            val = msim[k]
-            if matching_type == "hungarian":
-                if metrics[k] == "max":
-                    val = -val
-                row_idx, col_idx = linear_sum_assignment(val)
-                unet_mean = msim[k][row_idx, col_idx].mean()
-            else:
-                if metrics[k] == "max":
-                    unet_mean = val.max()
-                else:
-                    unet_mean = val.min()
-            result["unet"][k].append(unet_mean)
 
         return result, fig
 
@@ -426,7 +455,7 @@ class ProbUNet(pl.LightningModule):
                 img_file = self.validation_directory.joinpath(
                     f"img_{info['case'][s]}_{info['z'][s]}.npy"
                 )
-                np.save(img_file, x[0].squeeze(0).cpu().numpy())
+                np.save(img_file, x[s].squeeze(0).cpu().numpy())
 
                 mask_file = self.validation_directory.joinpath(
                     f"mask_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
@@ -441,11 +470,11 @@ class ProbUNet(pl.LightningModule):
         for info in validation_step_outputs:
 
             for case, z, observer in zip(info["case"], info["z"], info["observer"]):
-
                 if not case in cases:
                     cases[case] = {"slices": z.item(), "observers": [observer]}
                 else:
                     if z.item() > cases[case]["slices"]:
+
                         cases[case]["slices"] = z.item()
                     if not observer in cases[case]["observers"]:
                         cases[case]["observers"].append(observer)
