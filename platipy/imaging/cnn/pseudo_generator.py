@@ -1,10 +1,10 @@
+import random
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
 
-import random
 
 from platipy.imaging.generation.image import insert_sphere
 from platipy.imaging import ImageVisualiser

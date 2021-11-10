@@ -33,6 +33,14 @@ from platipy.imaging.label.utils import get_com
 
 
 class LocaliseUNet(pl.LightningModule):
+    """Provides a Localisation UNet which can be used find the general area of an image where the
+    structures of interest are positioned. Would usually be used as a preprocessing step to another
+    network.
+
+    The Localise UNet operates only on 2D slices. It only uses two classes: foreground and
+    background.
+    """
+
     def __init__(
         self,
         **kwargs,
@@ -43,7 +51,7 @@ class LocaliseUNet(pl.LightningModule):
 
         self.unet = UNet(
             self.hparams.input_channels,
-            2, # num_classes is always 2 for the localise net, just separating forground from background
+            2,  # num_classes is always 2 for the localise net foreground from background)
             filters_per_layer=[32, 64, 128],
             final_layer=True,
         )
@@ -216,7 +224,7 @@ class LocaliseUNet(pl.LightningModule):
                 com = [int(i / 2) for i in mask.GetSize()]
 
             img_vis = ImageVisualiser(img, cut=com, figure_size_in=16)
-            #img_vis.set_limits_from_label(mask, expansion=[0, 0, 0])
+            # img_vis.set_limits_from_label(mask, expansion=[0, 0, 0])
 
             contour_dict = {**obs_dict}
             contour_dict["pred"] = pred
@@ -246,5 +254,5 @@ class LocaliseUNet(pl.LightningModule):
                 on_epoch=True,
                 prog_bar=False,
                 logger=True,
-                batch_size=self.hparams.batch_size
+                batch_size=self.hparams.batch_size,
             )

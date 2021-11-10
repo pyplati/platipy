@@ -75,7 +75,7 @@ class ProbUNet(pl.LightningModule):
         if self.hparams.prob_type == "prob":
             self.prob_unet = ProbabilisticUnet(
                 self.hparams.input_channels,
-                self.hparams.num_classes,
+                len(self.hparams.structures),
                 self.hparams.filters_per_layer,
                 self.hparams.latent_dim,
                 self.hparams.no_convs_fcomb,
@@ -86,7 +86,7 @@ class ProbUNet(pl.LightningModule):
         elif self.hparams.prob_type == "hierarchical":
             self.prob_unet = HierarchicalProbabilisticUnet(
                 input_channels=self.hparams.input_channels,
-                num_classes=self.hparams.num_classes,
+                num_classes=len(self.hparams.structures),
                 filters_per_layer=self.hparams.filters_per_layer,
                 down_channels_per_block=self.hparams.down_channels_per_block,
                 latent_dims=[self.hparams.latent_dim] * (len(self.hparams.filters_per_layer) - 1),
@@ -109,7 +109,6 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--learning_rate", type=float, default=1e-5)
         parser.add_argument("--lr_lambda", type=float, default=0.99)
         parser.add_argument("--input_channels", type=int, default=1)
-        parser.add_argument("--num_classes", type=int, default=2)
         parser.add_argument(
             "--filters_per_layer", nargs="+", type=int, default=[64 * (2 ** x) for x in range(5)]
         )
@@ -362,11 +361,14 @@ class ProbUNet(pl.LightningModule):
     def training_step(self, batch, _):
 
         x, y, m, _ = batch
+        # print(x.shape)
+        # print(y.shape)
+        # print(m.shape)
 
         # Add background layer for one-hot encoding
-        y = torch.unsqueeze(y, dim=1)
-        not_y = y.logical_not()
-        y = torch.cat((not_y, y), dim=1).float()
+        # y = torch.unsqueeze(y, dim=1)
+        # not_y = y.logical_not()
+        # y = torch.cat((not_y, y), dim=1).float()
 
         # self.prob_unet.forward(x, y, training=True)
         if self.hparams.prob_type == "prob":

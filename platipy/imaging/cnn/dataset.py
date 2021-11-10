@@ -409,7 +409,6 @@ class NiftiDataset(torch.utils.data.Dataset):
                             if label_file.exists():
                                 labels.append(label_file)
                             else:
-                                print(label_file)
                                 labels.append(None)
 
                             contour_mask_file = self.contour_mask_dir.joinpath(
@@ -467,7 +466,11 @@ class NiftiDataset(torch.utils.data.Dataset):
             contour_masks = {}
             for structure in structure_names:
                 contour_masks[structure] = get_contour_mask(
-                    [observers[obs][structure] for obs in case["observers"] if observers[obs][structure] is not None],
+                    [
+                        observers[obs][structure]
+                        for obs in case["observers"]
+                        if observers[obs][structure] is not None
+                    ],
                     kernel=contour_mask_kernel,
                 )
 
@@ -477,13 +480,21 @@ class NiftiDataset(torch.utils.data.Dataset):
                     if combine_observers == "union":
                         updated_observers[""][structure] = [
                             get_union_mask(
-                                [observers[obs][structure] for obs in case["observers"] if observers[obs][structure] is not None]
+                                [
+                                    observers[obs][structure]
+                                    for obs in case["observers"]
+                                    if observers[obs][structure] is not None
+                                ]
                             )
                         ]
                     elif combine_observers == "intersection":
                         updated_observers[""][structure] = [
                             get_intersection_mask(
-                                [observers[obs][structure] for obs in case["observers"] if observers[obs][structure] is not None]
+                                [
+                                    observers[obs][structure]
+                                    for obs in case["observers"]
+                                    if observers[obs][structure] is not None
+                                ]
                             )
                         ]
                     else:
@@ -555,7 +566,10 @@ class NiftiDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
 
         img = np.load(self.slices[index]["image"])
-        labels = [np.load(label_file) if label_file else np.zeros(img.shape, dtype=np.ushort) for label_file in self.slices[index]["labels"]]
+        labels = [
+            np.load(label_file) if label_file else np.zeros(img.shape, dtype=np.ushort)
+            for label_file in self.slices[index]["labels"]
+        ]
         contour_masks = [
             np.load(contour_mask_file) for contour_mask_file in self.slices[index]["contour_masks"]
         ]
@@ -568,15 +582,15 @@ class NiftiDataset(torch.utils.data.Dataset):
                 img, seg = self.transforms(image=img, segmentation_maps=segmap)
                 for idx, _ in enumerate(labels):
                     labels[idx] = seg.get_arr()[:, :, idx].squeeze()
-                contour_masks = seg.get_arr()[:, :, int(len(contour_masks) / 2) :].squeeze()
+                    contour_masks[idx] = seg.get_arr()[:, :, len(labels) + idx].squeeze()
             else:
                 for aug in self.transforms:
                     img, masks = aug.apply(img, masks)
-                labels = masks[: int(len(labels) / 2)]
-                contour_masks = masks[int(len(contour_masks) / 2) :]
+                labels = masks[: len(labels)]
+                contour_masks = masks[len(contour_masks) :]
 
         img = torch.FloatTensor(img)
-        label = torch.IntTensor(np.concatenate([np.expand_dims(l, 0) for l in labels], 0))
+        label = torch.FloatTensor(np.concatenate([np.expand_dims(l, 0) for l in labels], 0))
         contour_mask = torch.FloatTensor(
             np.concatenate([np.expand_dims(l, 0) for l in contour_masks], 0)
         )
