@@ -217,6 +217,7 @@ class ProbUNet(pl.LightningModule):
                     )
 
             img_arr = sitk.GetArrayFromImage(img)
+
             if self.hparams.ndims == 2:
                 slices = [img_arr[z, :, :] for z in range(img_arr.shape[0])]
             else:
@@ -261,9 +262,11 @@ class ProbUNet(pl.LightningModule):
             pred_arr = sample["preds"][0]
 
             if self.hparams.ndims == 2:
-                pred_arr = np.expand_dims(pred_arr, 0)
+                pred_arr = np.expand_dims(pred_arr, 1)
             if len(sample["preds"]) > 1:
-                pred_arr = np.stack(sample["preds"])
+                pred_arr = np.stack(sample["preds"], axis=1)
+
+            result[sample["name"]] = {}
 
             for idx, structure in enumerate(self.hparams.structures):
                 pred = sitk.GetImageFromArray(pred_arr[idx])
@@ -286,16 +289,19 @@ class ProbUNet(pl.LightningModule):
         result = {}
 
         contour_cmaps = ["RdPu", "YlOrRd", "GnBu"]
-        structures = self.hparmas.structures
+        structures = self.hparams.structures
 
-        vis = ImageVisualiser(
-            img, cut=get_com(mean["mean"][structures[0]]), figure_size_in=16, window=window
-        )
+        try:
+            cut = get_com(mean["mean"][structures[0]])
+        except ValueError:
+            cut = [int(i/2) for i in img.GetSize()][::-1]
+
+        vis = ImageVisualiser(img, cut=cut, figure_size_in=16, window=window)
 
         mean_contours = {}
         for idx, structure in enumerate(structures):
 
-            color_map = plt.cm.get_cmap(contour_cmaps[idx % len(len(structures))])
+            color_map = plt.cm.get_cmap(contour_cmaps[idx % len(structures)])
             mean_contours[f"mean_{structure}"] = mean["mean"][structure]
 
             vis.add_contour(mean_contours, color=color_map(0.35), linewidth=3, show_legend=False)
@@ -315,9 +321,9 @@ class ProbUNet(pl.LightningModule):
             union_mask = get_union_mask(manual_observers_struct)
 
             vis.add_contour(
-                intersection_mask, name="intersection", color=manual_color, linewidth=3
+                intersection_mask, name=f"intersection_{structure}", color=manual_color, linewidth=3
             )
-            vis.add_contour(union_mask, name="union", color=manual_color, linewidth=3)
+            vis.add_contour(union_mask, name=f"union_{structure}", color=manual_color, linewidth=3)
 
             samples_struct = {
                 f"{sample_struct}_{structure}": samples[sample_struct][structure]
@@ -347,7 +353,7 @@ class ProbUNet(pl.LightningModule):
                     sample_metrics = get_metrics(
                         manual_observers_struct[obs], samples_struct[samp]
                     )
-                    mean_metrics = get_metrics(manual_observers_struct[obs], mean["mean"])
+                    mean_metrics = get_metrics(manual_observers_struct[obs], mean_contours[f"mean_{structure}"])
 
                     for k in sample_metrics:
                         sim[k][sid, oid] = sample_metrics[k]
@@ -481,8 +487,8 @@ class ProbUNet(pl.LightningModule):
 
         metrics = ["DSC", "HD", "ASD"]
         computed_metrics = {
-            **{f"probnet_{m}": [] for m in metrics},
-            **{f"unet_{m}": [] for m in metrics},
+            **{f"probnet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
+            **{f"unet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
         }
 
         for case in cases:
@@ -544,11 +550,11 @@ class ProbUNet(pl.LightningModule):
                     mask.CopyInformation(img)
                     observers[f"manual_{observer}"][structure] = mask
 
-            try:
-                result, fig = self.validate(img, observers, samples, mean, matching_type="best")
-            except Exception as e:
-                print(f"ERROR DURING VALIDATION VALIDATE: {e}")
-                return
+            #try:
+            result, fig = self.validate(img, observers, samples, mean, matching_type="best")
+            #except Exception as e:
+            #    print(f"ERROR DURING VALIDATION VALIDATE: {e}")
+            #    return
 
             figure_path = f"valid_{case}.png"
             fig.savefig(figure_path, dpi=300)
@@ -565,8 +571,13 @@ class ProbUNet(pl.LightningModule):
                     computed_metrics[f"{t}_{m}"] += result[t][m]
 
         if self.kl_div:
-            p = np.array(computed_metrics["probnet_DSC"]).mean()
-            u = np.array(computed_metrics["unet_DSC"]).mean()
+            p = u = 0
+            for s in self.hparams.structures:
+                p += np.array(computed_metrics[f"probnet_{s}_DSC"]).mean()
+                u += np.array(computed_metrics[f"unet_{s}_DSC"]).mean()
+
+            p /= len(self.hparams.structures)
+            u /= len(self.hparams.structures)
             computed_metrics["scaled_DSC"] = ((p + u) / 2) + (p - u) - self.kl_div
 
         for cm in computed_metrics:
