@@ -79,7 +79,7 @@ class LocaliseUNet(pl.LightningModule):
     def infer(self, img):
 
         pp_img = preprocess_image(
-            img, spacing=self.hparams.spacing, crop_to_grid_size_xy=self.hparams.crop_to_mm
+            img, spacing=self.hparams.spacing, crop_to_grid_size_xy=self.hparams.crop_to_grid_size_xy
         )
 
         preds = []
