@@ -254,6 +254,7 @@ class ProbUNet(pl.LightningModule):
 
                     y = y.squeeze(0)
                     # y = np.argmax(y.cpu().detach().numpy(), axis=0)
+                    y = torch.sigmoid(y)
                     sample["preds"].append(y.cpu().detach().numpy())
 
         result = {}
