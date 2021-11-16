@@ -239,6 +239,8 @@ class ProbabilisticUnet(torch.nn.Module):
             self._contour_moving_avg = None
             self.register_buffer("_lambda", torch.zeros(2, requires_grad=False))
 
+        self.register_buffer("_pos_weight", torch.ones(num_classes, requires_grad=False))
+
     def forward(self, img, seg=None, training=False):
         """
         Construct prior latent space for patch and run patch through UNet,
@@ -324,33 +326,33 @@ class ProbabilisticUnet(torch.nn.Module):
     ):
         if mask is None or mask.sum() == 0:
             mask = torch.ones(n_pixels_in_batch)
+            mask = mask.to(device)
+
+            if top_k_percentage is not None:
+
+                assert 0.0 < top_k_percentage <= 1.0
+                k_pixels = int(n_pixels_in_batch * top_k_percentage)
+
+                with torch.no_grad():
+                    norm_xe = xe / torch.sum(xe)
+                    if deterministic:
+                        score = torch.log(norm_xe)
+                    else:
+                        # TODO Gumbel trick
+                        raise NotImplementedError("Still need to implement Gumbel trick")
+
+                    score = score + torch.log(mask.unsqueeze(1).repeat((1, num_classes)))
+
+                    top_k_mask = self.topk_mask(score, k_pixels)
+                    top_k_mask = top_k_mask.to(device)
+                    mask = mask * top_k_mask
+
+            mask = mask.unsqueeze(1).repeat((1, num_classes))
+
         else:
-            #            assert (
-            #                mask.shape == segm.shape
-            #            ), f"The loss mask shape differs from the target shape: {mask.shape} vs. {segm.shape}."
             mask = torch.reshape(mask, (-1,))
-        mask = mask.to(device)
 
-        if top_k_percentage is not None:
 
-            assert 0.0 < top_k_percentage <= 1.0
-            k_pixels = int(n_pixels_in_batch * top_k_percentage)
-
-            with torch.no_grad():
-                norm_xe = xe / torch.sum(xe)
-                if deterministic:
-                    score = torch.log(norm_xe)
-                else:
-                    # TODO Gumbel trick
-                    raise NotImplementedError("Still need to implement Gumbel trick")
-
-                score = score + torch.log(mask.unsqueeze(1).repeat((1, num_classes)))
-
-                top_k_mask = self.topk_mask(score, k_pixels)
-                top_k_mask = top_k_mask.to(device)
-                mask = mask * top_k_mask
-
-        mask = mask.unsqueeze(1).repeat((1, num_classes))
         mask = (
             mask.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
         )
@@ -366,8 +368,6 @@ class ProbabilisticUnet(torch.nn.Module):
         deterministic=True,
     ):
 
-        criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
-
         if z_posterior is None:
             z_posterior = self.posterior_latent_space.rsample()
 
@@ -380,6 +380,14 @@ class ProbabilisticUnet(torch.nn.Module):
         n_pixels_in_batch = y_flat.shape[0]
         batch_size = segm.shape[0]
 
+        pos_class_count = t_flat.sum(axis=0)/batch_size
+        neg_class_count = torch.logical_not(t_flat).sum(axis=0)/batch_size
+        self._pos_weight = self._pos_weight * 0.5 + pos_class_count/neg_class_count * 0.5
+        print(pos_class_count)
+        print(neg_class_count)
+        print(self._pos_weight)
+
+        criterion = torch.nn.BCEWithLogitsLoss(reduction="none", pos_weight=self._pos_weight)
         xe = criterion(input=y_flat, target=t_flat)
         xe = xe.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
 
