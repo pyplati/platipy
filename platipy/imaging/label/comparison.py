@@ -18,6 +18,7 @@ import SimpleITK as sitk
 
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
+
 def compute_volume(label):
     """Computes the volume in cubic centimetres
 
@@ -232,6 +233,12 @@ def compute_metric_masd(label_a, label_b, auto_crop=True):
     Returns:
         float: The mean absolute surface distance
     """
+    if (
+        sitk.GetArrayViewFromImage(label_a).sum() == 0
+        or sitk.GetArrayViewFromImage(label_b).sum() == 0
+    ):
+        return -1
+
     if auto_crop:
         largest_region = (label_a + label_b) > 0
         crop_box_size, crop_box_index = label_to_roi(largest_region)
@@ -267,6 +274,11 @@ def compute_metric_hd(label_a, label_b, auto_crop=True):
     Returns:
         float: The maximum Hausdorff distance
     """
+    if (
+        sitk.GetArrayViewFromImage(label_a).sum() == 0
+        or sitk.GetArrayViewFromImage(label_b).sum() == 0
+    ):
+        return -1
     if auto_crop:
         largest_region = (label_a + label_b) > 0
         crop_box_size, crop_box_index = label_to_roi(largest_region)
