@@ -147,7 +147,7 @@ def generate_valve_using_cylinder(
     # orientation_vector = f.GetPrincipalAxes(1)[:3]
 
     # Get the rotation parameters
-    rotation_angle = vector_angle(orientation_vector, (0, 0, 1))
+    rotation_angle = vector_angle(orientation_vector, (0, 0, 1), smallest=False)
     rotation_axis = np.cross(orientation_vector, (0, 0, 1))
 
     # Rotate the cylinder to define the valve
