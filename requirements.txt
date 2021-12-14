@@ -1,7 +1,7 @@
 numpy >= 1.19.5
 SimpleITK >= 2.0.2
 vtk >= 9.0.1
-scikit-image >= 0.17.2, < 0.18.0
+scikit-image >= 0.17.2
 click >= 7.1.2
 pydicom >= 2.1.2
 pynetdicom >= 1.5.7
