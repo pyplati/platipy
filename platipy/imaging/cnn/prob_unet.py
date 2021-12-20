@@ -382,10 +382,7 @@ class ProbabilisticUnet(torch.nn.Module):
 
         pos_class_count = t_flat.sum(axis=0)/batch_size
         neg_class_count = torch.logical_not(t_flat).sum(axis=0)/batch_size
-        self._pos_weight = self._pos_weight * 0.5 + pos_class_count/neg_class_count * 0.5
-        print(pos_class_count)
-        print(neg_class_count)
-        print(self._pos_weight)
+        self._pos_weight = self._pos_weight * 0.5 + (neg_class_count/pos_class_count).clamp(0, 10000) * 0.5
 
         criterion = torch.nn.BCEWithLogitsLoss(reduction="none", pos_weight=self._pos_weight)
         xe = criterion(input=y_flat, target=t_flat)
