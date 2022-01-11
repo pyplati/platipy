@@ -129,12 +129,11 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "isotropic_resample": True,
         "resolution_staging": [
             6,
-            4,
-            2,
-            1,
+            3,
+            1.5,
         ],  # specify voxel size (mm) since isotropic_resample is set
-        "iteration_staging": [200, 150, 125, 100],
-        "smoothing_sigmas": [0, 0, 0, 0],
+        "iteration_staging": [200, 150, 100],
+        "smoothing_sigmas": [0, 0, 0],
         "ncores": 8,
         "default_value": 0,
         "verbose": False,
