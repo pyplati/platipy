@@ -1281,6 +1281,7 @@ class ImageVisualiser:
 
                 ax_box = ax.get_position(original=False)
                 cbar_width = ax_box.width * 0.05  # 5% of axis width
+                cbar_color = "black"
 
                 if self.__axis == "ortho":
                     cax = self.__figure.add_axes(
@@ -1292,7 +1293,6 @@ class ImageVisualiser:
                         )
                     )
 
-                    cbar_color = "black"
                 else:
                     cax = self.__figure.add_axes(
                         (
