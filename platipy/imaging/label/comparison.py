@@ -237,7 +237,7 @@ def compute_metric_masd(label_a, label_b, auto_crop=True):
         sitk.GetArrayViewFromImage(label_a).sum() == 0
         or sitk.GetArrayViewFromImage(label_b).sum() == 0
     ):
-        return -1
+        return np.nan
 
     if auto_crop:
         largest_region = (label_a + label_b) > 0
@@ -278,7 +278,7 @@ def compute_metric_hd(label_a, label_b, auto_crop=True):
         sitk.GetArrayViewFromImage(label_a).sum() == 0
         or sitk.GetArrayViewFromImage(label_b).sum() == 0
     ):
-        return -1
+        return np.nan
     if auto_crop:
         largest_region = (label_a + label_b) > 0
         crop_box_size, crop_box_index = label_to_roi(largest_region)
