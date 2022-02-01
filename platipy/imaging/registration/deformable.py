@@ -151,7 +151,7 @@ def fast_symmetric_forces_demons_registration(
     initial_displacement_field=None,
     smoothing_sigma_factor=1,
     smoothing_sigmas=False,
-    default_value=-1000,
+    default_value=None,
     ncores=1,
     interp_order=2,
     verbose=False,
@@ -175,6 +175,8 @@ def fast_symmetric_forces_demons_registration(
                                             1 = Nearest neighbour
                                             2 = Bi-linear splines
                                             3 = B-Spline (cubic)
+
+        default_value (float) : Default voxel value. Defaults to 0 unless image is CT-like.
 
     Returns
         registered_image (sitk.Image)    : the registered moving image
@@ -224,6 +226,15 @@ def fast_symmetric_forces_demons_registration(
     resampler = sitk.ResampleImageFilter()
     resampler.SetReferenceImage(fixed_image)
     resampler.SetInterpolator(interp_order)
+
+    # Try to find default value
+    if default_value is None:
+        default_value = 0
+
+        # Test if image is CT-like
+        if sitk.GetArrayViewFromImage(moving_image).min() <= -1000:
+            default_value = -1000
+
     resampler.SetDefaultPixelValue(default_value)
 
     resampler.SetTransform(output_transform)
