@@ -85,10 +85,30 @@ def contour_comparison(
     if s_select is None:
         s_select = [i for i in contour_dict_a.keys() if i in contour_dict_b.keys()]
 
+    com = None
+
     # If there is no option for the COM structure we use the largest
-    if structure_for_com is None:
+    if (structure_for_com is None) and ("cut" not in img_vis_kw):
         s_vol = [sitk.GetArrayFromImage(contour_dict_a[s]).sum() for s in s_select]
-        structure_for_com = s_select[np.argmax(s_vol)]
+
+        # if all structures are zero, try the second contour set
+        if sum(s_vol) == 0:
+            s_vol = [sitk.GetArrayFromImage(contour_dict_b[s]).sum() for s in s_select]
+
+            # if all of these structures are also zero, we don't have any contours!
+            if sum(s_vol) == 0:
+                com = None
+
+            else:
+                com = get_com(contour_dict_b[s_select[np.argmax(s_vol)]])
+        else:
+            com = get_com(contour_dict_a[s_select[np.argmax(s_vol)]])
+
+    elif structure_for_com is not None:
+        com = get_com(contour_dict_a[structure_for_com])
+
+    else:
+        img_vis_kw["cut"] = com
 
     # Colormap options
     if isinstance(contour_cmap, (mcolors.ListedColormap, mcolors.LinearSegmentedColormap)):
@@ -111,7 +131,7 @@ def contour_comparison(
         colors_b = {s + "b": contour_cmap[s] for s in s_select}
 
     # Visualise!
-    vis = ImageVisualiser(img, cut=get_com(contour_dict_a[structure_for_com]), **img_vis_kw)
+    vis = ImageVisualiser(img, **img_vis_kw)
 
     # Add contour set A
     vis.add_contour(
@@ -174,7 +194,7 @@ def contour_comparison(
         ),  # plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select))),
         colLabels=columns,
         fontsize=10,
-        bbox=[0.35, 0.1, 0.63, v_extent],
+        bbox=[0.25, 0.1, 0.63, v_extent],
     )
 
     # Some nice formatting
