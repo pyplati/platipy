@@ -233,18 +233,18 @@ def compute_metric_masd(label_a, label_b, auto_crop=True):
     Returns:
         float: The mean absolute surface distance
     """
-    if (
-        sitk.GetArrayViewFromImage(label_a).sum() == 0
-        or sitk.GetArrayViewFromImage(label_b).sum() == 0
-    ):
-        return np.nan
-
     if auto_crop:
         largest_region = (label_a + label_b) > 0
         crop_box_size, crop_box_index = label_to_roi(largest_region)
 
         label_a = crop_to_roi(label_a, size=crop_box_size, index=crop_box_index)
         label_b = crop_to_roi(label_b, size=crop_box_size, index=crop_box_index)
+
+    if (
+        sitk.GetArrayViewFromImage(label_a).sum() == 0
+        or sitk.GetArrayViewFromImage(label_b).sum() == 0
+    ):
+        return np.nan
 
     mean_sd_list = []
     num_points = []
@@ -274,17 +274,19 @@ def compute_metric_hd(label_a, label_b, auto_crop=True):
     Returns:
         float: The maximum Hausdorff distance
     """
-    if (
-        sitk.GetArrayViewFromImage(label_a).sum() == 0
-        or sitk.GetArrayViewFromImage(label_b).sum() == 0
-    ):
-        return np.nan
+
     if auto_crop:
         largest_region = (label_a + label_b) > 0
         crop_box_size, crop_box_index = label_to_roi(largest_region)
 
         label_a = crop_to_roi(label_a, size=crop_box_size, index=crop_box_index)
         label_b = crop_to_roi(label_b, size=crop_box_size, index=crop_box_index)
+
+    if (
+        sitk.GetArrayViewFromImage(label_a).sum() == 0
+        or sitk.GetArrayViewFromImage(label_b).sum() == 0
+    ):
+        return np.nan
 
     hausdorff_distance = sitk.HausdorffDistanceImageFilter()
     hausdorff_distance.Execute(label_a, label_b)
