@@ -171,6 +171,8 @@ def linear_registration(
             registration.SetInitialTransform(sitk.AffineTransform(3))
         elif reg_method.lower() == "rigid":
             registration.SetInitialTransform(sitk.VersorRigid3DTransform())
+        elif reg_method.lower() == "scale":
+            registration.SetInitialTransform(sitk.ScaleTransform(3))
         elif reg_method.lower() == "scaleversor":
             registration.SetInitialTransform(sitk.ScaleVersor3DTransform())
         elif reg_method.lower() == "scaleskewversor":
@@ -235,7 +237,6 @@ def linear_registration(
     output_transform = registration.Execute(fixed=fixed_image, moving=moving_image)
     # Combine initial and optimised transform
     combined_transform = sitk.CompositeTransform([initial_transform, output_transform])
-
 
     # Try to find default value
     if default_value is None:
