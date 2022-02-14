@@ -18,10 +18,17 @@ import tempfile
 
 import imageio
 
-from PIL import Image
-
 import numpy as np
 import SimpleITK as sitk
+
+import matplotlib
+
+MATPLOTLIB_VERSION = matplotlib.__version__.split(".")
+MATPLOTLIB_MAJOR = int(MATPLOTLIB_VERSION[0])
+MATPLOTLIB_MINOR = int(MATPLOTLIB_VERSION[1])
+
+if MATPLOTLIB_MAJOR >= 3 and MATPLOTLIB_MINOR >= 4:
+    raise SystemError("Animation functionality requires a matplotlib version lower than 3.4.0")
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
