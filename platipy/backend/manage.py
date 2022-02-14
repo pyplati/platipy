@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from . import app
-from .models import db, APIKey
+import subprocess
 
 from sqlalchemy.exc import OperationalError
 import uuid
 import click
+
+from .models import db, APIKey
 
 
 def create_db():
@@ -44,7 +45,7 @@ def add_api_key(name, is_admin):
 
 @click.group()
 @click.pass_context
-def cli(ctx):
+def cli(_):
     pass
 
 
@@ -76,9 +77,7 @@ def key(ctx, add, list, super):
             for ak in APIKey.query.all():
                 click.echo(ak)
     except OperationalError as oe:
-        click.echo(
-            "An error occurred. Be sure to init the db with the 'initdb' command."
-        )
+        click.echo("An error occurred. Be sure to init the db with the 'initdb' command.")
 
 
 @cli.command()
@@ -88,6 +87,39 @@ def initdb(ctx):
     create_db()
 
     click.echo("DB Created")
+
+
+@cli.command()
+@click.pass_context
+@click.option("--ip", "-ip", help="IP address of service", required=True)
+@click.option("--ip", "-ip", help="IP address of service", required=True)
+def ssl(ctx, ip):
+
+    command = [
+        "openssl",
+        "req",
+        "-new",
+        "-x509",
+        "-days",
+        "365",
+        "-nodes",
+        "-subj",
+        f"/CN={ip}",
+        "-addext",
+        f"subjectAltName = IP:{ip}",
+        "-out",
+        "service.crt",
+        "-keyout",
+        "service.key",
+    ]
+
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+
+    click.echo(stdout)
+    click.echo(stderr)
+
+    click.echo("SSL Certificates Created. Service restart required.")
 
 
 if __name__ == "__main__":

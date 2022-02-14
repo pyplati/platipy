@@ -8,5 +8,13 @@ celery --app=service:celery beat --loglevel=INFO &
 celery --app=service:celery worker --loglevel=INFO &
 
 # Run the gunicorn server
-#exec gunicorn -b :8000  --certfile=service.crt --keyfile=service.key --timeout 300 --graceful-timeout 60 --access-logfile - --error-logfile - service:app
-exec gunicorn -b :8000  --timeout 300 --graceful-timeout 60 --access-logfile - --error-logfile - service:app
+CERT_FILE=service.crt
+KEY_FILE=service.key
+if [ -f "$CERT_FILE" ]; then
+    echo "SSL Certificates Found. Will serve over HTTPS."
+    exec gunicorn -b :8000  --certfile=service.crt --keyfile=service.key --timeout 300 --graceful-timeout 60 --access-logfile - --error-logfile - service:app
+else
+    echo "WARNING: No SSL certificates found. Generate them with 'manage ssl'."
+    echo "Running without SSL, not suitable for production use."
+    exec gunicorn -b :8000  --timeout 300 --graceful-timeout 60 --access-logfile - --error-logfile - service:app
+fi
