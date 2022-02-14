@@ -83,6 +83,7 @@ def linear_registration(
                                      - rigid
                                      - similarity
                                      - affine
+                                     - scale
                                      - scaleversor
                                      - scaleskewversor
                                     Defaults to "Similarity".
