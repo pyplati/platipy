@@ -90,7 +90,7 @@ def test_convert_dicom_to_nifti(dicom_data):
         assert np.allclose(mask.GetSpacing(), (0.97, 0.97, 3.0), atol=0.01)
         nda = sitk.GetArrayFromImage(mask)
 
-        assert nda.sum() == 261048
+        assert nda.sum() == 263237
 
 
 def test_convert_nifti_to_dicom(nifti_data, dicom_data):
