@@ -19,6 +19,8 @@ import numpy as np
 
 import SimpleITK as sitk
 
+import pandas as pd
+
 import matplotlib.lines as mlines
 import matplotlib as plt
 import matplotlib.colors as mcolors
@@ -46,7 +48,6 @@ def contour_comparison(
     subsubtitle="",
     contour_cmap=plt.cm.get_cmap("rainbow"),
     structure_name_dict=None,
-    df_metrics=None,
     img_vis_kw={},
 ):
     """Generates a custom figure for comparing two sets of contours (delineations) on an image.
@@ -76,8 +77,6 @@ def contour_comparison(
             Defaults to plt.cm.get_cmap("rainbow").
         structure_name_dict (dict, optional): A "translation" dictionary used to overwrite the
             names of contours in the metric table. Defaults to using the names in the contour_dict.
-        df_metrics (pd.DataFrame, optional): A dataframe in which to insert the contouring metrics.
-            If this is None, nothing will happen, otherwise another row will be inserted.
         img_vis_kw (dict, optional): Passed to the ImageVisualiser class. Defaults to {}.
 
     Returns:
@@ -179,16 +178,38 @@ def contour_comparison(
         rows = s_select
 
     # Compute some metrics
+    df_metrics = pd.DataFrame(
+        columns=["STRUCTURE", "DSC", "MDA_mm", "HD_mm", "VOL_A_cm3", "VOL_B_cm3"]
+    )
     columns = ("DSC", "MDA\n[mm]", "HD\n[mm]", "Vol.\nRatio")
     cell_text = []
     for s, row in zip(s_select, rows):
+        dsc = compute_metric_dsc(contour_dict_a[s], contour_dict_b[s])
+        mda = compute_metric_masd(contour_dict_a[s], contour_dict_b[s])
+        hd = compute_metric_hd(contour_dict_a[s], contour_dict_b[s])
+        vol_a = compute_volume(contour_dict_a[s])
+        vol_b = compute_volume(contour_dict_b[s])
+
         cell_text.append(
             [
-                f"{compute_metric_dsc(contour_dict_a[s],contour_dict_b[s]):.2f}",
-                f"{compute_metric_masd(contour_dict_a[s],contour_dict_b[s]):.2f}",
-                f"{compute_metric_hd(contour_dict_a[s],contour_dict_b[s]):.2f}",
-                f"{compute_volume(contour_dict_b[s])/compute_volume(contour_dict_a[s]):.2f}",
+                f"{dsc:.2f}",
+                f"{mda:.2f}",
+                f"{hd:.2f}",
+                f"{vol_b/vol_a:.2f}",
             ]
+        )
+
+        # compute metrics and add to dataframe
+        df_metrics = df_metrics.append(
+            {
+                "STRUCTURE": s,
+                "DSC": dsc,
+                "MDA_mm": mda,
+                "HD_mm": hd,
+                "VOL_A_cm3": vol_a,
+                "VOL_B_cm3": vol_b,
+            },
+            ignore_index=True,
         )
 
     # If there are no labels we can make the table bigger
@@ -261,4 +282,4 @@ def contour_comparison(
     )
 
     # Return the figure
-    return fig
+    return fig, df_metrics
