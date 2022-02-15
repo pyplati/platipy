@@ -449,6 +449,7 @@ class ImageVisualiser:
 
         self.__figure.canvas.draw()
         self._add_legend()
+        self.__figure.set_facecolor("white")
 
         return self.__figure
 
