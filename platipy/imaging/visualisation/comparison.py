@@ -46,6 +46,7 @@ def contour_comparison(
     subsubtitle="",
     contour_cmap=plt.cm.get_cmap("rainbow"),
     structure_name_dict=None,
+    df_metrics=None,
     img_vis_kw={},
 ):
     """Generates a custom figure for comparing two sets of contours (delineations) on an image.
@@ -75,6 +76,8 @@ def contour_comparison(
             Defaults to plt.cm.get_cmap("rainbow").
         structure_name_dict (dict, optional): A "translation" dictionary used to overwrite the
             names of contours in the metric table. Defaults to using the names in the contour_dict.
+        df_metrics (pd.DataFrame, optional): A dataframe in which to insert the contouring metrics.
+            If this is None, nothing will happen, otherwise another row will be inserted.
         img_vis_kw (dict, optional): Passed to the ImageVisualiser class. Defaults to {}.
 
     Returns:
@@ -85,30 +88,41 @@ def contour_comparison(
     if s_select is None:
         s_select = [i for i in contour_dict_a.keys() if i in contour_dict_b.keys()]
 
-    com = None
+    if "cut" not in img_vis_kw:
 
-    # If there is no option for the COM structure we use the largest
-    if (structure_for_com is None) and ("cut" not in img_vis_kw):
-        s_vol = [sitk.GetArrayFromImage(contour_dict_a[s]).sum() for s in s_select]
+        cut = None
 
-        # if all structures are zero, try the second contour set
-        if sum(s_vol) == 0:
-            s_vol = [sitk.GetArrayFromImage(contour_dict_b[s]).sum() for s in s_select]
+        # first check if the user has specified a structure
+        if structure_for_com is None:
+            # If there is no option for the COM structure we use the largest
+            # first calculate the "volume" of each structure (actually the sum of voxels)
+            s_vol = [sitk.GetArrayFromImage(contour_dict_a[s]).sum() for s in s_select]
 
-            # if all of these structures are also zero, we don't have any contours!
             if sum(s_vol) == 0:
-                com = None
+                # if all structures are zero, try the second contour set
+                s_vol = [sitk.GetArrayFromImage(contour_dict_b[s]).sum() for s in s_select]
 
+                if sum(s_vol) == 0:
+                    # if all of these structures are also zero, we don't have any contours!
+                    cut = None
+
+                else:
+                    # otherwise, get the COM of the largest structure (in contour_set_b)
+                    cut = get_com(contour_dict_b[s_select[np.argmax(s_vol)]])
             else:
-                com = get_com(contour_dict_b[s_select[np.argmax(s_vol)]])
+                # otherwise, get the COM of the largest structure (in contour_set_a)
+                cut = get_com(contour_dict_a[s_select[np.argmax(s_vol)]])
+
         else:
-            com = get_com(contour_dict_a[s_select[np.argmax(s_vol)]])
+            # the user has specified a structure
+            # first, check the structure isn't empty!
+            if sitk.GetArrayFromImage(contour_dict_a[structure_for_com]).sum() != 0:
+                cut = get_com(contour_dict_a[structure_for_com])
+            # if it is, try the same structure in contour_set_b
+            elif sitk.GetArrayFromImage(contour_dict_b[structure_for_com]).sum() != 0:
+                cut = get_com(contour_dict_b[structure_for_com])
 
-    elif structure_for_com is not None:
-        com = get_com(contour_dict_a[structure_for_com])
-
-    else:
-        img_vis_kw["cut"] = com
+        img_vis_kw["cut"] = cut
 
     # Colormap options
     if isinstance(contour_cmap, (mcolors.ListedColormap, mcolors.LinearSegmentedColormap)):
@@ -189,12 +203,10 @@ def contour_comparison(
     table = ax.table(
         cellText=cell_text,
         rowLabels=rows,
-        rowColours=list(
-            colors_a.values()
-        ),  # plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select))),
+        rowColours=list(colors_a.values()),
         colLabels=columns,
         fontsize=10,
-        bbox=[0.25, 0.1, 0.63, v_extent],
+        bbox=[0.25, 0.1, 0.73, v_extent],
     )
 
     # Some nice formatting
@@ -214,7 +226,7 @@ def contour_comparison(
         table[row, 2].set_width(0.1)
         table[row, 3].set_width(0.1)
         if row > 0:
-            table[row, -1].set_width(0.1)
+            table[row, -1].set_width(0)
 
     for col in range(len(columns)):
         table[0, col].set_height(0.075)
@@ -240,7 +252,7 @@ def contour_comparison(
     _dashed = mlines.Line2D([], [], color="k", linestyle="dashed", label=contour_label_b)
     ax.legend(
         handles=[_solid, _dashed],
-        bbox_to_anchor=(0.35, 0.02, 0.63, 0.1),
+        bbox_to_anchor=(0.25, 0.02, 0.73, 0.1),
         ncol=2,
         mode="expand",
         borderaxespad=0.0,
