@@ -2,7 +2,7 @@
 <html class="no-js">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
 
     <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
@@ -145,95 +145,8 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </section>
-<section id="module-platipy.imaging.visualisation.animation">
-<span id="platipy-imaging-visualisation-animation-module"></span><h2>platipy.imaging.visualisation.animation module<a class="headerlink" href="#module-platipy.imaging.visualisation.animation" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt id="platipy.imaging.visualisation.animation.FileWriter">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.animation.</span></code><code class="sig-name descname"><span class="pre">FileWriter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.animation.FileWriter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.animation.FileMovieWriter</span></code></p>
-<p>Class to write image frames for animation</p>
-<dl class="py method">
-<dt id="platipy.imaging.visualisation.animation.FileWriter.finish">
-<code class="sig-name descname"><span class="pre">finish</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.animation.FileWriter.finish" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finish any processing for writing the movie.</p>
-</dd></dl>
-<dl class="py method">
-<dt id="platipy.imaging.visualisation.animation.FileWriter.grab_frame">
-<code class="sig-name descname"><span class="pre">grab_frame</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">savefig_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.animation.FileWriter.grab_frame" title="Permalink to this definition">¶</a></dt>
-<dd><p>Grab the image information from the figure and save as a movie frame.</p>
-<p>All keyword arguments in <em>savefig_kwargs</em> are passed on to the
-<cite>~.Figure.savefig</cite> call that saves the figure.</p>
-</dd></dl>
-<dl class="py method">
-<dt id="platipy.imaging.visualisation.animation.FileWriter.setup">
-<code class="sig-name descname"><span class="pre">setup</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_prefix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.animation.FileWriter.setup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setup for writing the movie file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fig</strong> (<cite>~matplotlib.figure.Figure</cite>) – The figure to grab the rendered frames from.</p></li>
-<li><p><strong>outfile</strong> (<em>str</em>) – The filename of the resulting movie file.</p></li>
-<li><p><strong>dpi</strong> (<em>float</em><em>, </em><em>optional</em>) – The dpi of the output file. This, with the figure size,
-controls the size in pixels of the resulting movie file.
-Default is <code class="docutils literal notranslate"><span class="pre">fig.dpi</span></code>.</p></li>
-<li><p><strong>frame_prefix</strong> (<em>str</em><em>, </em><em>optional</em>) – The filename prefix to use for temporary files.  If None (the
-default), files are written to a temporary directory which is
-deleted by <cite>cleanup</cite> (regardless of the value of <em>clear_temp</em>).</p></li>
-<li><p><strong>clear_temp</strong> (<em>bool</em><em>, </em><em>optional</em>) – If the temporary files should be deleted after stitching
-the final result.  Setting this to <code class="docutils literal notranslate"><span class="pre">False</span></code> can be useful for
-debugging.  Defaults to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py attribute">
-<dt id="platipy.imaging.visualisation.animation.FileWriter.supported_formats">
-<code class="sig-name descname"><span class="pre">supported_formats</span></code><em class="property"> <span class="pre">=</span> <span class="pre">['png']</span></em><a class="headerlink" href="#platipy.imaging.visualisation.animation.FileWriter.supported_formats" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-</dd></dl>
-<dl class="py function">
-<dt id="platipy.imaging.visualisation.animation.generate_animation_from_image_sequence">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.animation.</span></code><code class="sig-name descname"><span class="pre">generate_animation_from_image_sequence</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">image_list,</span> <span class="pre">output_file='animation.gif',</span> <span class="pre">fps=10,</span> <span class="pre">contour_list=None,</span> <span class="pre">scalar_list=None,</span> <span class="pre">figure_size_in=6,</span> <span class="pre">image_cmap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;,</span> <span class="pre">contour_cmap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;,</span> <span class="pre">scalar_cmap=&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;,</span> <span class="pre">image_window=[-1000,</span> <span class="pre">800],</span> <span class="pre">scalar_min=None,</span> <span class="pre">scalar_max=None,</span> <span class="pre">scalar_alpha=0.5,</span> <span class="pre">image_origin='lower',</span> <span class="pre">contour_kwargs={}</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.animation.generate_animation_from_image_sequence" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates an animation from a list of images, with optional scalar overlay and contours.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>image_list</strong> (<em>list</em><em> (</em><em>SimpleITK.Image</em><em>)</em>) – A list of SimpleITK (2D) images.</p></li>
-<li><p><strong>output_file</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the output file. Defaults to “animation.gif”.</p></li>
-<li><p><strong>fps</strong> (<em>int</em><em>, </em><em>optional</em>) – Frames per second. Defaults to 10.</p></li>
-<li><p><strong>contour_list</strong> (<em>list</em><em> (</em><em>SimpleITK.Image</em><em>)</em><em>, </em><em>optional</em>) – A list of SimpleITK (2D) images
-(overlay as scalar field). Defaults to False.</p></li>
-<li><p><strong>scalar_list</strong> (<em>list</em><em> (</em><em>SimpleITK.Image</em><em>)</em><em>, </em><em>optional</em>) – A list of SimpleITK (2D) images
-(overlay as contours). Defaults to False.</p></li>
-<li><p><strong>figure_size_in</strong> (<em>int</em><em>, </em><em>optional</em>) – Size of the figure. Defaults to 6.</p></li>
-<li><p><strong>image_cmap</strong> (<em>matplotlib.colors.ListedColormap</em><em>, </em><em>optional</em>) – Colormap to use for the image.
-Defaults to plt.cm.get_cmap(“Greys_r”).</p></li>
-<li><p><strong>contour_cmap</strong> (<em>matplotlib.colors.ListedColormap</em><em>, </em><em>optional</em>) – Colormap to use for contours.
-Defaults to plt.cm.get_cmap(“jet”).</p></li>
-<li><p><strong>scalar_cmap</strong> (<em>matplotlib.colors.ListedColormap</em><em>, </em><em>optional</em>) – Colormap to use for scalar field.
-Defaults to plt.cm.get_cmap(“magma”).</p></li>
-<li><p><strong>image_window</strong> (<em>list</em><em>, </em><em>optional</em>) – Image intensity window (mininmum, range).
-Defaults to [-1000, 800].</p></li>
-<li><p><strong>scalar_min</strong> (<em>bool</em><em>, </em><em>optional</em>) – Minimum scalar value to show. Defaults to False.</p></li>
-<li><p><strong>scalar_max</strong> (<em>bool</em><em>, </em><em>optional</em>) – Maximum scalar value to show. Defaults to False.</p></li>
-<li><p><strong>scalar_alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Alpha (transparency) for scalar field. Defaults to 0.5.</p></li>
-<li><p><strong>image_origin</strong> (<em>str</em><em>, </em><em>optional</em>) – Image origin. Defaults to “lower”.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>RuntimeError</strong> – If ImageMagick isn’t installed you cannot use this function!</p></li>
-<li><p><strong>ValueError</strong> – The list of images must be of type SimpleITK.Image</p></li>
-</ul>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The animation.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>matplotlib.animation</p>
-</dd>
-</dl>
-</dd></dl>
+<section id="platipy-imaging-visualisation-animation-module">
+<h2>platipy.imaging.visualisation.animation module<a class="headerlink" href="#platipy-imaging-visualisation-animation-module" title="Permalink to this headline">¶</a></h2>
 </section>
 <section id="module-platipy.imaging.visualisation.utils">
 <span id="platipy-imaging-visualisation-utils-module"></span><h2>platipy.imaging.visualisation.utils module<a class="headerlink" href="#module-platipy.imaging.visualisation.utils" title="Permalink to this headline">¶</a></h2>
@@ -263,7 +176,7 @@ Defaults to [-1000, 800].</p></li>
 </dd></dl>
 <dl class="py class">
 <dt id="platipy.imaging.visualisation.utils.VisualiseScalarOverlay">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.utils.</span></code><code class="sig-name descname"><span class="pre">VisualiseScalarOverlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">image</span></em>, <em class="sig-param"><span class="pre">name</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">min_value=False</span></em>, <em class="sig-param"><span class="pre">max_value=False</span></em>, <em class="sig-param"><span class="pre">discrete_levels=False</span></em>, <em class="sig-param"><span class="pre">mid_ticks=False</span></em>, <em class="sig-param"><span class="pre">show_colorbar=True</span></em>, <em class="sig-param"><span class="pre">norm=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.utils.VisualiseScalarOverlay" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.utils.</span></code><code class="sig-name descname"><span class="pre">VisualiseScalarOverlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">image</span></em>, <em class="sig-param"><span class="pre">name</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">min_value=False</span></em>, <em class="sig-param"><span class="pre">max_value=False</span></em>, <em class="sig-param"><span class="pre">discrete_levels=False</span></em>, <em class="sig-param"><span class="pre">mid_ticks=False</span></em>, <em class="sig-param"><span class="pre">show_colorbar=True</span></em>, <em class="sig-param"><span class="pre">norm=None</span></em>, <em class="sig-param"><span class="pre">projection=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.utils.VisualiseScalarOverlay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class to represent the visualiation of a scalar overlay</p>
 </dd></dl>
@@ -282,7 +195,7 @@ Defaults to [-1000, 800].</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.utils.</span></code><code class="sig-name descname"><span class="pre">project_onto_arbitrary_plane</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample_interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.utils.project_onto_arbitrary_plane" title="Permalink to this definition">¶</a></dt>
 <dd><p>[summary]</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image</strong> (<em>[</em><em>type</em><em>]</em>) – [description]</p></li>
 <li><p><strong>projection_name</strong> (<em>str</em><em>, </em><em>optional</em>) – [description]. Defaults to “mean”.</p></li>
@@ -293,10 +206,10 @@ Defaults to [-1000, 800].</p></li>
 <li><p><strong>resample_interpolation</strong> (<em>int</em><em>, </em><em>optional</em>) – [description]. Defaults to 2.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>[description]</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[type]</p>
 </dd>
 </dl>
@@ -307,7 +220,7 @@ Defaults to [-1000, 800].</p></li>
 <dd><p>Reorients vector field components for rendering
 This is necessary after converting from sitk.Image to np.array</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>axis</strong> (<em>str</em>) – One of “x”, “y” or “z”</p></li>
 <li><p><strong>vector_ax</strong> (<em>np.array</em>) – The first vector component (z)</p></li>
@@ -315,10 +228,10 @@ This is necessary after converting from sitk.Image to np.array</p>
 <li><p><strong>vector_sag</strong> (<em>np.array</em>) – The third vector component (x)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the re-oriented vector field components</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
@@ -328,16 +241,16 @@ This is necessary after converting from sitk.Image to np.array</p>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.utils.</span></code><code class="sig-name descname"><span class="pre">return_slice</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.utils.return_slice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares a slice tuple to use for extracting a slice for rendering</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>axis</strong> (<em>str</em>) – One of “x”, “y” or “z”</p></li>
 <li><p><strong>index</strong> (<em>int</em>) – The index of the slice to fetch</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>can be used to extract a slice</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
@@ -347,17 +260,17 @@ This is necessary after converting from sitk.Image to np.array</p>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.utils.</span></code><code class="sig-name descname"><span class="pre">subsample_vector_field</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.utils.subsample_vector_field" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares a slice tuple to use for extracting a slice for rendering</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>axis</strong> (<em>str</em>) – One of “x”, “y” or “z”</p></li>
 <li><p><strong>cut</strong> (<em>int</em>) – The index of the image slice</p></li>
 <li><p><strong>subsample</strong> (<em>int</em>) – the subsample factor</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>can be used to extract a vector field slice</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
@@ -367,17 +280,17 @@ This is necessary after converting from sitk.Image to np.array</p>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.utils.</span></code><code class="sig-name descname"><span class="pre">vector_image_grid</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_field_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.utils.vector_image_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares a grid for rendering a vector field on an image</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>axis</strong> (<em>str</em>) – One of “x”, “y” or “z”</p></li>
 <li><p><strong>vector_field_array</strong> (<em>np.array</em>) – the vector field array</p></li>
 <li><p><strong>subsample</strong> (<em>int</em>) – the subsample factor</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>defines the 2 dimensional grid for displaying vectors</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
@@ -396,7 +309,7 @@ boxes.</p>
 <code class="sig-name descname"><span class="pre">add_bounding_box</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding_box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_bounding_box" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a bounding box to draw.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>bounding_box</strong> (<em>dict|list|tuple|sitk.Image</em>) – Dictionary of bounding boxes where list key
 is the name of the bounding box. If list or tuple then pass
@@ -409,7 +322,7 @@ Defaults to None.</p></li>
 <li><p><strong>linewidth</strong> (<em>int</em><em>, </em><em>optional</em>) – The line width of the bounding box(es). Defaults to 2.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – Raised if input is not a list or tuple of length 6 or and sitk.Image.</p>
 </dd>
 </dl>
@@ -419,14 +332,14 @@ Defaults to None.</p></li>
 <code class="sig-name descname"><span class="pre">add_comparison_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.35</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_comparison_overlay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overlay a comparison image on the existing image</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sitk.Image</strong><strong>)</strong> (<em>image</em>) – Image (will be displayed as a comparison).</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name to give the image. Defaults to None.</p></li>
 <li><p><strong>color_rotation</strong> (<em>float</em><em>, </em><em>optional</em>) – Defines the hue of the original image (0 - 0.5).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – Comparison overlay must be of type sitk.Image.</p>
 </dd>
 </dl>
@@ -436,7 +349,7 @@ Defaults to None.</p></li>
 <code class="sig-name descname"><span class="pre">add_contour</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">contour</span></em>, <em class="sig-param"><span class="pre">name=None</span></em>, <em class="sig-param"><span class="pre">color=None</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">linewidth=2</span></em>, <em class="sig-param"><span class="pre">linestyle='solid'</span></em>, <em class="sig-param"><span class="pre">show_legend=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_contour" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a contour as overlay</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>contour</strong> (<em>sitk.Image|dict</em>) – Contour mask or dict containing contour masks.</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name to give the contour (only used if passing sitk.Image as
@@ -445,7 +358,7 @@ contour). Defaults to None.</p></li>
 Defaults to None.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>ValueError</strong> – Contour must be dict of sitk.Image.</p></li>
 <li><p><strong>ValueError</strong> – If passing a dict for contour, all values must be sitk.Image.</p></li>
@@ -455,10 +368,10 @@ Defaults to None.</p></li>
 </dd></dl>
 <dl class="py method">
 <dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_scalar_overlay">
-<code class="sig-name descname"><span class="pre">add_scalar_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">scalar_image</span></em>, <em class="sig-param"><span class="pre">name=None</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">min_value=False</span></em>, <em class="sig-param"><span class="pre">max_value=False</span></em>, <em class="sig-param"><span class="pre">discrete_levels=False</span></em>, <em class="sig-param"><span class="pre">mid_ticks=False</span></em>, <em class="sig-param"><span class="pre">show_colorbar=True</span></em>, <em class="sig-param"><span class="pre">norm=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_scalar_overlay" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">add_scalar_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">scalar_image</span></em>, <em class="sig-param"><span class="pre">name=None</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">min_value=False</span></em>, <em class="sig-param"><span class="pre">max_value=False</span></em>, <em class="sig-param"><span class="pre">discrete_levels=False</span></em>, <em class="sig-param"><span class="pre">mid_ticks=False</span></em>, <em class="sig-param"><span class="pre">show_colorbar=True</span></em>, <em class="sig-param"><span class="pre">norm=None</span></em>, <em class="sig-param"><span class="pre">projection=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_scalar_overlay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overlay a scalar image on to the existing image</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sitk.Image|dict</strong><strong>)</strong> (<em>scalar_image</em>) – Scalar image or dict containing scalar images.</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name to give the scalar image (only used if passing sitk.Image as
@@ -470,7 +383,7 @@ to plt.cm.get_cmap(“Spectral”).</p></li>
 <li><p><strong>min_value</strong> (<em>float</em><em>, </em><em>optional</em>) – Values below this value aren’t rendered. Defaults to 0.1.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>ValueError</strong> – Scalar overlay must be dict of sitk.Image.</p></li>
 <li><p><strong>ValueError</strong> – If passing a dict for contour, all values must be sitk.Image.</p></li>
@@ -483,7 +396,7 @@ to plt.cm.get_cmap(“Spectral”).</p></li>
 <code class="sig-name descname"><span class="pre">add_vector_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">vector_image</span></em>, <em class="sig-param"><span class="pre">min_value=False</span></em>, <em class="sig-param"><span class="pre">max_value=False</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">arrow_scale=0.25</span></em>, <em class="sig-param"><span class="pre">arrow_width=1</span></em>, <em class="sig-param"><span class="pre">subsample=4</span></em>, <em class="sig-param"><span class="pre">color_function='perpendicular'</span></em>, <em class="sig-param"><span class="pre">show_colorbar=True</span></em>, <em class="sig-param"><span class="pre">name=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_vector_overlay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overlay a vector field on to the existing image</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sitk.Image|dict</strong><strong>)</strong> (<em>vector_image</em>) – Vector image (will be displayed as ).</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name to give the vector field (only used if passing
@@ -502,7 +415,7 @@ value
 ‘magnitude’ - vectors colored by magnitude.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – Vector overlay must be of type sitk.Image.</p>
 </dd>
 </dl>
@@ -529,7 +442,7 @@ value
 <code class="sig-name descname"><span class="pre">set_limits_from_label</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.set_limits_from_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the limits of the axes to the bounds of the given label.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<em>sitk.Image</em>) – The label around which to set the limits</p></li>
 <li><p><strong>expansion</strong> (<em>list</em><em>, </em><em>optional</em>) – Expansion (in mm) around the label. Defaults to [0, 0, 0].</p></li>
@@ -558,7 +471,7 @@ value
         </div>
 
         <div class="related-information">
-              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
             |
             <a class="muted-link" href="../_sources/gen/platipy.imaging.visualisation.rst.txt"
                rel="nofollow">
@@ -582,7 +495,7 @@ value
             <ul>
 <li><a class="reference internal" href="#">platipy.imaging.visualisation package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-platipy.imaging.visualisation.animation">platipy.imaging.visualisation.animation module</a></li>
+<li><a class="reference internal" href="#platipy-imaging-visualisation-animation-module">platipy.imaging.visualisation.animation module</a></li>
 <li><a class="reference internal" href="#module-platipy.imaging.visualisation.utils">platipy.imaging.visualisation.utils module</a></li>
 <li><a class="reference internal" href="#module-platipy.imaging.visualisation.visualiser">platipy.imaging.visualisation.visualiser module</a></li>
 <li><a class="reference internal" href="#module-platipy.imaging.visualisation">Module contents</a></li>

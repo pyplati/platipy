@@ -2,7 +2,7 @@
 <html class="no-js">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Dose" href="dose.html" /><link rel="prev" title="Image Visualiser" href="visualiser.html" />
 
     <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
@@ -151,7 +151,7 @@
 <p>This function now utilises the rt-utils package: <a class="reference external" href="https://github.com/qurit/rt-utils">https://github.com/qurit/rt-utils</a>
 We keep this function in here for compatibility</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dcm_path</strong> (<em>str|pathlib.Path</em>) – Path to the reference DICOM series</p></li>
 <li><p><strong>mask_input</strong> (<em>dict|list</em>) – A dictionary containing the name as key and image as value. Or a
@@ -175,11 +175,11 @@ color_map (matplotlib.colors.Colormap, optional): Colormap to use for output. De
 <dd><p>Convert a DICOM RTSTRUCT to NIFTI masks.</p>
 <p>The masks are stored as NIFTI files in the output directory</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dcm_img</strong> (<em>str|pathlib.Path</em>) – Path to the reference DICOM image series</p></li>
 <li><p><strong>dcm_rt_file</strong> (<em>str|pathlib.Path</em>) – Path to the DICOM RTSTRUCT file</p></li>
-<li><p><strong>prefix</strong> (<em>str</em><em>, </em><em>optional</em>) – The prefix to give the output files. Defaults to “<a href="#id1"><span class="problematic" id="id2">Struct_</span></a>”.</p></li>
+<li><p><strong>prefix</strong> (<em>str</em><em>, </em><em>optional</em>) – The prefix to give the output files. Defaults to “<a href="#system-message-1"><span class="problematic" id="problematic-1">Struct_</span></a>”.</p></li>
 <li><p><strong>output_dir</strong> (<em>str|pathlib.Path</em><em>, </em><em>optional</em>) – Path to the output directory. Defaults to “.”.</p></li>
 <li><p><strong>output_img</strong> (<em>str|pathlib.Path</em><em>, </em><em>optional</em>) – If set, write the reference image to this file as
 in NIFTI format. Defaults to None.</p></li>
@@ -193,13 +193,13 @@ in NIFTI format. Defaults to None.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.dicom.io.rtstruct_to_nifti.</span></code><code class="sig-name descname"><span class="pre">fix_missing_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contour_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.io.rtstruct_to_nifti.fix_missing_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fixed a set of contour data if there are values missing</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>contour_data</strong> (<em>pydicom.Sequence</em>) – The contour sequence from the DICOM object</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The array of contour data with missing values fixed</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -209,13 +209,13 @@ in NIFTI format. Defaults to None.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.dicom.io.rtstruct_to_nifti.</span></code><code class="sig-name descname"><span class="pre">read_dicom_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dicom_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.io.rtstruct_to_nifti.read_dicom_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a DICOM image series</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>dicom_path</strong> (<em>str|pathlib.Path</em>) – Path to the DICOM series to read</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The image as a SimpleITK Image</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>sitk.Image</p>
 </dd>
 </dl>
@@ -225,13 +225,13 @@ in NIFTI format. Defaults to None.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.dicom.io.rtstruct_to_nifti.</span></code><code class="sig-name descname"><span class="pre">read_dicom_struct_file</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.io.rtstruct_to_nifti.read_dicom_struct_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a DICOM RTSTRUCT file</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>filename</strong> (<em>str|pathlib.Path</em>) – Path to the RTSTRUCT to read</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The RTSTRUCT as a DICOM Dataset</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pydicom.Dataset</p>
 </dd>
 </dl>
@@ -241,17 +241,17 @@ in NIFTI format. Defaults to None.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.dicom.io.rtstruct_to_nifti.</span></code><code class="sig-name descname"><span class="pre">transform_point_set_from_dicom_struct</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dicom_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dicom_struct</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing_override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.io.rtstruct_to_nifti.transform_point_set_from_dicom_struct" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a set of points from a DICOM RTSTRUCT into a mask array</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dicom_image</strong> (<em>sitk.Image</em>) – The reference image</p></li>
 <li><p><strong>dicom_struct</strong> (<em>pydicom.Dataset</em>) – The DICOM RTSTRUCT</p></li>
 <li><p><strong>spacing_override</strong> (<em>list</em>) – The spacing to override. Defaults to None</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Returns a list of masks and a list of structure names</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
@@ -264,17 +264,17 @@ in NIFTI format. Defaults to None.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.dicom.io.rtdose_to_nifti.</span></code><code class="sig-name descname"><span class="pre">convert_rtdose</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dcm_dose</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dose_output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.io.rtdose_to_nifti.convert_rtdose" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert DICOM RTDose to SimpleITK image, saving as NiFTI if needed.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dcm_dose</strong> (<em>str|path</em>) – Path to DICOM dose file</p></li>
 <li><p><strong>dose_output_path</strong> (<em>str|path</em><em>, </em><em>optional</em>) – If set, NiFTI file will be written. Defaults to
 None.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The dose grid as a SimpleITK image</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimpleITK.Image</p>
 </dd>
 </dl>
@@ -309,7 +309,7 @@ None.</p></li>
         </div>
 
         <div class="related-information">
-              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
             |
             <a class="muted-link" href="_sources/dicom.rst.txt"
                rel="nofollow">

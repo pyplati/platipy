@@ -2,7 +2,7 @@
 <html class="no-js">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Registration" href="registration.html" /><link rel="prev" title="Dose" href="dose.html" />
 
     <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
@@ -175,7 +175,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <code class="sig-name descname"><span class="pre">-o</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--output_dir</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;output_dir&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-o" title="Permalink to this definition">¶</a></dt>
 <dd><p>Output directory. A folder structure will be created at this location.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Default</dt>
+<dt class="field-odd">Default<span class="colon">:</span></dt>
 <dd class="field-odd"><p>./</p>
 </dd>
 </dl>
@@ -185,7 +185,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <code class="sig-name descname"><span class="pre">-b</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--sort_by</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;sort_by&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-b" title="Permalink to this definition">¶</a></dt>
 <dd><p>DICOM tag to sort at the highest level.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Default</dt>
+<dt class="field-odd">Default<span class="colon">:</span></dt>
 <dd class="field-odd"><p>PatientName</p>
 </dd>
 </dl>
@@ -195,7 +195,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <code class="sig-name descname"><span class="pre">--image_format</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;image_format&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-image_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Format for output images. There are three special options that can be used: parent_sorting_data (same as sort_by option), study_uid_index (a counter for distinct DICOM studies), image_desc (info from DICOM header, more nicely formatted). Additionally, any DICOM header tag can be used (e.g. Modality, SeriesNumber, AcquisitionData). Any DICOM header tag that doesn’t exist will return a 0.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Default</dt>
+<dt class="field-odd">Default<span class="colon">:</span></dt>
 <dd class="field-odd"><p>{parent_sorting_data}_{study_uid_index}_{Modality}_{image_desc}_{SeriesNumber}</p>
 </dd>
 </dl>
@@ -205,7 +205,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <code class="sig-name descname"><span class="pre">--structure_format</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;structure_format&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-structure_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Format for output structures. Any of the options for images can be used, as well as: structure_name</p>
 <dl class="field-list simple">
-<dt class="field-odd">Default</dt>
+<dt class="field-odd">Default<span class="colon">:</span></dt>
 <dd class="field-odd"><p>{parent_sorting_data}_{study_uid_index}_{Modality}_{structure_name}</p>
 </dd>
 </dl>
@@ -215,7 +215,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <code class="sig-name descname"><span class="pre">--dose_format</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;dose_format&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-dose_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Format for output radiotherapy dose distributions.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Default</dt>
+<dt class="field-odd">Default<span class="colon">:</span></dt>
 <dd class="field-odd"><p>{parent_sorting_data}_{study_uid_index}_{DoseSummationType}</p>
 </dd>
 </dl>
@@ -225,7 +225,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <code class="sig-name descname"><span class="pre">--overwrite</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dicom_crawler-overwrite" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overwrite files if they exist.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Default</dt>
+<dt class="field-odd">Default<span class="colon">:</span></dt>
 <dd class="field-odd"><p>False</p>
 </dd>
 </dl>
@@ -235,7 +235,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <code class="sig-name descname"><span class="pre">--file_suffix</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;file_suffix&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-file_suffix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Output file suffix. Defines the file type.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Default</dt>
+<dt class="field-odd">Default<span class="colon">:</span></dt>
 <dd class="field-odd"><p>.nii.gz</p>
 </dd>
 </dl>
@@ -245,7 +245,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <code class="sig-name descname"><span class="pre">-s</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--short_description</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dicom_crawler-s" title="Permalink to this definition">¶</a></dt>
 <dd><p>Use less verbose descriptions for DICOM images.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Default</dt>
+<dt class="field-odd">Default<span class="colon">:</span></dt>
 <dd class="field-odd"><p>False</p>
 </dd>
 </dl>
@@ -255,7 +255,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <code class="sig-name descname"><span class="pre">-v</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--verbose</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dicom_crawler-v" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print more information while running.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Default</dt>
+<dt class="field-odd">Default<span class="colon">:</span></dt>
 <dd class="field-odd"><p>False</p>
 </dd>
 </dl>
@@ -267,7 +267,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 the Nitfti input image OR a directory containing a DICOM series.</p>
 <p>Optionally, pass in a configuration file for the segmentation algorithm. Output the default
 configuration for an algorithm using the –default flag.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>segmentation <span class="o">[</span>OPTIONS<span class="o">]</span> <span class="o">[</span>cardiac<span class="p">|</span>bronchus<span class="o">]</span> <span class="o">[</span>INPUT_PATH<span class="o">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>segmentation <span class="o">[</span>OPTIONS<span class="o">]</span> <span class="o">{</span>cardiac<span class="p">|</span>bronchus<span class="o">}</span> <span class="o">[</span>INPUT_PATH<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
@@ -348,7 +348,7 @@ configuration for an algorithm using the –default flag.</p>
 <code class="sig-name descname"><span class="pre">-o</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--output_directory</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;output_directory&gt;</span></code><a class="headerlink" href="#cmdoption-nifti_to_series-o" title="Permalink to this definition">¶</a></dt>
 <dd><p>Directory in which Dicom series files will be generated</p>
 <dl class="field-list simple">
-<dt class="field-odd">Default</dt>
+<dt class="field-odd">Default<span class="colon">:</span></dt>
 <dd class="field-odd"><p>.</p>
 </dd>
 </dl>
@@ -374,14 +374,14 @@ configuration for an algorithm using the –default flag.</p>
 <dl class="std option">
 <dt id="cmdoption-rtstruct_to_nifti-p">
 <code class="sig-name descname"><span class="pre">-p</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--prefix</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;prefix&gt;</span></code><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-p" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prefix for output files (e.g. <a href="#id1"><span class="problematic" id="id2">Case_01_</span></a></p>
+<dd><p>Prefix for output files (e.g. <a href="#system-message-1"><span class="problematic" id="problematic-1">Case_01_</span></a></p>
 </dd></dl>
 <dl class="std option">
 <dt id="cmdoption-rtstruct_to_nifti-od">
 <code class="sig-name descname"><span class="pre">-od</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--output_dir</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;output_dir&gt;</span></code><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-od" title="Permalink to this definition">¶</a></dt>
 <dd><p>Directory in which to place converted files</p>
 <dl class="field-list simple">
-<dt class="field-odd">Default</dt>
+<dt class="field-odd">Default<span class="colon">:</span></dt>
 <dd class="field-odd"><p>.</p>
 </dd>
 </dl>
@@ -426,7 +426,7 @@ configuration for an algorithm using the –default flag.</p>
         </div>
 
         <div class="related-information">
-              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
             |
             <a class="muted-link" href="_sources/cli.rst.txt"
                rel="nofollow">

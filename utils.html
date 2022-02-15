@@ -2,7 +2,7 @@
 <html class="no-js">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="Registration" href="registration.html" />
 
     <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
@@ -149,13 +149,13 @@
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">binary_decode_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_encoded_img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.binary_decode_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decode a binary label map to a list of structures.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>binary_encoded_img</strong> (<em>SimpleITK.Image</em>) – The encoded image.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The list of images.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list (SimpleITK.Image)</p>
 </dd>
 </dl>
@@ -165,23 +165,23 @@
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">binary_encode_structure_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.binary_encode_structure_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Encode a list of binary labels using binary encoding</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>structure_list</strong> (<em>list</em><em> (</em><em>SimpleITK.Image</em><em>)</em>) – The list of binary label maps.</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – A maximum of 32 structures can be encoded!</p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The encoded image, can be saved etc. as usual.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>SimpleITK.Image</p>
 </dd>
 </dl>
 </dd></dl>
 <dl class="py function">
 <dt id="platipy.imaging.label.utils.correct_volume_overlap">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">correct_volume_overlap</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_label_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.correct_volume_overlap" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">correct_volume_overlap</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_label_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assign_overlap_to_largest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.correct_volume_overlap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Label structures by primes
 Smallest prime = largest volume</p>
 </dd></dl>
@@ -197,7 +197,7 @@ Smallest prime = largest volume</p>
 <div><p>Get centre of mass of a SimpleITK.Image</p>
 </div></blockquote>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<em>sitk.Image</em>) – Label mask image.</p></li>
 <li><p><strong>as_int</strong> (<em>bool</em><em>, </em><em>optional</em>) – Returns each components as int if true. Defaults to True.</p></li>
@@ -205,10 +205,10 @@ Smallest prime = largest volume</p>
 False.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List of coordinates</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 </dl>
@@ -218,13 +218,13 @@ False.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">prime_decode_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prime_encoded_image</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.prime_decode_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decode a prime-encoded image</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>prime_encoded_image</strong> (<em>SimpleITK.Image</em>) – A prime-encoded image.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A list of binary masks.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list [SimpleITK.Image]</p>
 </dd>
 </dl>
@@ -234,13 +234,13 @@ False.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">prime_encode_structure_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.prime_encode_structure_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Encode a list of structures using prime labels</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>structure_list</strong> (<em>list</em><em> [</em><em>SimpleITK.Image</em><em>]</em>) – A list of binary masks.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The prime-encoded structure</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimpleITK.Image</p>
 </dd>
 </dl>
@@ -263,16 +263,16 @@ False.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_dsc</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_dsc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the Dice Similarity Coefficient between two labels</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label_a</strong> (<em>sitk.Image</em>) – A mask to compare</p></li>
 <li><p><strong>label_b</strong> (<em>sitk.Image</em>) – Another mask to compare</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The Dice Similarity Coefficient</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -282,16 +282,16 @@ False.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_hd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_hd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the Hausdorff distance between two labels</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label_a</strong> (<em>sitk.Image</em>) – A mask to compare</p></li>
 <li><p><strong>label_b</strong> (<em>sitk.Image</em>) – Another mask to compare</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The maximum Hausdorff distance</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -301,16 +301,16 @@ False.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_masd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_masd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the mean absolute distance between two labels</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label_a</strong> (<em>sitk.Image</em>) – A mask to compare</p></li>
 <li><p><strong>label_b</strong> (<em>sitk.Image</em>) – Another mask to compare</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The mean absolute surface distance</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -320,16 +320,16 @@ False.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_sensitivity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_sensitivity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the sensitivity between two labels</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label_a</strong> (<em>sitk.Image</em>) – A mask to compare</p></li>
 <li><p><strong>label_b</strong> (<em>sitk.Image</em>) – Another mask to compare</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The sensitivity between the two labels</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -339,16 +339,16 @@ False.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_specificity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_specificity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the specificity between two labels</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label_a</strong> (<em>sitk.Image</em>) – A mask to compare</p></li>
 <li><p><strong>label_b</strong> (<em>sitk.Image</em>) – Another mask to compare</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The specificity between the two labels</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -360,17 +360,17 @@ False.</p></li>
 hausdorffDistance, meanSurfaceDistance, medianSurfaceDistance, maximumSurfaceDistance,
 sigmaSurfaceDistance</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label_a</strong> (<em>sitk.Image</em>) – A mask to compare</p></li>
 <li><p><strong>label_b</strong> (<em>sitk.Image</em>) – Another mask to compare</p></li>
 <li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to print verbose output. Defaults to False.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dictionary object containing surface distance metrics</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
@@ -380,13 +380,13 @@ sigmaSurfaceDistance</p>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_volume</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the volume in cubic centimetres</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>label</strong> (<em>SimpleITK.Image</em>) – A binary mask.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The volume (in cubic centimetres)</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -398,16 +398,16 @@ sigmaSurfaceDistance</p>
 DSC, volumeOverlap fractionOverlap truePositiveFraction trueNegativeFraction
 falsePositiveFraction falseNegativeFraction</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label_a</strong> (<em>sitk.Image</em>) – A mask to compare</p></li>
 <li><p><strong>label_b</strong> (<em>sitk.Image</em>) – Another mask to compare</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dictionary object containing volume metrics</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
@@ -421,7 +421,7 @@ falsePositiveFraction falseNegativeFraction</p>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></code><code class="sig-name descname"><span class="pre">crop_to_label_extent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.crop_to_label_extent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Crop an image to the 3D extent defined by a binary mask (label).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image</strong> (<em>SimpleITK.Image</em>) – The image to crop.</p></li>
 <li><p><strong>label</strong> (<em>SimpleITK.Image</em>) – The binary mask (label) defining the region to crop to.</p></li>
@@ -430,10 +430,10 @@ Can be defined as a single number or iterable: (axial, coronal, sagittal) expans
 Defaults to 0.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The cropped image.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimpleITK.Image</p>
 </dd>
 </dl>
@@ -449,17 +449,17 @@ Defaults to 0.</p></li>
 <dd><p>Generates a region of interest (ROI), defined by a starting index (z,y,x)
 and size (s_z, s_y, s_x). This can be used to crop images/labels.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<em>sitk.Image | list</em>) – Binary label image/mask/structure to define to ROI</p></li>
 <li><p><strong>expansion_mm</strong> (<em>list</em><em>, </em><em>optional</em>) – An optional expansion of the box (in each direciton).
 Defaults to [0, 0, 0].</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>crop_box_size, crop_box_starting_index</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
@@ -472,7 +472,7 @@ Defaults to [0, 0, 0].</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.geometry.</span></code><code class="sig-name descname"><span class="pre">rotate_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_centre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_angle_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.geometry.rotate_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotates an image</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>img</strong> (<em>SimpleITK.Image</em>) – The image to rotate</p></li>
 <li><p><strong>rotation_centre</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The centre of rotation (in physical coordinates).
@@ -483,10 +483,10 @@ Defaults to (0, 0, 0).</p></li>
 <li><p><strong>default_value</strong> (<em>int</em><em>, </em><em>optional</em>) – Default value. Defaults to 0.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The rotated image, resampled into the original space.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimpleITK.Image</p>
 </dd>
 </dl>
@@ -496,7 +496,7 @@ Defaults to (0, 0, 0).</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.geometry.</span></code><code class="sig-name descname"><span class="pre">vector_angle</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smallest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.geometry.vector_angle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the angle between two vectors</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>v1</strong> (<em>np.array</em>) – A three-dimensional vector</p></li>
 <li><p><strong>v2</strong> (<em>np.array</em>) – A three-dimensional vector</p></li>
@@ -504,10 +504,10 @@ Defaults to (0, 0, 0).</p></li>
 If False, direction is taken into account, so angle can be obtuse. Defaults to True.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The angle in radians</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -517,10 +517,10 @@ If False, direction is taken into account, so angle can be obtuse. Defaults to T
 <span id="io"></span><h2>IO<a class="headerlink" href="#module-platipy.imaging.utils.io" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="platipy.imaging.utils.io.write_nrrd_structure_set">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.io.</span></code><code class="sig-name descname"><span class="pre">write_nrrd_structure_set</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">masks</span></em>, <em class="sig-param"><span class="pre">output_file='structure_set.nrrd'</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.io.write_nrrd_structure_set" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.io.</span></code><code class="sig-name descname"><span class="pre">write_nrrd_structure_set</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">masks</span></em>, <em class="sig-param"><span class="pre">output_file='structure_set.nrrd'</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">use_compression=True</span></em>, <em class="sig-param"><span class="pre">compression_level=9</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.io.write_nrrd_structure_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write an nrrd structure given a set of masks. Useful for reading in Slicer.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>masks</strong> (<em>dict</em>) – Key is structure name, value is SimpleITK.Image</p></li>
 <li><p><strong>output_file</strong> (<em>str</em><em>, </em><em>optional</em>) – The path to write the nrrd file. Defaults to
@@ -528,9 +528,13 @@ If False, direction is taken into account, so angle can be obtuse. Defaults to T
 <li><p><strong>colormap</strong> (<em>matplotlib.colors.Colormap | dict</em><em>, </em><em>optional</em>) – Colormap to use for output.
 Can also use a dictionary with keys as structure names and values as colors.
 Defaults to cm.get_cmap(“rainbow”).</p></li>
+<li><p><strong>use_compression</strong> (<em>bool</em><em>, </em><em>optional</em>) – Used by SimpleITK’s WriteImage function to enable
+compression when writing output file. Defaults to True.</p></li>
+<li><p><strong>compression_level</strong> (<em>int</em><em>, </em><em>optional</em>) – Used by SimpleITK’s WriteImage function to specify how
+much compression to use. Should be an integer between 0-9. Defaults to 9.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>AttributeError</strong> – masks must be a dict</p></li>
 <li><p><strong>ValueError</strong> – colormap must be a matplotlib colormap or a dictionary</p></li>
@@ -560,7 +564,7 @@ Defaults to cm.get_cmap(“rainbow”).</p></li>
         </div>
 
         <div class="related-information">
-              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
             |
             <a class="muted-link" href="_sources/utils.rst.txt"
                rel="nofollow">

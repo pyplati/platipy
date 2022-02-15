@@ -2,7 +2,7 @@
 <html class="no-js">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Command Line Tools" href="cli.html" /><link rel="prev" title="DICOM Conversion" href="dicom.html" />
 
     <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
@@ -149,7 +149,7 @@
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.dose.dvh.</span></code><code class="sig-name descname"><span class="pre">calculate_d_x</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dvh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.dose.dvh.calculate_d_x" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the dose which x percent of the volume receives</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dvh</strong> (<em>pandas.DataFrame</em>) – DVH DataFrame as produced by calculate_dvh_for_labels</p></li>
 <li><p><strong>x</strong> (<em>float</em>) – The dose which x percent of the volume receives</p></li>
@@ -157,10 +157,10 @@
 set. Defaults to None.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Data frame with a row for each label containing the metric and value.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -170,7 +170,7 @@ set. Defaults to None.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.dose.dvh.</span></code><code class="sig-name descname"><span class="pre">calculate_dvh</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dose_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.dose.dvh.calculate_dvh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates a dose-volume histogram</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dose_grid</strong> (<em>SimpleITK.Image</em>) – The dose grid.</p></li>
 <li><p><strong>label</strong> (<em>SimpleITK.Image</em>) – The (binary) label defining a structure.</p></li>
@@ -178,11 +178,11 @@ set. Defaults to None.</p></li>
 can be an int (number of bins), or a list (specifying bin edges). Defaults to 1001.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The points of the dose bins
 values (numpy.ndarray): The DVH values</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bins (numpy.ndarray)</p>
 </dd>
 </dl>
@@ -192,7 +192,7 @@ values (numpy.ndarray): The DVH values</p>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.dose.dvh.</span></code><code class="sig-name descname"><span class="pre">calculate_dvh_for_labels</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dose_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.dose.dvh.calculate_dvh_for_labels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the DVH for multiple labels</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dose_grid</strong> (<em>SimpleITK.Image</em>) – Dose grid</p></li>
 <li><p><strong>labels</strong> (<em>dict</em>) – Dictionary of labels with the label name as key and SimpleITK.Image mask as
@@ -202,14 +202,14 @@ value.</p></li>
 dose grid is used.Defaults to None.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>The DVH for each structure along with the mean dose and size in cubic</dt><dd><p>centimetres as a data frame.</p>
 </dd>
 </dl>
 </p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -219,7 +219,7 @@ dose grid is used.Defaults to None.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.dose.dvh.</span></code><code class="sig-name descname"><span class="pre">calculate_v_x</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dvh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.dose.dvh.calculate_v_x" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the volume (in cc) which receives x dose</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dvh</strong> (<em>pandas.DataFrame</em>) – DVH DataFrame as produced by calculate_dvh_for_labels</p></li>
 <li><p><strong>x</strong> (<em>float</em>) – The dose to get the volume for.</p></li>
@@ -227,10 +227,10 @@ dose grid is used.Defaults to None.</p></li>
 set. Defaults to None.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Data frame with a row for each label containing the metric and value.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -265,7 +265,7 @@ set. Defaults to None.</p></li>
         </div>
 
         <div class="related-information">
-              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
             |
             <a class="muted-link" href="_sources/dose.rst.txt"
                rel="nofollow">

@@ -2,7 +2,7 @@
 <html class="no-js">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="DICOM Conversion" href="dicom.html" /><link rel="prev" title="DVH Analysis Example" href="_examples/dvh_analysis.html" />
 
     <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
@@ -153,7 +153,7 @@ boxes.</p>
 <code class="sig-name descname"><span class="pre">add_bounding_box</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding_box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_bounding_box" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a bounding box to draw.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>bounding_box</strong> (<em>dict|list|tuple|sitk.Image</em>) – Dictionary of bounding boxes where list key
 is the name of the bounding box. If list or tuple then pass
@@ -166,7 +166,7 @@ Defaults to None.</p></li>
 <li><p><strong>linewidth</strong> (<em>int</em><em>, </em><em>optional</em>) – The line width of the bounding box(es). Defaults to 2.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – Raised if input is not a list or tuple of length 6 or and sitk.Image.</p>
 </dd>
 </dl>
@@ -176,14 +176,14 @@ Defaults to None.</p></li>
 <code class="sig-name descname"><span class="pre">add_comparison_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.35</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_comparison_overlay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overlay a comparison image on the existing image</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sitk.Image</strong><strong>)</strong> (<em>image</em>) – Image (will be displayed as a comparison).</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name to give the image. Defaults to None.</p></li>
 <li><p><strong>color_rotation</strong> (<em>float</em><em>, </em><em>optional</em>) – Defines the hue of the original image (0 - 0.5).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – Comparison overlay must be of type sitk.Image.</p>
 </dd>
 </dl>
@@ -193,7 +193,7 @@ Defaults to None.</p></li>
 <code class="sig-name descname"><span class="pre">add_contour</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">contour</span></em>, <em class="sig-param"><span class="pre">name=None</span></em>, <em class="sig-param"><span class="pre">color=None</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">linewidth=2</span></em>, <em class="sig-param"><span class="pre">linestyle='solid'</span></em>, <em class="sig-param"><span class="pre">show_legend=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_contour" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a contour as overlay</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>contour</strong> (<em>sitk.Image|dict</em>) – Contour mask or dict containing contour masks.</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name to give the contour (only used if passing sitk.Image as
@@ -202,7 +202,7 @@ contour). Defaults to None.</p></li>
 Defaults to None.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>ValueError</strong> – Contour must be dict of sitk.Image.</p></li>
 <li><p><strong>ValueError</strong> – If passing a dict for contour, all values must be sitk.Image.</p></li>
@@ -212,10 +212,10 @@ Defaults to None.</p></li>
 </dd></dl>
 <dl class="py method">
 <dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_scalar_overlay">
-<code class="sig-name descname"><span class="pre">add_scalar_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">scalar_image</span></em>, <em class="sig-param"><span class="pre">name=None</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">min_value=False</span></em>, <em class="sig-param"><span class="pre">max_value=False</span></em>, <em class="sig-param"><span class="pre">discrete_levels=False</span></em>, <em class="sig-param"><span class="pre">mid_ticks=False</span></em>, <em class="sig-param"><span class="pre">show_colorbar=True</span></em>, <em class="sig-param"><span class="pre">norm=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_scalar_overlay" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">add_scalar_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">scalar_image</span></em>, <em class="sig-param"><span class="pre">name=None</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">min_value=False</span></em>, <em class="sig-param"><span class="pre">max_value=False</span></em>, <em class="sig-param"><span class="pre">discrete_levels=False</span></em>, <em class="sig-param"><span class="pre">mid_ticks=False</span></em>, <em class="sig-param"><span class="pre">show_colorbar=True</span></em>, <em class="sig-param"><span class="pre">norm=None</span></em>, <em class="sig-param"><span class="pre">projection=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_scalar_overlay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overlay a scalar image on to the existing image</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sitk.Image|dict</strong><strong>)</strong> (<em>scalar_image</em>) – Scalar image or dict containing scalar images.</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name to give the scalar image (only used if passing sitk.Image as
@@ -227,7 +227,7 @@ to plt.cm.get_cmap(“Spectral”).</p></li>
 <li><p><strong>min_value</strong> (<em>float</em><em>, </em><em>optional</em>) – Values below this value aren’t rendered. Defaults to 0.1.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>ValueError</strong> – Scalar overlay must be dict of sitk.Image.</p></li>
 <li><p><strong>ValueError</strong> – If passing a dict for contour, all values must be sitk.Image.</p></li>
@@ -240,7 +240,7 @@ to plt.cm.get_cmap(“Spectral”).</p></li>
 <code class="sig-name descname"><span class="pre">add_vector_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">vector_image</span></em>, <em class="sig-param"><span class="pre">min_value=False</span></em>, <em class="sig-param"><span class="pre">max_value=False</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">arrow_scale=0.25</span></em>, <em class="sig-param"><span class="pre">arrow_width=1</span></em>, <em class="sig-param"><span class="pre">subsample=4</span></em>, <em class="sig-param"><span class="pre">color_function='perpendicular'</span></em>, <em class="sig-param"><span class="pre">show_colorbar=True</span></em>, <em class="sig-param"><span class="pre">name=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_vector_overlay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overlay a vector field on to the existing image</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sitk.Image|dict</strong><strong>)</strong> (<em>vector_image</em>) – Vector image (will be displayed as ).</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name to give the vector field (only used if passing
@@ -259,7 +259,7 @@ value
 ‘magnitude’ - vectors colored by magnitude.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – Vector overlay must be of type sitk.Image.</p>
 </dd>
 </dl>
@@ -274,7 +274,7 @@ value
 <code class="sig-name descname"><span class="pre">set_limits_from_label</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.set_limits_from_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the limits of the axes to the bounds of the given label.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<em>sitk.Image</em>) – The label around which to set the limits</p></li>
 <li><p><strong>expansion</strong> (<em>list</em><em>, </em><em>optional</em>) – Expansion (in mm) around the label. Defaults to [0, 0, 0].</p></li>
@@ -317,7 +317,7 @@ value
         </div>
 
         <div class="related-information">
-              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
             |
             <a class="muted-link" href="_sources/visualiser.rst.txt"
                rel="nofollow">

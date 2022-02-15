@@ -1,0 +1,428 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
+
+    <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
+        <title>Algorithm Deployment Service - PlatiPy documentation</title>
+      <link rel="stylesheet" href="_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
+    <link rel="stylesheet" href="_static/pygments.css">
+    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="_static/pygments_dark.css">
+    
+
+
+<style>
+  :root {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+
+  /* For allowing end-user-specific overrides */
+  .override-light {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  .override-dark {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+</style><link rel="stylesheet" href="_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
+  <body dir="">
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z"/>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="20" y2="12" />
+      <line x1="6" y1="18" x2="20" y2="18" />
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">PlatiPy  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">PlatiPy  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html">
+  <input class="sidebar-search" placeholder=Search name="q">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+</ul>
+<p><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="_examples/visualise.html">Visualise Images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis Example</a></li>
+</ul>
+<p><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="visualiser.html">Image Visualiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dicom.html">DICOM Conversion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dose.html">Dose</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="registration.html">Registration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
+</ul>
+
+</div>
+</div>
+      </div>
+      
+    </div>
+  </aside>
+  <main class="main">
+    <div class="content">
+      <article role="main">
+        <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        </label>
+        <section id="algorithm-deployment-service">
+<h1>Algorithm Deployment Service<a class="headerlink" href="#algorithm-deployment-service" title="Permalink to this headline">¶</a></h1>
+<section id="platipy-deployment-service-framework">
+<h2>PlatiPy Deployment Service Framework<a class="headerlink" href="#platipy-deployment-service-framework" title="Permalink to this headline">¶</a></h2>
+<p>This framework allows easy deployment of a image analysis tool (such as an auto-segmentation tool)
+using a client-server architecture. This lets you run the tool on a server (where you have
+sufficient computing resources) and send data to it from a client (which might be a script running
+on a desktop PC or a client tool implemented as a plug-in or extension to a commerical system).</p>
+<blockquote>
+<div><p>Caution: This framework is designed for use in a Local Area Network (LAN) only. It is not
+recommended to use this tool on the WWW without further security considerations being made.</p>
+</div></blockquote>
+<section id="prerequisites">
+<h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
+<p>This guide assumes you are developing on a Ubuntu Operating System. If you don’t have Ubuntu
+consider using the <a class="reference external" href="https://hub.docker.com/r/platipy/platipy">PlatiPy docker image</a></p>
+<p>Make sure you have platipy installed:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install platipy
+</pre></div>
+</div>
+<p>You will also need to install the requirements listed <a class="reference external" href="https://github.com/pyplati/platipy/blob/master/requirements-backend.txt">here</a>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget https://raw.githubusercontent.com/pyplati/platipy/master/requirements-backend.txt
+pip install -r requirements-backend.txt
+</pre></div>
+</div>
+<p>Create a directory to develop your service in. In this guide this will be refered to as
+<code class="docutils literal notranslate"><span class="pre">[working_dir]</span></code>. Make sure you are working from within this path:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> <span class="o">[</span>working_dir<span class="o">]</span>
+</pre></div>
+</div>
+</section>
+<section id="developing-a-service">
+<h3>Developing a service<a class="headerlink" href="#developing-a-service" title="Permalink to this headline">¶</a></h3>
+<section id="implementation">
+<h4>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h4>
+<p>Use the following template to implement a service within the framework. See the TODO note where you
+can add a call to your function providing some algorithm. Save it in a file named
+<code class="docutils literal notranslate"><span class="pre">[working_dir]/service.py</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pydicom</span>
+<span class="kn">import</span> <span class="nn">SimpleITK</span> <span class="k">as</span> <span class="nn">sitk</span>
+<span class="kn">from</span> <span class="nn">loguru</span> <span class="kn">import</span> <span class="n">logger</span>
+
+<span class="kn">from</span> <span class="nn">platipy.backend</span> <span class="kn">import</span> <span class="n">app</span><span class="p">,</span> <span class="n">DataObject</span><span class="p">,</span> <span class="n">celery</span>  <span class="c1"># pylint: disable=unused-import</span>
+<span class="kn">from</span> <span class="nn">platipy.dicom.io.nifti_to_rtstruct</span> <span class="kn">import</span> <span class="n">convert_nifti</span>
+
+<span class="c1"># Specify some settings which can be provided by the client calling the algorithm</span>
+<span class="n">MY_SETTINGS_DEFAULTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"outputContourName"</span><span class="p">:</span> <span class="s2">"auto_contour_x"</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">"My Segmentation Tool"</span><span class="p">,</span> <span class="n">default_settings</span><span class="o">=</span><span class="n">MY_SETTINGS_DEFAULTS</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">my_segmentation_tool</span><span class="p">(</span><span class="n">data_objects</span><span class="p">,</span> <span class="n">working_dir</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Running My Segmentation Tool"</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Using settings: "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">settings</span><span class="p">))</span>
+
+    <span class="n">output_objects</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data_objects</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Running on data object: </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="c1"># Read the image series</span>
+        <span class="n">load_path</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">path</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"DICOM"</span><span class="p">:</span>
+            <span class="n">load_path</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ImageSeriesReader</span><span class="p">()</span><span class="o">.</span><span class="n">GetGDCMSeriesFileNames</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">img</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="n">load_path</span><span class="p">)</span>
+
+        <span class="c1"># TODO Implement your function which returns a segmentation mask here</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">my_segmentation_function</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
+        <span class="c1"># Write the mask to a file in the working_dir</span>
+        <span class="n">mask_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">working_dir</span><span class="p">,</span> <span class="s2">"</span><span class="si">{0}</span><span class="s2">.nii.gz"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">"outputContourName"</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="n">sitk</span><span class="o">.</span><span class="n">WriteImage</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">mask_file</span><span class="p">)</span>
+
+        <span class="c1"># Create the output Data Object and add it to the list of output_objects</span>
+        <span class="n">data_object</span> <span class="o">=</span> <span class="n">DataObject</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">"FILE"</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">mask_file</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>
+        <span class="n">output_objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_object</span><span class="p">)</span>
+
+        <span class="c1"># If the input was a DICOM, then we can use it to generate an output RTStruct</span>
+        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"DICOM"</span><span class="p">:</span>
+
+            <span class="n">dicom_file</span> <span class="o">=</span> <span class="n">load_path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Will write Dicom using file: </span><span class="si">{0}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dicom_file</span><span class="p">))</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="p">{</span><span class="n">settings</span><span class="p">[</span><span class="s2">"outputContourName"</span><span class="p">]:</span> <span class="n">mask_file</span><span class="p">}</span>
+
+            <span class="c1"># Use the image series UID for the file of the RTStruct</span>
+            <span class="n">suid</span> <span class="o">=</span> <span class="n">pydicom</span><span class="o">.</span><span class="n">dcmread</span><span class="p">(</span><span class="n">dicom_file</span><span class="p">)</span><span class="o">.</span><span class="n">SeriesInstanceUID</span>
+            <span class="n">output_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_dir</span><span class="p">,</span> <span class="s2">"RS.</span><span class="si">{0}</span><span class="s2">.dcm"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">suid</span><span class="p">))</span>
+
+            <span class="c1"># Use the convert nifti function to generate RTStruct from nifti masks</span>
+            <span class="n">convert_nifti</span><span class="p">(</span><span class="n">dicom_file</span><span class="p">,</span> <span class="n">masks</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+
+            <span class="c1"># Create the Data Object for the RTStruct and add it to the list</span>
+            <span class="n">do</span> <span class="o">=</span> <span class="n">DataObject</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">"DICOM"</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">output_file</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>
+            <span class="n">output_objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">do</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"RTStruct generated"</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output_objects</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+
+    <span class="c1"># Run app by calling "python sample.py" from the command line</span>
+
+    <span class="n">dicom_listener_port</span> <span class="o">=</span> <span class="mi">7777</span>
+    <span class="n">dicom_listener_aetitle</span> <span class="o">=</span> <span class="s2">"SAMPLE_SERVICE"</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">host</span><span class="o">=</span><span class="s2">"0.0.0.0"</span><span class="p">,</span>
+        <span class="n">port</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span>
+        <span class="n">dicom_listener_port</span><span class="o">=</span><span class="n">dicom_listener_port</span><span class="p">,</span>
+        <span class="n">dicom_listener_aetitle</span><span class="o">=</span><span class="n">dicom_listener_aetitle</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="initialise-the-database">
+<h4>Initialise the database<a class="headerlink" href="#initialise-the-database" title="Permalink to this headline">¶</a></h4>
+<p>Before running the service, you must initialise the database:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy manage initdb
+</pre></div>
+</div>
+</section>
+<section id="add-an-api-key">
+<h4>Add an API Key<a class="headerlink" href="#add-an-api-key" title="Permalink to this headline">¶</a></h4>
+<p>And add an API key for use by a client</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy manage key --add <span class="nb">test</span>
+</pre></div>
+</div>
+<p>Note down the API key for use in the client later on. If you want to list the API keys again you
+can use the command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy manage key --list
+</pre></div>
+</div>
+</section>
+<section id="run-the-service">
+<h4>Run the service<a class="headerlink" href="#run-the-service" title="Permalink to this headline">¶</a></h4>
+<p>You can run the service for development and testing purposes using the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy manage run
+</pre></div>
+</div>
+<blockquote>
+<div><p>Note: This way of running the service if for development only. See <a class="reference external" href="#Deploying-a-service">Deploying a service</a> for
+information on deploying a service in production.</p>
+</div></blockquote>
+<p>Client to communicate with your service can be developed in any programming language or environment
+you like. Here we give an example using the PlatiPy Client which is a Python solution:</p>
+<p>Save the following in a file named <code class="docutils literal notranslate"><span class="pre">[working_dir]/client.py</span></code>. Make sure you replace the API key
+generated above in the code below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">loguru</span> <span class="kn">import</span> <span class="n">logger</span>
+
+<span class="kn">from</span> <span class="nn">platipy.backend.client</span> <span class="kn">import</span> <span class="n">PlatiPyClient</span>
+<span class="kn">from</span> <span class="nn">platipy.imaging.tests.data</span> <span class="kn">import</span> <span class="n">get_lung_nifti</span>
+
+<span class="n">host</span> <span class="o">=</span> <span class="s2">"127.0.0.1"</span> <span class="c1"># Set the host name or IP of the server running the service here</span>
+<span class="n">port</span> <span class="o">=</span> <span class="mi">8000</span> <span class="c1"># Set the port the service was configured to run on here</span>
+
+<span class="n">api_key</span> <span class="o">=</span> <span class="s2">""</span> <span class="c1"># INSERT THE API KEY GENERATED HERE</span>
+
+<span class="n">algorithm_name</span> <span class="o">=</span> <span class="s2">"My Segmentation Tool"</span> <span class="c1"># The name of the algorithm</span>
+
+<span class="n">log_level</span> <span class="o">=</span> <span class="s2">"INFO"</span> <span class="c1"># Choose an appropriate level of logging output: "DEBUG" or "INFO"</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<span class="n">handler_id</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">log_level</span><span class="p">)</span>
+
+<span class="c1"># Fetch some data</span>
+<span class="n">images</span> <span class="o">=</span> <span class="n">get_lung_nifti</span><span class="p">()</span>
+
+<span class="c1"># Initialise the client</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">PlatiPyClient</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">api_key</span><span class="p">,</span> <span class="n">algorithm_name</span><span class="p">)</span>
+
+<span class="c1"># Add a dataset</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">add_dataset</span><span class="p">()</span>
+
+<span class="c1"># Create a data object from a CT file</span>
+<span class="n">ct_file</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">images</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"**/*_CT_*.nii.gz"</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">data_object</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">add_data_object</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">file_path</span><span class="o">=</span><span class="n">ct_file</span><span class="p">)</span>
+
+<span class="c1"># Fetch the default settings and override the contour name setting</span>
+<span class="n">settings</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_default_settings</span><span class="p">()</span>
+<span class="n">settings</span><span class="p">[</span><span class="s2">"outputContourName"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"CONTOUR_X"</span>
+
+<span class="c1"># Run the algorithm and wait for it to finish</span>
+<span class="k">for</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">run_algorithm</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">settings</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'.'</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">''</span><span class="p">)</span>
+
+<span class="c1"># Download the output data object and save it into the current directory</span>
+<span class="n">client</span><span class="o">.</span><span class="n">download_output_objects</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="s2">"."</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Run the client script with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python client.py
+</pre></div>
+</div>
+</section>
+</section>
+<section id="deploying-a-service-1">
+<h3>Deploying a service<a class="headerlink" href="#deploying-a-service-1" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>Coming soon</p>
+</div></blockquote>
+<section id="build-a-docker-image">
+<h4>Build a docker image<a class="headerlink" href="#build-a-docker-image" title="Permalink to this headline">¶</a></h4>
+</section>
+<section id="secure-using-ssl">
+<h4>Secure using SSL<a class="headerlink" href="#secure-using-ssl" title="Permalink to this headline">¶</a></h4>
+</section>
+</section>
+</section>
+</section>
+
+      </article>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+
+        <div class="related-information">
+              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
+            |
+            <a class="muted-link" href="_sources/service.rst.txt"
+               rel="nofollow">
+              Show Source
+            </a>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Algorithm Deployment Service</a><ul>
+<li><a class="reference internal" href="#platipy-deployment-service-framework">PlatiPy Deployment Service Framework</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#developing-a-service">Developing a service</a><ul>
+<li><a class="reference internal" href="#implementation">Implementation</a></li>
+<li><a class="reference internal" href="#initialise-the-database">Initialise the database</a></li>
+<li><a class="reference internal" href="#add-an-api-key">Add an API Key</a></li>
+<li><a class="reference internal" href="#run-the-service">Run the service</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#deploying-a-service-1">Deploying a service</a><ul>
+<li><a class="reference internal" href="#build-a-docker-image">Build a docker image</a></li>
+<li><a class="reference internal" href="#secure-using-ssl">Secure using SSL</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </main>
+</div>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
+</html>

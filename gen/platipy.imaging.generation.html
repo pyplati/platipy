@@ -2,7 +2,7 @@
 <html class="no-js">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
 
     <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
@@ -199,7 +199,7 @@
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.dvf.</span></code><code class="sig-name descname"><span class="pre">generate_field_asymmetric_contract</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_asymmetric_contract</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.dvf.generate_field_asymmetric_contract" title="Permalink to this definition">¶</a></dt>
 <dd><p>Contracts a structure (defined using a binary mask) using a specified vector.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mask_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The binary mask to contract.</p></li>
 <li><p><strong>vector_asymmetric_contract</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The contraction vector applied to the entire
@@ -212,12 +212,12 @@ Defaults to (10, 10, 10).</p></li>
 deformation vector field. Defaults to 5.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The binary mask following the contract.
 [SimpleITK.DisplacementFieldTransform]: The transform representing the contract.
 [SimpleITK.Image]: The displacement vector field representing the contract.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[SimpleITK.Image]</p>
 </dd>
 </dl>
@@ -227,7 +227,7 @@ deformation vector field. Defaults to 5.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.dvf.</span></code><code class="sig-name descname"><span class="pre">generate_field_asymmetric_extend</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_asymmetric_extend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.dvf.generate_field_asymmetric_extend" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extends a structure (defined using a binary mask) using a specified vector.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mask_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The binary mask to extend.</p></li>
 <li><p><strong>vector_asymmetric_extend</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The extension vector applied to the entire
@@ -240,12 +240,12 @@ Defaults to (10, 10, 10).</p></li>
 deformation vector field. Defaults to 5.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The binary mask following the extension.
 [SimpleITK.DisplacementFieldTransform]: The transform representing the extension.
 [SimpleITK.Image]: The displacement vector field representing the extension.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[SimpleITK.Image]</p>
 </dd>
 </dl>
@@ -256,12 +256,12 @@ deformation vector field. Defaults to 5.</p></li>
 <dd><p>Expands a structure (defined using a binary mask) using a specified vector to define the
 dilation kernel.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mask</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The binary mask to expand.</p></li>
 <li><p><strong>bone_mask</strong> (<em>[</em><em>SimpleITK.Image</em><em>, </em><em>optional</em><em>]</em>) – A binary mask defining regions where we expect
 restricted deformations.</p></li>
-<li><p><strong>vector_asymmetric_extend</strong> (int <a href="#id1"><span class="problematic" id="id2">|</span></a>tuple, optional) – <dl class="simple">
+<li><p><strong>vector_asymmetric_extend</strong> (int <a href="#system-message-1"><span class="problematic" id="problematic-1">|</span></a>tuple, optional) – <dl class="simple">
 <dt>The expansion vector applied to the entire</dt><dd><p>binary mask.</p>
 </dd>
 </dl>
@@ -273,12 +273,12 @@ Defaults to 3.</p>
 deformation vector field. Defaults to 5.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The binary mask following the expansion.
 [SimpleITK.DisplacementFieldTransform]: The transform representing the expansion.
 [SimpleITK.Image]: The displacement vector field representing the expansion.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[SimpleITK.Image]</p>
 </dd>
 </dl>
@@ -289,7 +289,7 @@ deformation vector field. Defaults to 5.</p></li>
 <dd><p>Generates a synthetic field characterised by radial bending.
 Typically, this field would be used to simulate a moving head and so masking is important.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>reference_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The image to be deformed.</p></li>
 <li><p><strong>body_mask</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – A binary mask in which the deformation field will be defined</p></li>
@@ -307,12 +307,12 @@ to (“z”, “inf”).</p></li>
 deformation vector field. Defaults to 5.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The binary mask following the expansion.
 [SimpleITK.DisplacementFieldTransform]: The transform representing the expansion.
 [SimpleITK.Image]: The displacement vector field representing the expansion.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[SimpleITK.Image]</p>
 </dd>
 </dl>
@@ -322,7 +322,7 @@ deformation vector field. Defaults to 5.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.dvf.</span></code><code class="sig-name descname"><span class="pre">generate_field_shift</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.dvf.generate_field_shift" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shifts (moves) a structure defined using a binary mask.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mask_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The binary mask to shift.</p></li>
 <li><p><strong>vector_shift</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The displacement vector applied to the entire binary mask.
@@ -334,12 +334,12 @@ Defaults to (10, 10, 10).</p></li>
 deformation vector field. Defaults to 5.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The binary mask following the shift.
 [SimpleITK.DisplacementFieldTransform]: The transform representing the shift.
 [SimpleITK.Image]: The displacement vector field representing the shift.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[SimpleITK.Image]</p>
 </dd>
 </dl>
@@ -353,7 +353,7 @@ deformation vector field. Defaults to 5.</p></li>
 <dd><p>Insert a cylinder into the given array.
 The cylinder vertical extent is +/- 0.5 * height</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>arr</strong> (<em>np.ndarray</em>) – The array into which the cylinder is inserted</p></li>
 <li><p><strong>cyl_radius</strong> (<em>int</em><em>, </em><em>optional</em>) – Cylinder radius. Defaults to 4.</p></li>
@@ -361,10 +361,10 @@ The cylinder vertical extent is +/- 0.5 * height</p>
 <li><p><strong>cyl_centre</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Cylinder centre. Defaults to (0, 0, 0).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The original array with a cylinder (value 1)</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
@@ -374,7 +374,7 @@ The cylinder vertical extent is +/- 0.5 * height</p>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.image.</span></code><code class="sig-name descname"><span class="pre">insert_cylinder_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cyl_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(5,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cyl_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cyl_centre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.image.insert_cylinder_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert a cylinder into an image</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image</strong> (<em>SimpleITK.Image</em>) – </p></li>
 <li><p><strong>cyl_radius</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Cylinder radius, can be defined as a single value
@@ -383,10 +383,10 @@ or a tuple (will generate an ellipsoid). Defaults to (5,5).</p></li>
 <li><p><strong>cyl_centre</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Cylinder centre. Defaults to (0,0,0).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Image with cylinder inserted</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimpleITK.Image</p>
 </dd>
 </dl>
@@ -396,7 +396,7 @@ or a tuple (will generate an ellipsoid). Defaults to (5,5).</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.image.</span></code><code class="sig-name descname"><span class="pre">insert_sphere</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_centre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.image.insert_sphere" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert a sphere into the given array</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>arr</strong> (<em>np.array</em>) – Array in which to insert sphere</p></li>
 <li><p><strong>sp_radius</strong> (<em>int</em><em>, </em><em>optional</em>) – The radius of the sphere. Defaults to 4.</p></li>
@@ -404,10 +404,10 @@ or a tuple (will generate an ellipsoid). Defaults to (5,5).</p></li>
 to (0, 0, 0).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>An array with the sphere inserted</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -417,7 +417,7 @@ to (0, 0, 0).</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.image.</span></code><code class="sig-name descname"><span class="pre">insert_sphere_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_centre</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.image.insert_sphere_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert a sphere into an image</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image</strong> (<em>sitk.Image</em>) – Image in which to insert sphere</p></li>
 <li><p><strong>sp_radius</strong> (<em>int | list</em><em>, </em><em>optional</em>) – The radius of the sphere.
@@ -426,10 +426,10 @@ Can also be defined as a vector. Defaults to 4.</p></li>
 to (0, 0, 0).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>An array with the sphere inserted</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
@@ -445,7 +445,7 @@ PROTOTYPE!
 Currently can only extend in axial directions (superior of inferior).
 The shape of the extended part is based on some number of interior slices, as defined.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mask</strong> (<em>SimpleITK.Image</em>) – The input binary label (mask).</p></li>
 <li><p><strong>direction</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The direction as a tuple. First element is axis, second
@@ -455,10 +455,10 @@ element is direction. Defaults to (“ax”, “sup”).</p></li>
 Defaults to 10.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The output (extended mask).</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimpleITK.Image</p>
 </dd>
 </dl>
@@ -468,7 +468,7 @@ Defaults to 10.</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.generation.mask.</span></code><code class="sig-name descname"><span class="pre">get_bone_mask</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">350</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_hole_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.generation.mask.get_bone_mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Automatically generate a binary mask of bones from a CT image.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The patient x-ray CT image to segment.</p></li>
 <li><p><strong>lower_threshold</strong> (<em>int</em><em>, </em><em>optional</em>) – Lower voxel value for threshold. Defaults to 350.</p></li>
@@ -478,10 +478,10 @@ Can be specified as a vector (z,y,x). Defaults
 to 5.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The binary bone mask.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[SimpleITK.Image]</p>
 </dd>
 </dl>
@@ -492,7 +492,7 @@ to 5.</p></li>
 <dd><p>Automatically generate a binary mask of the patient external contour.
 Uses slice-wise convex hull generation.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The patient x-ray CT image to segment. May work with other
 modalities with modified thresholds.</p></li>
@@ -505,10 +505,10 @@ millimetres. Can be specified as a vector
 (z,y,x). Defaults to False.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The binary external mask.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[SimpleITK.Image]</p>
 </dd>
 </dl>
@@ -528,7 +528,7 @@ millimetres. Can be specified as a vector
         </div>
 
         <div class="related-information">
-              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
             |
             <a class="muted-link" href="../_sources/gen/platipy.imaging.generation.rst.txt"
                rel="nofollow">

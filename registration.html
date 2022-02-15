@@ -2,7 +2,7 @@
 <html class="no-js">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Utilities" href="utils.html" /><link rel="prev" title="Command Line Tools" href="cli.html" />
 
     <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
@@ -150,7 +150,7 @@
 <dd><p>B-Spline image registration using ITK</p>
 <p>IMPORTANT - THIS IS UNDER ACTIVE DEVELOPMENT</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fixed_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The fixed (target/primary) image.</p></li>
 <li><p><strong>moving_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The moving (secondary) image.</p></li>
@@ -214,11 +214,11 @@ mutual information. Defaults to 30.</p></li>
 <li><p><strong>ncores</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of CPU cores used. Defaults to 8.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The registered moving (secondary) image.
 [SimleITK.Transform]: The linear transformation.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[SimpleITK.Image]</p>
 </dd>
 </dl>
@@ -234,7 +234,7 @@ scale of the Gaussian filter would be 2x4 = 8mm (i.e. 8x8x8 mm^3)</p>
 </dd></dl>
 <dl class="py function">
 <dt id="platipy.imaging.registration.deformable.fast_symmetric_forces_demons_registration">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.registration.deformable.</span></code><code class="sig-name descname"><span class="pre">fast_symmetric_forces_demons_registration</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moving_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution_staging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[8,</span> <span class="pre">4,</span> <span class="pre">1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration_staging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[10,</span> <span class="pre">10,</span> <span class="pre">10]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isotropic_resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_displacement_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_sigma_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_sigmas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.deformable.fast_symmetric_forces_demons_registration" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.registration.deformable.</span></code><code class="sig-name descname"><span class="pre">fast_symmetric_forces_demons_registration</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moving_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution_staging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[8,</span> <span class="pre">4,</span> <span class="pre">1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration_staging</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[10,</span> <span class="pre">10,</span> <span class="pre">10]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isotropic_resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_displacement_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_sigma_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_sigmas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.deformable.fast_symmetric_forces_demons_registration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deformable image propagation using Fast Symmetric-Forces Demons</p>
 <dl>
 <dt>Args</dt><dd><p>fixed_image (sitk.Image)        : the fixed image
@@ -258,6 +258,7 @@ interp_order (int)               : the interpolation order</p>
 2 = Bi-linear splines
 3 = B-Spline (cubic)</p>
 </div></blockquote>
+<p>default_value (float) : Default voxel value. Defaults to 0 unless image is CT-like.</p>
 </dd>
 <dt>Returns</dt><dd><p>registered_image (sitk.Image)    : the registered moving image
 output_transform                 : the displacement field transform
@@ -275,7 +276,7 @@ given as input as the original images are implicitly incorporated as the base of
 <div><p>moving_image, displacement_field_image) method.</p>
 </div></blockquote>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fixed_image</strong> – Resulting transformation maps points from this image’s spatial domain to the
 moving image spatial domain.</p></li>
@@ -289,7 +290,7 @@ initial_transform will be ignored</p></li>
 given shrink factor. These are in physical (image spacing) units.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>SimpleITK.DisplacementFieldTransform
 [Optional] Displacemment (vector) field</p>
 </dd>
@@ -305,31 +306,31 @@ given shrink factor. These are in physical (image spacing) units.</p></li>
 Uses the image centres-of-mass (and optionally second moments) to
 estimate the shift (and rotation) needed for alignment.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fixed_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The fixed (target/primary) image.</p></li>
 <li><p><strong>moving_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The moving (secondary) image.</p></li>
 <li><p><strong>moments</strong> (<em>bool</em><em>, </em><em>optional</em>) – Option to align images using the second moment. Defaults to True.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The registered moving (secondary) image.
 [SimleITK.Transform]: The linear transformation.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[SimpleITK.Image]</p>
 </dd>
 </dl>
 </dd></dl>
 <dl class="py function">
 <dt id="platipy.imaging.registration.linear.linear_registration">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.registration.linear.</span></code><code class="sig-name descname"><span class="pre">linear_registration</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moving_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moving_structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'similarity'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean_squares'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimiser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gradient_descent'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shrink_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[8,</span> <span class="pre">2,</span> <span class="pre">1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_sigmas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[4,</span> <span class="pre">2,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_interp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.linear.linear_registration" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.registration.linear.</span></code><code class="sig-name descname"><span class="pre">linear_registration</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moving_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moving_structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'similarity'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean_squares'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimiser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gradient_descent'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shrink_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[8,</span> <span class="pre">2,</span> <span class="pre">1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_sigmas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[4,</span> <span class="pre">2,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_interp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.linear.linear_registration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initial linear registration between two images.
 The images are not required to be in the same space.
 There are several transforms available, with options for the metric and optimiser to be used.
 Note the default_value, which should be set to match the image modality.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fixed_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The fixed (target/primary) image.</p></li>
 <li><p><strong>moving_image</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The moving (secondary) image.</p></li>
@@ -346,6 +347,7 @@ Available options:</p>
 <li><p>rigid</p></li>
 <li><p>similarity</p></li>
 <li><p>affine</p></li>
+<li><p>scale</p></li>
 <li><p>scaleversor</p></li>
 <li><p>scaleskewversor</p></li>
 </ul>
@@ -386,15 +388,15 @@ Defaults to 0.25.</p></li>
 <li><p><strong>final_interp</strong> (<em>int</em><em>, </em><em>optional</em>) – The final interpolation order. Defaults to 2 (linear).</p></li>
 <li><p><strong>number_of_iterations</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of iterations in each multi-resolution step.
 Defaults to 50.</p></li>
-<li><p><strong>default_value</strong> (<em>int</em><em>, </em><em>optional</em>) – Default voxel value. Defaults to -1000.</p></li>
+<li><p><strong>default_value</strong> (<em>int</em><em>, </em><em>optional</em>) – Default voxel value. Defaults to 0 unless image is CT-like.</p></li>
 <li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Print image registration process information. Defaults to False.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The registered moving (secondary) image.
 [SimleITK.Transform]: The linear transformation.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[SimpleITK.Image]</p>
 </dd>
 </dl>
@@ -492,17 +494,17 @@ interpolator (int, optional): The interpolation order.</p>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.registration.utils.</span></code><code class="sig-name descname"><span class="pre">convert_mask_to_distance_map</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squared_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.utils.convert_mask_to_distance_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a distance map from a binary label.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mask</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – A binary label.</p></li>
 <li><p><strong>squared_distance</strong> (<em>bool</em><em>, </em><em>optional</em>) – Option to use the squared distance. Defaults to False.</p></li>
 <li><p><strong>normalise</strong> (<em>bool</em><em>, </em><em>optional</em>) – Normalise output to [0,1]. Defaults to False.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The distance map as an image.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[SimpleITK.Image]</p>
 </dd>
 </dl>
@@ -513,7 +515,7 @@ interpolator (int, optional): The interpolation order.</p>
 <dd><p>Generate a mask-like image to make structure-guided registration more
 realistic via internal deformation within a binary mask.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mask</strong> (<em>[</em><em>SimpleITK.Image</em><em>]</em>) – The binary label.</p></li>
 <li><p><strong>expansion</strong> (<em>int</em><em>, </em><em>optional</em>) – For improved smoothness on the surface
@@ -526,10 +528,10 @@ For example: lambda x:sitk.Log(x).
 Defaults to lambda x:x.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>[description]</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>[SimpleITK.Image]</p>
 </dd>
 </dl>
@@ -549,7 +551,7 @@ registration</p>
 <dt id="platipy.imaging.registration.utils.smooth_and_resample">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.registration.utils.</span></code><code class="sig-name descname"><span class="pre">smooth_and_resample</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isotropic_voxel_size_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shrink_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.registration.utils.smooth_and_resample" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image</strong> (<em>SimpleITK.Image</em>) – The image we want to resample.</p></li>
 <li><p><strong>isotropic_voxel_size_mm</strong> (<em>float | None</em>) – New voxel size in millimetres</p></li>
@@ -561,11 +563,11 @@ dimension (sagittal, coronal, axial).</p></li>
 each dimension (sagittal, coronal, axial).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Image which is a result of smoothing the input and then resampling
 it using the specified Gaussian kernel and shrink factor.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimpleITK.Image</p>
 </dd>
 </dl>
@@ -605,7 +607,7 @@ it using the specified Gaussian kernel and shrink factor.</p>
         </div>
 
         <div class="related-information">
-              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
             |
             <a class="muted-link" href="_sources/registration.rst.txt"
                rel="nofollow">

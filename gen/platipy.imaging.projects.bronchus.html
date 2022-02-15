@@ -2,7 +2,7 @@
 <html class="no-js">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
 
     <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
@@ -164,10 +164,10 @@ generate - need to look at this)</p>
 <p>SimpleITK lacks iterators so voxels need to be set with SetPixel which is horribly slow.
 This code uses numpy arrays to reduce time for one volume from around one minute to about 0.5s</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>image</strong> – Input 3D binary image, start slice for masking (value=0), end slice for masking</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Masked image.  This may be in float, so it might need casting back to original pixel type.</p>
 </dd>
 </dl>
@@ -177,10 +177,10 @@ This code uses numpy arrays to reduce time for one volume from around one minute
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.bronchus.bronchus.</span></code><code class="sig-name descname"><span class="pre">generate_airway_mask</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dest</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lung_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.bronchus.bronchus.generate_airway_mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate final bronchus segmentation .</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>image</strong> – path for CT image and mask destination</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
@@ -190,13 +190,13 @@ This code uses numpy arrays to reduce time for one volume from around one minute
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.bronchus.bronchus.</span></code><code class="sig-name descname"><span class="pre">generate_lung_mask</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.bronchus.bronchus.generate_lung_mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate initial airway mask (includes lungs).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>img</strong> – The SimpleITK CT image to segment the lungs in</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The mask containing the lung segmentation</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>lung_mask</p>
 </dd>
 </dl>
@@ -206,14 +206,14 @@ This code uses numpy arrays to reduce time for one volume from around one minute
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.bronchus.bronchus.</span></code><code class="sig-name descname"><span class="pre">get_distance</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_mask</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.bronchus.bronchus.get_distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the nearest distance between two masks.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a_mask</strong> – The first mask</p></li>
 <li><p><strong>b_mask</strong> – The second mask</p></li>
 <li><p><strong>dest</strong> – Working directory to output intermediate files</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
@@ -226,17 +226,17 @@ This code uses numpy arrays to reduce time for one volume from around one minute
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.bronchus.run.</span></code><code class="sig-name descname"><span class="pre">run_bronchus_segmentation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'algorithmSettings':</span> <span class="pre">{'distance_from_supu_slice_values':</span> <span class="pre">[3,</span> <span class="pre">10,</span> <span class="pre">20],</span> <span class="pre">'expected_physical_size_range':</span> <span class="pre">[22000,</span> <span class="pre">150000],</span> <span class="pre">'extend_from_carina_mm':</span> <span class="pre">40,</span> <span class="pre">'fast_mode':</span> <span class="pre">True,</span> <span class="pre">'lung_mask_hu_values':</span> <span class="pre">[-</span> <span class="pre">750,</span> <span class="pre">-</span> <span class="pre">775,</span> <span class="pre">-</span> <span class="pre">800,</span> <span class="pre">-</span> <span class="pre">825,</span> <span class="pre">-</span> <span class="pre">850,</span> <span class="pre">-</span> <span class="pre">900,</span> <span class="pre">-</span> <span class="pre">700,</span> <span class="pre">-</span> <span class="pre">950,</span> <span class="pre">-</span> <span class="pre">650],</span> <span class="pre">'minimum_tree_half_physical_size':</span> <span class="pre">1000},</span> <span class="pre">'outputBronchusName':</span> <span class="pre">'Auto_Bronchus',</span> <span class="pre">'outputLungName':</span> <span class="pre">'Auto_Lung'}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.bronchus.run.run_bronchus_segmentation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs the Proximal Bronchial Tree segmentation</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>input_image</strong> (<em>sitk.Image</em>) – SimpleITK image on which to perform the segmentation</p></li>
 <li><p><strong>settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – Dictionary containing settings for algorithm.
 Defaults to BRONCHUS_SETTINGS_DEFAULTS.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dictionary containing output of segmentation</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
@@ -259,7 +259,7 @@ Defaults to BRONCHUS_SETTINGS_DEFAULTS.</p></li>
         </div>
 
         <div class="related-information">
-              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
             |
             <a class="muted-link" href="../_sources/gen/platipy.imaging.projects.bronchus.rst.txt"
                rel="nofollow">

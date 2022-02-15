@@ -2,7 +2,7 @@
 <html class="no-js">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
 
     <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
@@ -153,7 +153,7 @@
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></code><code class="sig-name descname"><span class="pre">crop_to_label_extent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.crop_to_label_extent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Crop an image to the 3D extent defined by a binary mask (label).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image</strong> (<em>SimpleITK.Image</em>) – The image to crop.</p></li>
 <li><p><strong>label</strong> (<em>SimpleITK.Image</em>) – The binary mask (label) defining the region to crop to.</p></li>
@@ -162,10 +162,10 @@ Can be defined as a single number or iterable: (axial, coronal, sagittal) expans
 Defaults to 0.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The cropped image.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimpleITK.Image</p>
 </dd>
 </dl>
@@ -181,17 +181,17 @@ Defaults to 0.</p></li>
 <dd><p>Generates a region of interest (ROI), defined by a starting index (z,y,x)
 and size (s_z, s_y, s_x). This can be used to crop images/labels.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<em>sitk.Image | list</em>) – Binary label image/mask/structure to define to ROI</p></li>
 <li><p><strong>expansion_mm</strong> (<em>list</em><em>, </em><em>optional</em>) – An optional expansion of the box (in each direciton).
 Defaults to [0, 0, 0].</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>crop_box_size, crop_box_starting_index</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
@@ -204,18 +204,18 @@ Defaults to [0, 0, 0].</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.lung.</span></code><code class="sig-name descname"><span class="pre">detect_holes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">400</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.lung.detect_holes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect all (air) holes in given image. Default threshold values given are defined for CT.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>img</strong> (<em>sitk.Image</em>) – The image in which to detect holes.</p></li>
 <li><p><strong>lower_threshold</strong> (<em>int</em><em>, </em><em>optional</em>) – The lower threshold of intensities. Defaults to -10000.</p></li>
 <li><p><strong>upper_threshold</strong> (<em>int</em><em>, </em><em>optional</em>) – The upper threshold of intensities. Defaults to -400.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>image containing labels of all holes detected
 labels: a list of holes detected and some of their properties</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>label_image</p>
 </dd>
 </dl>
@@ -225,7 +225,7 @@ labels: a list of holes detected and some of their properties</p>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.lung.</span></code><code class="sig-name descname"><span class="pre">fill_holes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lung_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.lung.fill_holes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the input image with all holes filled (except for the external and lung holes).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>img</strong> (<em>sitk.Image</em>) – The image to fill</p></li>
 <li><p><strong>label_image</strong> (<em>sitk.Image</em>) – Label image from detect_holes</p></li>
@@ -234,10 +234,10 @@ labels: a list of holes detected and some of their properties</p>
 <li><p><strong>fill_value</strong> (<em>int</em>) – The value to use to fill the holes. Defaults to 50.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The image with holes filled</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>sitk.Image</p>
 </dd>
 </dl>
@@ -247,17 +247,17 @@ labels: a list of holes detected and some of their properties</p>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.lung.</span></code><code class="sig-name descname"><span class="pre">get_external_mask</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.lung.get_external_mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a External mask given a label image and labels computed with detect_holes</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label_image</strong> (<em>sitk.Image</em>) – Label image from detect_holes</p></li>
 <li><p><strong>labels</strong> (<em>list</em>) – List of labels from detect_holes</p></li>
 <li><p><strong>kernel_radius</strong> (<em>int</em><em>, </em><em>optional</em>) – The width of the radius used by binary close. Defaults to 5.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>External mask</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>sitk.Image</p>
 </dd>
 </dl>
@@ -267,17 +267,17 @@ labels: a list of holes detected and some of their properties</p>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.lung.</span></code><code class="sig-name descname"><span class="pre">get_lung_mask</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.lung.get_lung_mask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a Lung mask given a label image and labels computed with detect_holes</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label_image</strong> (<em>sitk.Image</em>) – Label image from detect_holes</p></li>
 <li><p><strong>labels</strong> (<em>list</em>) – List of labels from detect_holes</p></li>
 <li><p><strong>kernel_radius</strong> (<em>int</em><em>, </em><em>optional</em>) – The width of the radius used by binary close. Defaults to 2.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Lung mask</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>sitk.Image</p>
 </dd>
 </dl>
@@ -291,7 +291,7 @@ labels: a list of holes detected and some of their properties</p>
 <dd><p>Generates a geometrically-defined valve.
 This function is suitable for the pulmonic and aortic valves.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label_great_vessel</strong> (<em>SimpleITK.Image</em>) – The binary mask for the great vessel
 (pulmonary artery or ascending aorta)</p></li>
@@ -299,10 +299,10 @@ This function is suitable for the pulmonic and aortic valves.</p>
 <li><p><strong>valve_thickness_mm</strong> (<em>int</em><em>, </em><em>optional</em>) – Valve thickness, in millimetres. Defaults to 8.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The geometric valve, as a binary mask.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimpleITK.Image</p>
 </dd>
 </dl>
@@ -313,7 +313,7 @@ This function is suitable for the pulmonic and aortic valves.</p>
 <dd><p>Generates a geometrically-defined valve.
 This function is suitable for the tricuspid and mitral valves.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label_atrium</strong> (<em>SimpleITK.Image</em>) – The binary mask for the (left or right) atrium.</p></li>
 <li><p><strong>label_ventricle</strong> (<em>SimpleITK.Image</em>) – The binary mask for the (left or right) ventricle.</p></li>
@@ -322,10 +322,10 @@ This function is suitable for the tricuspid and mitral valves.</p>
 Defaults to 10.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The geometrically defined valve</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimpleITK.Image</p>
 </dd>
 </dl>
@@ -349,10 +349,10 @@ Note: positions are converted into image space by default</p>
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></code><code class="sig-name descname"><span class="pre">convert_simpleitk_to_vtk</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.convert_simpleitk_to_vtk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts from SimpleITK to VTK representation</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>img</strong> (<em>SimpleITK.Image</em>) – The input image.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The VTK image.</p>
 </dd>
 </dl>
@@ -376,7 +376,7 @@ Note: positions do not have to be continuous - the tube is interpolated in real 
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></code><code class="sig-name descname"><span class="pre">vessel_spline_generation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atlas_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vessel_name_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vessel_radius_mm_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_condition_type_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_condition_value_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_direction_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atlas_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DIR'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.vessel_spline_generation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a splined vessel from a list of binary masks.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>reference_image</strong> (<em>SimpleITK.Image</em>) – The reference image to copy information from.</p></li>
 <li><p><strong>atlas_set</strong> (<em>dict</em>) – <p>A dictionary conforming to the following format:
@@ -414,14 +414,14 @@ vessel.</p></li>
 <li><p><strong>atlas_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The atlas label. Defaults to “DIR”.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>The output dictionary, with keys as the vessel names and values as the binary labels</dt><dd><p>defining the splined vessels</p>
 </dd>
 </dl>
 </p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
@@ -448,7 +448,7 @@ Note: format is XML VTP</p>
         </div>
 
         <div class="related-information">
-              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
             |
             <a class="muted-link" href="../_sources/gen/platipy.imaging.utils.rst.txt"
                rel="nofollow">

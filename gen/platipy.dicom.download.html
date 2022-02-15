@@ -2,7 +2,7 @@
 <html class="no-js">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
 
     <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
@@ -152,7 +152,7 @@
 <code class="sig-prename descclassname"><span class="pre">platipy.dicom.download.tcia.</span></code><code class="sig-name descname"><span class="pre">fetch_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patient_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modalities</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nifti</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./tcia'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.download.tcia.fetch_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetches data from TCIA from the dataset specified</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>collection</strong> (<em>str</em>) – The TCIA collection to fetch from</p></li>
 <li><p><strong>patient_ids</strong> (<em>list</em><em>, </em><em>optional</em>) – The patient IDs to fetch. If not set all patients are
@@ -164,10 +164,10 @@ True</p></li>
 <li><p><strong>output_directory</strong> (<em>str</em>) – The directory in which to place fetched data</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The patients and directories where their data was fetched</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
@@ -177,10 +177,10 @@ True</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.dicom.download.tcia.</span></code><code class="sig-name descname"><span class="pre">get_collections</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.download.tcia.get_collections" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of collections available in the TCIA database</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List of collections</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list</p>
 </dd>
 </dl>
@@ -190,10 +190,10 @@ True</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.dicom.download.tcia.</span></code><code class="sig-name descname"><span class="pre">get_hn_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_patients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.download.tcia.get_hn_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets some images and structures from the Head-Neck-Radiomics-HN1 dataset in TCIA.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Keyword Arguments</dt>
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>{int} -- The number of patients to fetch</strong><strong> (</strong><strong>default</strong> (<em>number_of_patients</em>) – {1})</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict – dictionary of patient ids as key and path to data as value</p>
 </dd>
 </dl>
@@ -203,10 +203,10 @@ True</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.dicom.download.tcia.</span></code><code class="sig-name descname"><span class="pre">get_lung_data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_patients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.download.tcia.get_lung_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets some images and structures from the LCTSC dataset in TCIA.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Keyword Arguments</dt>
+<dt class="field-odd">Keyword Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>{int} -- The number of patients to fetch</strong><strong> (</strong><strong>default</strong> (<em>number_of_patients</em>) – {1})</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict – dictionary of patient ids as key and path to data as value</p>
 </dd>
 </dl>
@@ -216,13 +216,13 @@ True</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.dicom.download.tcia.</span></code><code class="sig-name descname"><span class="pre">get_modalities_in_collection</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.download.tcia.get_modalities_in_collection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of object modalities in a TCIA collection</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>collection</strong> (<em>str</em>) – TCIA collection</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List of modalities available in the collection</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 </dl>
@@ -232,13 +232,13 @@ True</p></li>
 <code class="sig-prename descclassname"><span class="pre">platipy.dicom.download.tcia.</span></code><code class="sig-name descname"><span class="pre">get_patients_in_collection</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.download.tcia.get_patients_in_collection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of sorted patient IDs in a TCIA collection</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>collection</strong> (<em>str</em>) – TCIA collection</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List of sorted Patient IDs in the collection</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 </dl>
@@ -258,7 +258,7 @@ True</p></li>
         </div>
 
         <div class="related-information">
-              Copyright &#169; 2021, Ingham Institute, University of New South Wales, University of Sydney
+              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
             |
             <a class="muted-link" href="../_sources/gen/platipy.dicom.download.rst.txt"
                rel="nofollow">
