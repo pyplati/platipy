@@ -133,6 +133,7 @@ def run_celery():
     ]
 
     process = subprocess.Popen(celery_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print("Running celery worker & beat")
     stdout, stderr = process.communicate()
 
     click.echo(stdout)
@@ -171,6 +172,7 @@ def run(ctx, port):
         stderr=subprocess.PIPE,
         shell=True,
     )
+    click.echo("Running Service (with gunicorn)")
     process.communicate()
 
 
