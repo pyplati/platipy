@@ -11,7 +11,6 @@ PlatiPy documentation
 
     getting_started
     contributing
-    service
 
 .. toctree::
     :caption: Examples
