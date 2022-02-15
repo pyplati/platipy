@@ -182,6 +182,7 @@ def contour_comparison(
         columns=["STRUCTURE", "DSC", "MDA_mm", "HD_mm", "VOL_A_cm3", "VOL_B_cm3"]
     )
     columns = ("DSC", "MDA\n[mm]", "HD\n[mm]", "Vol.\nRatio")
+
     cell_text = []
 
     for s, row in zip(s_select, rows):
