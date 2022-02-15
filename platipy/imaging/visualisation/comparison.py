@@ -183,6 +183,7 @@ def contour_comparison(
     )
     columns = ("DSC", "MDA\n[mm]", "HD\n[mm]", "Vol.\nRatio")
     cell_text = []
+
     for s, row in zip(s_select, rows):
         dsc = compute_metric_dsc(contour_dict_a[s], contour_dict_b[s])
         mda = compute_metric_masd(contour_dict_a[s], contour_dict_b[s])
