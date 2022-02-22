@@ -20,7 +20,7 @@ def convert_rtdose(dcm_dose, dose_output_path=None):
     """Convert DICOM RTDose to SimpleITK image, saving as NiFTI if needed.
 
     Args:
-        dcm_dose (str|path): Path to DICOM dose file
+        dcm_dose (str|path|pydicom.Dataset): Path to DICOM dose file
         dose_output_path (str|path, optional): If set, NiFTI file will be written. Defaults to
             None.
 
@@ -28,7 +28,11 @@ def convert_rtdose(dcm_dose, dose_output_path=None):
         SimpleITK.Image: The dose grid as a SimpleITK image
     """
 
-    ds = pydicom.read_file(dcm_dose)
+    if isinstance(dcm_dose, pydicom.Dataset):
+        ds = dcm_dose
+    else:
+        ds = pydicom.read_file(dcm_dose)
+
     dose = sitk.ReadImage(str(dcm_dose))
     dose = sitk.Cast(dose, sitk.sitkFloat32)
     dose = dose * ds.DoseGridScaling
