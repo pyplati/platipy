@@ -29,7 +29,7 @@ def convert_rtdose(dcm_dose, force=False, dose_output_path=None):
         SimpleITK.Image: The dose grid as a SimpleITK image
     """
 
-    ds = pydicom.read_file(dcm_dose)
+    ds = pydicom.read_file(dcm_dose, force=force)
     dose = sitk.ReadImage(str(dcm_dose))
     dose = sitk.Cast(dose, sitk.sitkFloat32)
     dose = dose * ds.DoseGridScaling
