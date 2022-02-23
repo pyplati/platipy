@@ -261,12 +261,13 @@ in NIFTI format. Defaults to None.</p></li>
 <span id="dicom-rtdose-to-nifti"></span><h2>DICOM RTDOSE to NIfTI<a class="headerlink" href="#module-platipy.dicom.io.rtdose_to_nifti" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="platipy.dicom.io.rtdose_to_nifti.convert_rtdose">
-<code class="sig-prename descclassname"><span class="pre">platipy.dicom.io.rtdose_to_nifti.</span></code><code class="sig-name descname"><span class="pre">convert_rtdose</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dcm_dose</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dose_output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.io.rtdose_to_nifti.convert_rtdose" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">platipy.dicom.io.rtdose_to_nifti.</span></code><code class="sig-name descname"><span class="pre">convert_rtdose</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dcm_dose</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dose_output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.dicom.io.rtdose_to_nifti.convert_rtdose" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert DICOM RTDose to SimpleITK image, saving as NiFTI if needed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dcm_dose</strong> (<em>str|path</em>) – Path to DICOM dose file</p></li>
+<li><p><strong>force</strong> (<em>bool</em>) – force flag to pass to pydicom</p></li>
 <li><p><strong>dose_output_path</strong> (<em>str|path</em><em>, </em><em>optional</em>) – If set, NiFTI file will be written. Defaults to
 None.</p></li>
 </ul>
