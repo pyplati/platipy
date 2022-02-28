@@ -47,7 +47,10 @@ def calculate_dvh(dose_grid, label, bins=1001):
 
     # Calculate the actual DVH values
     values = np.cumsum(counts[::-1])[::-1]
-    values = values / values.max()
+    if np.all(values == 0):
+        return bins, values
+    else:
+        values = values / values.max()
 
     return bins, values
 
@@ -142,7 +145,7 @@ def calculate_d_x(dvh, x, label=None):
 
 def calculate_v_x(dvh, x, label=None):
     """Get the volume (in cc) which receives x dose
-    
+
     Args:
         dvh (pandas.DataFrame): DVH DataFrame as produced by calculate_dvh_for_labels
         x (float): The dose to get the volume for.

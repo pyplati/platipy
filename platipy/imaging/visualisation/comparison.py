@@ -19,6 +19,8 @@ import numpy as np
 
 import SimpleITK as sitk
 
+import pandas as pd
+
 import matplotlib.lines as mlines
 import matplotlib as plt
 import matplotlib.colors as mcolors
@@ -85,10 +87,41 @@ def contour_comparison(
     if s_select is None:
         s_select = [i for i in contour_dict_a.keys() if i in contour_dict_b.keys()]
 
-    # If there is no option for the COM structure we use the largest
-    if structure_for_com is None:
-        s_vol = [sitk.GetArrayFromImage(contour_dict_a[s]).sum() for s in s_select]
-        structure_for_com = s_select[np.argmax(s_vol)]
+    if "cut" not in img_vis_kw:
+
+        cut = None
+
+        # first check if the user has specified a structure
+        if structure_for_com is None:
+            # If there is no option for the COM structure we use the largest
+            # first calculate the "volume" of each structure (actually the sum of voxels)
+            s_vol = [sitk.GetArrayFromImage(contour_dict_a[s]).sum() for s in s_select]
+
+            if sum(s_vol) == 0:
+                # if all structures are zero, try the second contour set
+                s_vol = [sitk.GetArrayFromImage(contour_dict_b[s]).sum() for s in s_select]
+
+                if sum(s_vol) == 0:
+                    # if all of these structures are also zero, we don't have any contours!
+                    cut = None
+
+                else:
+                    # otherwise, get the COM of the largest structure (in contour_set_b)
+                    cut = get_com(contour_dict_b[s_select[np.argmax(s_vol)]])
+            else:
+                # otherwise, get the COM of the largest structure (in contour_set_a)
+                cut = get_com(contour_dict_a[s_select[np.argmax(s_vol)]])
+
+        else:
+            # the user has specified a structure
+            # first, check the structure isn't empty!
+            if sitk.GetArrayFromImage(contour_dict_a[structure_for_com]).sum() != 0:
+                cut = get_com(contour_dict_a[structure_for_com])
+            # if it is, try the same structure in contour_set_b
+            elif sitk.GetArrayFromImage(contour_dict_b[structure_for_com]).sum() != 0:
+                cut = get_com(contour_dict_b[structure_for_com])
+
+        img_vis_kw["cut"] = cut
 
     # Colormap options
     if isinstance(contour_cmap, (mcolors.ListedColormap, mcolors.LinearSegmentedColormap)):
@@ -111,7 +144,7 @@ def contour_comparison(
         colors_b = {s + "b": contour_cmap[s] for s in s_select}
 
     # Visualise!
-    vis = ImageVisualiser(img, cut=get_com(contour_dict_a[structure_for_com]), **img_vis_kw)
+    vis = ImageVisualiser(img, **img_vis_kw)
 
     # Add contour set A
     vis.add_contour(
@@ -145,16 +178,40 @@ def contour_comparison(
         rows = s_select
 
     # Compute some metrics
+    df_metrics = pd.DataFrame(
+        columns=["STRUCTURE", "DSC", "MDA_mm", "HD_mm", "VOL_A_cm3", "VOL_B_cm3"]
+    )
     columns = ("DSC", "MDA\n[mm]", "HD\n[mm]", "Vol.\nRatio")
+
     cell_text = []
+
     for s, row in zip(s_select, rows):
+        dsc = compute_metric_dsc(contour_dict_a[s], contour_dict_b[s])
+        mda = compute_metric_masd(contour_dict_a[s], contour_dict_b[s])
+        hd = compute_metric_hd(contour_dict_a[s], contour_dict_b[s])
+        vol_a = compute_volume(contour_dict_a[s])
+        vol_b = compute_volume(contour_dict_b[s])
+
         cell_text.append(
             [
-                f"{compute_metric_dsc(contour_dict_a[s],contour_dict_b[s]):.2f}",
-                f"{compute_metric_masd(contour_dict_a[s],contour_dict_b[s]):.2f}",
-                f"{compute_metric_hd(contour_dict_a[s],contour_dict_b[s]):.2f}",
-                f"{compute_volume(contour_dict_b[s])/compute_volume(contour_dict_a[s]):.2f}",
+                f"{dsc:.2f}",
+                f"{mda:.2f}",
+                f"{hd:.2f}",
+                f"{vol_b/vol_a:.2f}",
             ]
+        )
+
+        # compute metrics and add to dataframe
+        df_metrics = df_metrics.append(
+            {
+                "STRUCTURE": s,
+                "DSC": dsc,
+                "MDA_mm": mda,
+                "HD_mm": hd,
+                "VOL_A_cm3": vol_a,
+                "VOL_B_cm3": vol_b,
+            },
+            ignore_index=True,
         )
 
     # If there are no labels we can make the table bigger
@@ -169,12 +226,10 @@ def contour_comparison(
     table = ax.table(
         cellText=cell_text,
         rowLabels=rows,
-        rowColours=list(
-            colors_a.values()
-        ),  # plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select))),
+        rowColours=list(colors_a.values()),
         colLabels=columns,
         fontsize=10,
-        bbox=[0.35, 0.1, 0.63, v_extent],
+        bbox=[0.25, 0.1, 0.73, v_extent],
     )
 
     # Some nice formatting
@@ -194,7 +249,7 @@ def contour_comparison(
         table[row, 2].set_width(0.1)
         table[row, 3].set_width(0.1)
         if row > 0:
-            table[row, -1].set_width(0.1)
+            table[row, -1].set_width(0)
 
     for col in range(len(columns)):
         table[0, col].set_height(0.075)
@@ -220,7 +275,7 @@ def contour_comparison(
     _dashed = mlines.Line2D([], [], color="k", linestyle="dashed", label=contour_label_b)
     ax.legend(
         handles=[_solid, _dashed],
-        bbox_to_anchor=(0.35, 0.02, 0.63, 0.1),
+        bbox_to_anchor=(0.25, 0.02, 0.73, 0.1),
         ncol=2,
         mode="expand",
         borderaxespad=0.0,
@@ -229,4 +284,4 @@ def contour_comparison(
     )
 
     # Return the figure
-    return fig
+    return fig, df_metrics

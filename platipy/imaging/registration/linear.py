@@ -60,7 +60,7 @@ def linear_registration(
     sampling_rate=0.25,
     final_interp=2,
     number_of_iterations=50,
-    default_value=-1000,
+    default_value=None,
     verbose=False,
 ):
     """
@@ -83,6 +83,7 @@ def linear_registration(
                                      - rigid
                                      - similarity
                                      - affine
+                                     - scale
                                      - scaleversor
                                      - scaleskewversor
                                     Defaults to "Similarity".
@@ -110,7 +111,7 @@ def linear_registration(
         final_interp (int, optional): The final interpolation order. Defaults to 2 (linear).
         number_of_iterations (int, optional): Number of iterations in each multi-resolution step.
                                               Defaults to 50.
-        default_value (int, optional): Default voxel value. Defaults to -1000.
+        default_value (int, optional): Default voxel value. Defaults to 0 unless image is CT-like.
         verbose (bool, optional): Print image registration process information. Defaults to False.
 
     Returns:
@@ -171,6 +172,8 @@ def linear_registration(
             registration.SetInitialTransform(sitk.AffineTransform(3))
         elif reg_method.lower() == "rigid":
             registration.SetInitialTransform(sitk.VersorRigid3DTransform())
+        elif reg_method.lower() == "scale":
+            registration.SetInitialTransform(sitk.ScaleTransform(3))
         elif reg_method.lower() == "scaleversor":
             registration.SetInitialTransform(sitk.ScaleVersor3DTransform())
         elif reg_method.lower() == "scaleskewversor":
@@ -235,6 +238,14 @@ def linear_registration(
     output_transform = registration.Execute(fixed=fixed_image, moving=moving_image)
     # Combine initial and optimised transform
     combined_transform = sitk.CompositeTransform([initial_transform, output_transform])
+
+    # Try to find default value
+    if default_value is None:
+        default_value = 0
+
+        # Test if image is CT-like
+        if sitk.GetArrayViewFromImage(moving_image).min() <= -1000:
+            default_value = -1000
 
     registered_image = apply_transform(
         input_image=moving_image,

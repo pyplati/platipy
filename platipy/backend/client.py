@@ -32,10 +32,9 @@ API_DOWNLOAD_OBJECT = "{0}/api/dataobject/download"
 
 
 class PlatiPyClient:
-    """Client to help iteract with the framework implemented within PlatiPy.
-    """
+    """Client to help iteract with the framework implemented within PlatiPy."""
 
-    def __init__(self, host, port, api_key, algorithm_name):
+    def __init__(self, host, port, api_key, algorithm_name, verify=None):
         """Initialize an instance of the client. Will test to ensure that the host it reachable
 
         Arguments:
@@ -45,14 +44,29 @@ class PlatiPyClient:
             algorithm_name {str} -- The name fo the algorithm to use within the service
         """
 
-        self.base_url = f"http://{host}:{port}"
+        protocol = "https"
+
+        if verify is None:
+            logger.warning("Running without SSL. Not Suitable for Production.")
+            protocol = "http"
+        else:
+            if not os.path.exists(verify):
+                raise FileNotFoundError("Verify Certificate file not found")
+
+        self.verify = verify
+
+        self.base_url = f"{protocol}://{host}:{port}"
 
         logger.info(f"Initializing client with URL: {self.base_url}")
 
         self.api_key = api_key
         self.algorithm_name = algorithm_name
 
-        res = requests.get(API_ALGORITHM.format(self.base_url), headers={"API_KEY": self.api_key})
+        res = requests.get(
+            API_ALGORITHM.format(self.base_url),
+            headers={"API_KEY": self.api_key},
+            verify=self.verify,
+        )
         logger.debug(res.status_code)
 
     def get_dicom_location(self, name):
@@ -66,7 +80,9 @@ class PlatiPyClient:
         """
 
         res = requests.get(
-            API_DICOM_LOCATION.format(self.base_url), headers={"API_KEY": self.api_key}
+            API_DICOM_LOCATION.format(self.base_url),
+            headers={"API_KEY": self.api_key},
+            verify=self.verify,
         )
         logger.debug(res.status_code)
 
@@ -106,6 +122,7 @@ class PlatiPyClient:
             API_DICOM_LOCATION.format(self.base_url),
             headers={"API_KEY": self.api_key},
             data=params,
+            verify=self.verify,
         )
         logger.debug(res.status_code)
 
@@ -136,6 +153,7 @@ class PlatiPyClient:
         res = requests.get(
             "{0}/{1}".format(API_DATASET.format(self.base_url), params["dataset"]),
             headers={"API_KEY": self.api_key},
+            verify=self.verify,
         )
         logger.debug(res.status_code)
 
@@ -165,6 +183,7 @@ class PlatiPyClient:
         res = requests.get(
             "{0}/{1}".format(API_DATASET_READY.format(self.base_url), params["dataset"]),
             headers={"API_KEY": self.api_key},
+            verify=self.verify,
         )
         logger.debug(res.status_code)
 
@@ -211,7 +230,10 @@ class PlatiPyClient:
             params["timeout"] = timeout
 
         res = requests.post(
-            API_DATASET.format(self.base_url), headers={"API_KEY": self.api_key}, data=params,
+            API_DATASET.format(self.base_url),
+            headers={"API_KEY": self.api_key},
+            data=params,
+            verify=self.verify,
         )
         logger.debug(res.status_code)
 
@@ -280,6 +302,7 @@ class PlatiPyClient:
                 API_DATA_OBJECT.format(self.base_url),
                 headers={"API_KEY": self.api_key},
                 data=params,
+                verify=self.verify,
             )
             logger.debug(res.status_code)
 
@@ -301,6 +324,7 @@ class PlatiPyClient:
                     headers={"API_KEY": self.api_key},
                     data=params,
                     files={"file_data": file_handle},
+                    verify=self.verify,
                 )
                 logger.debug(res.status_code)
 
@@ -318,7 +342,11 @@ class PlatiPyClient:
         """
 
         algorithm = None
-        res = requests.get(API_ALGORITHM.format(self.base_url), headers={"API_KEY": self.api_key})
+        res = requests.get(
+            API_ALGORITHM.format(self.base_url),
+            headers={"API_KEY": self.api_key},
+            verify=self.verify,
+        )
         logger.debug(res.status_code)
         if res.status_code == 200:
             for algorithm in res.json():
@@ -358,7 +386,10 @@ class PlatiPyClient:
             params["config"] = json.dumps(config)
 
         res = requests.post(
-            API_TRIGGER.format(self.base_url), headers={"API_KEY": self.api_key}, data=params,
+            API_TRIGGER.format(self.base_url),
+            headers={"API_KEY": self.api_key},
+            data=params,
+            verify=self.verify,
         )
         logger.debug(res.status_code)
 
@@ -367,7 +398,7 @@ class PlatiPyClient:
             poll_url = "{0}{1}".format(self.base_url, res.json()["poll"])
 
             while True:
-                res = requests.get(poll_url, headers={"API_KEY": self.api_key})
+                res = requests.get(poll_url, headers={"API_KEY": self.api_key}, verify=self.verify)
                 status = res.json()
 
                 if (
@@ -405,7 +436,9 @@ class PlatiPyClient:
             for data_obj in dataset["output_data_objects"]:
                 url = API_DOWNLOAD_OBJECT.format(self.base_url)
                 res = requests.get(
-                    "{0}/{1}".format(url, data_obj["id"]), headers={"API_KEY": self.api_key},
+                    "{0}/{1}".format(url, data_obj["id"]),
+                    headers={"API_KEY": self.api_key},
+                    verify=self.verify,
                 )
                 logger.debug(res.status_code)
                 filename = res.headers["Content-Disposition"].split("filename=")[1]

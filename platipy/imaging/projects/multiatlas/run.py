@@ -19,7 +19,7 @@ import numpy as np
 
 from loguru import logger
 
-from platipy.imaging.registration.utils import apply_transform, convert_mask_to_reg_structure
+from platipy.imaging.registration.utils import apply_transform
 
 from platipy.imaging.registration.linear import (
     linear_registration,
@@ -37,7 +37,7 @@ from platipy.imaging.label.fusion import (
 
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
-from platipy.imaging.label.utils import binary_encode_structure_list, correct_volume_overlap
+from platipy.imaging.label.utils import correct_volume_overlap
 
 ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:
@@ -65,7 +65,7 @@ MUTLIATLAS_SETTINGS_DEFAULTS = {
         "shrink_factors": [16, 8, 4],
         "smooth_sigmas": [0, 0, 0],
         "sampling_rate": 0.75,
-        "default_value": -1000,
+        "default_value": None,
         "number_of_iterations": 50,
         "metric": "mean_squares",
         "optimiser": "gradient_descent_line_search",
@@ -75,14 +75,17 @@ MUTLIATLAS_SETTINGS_DEFAULTS = {
         "isotropic_resample": True,
         "resolution_staging": [
             6,
-            4,
-            2,
-            1,
+            3,
+            1.5,
         ],  # specify voxel size (mm) since isotropic_resample is set
-        "iteration_staging": [200, 150, 125, 100],
-        "smoothing_sigmas": [0, 0, 0, 0],
+        "iteration_staging": [150, 125, 100],
+        "smoothing_sigmas": [
+            0,
+            0,
+            0,
+        ],
         "ncores": 8,
-        "default_value": 0,
+        "default_value": None,
         "verbose": False,
     },
     "label_fusion_settings": {
@@ -315,7 +318,7 @@ def run_segmentation(img, settings=MUTLIATLAS_SETTINGS_DEFAULTS):
         atlas_reg_image = atlas_set[atlas_id]["RIR"]["CT Image"]
         target_reg_image = img_crop
 
-        deform_image, dir_tfm, _ = fast_symmetric_forces_demons_registration(
+        _, dir_tfm, _ = fast_symmetric_forces_demons_registration(
             target_reg_image,
             atlas_reg_image,
             **deformable_registration_settings,

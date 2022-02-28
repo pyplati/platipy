@@ -219,6 +219,7 @@ class ImageVisualiser:
         mid_ticks=False,
         show_colorbar=True,
         norm=None,
+        projection=False,
     ):
         """Overlay a scalar image on to the existing image
 
@@ -256,6 +257,7 @@ class ImageVisualiser:
                     mid_ticks=mid_ticks,
                     show_colorbar=show_colorbar,
                     norm=norm,
+                    projection=projection,
                 )
                 self.__scalar_overlays.append(visualise_scalar)
 
@@ -277,6 +279,7 @@ class ImageVisualiser:
                 mid_ticks=mid_ticks,
                 show_colorbar=show_colorbar,
                 norm=norm,
+                projection=projection,
             )
             self.__scalar_overlays.append(visualise_scalar)
         else:
@@ -446,6 +449,7 @@ class ImageVisualiser:
 
         self.__figure.canvas.draw()
         self._add_legend()
+        self.__figure.set_facecolor("white")
 
         return self.__figure
 
@@ -1107,9 +1111,6 @@ class ImageVisualiser:
     def _overlay_scalar_field(self):
         """Overlay the scalar image onto the existing figure"""
 
-        if self.__projection and len(self.__scalar_overlays) > 0:
-            raise Warning("Scalar overlay is not implemented in projection mode.")
-
         for scalar_index, scalar in enumerate(self.__scalar_overlays):
 
             scalar_image = scalar.image
@@ -1139,86 +1140,62 @@ class ImageVisualiser:
             else:
                 norm = None
 
-            nda = np.ma.masked_less_equal(nda, s_min)
-
             sp_plane, _, sp_slice = scalar_image.GetSpacing()
 
             asp = (1.0 * sp_slice) / sp_plane
 
-            # Test types of axes
-            axes = self.__figure.axes[:4]
-            if len(axes) < 4:
-                ax = axes[0]
-                s = return_slice(self.__axis, self.__cut)
-                if self.__axis == "z":
-                    org = {"normal": "upper", "reversed": "lower"}[self.__origin]
+            # projection organisation
+            if scalar.projection:
+                projection = scalar.projection
+            else:
+                projection = self.__projection
+
+            if self.__axis == "ortho":
+
+                ax_ax, _, ax_cor, ax_sag = self.__figure.axes
+                ax = ax_ax
+
+                if not projection:
+                    s_ax = return_slice("z", self.__cut[0])
+                    s_cor = return_slice("y", self.__cut[1])
+                    s_sag = return_slice("x", self.__cut[2])
+
+                    ax_img = nda.__getitem__(s_ax)
+                    cor_img = nda.__getitem__(s_cor)
+                    sag_img = nda.__getitem__(s_sag)
+
                 else:
-                    org = "lower"
-                sp = ax_indiv = ax.imshow(
-                    nda.__getitem__(s),
-                    interpolation="none",
-                    cmap=colormap,
-                    clim=(s_min, s_max),
-                    aspect={"z": 1, "y": asp, "x": asp}[self.__axis],
-                    origin=org,
-                    vmin=s_min,
-                    vmax=s_max,
-                    alpha=alpha,
-                    norm=norm,
-                )
+                    ax_img_proj = project_onto_arbitrary_plane(
+                        scalar_image,
+                        projection_axis=2,
+                        projection_name=projection,
+                        default_value=int(nda.min()),
+                    )
+                    ax_img = sitk.GetArrayFromImage(ax_img_proj)
 
-                if scalar.show_colorbar:
-                    divider = make_axes_locatable(ax)
-                    cax = divider.append_axes("right", size="5%", pad=0.05)
-                    cbar = self.__figure.colorbar(sp, cax=cax, orientation="vertical")
-                    cbar.set_label(scalar.name)
-                    cbar.solids.set_alpha(1)
-                    if scalar.discrete_levels:
-                        cbar.set_ticks(np.linspace(s_min, s_max, scalar.discrete_levels + 1))
+                    cor_img_proj = project_onto_arbitrary_plane(
+                        scalar_image,
+                        projection_axis=1,
+                        projection_name=projection,
+                        default_value=int(nda.min()),
+                    )
+                    cor_img = sitk.GetArrayFromImage(cor_img_proj)
 
-                        if scalar.mid_ticks:
+                    sag_img_proj = project_onto_arbitrary_plane(
+                        scalar_image,
+                        projection_axis=0,
+                        projection_name=projection,
+                        default_value=int(nda.min()),
+                    )
+                    sag_img = sitk.GetArrayFromImage(sag_img_proj)
 
-                            delta_tick = (s_max - s_min) / scalar.discrete_levels
-                            cbar.set_ticks(
-                                np.linspace(
-                                    s_min + delta_tick / 2,
-                                    s_max - delta_tick / 2,
-                                    scalar.discrete_levels,
-                                )
-                            )
-                            cbar.set_ticklabels(np.linspace(s_min, s_max, scalar.discrete_levels))
-
-                        else:
-                            cbar.set_ticks(
-                                np.linspace(
-                                    s_min,
-                                    s_max,
-                                    scalar.discrete_levels + 1,
-                                )
-                            )
-
-                    f_x, f_y = self.__figure.get_size_inches()
-                    self.__figure.set_size_inches(f_x * 1.15, f_y)
-                    self.__figure.subplots_adjust(left=0, right=0.88, bottom=0, top=1)
-
-                if self.__axis == "z":
-                    axis_view_name_consistent = "ax_view"
-                if self.__axis == "y":
-                    axis_view_name_consistent = "cor_view"
-                if self.__axis == "x":
-                    axis_view_name_consistent = "sag_view"
-
-                self.__scalar_view = {axis_view_name_consistent: ax_indiv}
-
-            elif len(axes) == 4:
-                ax_ax, _, ax_cor, ax_sag = axes
-
-                s_ax = return_slice("z", self.__cut[0])
-                s_cor = return_slice("y", self.__cut[1])
-                s_sag = return_slice("x", self.__cut[2])
+                # mask images to enforce transparency
+                ax_img = np.ma.masked_less_equal(ax_img, s_min)
+                cor_img = np.ma.masked_less_equal(cor_img, s_min)
+                sag_img = np.ma.masked_less_equal(sag_img, s_min)
 
                 ax_view = ax_ax.imshow(
-                    nda.__getitem__(s_ax),
+                    ax_img,
                     interpolation="none",
                     cmap=colormap,
                     clim=(s_min, s_max),
@@ -1231,7 +1208,7 @@ class ImageVisualiser:
                 )
 
                 cor_view = ax_cor.imshow(
-                    nda.__getitem__(s_cor),
+                    cor_img,
                     interpolation="none",
                     cmap=colormap,
                     clim=(s_min, s_max),
@@ -1244,7 +1221,7 @@ class ImageVisualiser:
                 )
 
                 sag_view = ax_sag.imshow(
-                    nda.__getitem__(s_sag),
+                    sag_img,
                     interpolation="none",
                     cmap=colormap,
                     clim=(s_min, s_max),
@@ -1256,14 +1233,58 @@ class ImageVisualiser:
                     norm=norm,
                 )
 
-                if scalar.show_colorbar:
+                # this is for (work-in-progress) dynamic visualisation
+                self.__scalar_view = {
+                    "ax_view": ax_view,
+                    "cor_view": cor_view,
+                    "sag_view": sag_view,
+                }
 
-                    # divider = make_axes_locatable(ax_view)
-                    # cax = divider.append_axes("right", size="5%", pad=0.05)
+            else:
 
-                    ax_box = ax_ax.get_position(original=False)
-                    cbar_width = ax_box.width * 0.05  # 5% of axis width
+                ax = self.__figure.axes[0]
 
+                if not projection:
+                    s = return_slice(self.__axis, self.__cut)
+                    disp_img = nda.__getitem__(s)
+                else:
+                    disp_img_proj = project_onto_arbitrary_plane(
+                        scalar_image,
+                        projection_axis={"x": 0, "y": 1, "z": 2}[self.__axis],
+                        projection_name=projection,
+                        default_value=int(nda.min()),
+                    )
+                    disp_img = sitk.GetArrayFromImage(disp_img_proj)
+                    # disp_img = (disp_img - disp_img.min()) / (disp_img.max() - disp_img.min())
+
+                disp_img = np.ma.masked_less_equal(disp_img, s_min)
+
+                asp = {"x": asp, "y": asp, "z": 1}[self.__axis]
+
+                s = return_slice(self.__axis, self.__cut)
+                ax_view = ax.imshow(
+                    disp_img,
+                    interpolation="none",
+                    cmap=colormap,
+                    clim=(s_min, s_max),
+                    origin="lower",
+                    aspect=asp,
+                    vmin=s_min,
+                    vmax=s_max,
+                    alpha=alpha,
+                    norm=norm,
+                )
+
+            if scalar.show_colorbar:
+
+                # divider = make_axes_locatable(ax_view)
+                # cax = divider.append_axes("right", size="5%", pad=0.05)
+
+                ax_box = ax.get_position(original=False)
+                cbar_width = ax_box.width * 0.05  # 5% of axis width
+                cbar_color = "black"
+
+                if self.__axis == "ortho":
                     cax = self.__figure.add_axes(
                         (
                             ax_box.x1 + 0.02 + (cbar_width + 0.1) * scalar_index,
@@ -1273,41 +1294,54 @@ class ImageVisualiser:
                         )
                     )
 
-                    cbar = self.__figure.colorbar(ax_view, cax=cax, orientation="vertical")
+                else:
+                    cax = self.__figure.add_axes(
+                        (
+                            ax_box.x1 - 0.02 - (cbar_width + 0.1) * (scalar_index + 1),
+                            0.025,
+                            cbar_width,
+                            ax_box.height - ax_box.y1 * 0.05,
+                        )
+                    )
 
-                if scalar.show_colorbar:
+                    # check background values
+                    if np.linalg.norm(colormap(0)[:3]) < 0.1:
+                        # background is dark
+                        cbar_color = "white"
 
-                    cbar.set_label(scalar.name)
-                    cbar.solids.set_alpha(1)
+                cbar = self.__figure.colorbar(ax_view, cax=cax, orientation="vertical")
 
-                    if scalar.discrete_levels:
+                # set color
+                cbar.outline.set_edgecolor(color=cbar_color)
+                cbar.ax.tick_params(color=cbar_color)
+                cax.tick_params(axis="x", colors=cbar_color)
+                cax.tick_params(axis="y", colors=cbar_color)
 
-                        if scalar.mid_ticks:
+                cbar.set_label(scalar.name, color=cbar_color)
+                cbar.solids.set_alpha(1)
 
-                            delta_tick = (s_max - s_min) / scalar.discrete_levels
-                            cbar.set_ticks(
-                                np.linspace(
-                                    s_min + delta_tick / 2,
-                                    s_max - delta_tick / 2,
-                                    scalar.discrete_levels,
-                                )
+                if scalar.discrete_levels:
+
+                    if scalar.mid_ticks:
+
+                        delta_tick = (s_max - s_min) / scalar.discrete_levels
+                        cbar.set_ticks(
+                            np.linspace(
+                                s_min + delta_tick / 2,
+                                s_max - delta_tick / 2,
+                                scalar.discrete_levels,
                             )
-                            cbar.set_ticklabels(np.linspace(s_min, s_max, scalar.discrete_levels))
+                        )
+                        cbar.set_ticklabels(np.linspace(s_min, s_max, scalar.discrete_levels))
 
-                        else:
-                            cbar.set_ticks(
-                                np.linspace(
-                                    s_min,
-                                    s_max,
-                                    scalar.discrete_levels + 1,
-                                )
+                    else:
+                        cbar.set_ticks(
+                            np.linspace(
+                                s_min,
+                                s_max,
+                                scalar.discrete_levels + 1,
                             )
-
-                    self.__scalar_view = {
-                        "ax_view": ax_view,
-                        "cor_view": cor_view,
-                        "sag_view": sag_view,
-                    }
+                        )
 
     def _overlay_vector_field(self):
         """Overlay vector field onto existing figure"""

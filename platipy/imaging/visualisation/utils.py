@@ -60,6 +60,7 @@ class VisualiseScalarOverlay:
         mid_ticks=False,
         show_colorbar=True,
         norm=None,
+        projection=False,
     ):
         self.image = image
         self.name = name
@@ -71,6 +72,7 @@ class VisualiseScalarOverlay:
         self.mid_ticks = mid_ticks
         self.show_colorbar = show_colorbar
         self.norm = norm
+        self.projection = projection
 
 
 class VisualiseVectorOverlay:
