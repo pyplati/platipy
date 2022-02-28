@@ -16,6 +16,8 @@
 import numpy as np
 import SimpleITK as sitk
 
+from loguru import logger
+
 from platipy.imaging.registration.utils import (
     apply_transform,
     convert_mask_to_reg_structure,
@@ -25,13 +27,15 @@ from platipy.imaging.registration.deformable import (
     fast_symmetric_forces_demons_registration,
 )
 
+from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
-def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=5):
+
+def generate_field_shift(mask, vector_shift=(10, 10, 10), gaussian_smooth=5):
     """
     Shifts (moves) a structure defined using a binary mask.
 
     Args:
-        mask_image ([SimpleITK.Image]): The binary mask to shift.
+        mask ([SimpleITK.Image]): The binary mask to shift.
         vector_shift (tuple, optional): The displacement vector applied to the entire binary mask.
                                         Convention: (+/-, +/-, +/-) = (sup/inf, post/ant,
                                         left/right) shift.
@@ -45,9 +49,27 @@ def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=
         [SimpleITK.DisplacementFieldTransform]: The transform representing the shift.
         [SimpleITK.Image]: The displacement vector field representing the shift.
     """
+
+    mask_full = mask
+
+    roi_expand = [x + 5 for x in vector_shift]
+
+    if np.any(gaussian_smooth):
+
+        if not hasattr(gaussian_smooth, "__iter__"):
+            gaussian_smooth = (gaussian_smooth,) * 3
+
+        roi_expand = [x + y for x, y in zip(roi_expand, gaussian_smooth)]
+
+    # Make sure the expansion meets a minimum size (1cm)
+    roi_expand = [max(e, 10) for e in roi_expand]
+    
+    size, index = label_to_roi(mask, expansion_mm=roi_expand)
+    mask = crop_to_roi(mask, size, index)
+
     # Define array
     # Used for image array manipulations
-    mask_image_arr = sitk.GetArrayFromImage(mask_image)
+    mask_image_arr = sitk.GetArrayFromImage(mask)
 
     # The template deformation field
     # Used to generate transforms
@@ -56,29 +78,28 @@ def generate_field_shift(mask_image, vector_shift=(10, 10, 10), gaussian_smooth=
     dvf_template = sitk.GetImageFromArray(dvf_arr)
 
     # Copy image information
-    dvf_template.CopyInformation(mask_image)
+    dvf_template.CopyInformation(mask)
 
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
-    mask_image_shift = apply_transform(
-        mask_image, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
+    mask_shift = apply_transform(
+        mask, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
     )
 
-    dvf_template = sitk.Mask(dvf_template, mask_image | mask_image_shift)
+    dvf_template = sitk.Mask(dvf_template, mask | mask_shift)
 
     # smooth
     if np.any(gaussian_smooth):
-
-        if not hasattr(gaussian_smooth, "__iter__"):
-            gaussian_smooth = (gaussian_smooth,) * 3
-
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
+    # Resample back to original image
+    dvf_template = sitk.Resample(dvf_template, mask_full)
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
-    mask_image_shift = apply_transform(
-        mask_image, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
+
+    mask_shift = apply_transform(
+        mask_full, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
     )
 
-    return mask_image_shift, dvf_tfm, dvf_template
+    return mask_shift, dvf_tfm, dvf_template
 
 
 def generate_field_asymmetric_contract(
@@ -212,32 +233,49 @@ def generate_field_expand(
     dilation kernel.
 
     Args:
-        mask ([SimpleITK.Image]): The binary mask to expand.
-        bone_mask ([SimpleITK.Image, optional]): A binary mask defining regions where we expect
-                                                 restricted deformations.
-        vector_asymmetric_extend (int |tuple, optional): The expansion vector applied to the entire
-                                                         binary mask.
-                                                    Convention: (z,y,x) size of expansion kernel.
-                                                    Defined in millimetres.
-                                                    Defaults to 3.
+        mask (SimpleITK.Image): The binary mask to expand.
+        bone_mask (SimpleITK.Image, optional): A binary mask defining regions where we expect
+          restricted deformations.
+        expand (int |tuple, optional): The expansion vector applied to the entire binary mask.
+          Convention: (z,y,x) size of expansion kernel.
+          Defined in millimetres.
+          Defaults to 3.
         gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the
-                                                deformation vector field. Defaults to 5.
+          deformation vector field. Defaults to 5.
 
     Returns:
-        [SimpleITK.Image]: The binary mask following the expansion.
-        [SimpleITK.DisplacementFieldTransform]: The transform representing the expansion.
-        [SimpleITK.Image]: The displacement vector field representing the expansion.
+        SimpleITK.Image: The binary mask following the expansion.
+        SimpleITK.DisplacementFieldTransform: The transform representing the expansion.
+        SimpleITK.Image: The displacement vector field representing the expansion.
     """
 
+    mask_full = mask
+
+    if not hasattr(expand, "__iter__"):
+        expand = (expand,) * 3
+
+    roi_expand = expand
+
+    if np.any(gaussian_smooth):
+
+        if not hasattr(gaussian_smooth, "__iter__"):
+            gaussian_smooth = (gaussian_smooth,) * 3
+
+        roi_expand = [x + y for x, y in zip(roi_expand, gaussian_smooth)]
+
+    # Make sure the expansion meets a minimum size (1cm)
+    roi_expand = [max(e, 10) for e in roi_expand]
+
+    size, index = label_to_roi(mask, expansion_mm=roi_expand)
+    mask = crop_to_roi(mask, size, index)
+
     if bone_mask is not False:
+        bone_mask = sitk.Resample(bone_mask, mask, sitk.Transform(), sitk.sitkNearestNeighbor)
         mask_original = mask + bone_mask
     else:
         mask_original = mask
 
     # Use binary erosion to create a smaller volume
-    if not hasattr(expand, "__iter__"):
-        expand = (expand,) * 3
-
     expand = np.array(expand)
 
     # Convert voxels to millimetres
@@ -249,17 +287,17 @@ def generate_field_expand(
 
     # If all negative: erode
     if np.all(np.array(expand) <= 0):
-        print("All factors negative: shrinking only.")
+        logger.debug("All factors negative: shrinking only.")
         mask_expand = sitk.BinaryErode(mask, np.abs(expand).astype(int).tolist(), sitk.sitkBall)
 
     # If all positive: dilate
     elif np.all(np.array(expand) >= 0):
-        print("All factors positive: expansion only.")
+        logger.debug("All factors positive: expansion only.")
         mask_expand = sitk.BinaryDilate(mask, np.abs(expand).astype(int).tolist(), sitk.sitkBall)
 
     # Otherwise: sequential operations
     else:
-        print("Mixed factors: shrinking and expansion.")
+        logger.debug("Mixed factors: shrinking and expansion.")
         expansion_kernel = expand * (expand > 0)
         shrink_kernel = expand * (expand < 0)
 
@@ -293,16 +331,14 @@ def generate_field_expand(
 
     # smooth
     if np.any(gaussian_smooth):
-
-        if not hasattr(gaussian_smooth, "__iter__"):
-            gaussian_smooth = (gaussian_smooth,) * 3
-
         dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
 
+    # Resample back to original image
+    dvf_template = sitk.Resample(dvf_template, mask_full)
     dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
 
     mask_symmetric_expand = apply_transform(
-        mask, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
+        mask_full, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
     )
 
     return mask_symmetric_expand, dvf_tfm, dvf_template
