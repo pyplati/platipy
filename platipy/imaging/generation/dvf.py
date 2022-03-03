@@ -513,3 +513,82 @@ def expand_mask_towards_target(
     )
 
     return mask_image_expanded, dvf_tfm, dvf_template
+
+
+def contract_mask_away_from_target(
+    mask_image, target_image, contract_mag=20, gaussian_smooth=5
+):
+    """Generate a deformation vector field to contract a mask away from a target mask. Can be useful to
+    manipulate structures for augmentation of fail cases for automated contour QA work.
+
+    Args:
+        mask_image (sitk.Image): The mask of the structure of manipulate
+        target_image (sitk.Image): The mask of the target structure to expand towards
+        contract_mag (int, optional): The magnitude of the contraction in mm. Defaults to 20.
+        gaussian_smooth (int, optional): Scale of a Gaussian kernel used to smooth the
+          deformation vector field.. Defaults to 5.
+
+    Returns:
+        [SimpleITK.Image]: The binary mask following the contraction.
+        [SimpleITK.DisplacementFieldTransform]: The transform representing the contraction.
+        [SimpleITK.Image]: The displacement vector field representing the contraction.
+    """
+
+    # Remove any potential overlap between the target and the mask
+    target_image = sitk.MaskNegated(target_image, mask_image)
+    dvf_overlap_into_mask = contract_mag + 5
+
+    # Determine the vector to expand the mask towards
+    mask_com = get_com(mask_image, as_int=False, real_coords=True)
+    target_com = get_com(target_image, as_int=False, real_coords=True)
+
+    expand_vec = np.array([q - p for p, q in zip(target_com, mask_com)])
+    expand_vec = expand_vec / np.linalg.norm(expand_vec)
+
+    mask_image_arr = sitk.GetArrayFromImage(mask_image)
+
+    # Compute the distance map from the target to every other voxel
+    dist_map = sitk.SignedMaurerDistanceMap(target_image, squaredDistance=False)
+    dist_map_arr = sitk.GetArrayFromImage(dist_map)
+    dist_map_arr[dist_map_arr < 0] = 0
+
+    # Manipulate the distance map so that only voxel within the range of dvf_overlap_into_mask are
+    # kept
+    dist_from_mask_to_target = dist_map_arr[mask_image_arr > 0].min()
+    max_mask_dist = dist_map_arr[mask_image_arr > 0].max()
+    dist_map_arr[dist_map_arr > max_mask_dist] = max_mask_dist
+    dist_map_arr[dist_map_arr > dist_from_mask_to_target + dvf_overlap_into_mask] = (
+        dist_from_mask_to_target + dvf_overlap_into_mask
+    )
+
+    dvf_weight = np.zeros(dist_map_arr.shape)
+    dvf_weight[dist_map_arr < dist_from_mask_to_target + dvf_overlap_into_mask] = 1
+    dvf_weight = np.tile(np.expand_dims(dvf_weight, axis=3), [1, 1, 1, 3])
+
+    # The template deformation field
+    # Used to generate transforms
+    dvf_arr = np.zeros(mask_image_arr.shape + (3,))
+    dvf_arr = dvf_arr - np.array([[[expand_vec * contract_mag]]])
+
+    # Weight the deformation vectors by the manipulated distance map
+    dvf_arr = dvf_arr * dvf_weight
+    dvf_template = sitk.GetImageFromArray(dvf_arr)
+
+    # Copy image information
+    dvf_template.CopyInformation(mask_image)
+
+    if np.any(gaussian_smooth):
+
+        if not hasattr(gaussian_smooth, "__iter__"):
+            gaussian_smooth = (gaussian_smooth,) * 3
+
+        dvf_template = sitk.SmoothingRecursiveGaussian(dvf_template, gaussian_smooth)
+
+    dvf_tfm = sitk.DisplacementFieldTransform(sitk.Cast(dvf_template, sitk.sitkVectorFloat64))
+
+    mask_image_expanded = apply_transform(
+        mask_image, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
+    )
+
+    return mask_image_expanded, dvf_tfm, dvf_template
+
