@@ -27,6 +27,10 @@ from platipy.dicom.io.rtstruct_to_nifti import read_dicom_image
 from platipy.imaging import ImageVisualiser
 
 
+def teardown_module(module):
+    plt.close()
+
+
 @pytest.mark.skip(reason="This test may not be needed. Up to platipy author discretion.")
 def test_font_scaling():
     with tempfile.TemporaryDirectory() as temp_dir:
