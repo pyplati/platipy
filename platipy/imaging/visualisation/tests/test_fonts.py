@@ -27,7 +27,7 @@ from platipy.dicom.io.rtstruct_to_nifti import read_dicom_image
 from platipy.imaging import ImageVisualiser
 
 
-def teardown_module(module):
+def teardown_function():
     plt.close()
 
 
