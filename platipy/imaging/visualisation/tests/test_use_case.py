@@ -19,8 +19,6 @@ import tempfile
 import urllib.request
 
 import SimpleITK as sitk
-import matplotlib.pyplot as plt
-import pytest
 
 from platipy.dicom.io.rtstruct_to_nifti import convert_rtstruct
 from platipy.dicom.io.rtstruct_to_nifti import read_dicom_image
@@ -31,10 +29,7 @@ def teardown_function():
     plt.close()
 
 
-@pytest.mark.skip(
-    reason="This test may not be needed. Up to platipy author discretion."
-)
-def test_font_scaling():
+def test_image_visualiser_use_case():
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir = pathlib.Path(temp_dir)
 
@@ -70,9 +65,10 @@ def test_font_scaling():
 
             contours[contour_name] = sitk.ReadImage(str(path))
 
-        image_visualiser = ImageVisualiser(ct_images)
-        image_visualiser.add_contour(contours, color="red", linewidth=1)
-        fig = image_visualiser.show()
+
+    image_visualiser = ImageVisualiser(ct_images)
+    image_visualiser.add_contour(contours, color="red", linewidth=1)
+    fig = image_visualiser.show()
 
     assert fig is not None
 
@@ -87,5 +83,7 @@ def _name_with_all_suffixes_removed(path: pathlib.Path):
 
 
 if __name__ == "__main__":
-    _fig = test_font_scaling()
+    import matplotlib.pyplot as plt
+
+    _fig = test_image_visualiser_use_case()
     plt.show()
