@@ -31,7 +31,9 @@ def teardown_function():
     plt.close()
 
 
-@pytest.mark.skip(reason="This test may not be needed. Up to platipy author discretion.")
+@pytest.mark.skip(
+    reason="This test may not be needed. Up to platipy author discretion."
+)
 def test_font_scaling():
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir = pathlib.Path(temp_dir)
@@ -71,6 +73,8 @@ def test_font_scaling():
         image_visualiser = ImageVisualiser(ct_images)
         image_visualiser.add_contour(contours, color="red", linewidth=1)
         fig = image_visualiser.show()
+
+    assert fig is not None
 
     return fig
 
