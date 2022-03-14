@@ -61,7 +61,7 @@ def test_image_visualiser_use_case():
         contours = {}
         for path in structure_paths:
             filename = _name_with_all_suffixes_removed(path)
-            contour_name = filename.removeprefix(prefix)
+            contour_name = removeprefix(filename, prefix)
 
             contours[contour_name] = sitk.ReadImage(str(path))
 
@@ -80,6 +80,14 @@ def _name_with_all_suffixes_removed(path: pathlib.Path):
         path = path.with_suffix("")
 
     return path.name
+
+
+# https://peps.python.org/pep-0616/#specification
+def removeprefix(string: str, prefix: str, /) -> str:
+    if string.startswith(prefix):
+        return string[len(prefix):]
+    else:
+        return string[:]
 
 
 if __name__ == "__main__":
