@@ -11,6 +11,15 @@ request](https://github.com/pyplati/platipy/compare) to merge your changes into 
 (**master**). At this point the automated tests will run and maintainers will review your
 submission before merging.
 
+## Example Installation
+
+To install a development environment run the following within a virtual environment:
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt -r requirements-backend.txt
+pip install -e .
+```
+
 ## Style Guide
 
 Python code should conform to
