@@ -18,6 +18,7 @@ import shutil
 import tempfile
 import urllib.request
 
+import matplotlib.pyplot as plt
 import SimpleITK as sitk
 
 from platipy.dicom.io.rtstruct_to_nifti import convert_rtstruct
@@ -88,10 +89,3 @@ def removeprefix(string: str, prefix: str, /) -> str:
         return string[len(prefix):]
     else:
         return string[:]
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    _fig = test_image_visualiser_use_case()
-    plt.show()
