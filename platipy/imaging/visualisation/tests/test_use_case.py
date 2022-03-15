@@ -84,7 +84,7 @@ def _name_with_all_suffixes_removed(path: pathlib.Path):
 
 
 # https://peps.python.org/pep-0616/#specification
-def removeprefix(string: str, prefix: str, /) -> str:
+def removeprefix(string: str, prefix: str) -> str:
     if string.startswith(prefix):
         return string[len(prefix):]
     else:
