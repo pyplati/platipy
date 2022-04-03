@@ -14,13 +14,8 @@
 
 import json
 import os
-import tempfile
 
 from flask import Flask
-from celery import current_app
-from celery.bin import worker
-from celery.bin import beat
-from multiprocessing import Process
 from loguru import logger
 import pydicom
 
@@ -57,42 +52,6 @@ class FlaskApp(Flask):
 
         return decorator
 
-    def run_celery(self):
-
-        if self.celery_started:
-            return
-
-        application = current_app._get_current_object()
-
-        celery_worker = worker.worker(app=application)
-
-        options = {
-            "broker": self.config["CELERY_BROKER_URL"],
-            "loglevel": "INFO",
-            "traceback": True,
-        }
-
-        celery_worker.run(**options)
-
-    def run_beat(self):
-
-        if self.beat_started:
-            return
-
-        application = current_app._get_current_object()
-
-        celery_beat = beat.beat(app=application)
-
-        options = {
-            "broker": self.config["CELERY_BROKER_URL"],
-            "loglevel": "INFO",
-            "traceback": True,
-            "beat": True,
-            "schedule": os.path.join(str(tempfile.mkdtemp()), "celery-beat-schedule"),
-        }
-
-        celery_beat.run(**options)
-
     def run(
         self,
         host=None,
@@ -105,14 +64,6 @@ class FlaskApp(Flask):
     ):
 
         logger.info("Starting APP!")
-
-        process_celery = Process(target=self.run_celery)
-        process_celery.start()
-        self.celery_started = True
-
-        process_beat = Process(target=self.run_beat)
-        process_beat.start()
-        self.beat_started = True
 
         self.dicom_listener_port = dicom_listener_port
         self.dicom_listener_aetitle = dicom_listener_aetitle
@@ -127,9 +78,6 @@ class FlaskApp(Flask):
             use_reloader=False,
             **options
         )
-
-        process_celery.join()
-        process_beat.join()
 
     def run_dicom_listener(self, listen_port, listen_ae_title):
         """

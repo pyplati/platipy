@@ -36,6 +36,19 @@ tools = {
     "tcia-download": tcia_download.click_command,
 }
 
+# If backend tools are installed, then provide manage tools
+try:
+    from platipy.backend.manage import cli
+
+    tools["manage"] = cli
+except ImportError:
+    logger.info(
+        "PlatiPy Backend requirements not installed. Install the requirements listed "
+        "at: https://github.com/pyplati/platipy/blob/master/requirements-backend.txt to use "
+        "backend service functionality"
+    )
+
+
 logger.remove()
 logger.add(sys.stderr, level="DEBUG")
 

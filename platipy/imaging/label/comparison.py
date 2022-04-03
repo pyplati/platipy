@@ -18,6 +18,7 @@ import SimpleITK as sitk
 
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
+
 def compute_volume(label):
     """Computes the volume in cubic centimetres
 
@@ -239,6 +240,12 @@ def compute_metric_masd(label_a, label_b, auto_crop=True):
         label_a = crop_to_roi(label_a, size=crop_box_size, index=crop_box_index)
         label_b = crop_to_roi(label_b, size=crop_box_size, index=crop_box_index)
 
+    if (
+        sitk.GetArrayViewFromImage(label_a).sum() == 0
+        or sitk.GetArrayViewFromImage(label_b).sum() == 0
+    ):
+        return np.nan
+
     mean_sd_list = []
     num_points = []
     for (la, lb) in ((label_a, label_b), (label_b, label_a)):
@@ -267,12 +274,19 @@ def compute_metric_hd(label_a, label_b, auto_crop=True):
     Returns:
         float: The maximum Hausdorff distance
     """
+
     if auto_crop:
         largest_region = (label_a + label_b) > 0
         crop_box_size, crop_box_index = label_to_roi(largest_region)
 
         label_a = crop_to_roi(label_a, size=crop_box_size, index=crop_box_index)
         label_b = crop_to_roi(label_b, size=crop_box_size, index=crop_box_index)
+
+    if (
+        sitk.GetArrayViewFromImage(label_a).sum() == 0
+        or sitk.GetArrayViewFromImage(label_b).sum() == 0
+    ):
+        return np.nan
 
     hausdorff_distance = sitk.HausdorffDistanceImageFilter()
     hausdorff_distance.Execute(label_a, label_b)
