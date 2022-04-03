@@ -202,17 +202,15 @@ def contour_comparison(
         )
 
         # compute metrics and add to dataframe
-        df_metrics = df_metrics.append(
-            {
+        row = pd.DataFrame([{
                 "STRUCTURE": s,
                 "DSC": dsc,
                 "MDA_mm": mda,
                 "HD_mm": hd,
                 "VOL_A_cm3": vol_a,
                 "VOL_B_cm3": vol_b,
-            },
-            ignore_index=True,
-        )
+        }])
+        df_metrics = pd.concat([df_metrics, row])
 
     # If there are no labels we can make the table bigger
     if title == "" and subsubtitle == "" and subsubtitle == "":
