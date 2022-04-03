@@ -48,7 +48,7 @@ def contour_comparison(
     subsubtitle="",
     contour_cmap=plt.cm.get_cmap("rainbow"),
     structure_name_dict=None,
-    img_vis_kw={},
+    img_vis_kw=None,
 ):
     """Generates a custom figure for comparing two sets of contours (delineations) on an image.
 
@@ -86,6 +86,9 @@ def contour_comparison(
     # If no contour names are seleted we just use those which both contour_dicts have
     if s_select is None:
         s_select = [i for i in contour_dict_a.keys() if i in contour_dict_b.keys()]
+
+    if img_vis_kw is None:
+        img_vis_kw = {}
 
     if "cut" not in img_vis_kw:
 
