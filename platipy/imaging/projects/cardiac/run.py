@@ -129,12 +129,11 @@ CARDIAC_SETTINGS_DEFAULTS = {
         "isotropic_resample": True,
         "resolution_staging": [
             6,
-            4,
-            2,
-            1,
+            3,
+            1.5,
         ],  # specify voxel size (mm) since isotropic_resample is set
-        "iteration_staging": [200, 150, 125, 100],
-        "smoothing_sigmas": [0, 0, 0, 0],
+        "iteration_staging": [200, 150, 100],
+        "smoothing_sigmas": [0, 0, 0],
         "ncores": 8,
         "default_value": 0,
         "verbose": False,
@@ -253,6 +252,7 @@ CARDIAC_SETTINGS_DEFAULTS = {
     },
     "return_atlas_guide_structure": False,
     "return_as_cropped": False,
+    "return_proba_as_contours": False,
 }
 
 
@@ -692,7 +692,15 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
         if return_as_cropped:
             results[structure_name] = binary_struct
-            results_prob[structure_name] = probability_map
+
+            if settings["return_proba_as_contours"]:
+                atlas_contours = [
+                    atlas_set[atlas_id]["DIR"][structure_name] >= 2 for atlas_id in atlas_id_list
+                ]
+                results_prob[structure_name] = binary_encode_structure_list(atlas_contours)
+
+            else:
+                results_prob[structure_name] = probability_map
 
             # We also generate another version of the guide_structure using the atlas contours
             # We *can* return this, but probably don't want to
@@ -702,6 +710,16 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
                 results_prob[guide_structure_name] = guide_structure
 
         else:
+            if settings["return_proba_as_contours"]:
+                atlas_contours = [
+                    atlas_set[atlas_id]["DIR"][structure_name] >= 2 for atlas_id in atlas_id_list
+                ]
+                probability_img = binary_encode_structure_list(atlas_contours)
+                template_img_prob = sitk.Cast((img * 0), sitk.sitkUInt32)
+
+            else:
+                probability_img = probability_map
+
             # Un-crop binary structure
             paste_img_binary = sitk.Paste(
                 template_img_binary,
@@ -715,8 +733,8 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
             # Un-crop probability map
             paste_prob_img = sitk.Paste(
                 template_img_prob,
-                probability_map,
-                probability_map.GetSize(),
+                probability_img,
+                probability_img.GetSize(),
                 (0, 0, 0),
                 crop_box_index,
             )

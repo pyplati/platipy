@@ -23,7 +23,7 @@ from scipy.ndimage.measurements import center_of_mass
 from platipy.imaging.utils.math import gen_primes
 
 
-def correct_volume_overlap(binary_label_dict):
+def correct_volume_overlap(binary_label_dict, assign_overlap_to_largest=True):
     """
     Label structures by primes
     Smallest prime = largest volume
@@ -34,26 +34,29 @@ def correct_volume_overlap(binary_label_dict):
     volume_dict = {i: f_vol(binary_label_dict[i]) for i in binary_label_dict.keys()}
 
     keys, vals = zip(*volume_dict.items())
-    volume_rank = np.argsort(vals)[::-1]
+    if assign_overlap_to_largest:
+        volume_rank = np.argsort(vals)[::-1]
+    else:
+        volume_rank = np.argsort(vals)
 
     # print(keys, volume_rank)
 
     ranked_names = np.array(keys)[volume_rank]
 
-    # Get overlap using prime factors
-    prime_labelled_image = sum(binary_label_dict.values()) > 0
+    # Get overlap (this is used to reconstruct labels)
     combined_label = sum(binary_label_dict.values()) > 0
 
-    for p, label in zip(gen_primes(), ranked_names):
-        prime_labelled_image = prime_labelled_image * (
-            (p - 1) * binary_label_dict[label] + combined_label
-        )
+    # Prime encode each binary label
+    prime_labelled_image = prime_encode_structure_list(
+        [binary_label_dict[i] for i in ranked_names]
+    )
 
+    # Remove overlap (by assigning to binary volume)
     output_label_dict = {}
     for p, label in zip(gen_primes(), ranked_names):
         output_label_dict[label] = combined_label * (sitk.Modulus(prime_labelled_image, p) == 0)
 
-        combined_label = sitk.Mask(combined_label, output_label_dict[label] == 0)
+        combined_label = sitk.MaskNegated(combined_label, output_label_dict[label])
 
     return output_label_dict
 
@@ -158,6 +161,7 @@ def prime_encode_structure_list(structure_list):
     img_size = structure_list[0].GetSize()
     prime_encoded_image = sitk.GetImageFromArray(np.ones(img_size[::-1]))
     prime_encoded_image = sitk.Cast(prime_encoded_image, sitk.sitkUInt64)
+    prime_encoded_image.CopyInformation(structure_list[0])
 
     prime_generator = generate_primes()
 
@@ -165,7 +169,6 @@ def prime_encode_structure_list(structure_list):
         # Cast to int
         s_img_int = sitk.Cast(s_img > 0, sitk.sitkUInt64)
 
-        print(prime)
         # Multiply with the encoded image
         prime_encoded_image = (
             sitk.MaskNegated(prime_encoded_image, s_img_int)

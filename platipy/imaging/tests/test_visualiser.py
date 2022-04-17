@@ -25,7 +25,6 @@ from platipy.imaging.tests.data import get_lung_nifti
 
 from platipy.imaging import ImageVisualiser
 from platipy.imaging.label.utils import get_com
-from platipy.imaging.visualisation.animation import generate_animation_from_image_sequence
 
 
 @pytest.fixture
@@ -97,20 +96,3 @@ def test_comparison_overlay_visualisation(nifti_data):
     img = fig.axes[0].images[0]
     print(img.get_array().data.sum())
     assert np.allclose(img.get_array().data.sum(), 177574, atol=1)
-
-
-def test_animation_visualisation(nifti_data):
-
-    patient_path = nifti_data.joinpath("LCTSC-Test-S1-201")
-
-    ct_path = next(patient_path.glob("IMAGES/*.nii.gz"))
-
-    img = sitk.ReadImage(str(ct_path))
-
-    imlist = [img[:, :, x] for x in range(0, img.GetSize()[2], 10)]
-    with tempfile.NamedTemporaryFile("w", suffix=".gif") as output_file:
-        _ = generate_animation_from_image_sequence(imlist, output_file=output_file.name)
-
-        # Check that a GIF file has been generated
-        with open(output_file.name, "rb") as f:
-            assert f.read(6).decode("utf-8") in ("GIF87a", "GIF89a")
