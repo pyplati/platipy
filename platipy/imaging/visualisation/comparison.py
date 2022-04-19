@@ -48,7 +48,7 @@ def contour_comparison(
     subsubtitle="",
     contour_cmap=plt.cm.get_cmap("rainbow"),
     structure_name_dict=None,
-    img_vis_kw={},
+    img_vis_kw=None,
 ):
     """Generates a custom figure for comparing two sets of contours (delineations) on an image.
 
@@ -86,6 +86,9 @@ def contour_comparison(
     # If no contour names are seleted we just use those which both contour_dicts have
     if s_select is None:
         s_select = [i for i in contour_dict_a.keys() if i in contour_dict_b.keys()]
+
+    if img_vis_kw is None:
+        img_vis_kw = {}
 
     if "cut" not in img_vis_kw:
 
@@ -202,17 +205,15 @@ def contour_comparison(
         )
 
         # compute metrics and add to dataframe
-        df_metrics = df_metrics.append(
-            {
+        row = pd.DataFrame([{
                 "STRUCTURE": s,
                 "DSC": dsc,
                 "MDA_mm": mda,
                 "HD_mm": hd,
                 "VOL_A_cm3": vol_a,
                 "VOL_B_cm3": vol_b,
-            },
-            ignore_index=True,
-        )
+        }])
+        df_metrics = pd.concat([df_metrics, row])
 
     # If there are no labels we can make the table bigger
     if title == "" and subsubtitle == "" and subsubtitle == "":
