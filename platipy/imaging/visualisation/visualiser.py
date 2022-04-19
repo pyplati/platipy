@@ -1013,7 +1013,7 @@ class ImageVisualiser:
                     contour_disp = sitk.GetArrayFromImage(contour_disp_proj)
 
                 try:
-                    temp = ax.contour(
+                    ax.contour(
                         contour_disp,
                         colors=[color_dict[c_name]],
                         levels=[0.5],
@@ -1023,7 +1023,14 @@ class ImageVisualiser:
                         label=c_name,
                         origin="lower",
                     )
-                    temp.collections[0].set_label(c_name)
+                    ax.plot(
+                        [0],
+                        [0],
+                        lw=lw_dict[c_name],
+                        ls=ls_dict[c_name],
+                        c=color_dict[c_name],
+                        label = c_name
+                    )
                 except AttributeError:
                     pass
 
@@ -1078,7 +1085,7 @@ class ImageVisualiser:
                     )
                     contour_sag = sitk.GetArrayFromImage(contour_sag_proj)
 
-                temp = ax_ax.contour(
+                ax_ax.contour(
                     contour_ax,
                     levels=[0.5],
                     linewidths=lw_dict[c_name],
@@ -1086,7 +1093,14 @@ class ImageVisualiser:
                     colors=[color_dict[c_name]],
                     origin="lower",
                 )
-                temp.collections[0].set_label(c_name)
+                ax_ax.plot(
+                    [0],
+                    [0],
+                    lw=lw_dict[c_name],
+                    ls=ls_dict[c_name],
+                    c=color_dict[c_name],
+                    label = c_name
+                )
 
                 ax_cor.contour(
                     contour_cor,
@@ -1614,11 +1628,13 @@ class ImageVisualiser:
                         len(self.__contours) + len(self.__bounding_boxes)
                     )
 
-                    plt.figlegend(
+                    leg = plt.figlegend(
                         loc="center left",
                         bbox_to_anchor=(x_pos_legend, y_pos_legend),
                         fontsize=min([10, 16 * approx_font_scaling]),
+                        ncol=1,  #!TODO modify this for large numbers of contours
                     )
+
         else:
             # these is probably only one axis
             if self.__show_legend:
