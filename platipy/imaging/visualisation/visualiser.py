@@ -1020,7 +1020,6 @@ class ImageVisualiser:
                         # alpha=0.8,
                         linewidths=lw_dict[c_name],
                         linestyles=ls_dict[c_name],
-                        label=c_name,
                         origin="lower",
                     )
                     ax.plot(
@@ -1029,7 +1028,7 @@ class ImageVisualiser:
                         lw=lw_dict[c_name],
                         ls=ls_dict[c_name],
                         c=color_dict[c_name],
-                        label = c_name
+                        label=c_name,
                     )
                 except AttributeError:
                     pass
@@ -1099,7 +1098,7 @@ class ImageVisualiser:
                     lw=lw_dict[c_name],
                     ls=ls_dict[c_name],
                     c=color_dict[c_name],
-                    label = c_name
+                    label=c_name,
                 )
 
                 ax_cor.contour(
