@@ -177,9 +177,17 @@ def contour_comparison(
     else:
         rows = s_select
 
+    # Names
+    suffix_a = "A"
+    suffix_b = "B"
+    if contour_label_a != "Set A":  # the default
+        suffix_a = contour_label_a
+    if contour_label_b != "Set A":  # the default
+        suffix_b = contour_label_b
+
     # Compute some metrics
     df_metrics = pd.DataFrame(
-        columns=["STRUCTURE", "DSC", "MDA_mm", "HD_mm", "VOL_A_cm3", "VOL_B_cm3"]
+        columns=["STRUCTURE", "DSC", "MDA_mm", "HD_mm", f"VOL_{suffix_a}_cm3", f"VOL_{suffix_b}_cm3"]
     )
     columns = ("DSC", "MDA\n[mm]", "HD\n[mm]", "Vol.\nRatio")
 
@@ -208,8 +216,8 @@ def contour_comparison(
                 "DSC": dsc,
                 "MDA_mm": mda,
                 "HD_mm": hd,
-                "VOL_A_cm3": vol_a,
-                "VOL_B_cm3": vol_b,
+                f"VOL_{suffix_a}_cm3": vol_a,
+                f"VOL_{suffix_b}_cm3": vol_b,
             },
             ignore_index=True,
         )
