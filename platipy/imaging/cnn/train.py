@@ -75,7 +75,7 @@ class ProbUNet(pl.LightningModule):
         if self.hparams.prob_type == "prob":
             self.prob_unet = ProbabilisticUnet(
                 self.hparams.input_channels,
-                len(self.hparams.structures),
+                len(self.hparams.structures) + 1, # Add 1 to num classes for background class
                 self.hparams.filters_per_layer,
                 self.hparams.latent_dim,
                 self.hparams.no_convs_fcomb,
@@ -270,7 +270,7 @@ class ProbUNet(pl.LightningModule):
             result[sample["name"]] = {}
 
             for idx, structure in enumerate(self.hparams.structures):
-                pred = sitk.GetImageFromArray(pred_arr[idx])
+                pred = sitk.GetImageFromArray(pred_arr[idx+1]) # Skip the background
                 pred = pred > 0.5  # Threshold softmax at 0.5
                 pred = sitk.Cast(pred, sitk.sitkUInt8)
 
@@ -402,9 +402,10 @@ class ProbUNet(pl.LightningModule):
         # print(m.shape)
 
         # Add background layer for one-hot encoding
-        # y = torch.unsqueeze(y, dim=1)
-        # not_y = y.logical_not()
-        # y = torch.cat((not_y, y), dim=1).float()
+        #y = torch.unsqueeze(y, dim=1)
+        not_y = y.max(axis=1).values.logical_not()
+        not_y = torch.unsqueeze(not_y, dim=1)
+        y = torch.cat((not_y, y), dim=1).float()
 
         # self.prob_unet.forward(x, y, training=True)
         if self.hparams.prob_type == "prob":

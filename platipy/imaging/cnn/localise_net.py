@@ -221,7 +221,8 @@ class LocaliseUNet(pl.LightningModule):
             try:
                 com = get_com(mask)
             except:
-                com = [int(i / 2) for i in mask.GetSize()]
+                com = [int(i / 2) for i in img.GetSize()]
+                print(com)
 
             img_vis = ImageVisualiser(img, cut=com, figure_size_in=16)
             # img_vis.set_limits_from_label(mask, expansion=[0, 0, 0])
@@ -254,5 +255,5 @@ class LocaliseUNet(pl.LightningModule):
                 on_epoch=True,
                 prog_bar=False,
                 logger=True,
-                batch_size=self.hparams.batch_size,
+#                batch_size=self.hparams.batch_size,
             )

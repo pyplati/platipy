@@ -347,11 +347,10 @@ class ProbabilisticUnet(torch.nn.Module):
                     top_k_mask = top_k_mask.to(device)
                     mask = mask * top_k_mask
 
-            mask = mask.unsqueeze(1).repeat((1, num_classes))
-
         else:
             mask = torch.reshape(mask, (-1,))
 
+        mask = mask.unsqueeze(1).repeat((1, num_classes))
 
         mask = (
             mask.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
@@ -367,6 +366,7 @@ class ProbabilisticUnet(torch.nn.Module):
         top_k_percentage=None,
         deterministic=True,
     ):
+        criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
 
         if z_posterior is None:
             z_posterior = self.posterior_latent_space.rsample()
@@ -383,11 +383,8 @@ class ProbabilisticUnet(torch.nn.Module):
         pos_class_count = t_flat.sum(axis=0)/batch_size
         neg_class_count = torch.logical_not(t_flat).sum(axis=0)/batch_size
         self._pos_weight = self._pos_weight * 0.5 + pos_class_count/neg_class_count * 0.5
-        print(pos_class_count)
-        print(neg_class_count)
-        print(self._pos_weight)
 
-        criterion = torch.nn.BCEWithLogitsLoss(reduction="none", pos_weight=self._pos_weight)
+        # criterion = torch.nn.BCEWithLogitsLoss(reduction="none", pos_weight=self._pos_weight)
         xe = criterion(input=y_flat, target=t_flat)
         xe = xe.reshape((batch_size, -1, num_classes)).transpose(-1, 1).reshape((batch_size, -1))
 
