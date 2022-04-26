@@ -397,9 +397,6 @@ class ProbUNet(pl.LightningModule):
     def training_step(self, batch, _):
 
         x, y, m, _ = batch
-        # print(x.shape)
-        # print(y.shape)
-        # print(m.shape)
 
         # Add background layer for one-hot encoding
         #y = torch.unsqueeze(y, dim=1)
