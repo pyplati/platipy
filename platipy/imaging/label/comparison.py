@@ -303,7 +303,8 @@ def compute_metric_total_apl(label_ref, label_test, distance_threshold_mm=0):
     Args:
         label_ref (sitk.Image): The reference (ground-truth) label
         label_test (sitk.Image): The test label
-        distance_threshold_mm (float): Distances under this threshold will not contribute to the added path length
+        distance_threshold_mm (float): Distances under this threshold will not contribute to the
+            added path length
 
     Returns:
         float: The total (slice-wise) added path length in mm
@@ -313,19 +314,22 @@ def compute_metric_total_apl(label_ref, label_test, distance_threshold_mm=0):
     n_slices = label_ref.GetSize()[2]
 
     # convert the distance threshold to voxel units
-    distance_threshold = int(np.ceil(distance_threshold_mm / np.mean(label_ref.GetSpacing()[:2])))
+    distance = int(np.ceil(distance_threshold_mm / np.mean(label_ref.GetSpacing()[:2])))
 
     # iterate over each slice
     for i in range(n_slices):
 
-        if (sitk.GetArrayViewFromImage(label_ref)[i].sum() + sitk.GetArrayViewFromImage(label_ref)[i].sum()) == 0:
+        if (
+            sitk.GetArrayViewFromImage(label_ref)[i].sum()
+            + sitk.GetArrayViewFromImage(label_ref)[i].sum()
+        ) == 0:
             continue
 
-        label_ref_contour = sitk.LabelContour(label_ref[:,:,i])
-        label_test_contour = sitk.LabelContour(label_test[:,:,i])
+        label_ref_contour = sitk.LabelContour(label_ref[:, :, i])
+        label_test_contour = sitk.LabelContour(label_test[:, :, i])
 
         if distance_threshold_mm > 0:
-            label_ref_contour = sitk.BinaryDilate(label_ref_contour, (distance_threshold,distance_threshold))
+            label_ref_contour = sitk.BinaryDilate(label_ref_contour, np.repeat(distance, 2))
 
         # mask out the locations in agreement
         added_path = sitk.MaskNegated(label_test_contour, label_ref_contour)
@@ -339,6 +343,7 @@ def compute_metric_total_apl(label_ref, label_test, distance_threshold_mm=0):
 
     return total_added_path_length_mm
 
+
 def compute_metric_mean_apl(label_ref, label_test, distance_threshold_mm=0):
     """Compute the mean (slice-wise) added path length in mm
 
@@ -347,7 +352,8 @@ def compute_metric_mean_apl(label_ref, label_test, distance_threshold_mm=0):
     Args:
         label_ref (sitk.Image): The reference (ground-truth) label
         label_test (sitk.Image): The test label
-        distance_threshold_mm (float): Distances under this threshold will not contribute to the added path length
+        distance_threshold_mm (float): Distances under this threshold will not contribute to the
+            added path length
 
     Returns:
         float: The mean (slice-wise) added path length in mm
@@ -357,19 +363,22 @@ def compute_metric_mean_apl(label_ref, label_test, distance_threshold_mm=0):
     n_slices = label_ref.GetSize()[2]
 
     # convert the distance threshold to voxel units
-    distance_threshold = int(np.ceil(distance_threshold_mm / np.mean(label_ref.GetSpacing()[:2])))
+    distance = int(np.ceil(distance_threshold_mm / np.mean(label_ref.GetSpacing()[:2])))
 
     # iterate over each slice
     for i in range(n_slices):
 
-        if (sitk.GetArrayViewFromImage(label_ref)[i].sum() + sitk.GetArrayViewFromImage(label_ref)[i].sum()) == 0:
+        if (
+            sitk.GetArrayViewFromImage(label_ref)[i].sum()
+            + sitk.GetArrayViewFromImage(label_ref)[i].sum()
+        ) == 0:
             continue
 
-        label_ref_contour = sitk.LabelContour(label_ref[:,:,i])
-        label_test_contour = sitk.LabelContour(label_test[:,:,i])
+        label_ref_contour = sitk.LabelContour(label_ref[:, :, i])
+        label_test_contour = sitk.LabelContour(label_test[:, :, i])
 
         if distance_threshold_mm > 0:
-            label_ref_contour = sitk.BinaryDilate(label_ref_contour, (distance_threshold,distance_threshold))
+            label_ref_contour = sitk.BinaryDilate(label_ref_contour, np.repeat(distance, 2))
 
         # mask out the locations in agreement
         added_path = sitk.MaskNegated(label_test_contour, label_ref_contour)
@@ -382,5 +391,3 @@ def compute_metric_mean_apl(label_ref, label_test, distance_threshold_mm=0):
     mean_added_path_length_mm = mean_added_path_length * np.mean(label_ref.GetSpacing()[:2])
 
     return mean_added_path_length_mm
-
-
