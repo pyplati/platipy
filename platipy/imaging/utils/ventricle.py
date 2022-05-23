@@ -24,6 +24,8 @@ from platipy.imaging.utils.crop import crop_to_roi, label_to_roi
 
 from platipy.imaging.utils.geometry import vector_angle
 
+from platipy.imaging.utils.valve import generate_valve_using_cylinder
+
 
 def extract(
     template_img,
@@ -75,7 +77,6 @@ def generate_left_ventricle_segments(
     label_left_ventricle="LEFTVENTRICLE",
     label_left_atrium="LEFTATRIUM",
     label_right_ventricle="RIGHTVENTRICLE",
-    label_mitral_valve="MITRALVALVE",
     label_heart="WHOLEHEART",
     myocardium_thickness_mm=10,
     hole_fill_mm=3,
@@ -104,7 +105,6 @@ def generate_left_ventricle_segments(
         label_left_ventricle (str): The name for the left ventricle mask (contour)
         label_left_atrium (str): The name for the left atrium mask (contour)
         label_right_ventricle (str): The name for the right ventricle mask (contour)
-        label_mitral_valve (str): The name for the mitral valve mask (contour)
         label_heart (str): The name for the heart mask (contour)
         myocardium_thickness_mm (float, optional): Moycardial thickness, in millimetres.
             Defaults to 10.
@@ -123,16 +123,26 @@ def generate_left_ventricle_segments(
         print("Beginning LV segmentation algorithm.")
 
     # Initial set up
+    label_mitral_valve = "MITRALVALVE"
+
     label_list = [
         label_left_ventricle,
         label_left_atrium,
         label_right_ventricle,
-        label_mitral_valve,
         label_heart,
+        label_mitral_valve
     ]
     working_contours = copy.deepcopy({s: contours[s] for s in label_list})
     output_contours = {}
     overall_transform_list = []
+
+    # we add an automatically generated MV contour
+    working_contours[label_mitral_valve] = generate_valve_using_cylinder(
+        working_contours[label_left_atrium],
+        working_contours[label_left_ventricle],
+        radius_mm=15,
+        height_mm=10,
+    )
 
     # Some conversions
     erode_img = [
@@ -152,7 +162,7 @@ def generate_left_ventricle_segments(
         expansion_mm=(30, 30, 60),  # Better to make it a bit bigger to be safe
     )
 
-    for label in contours:
+    for label in label_list:
         working_contours[label] = crop_to_roi(contours[label], cb_size, cb_index)
 
     if verbose:
@@ -193,7 +203,7 @@ def generate_left_ventricle_segments(
 
     overall_transform_list.append(rotation_transform)
 
-    for label in contours:
+    for label in label_list:
         working_contours[label] = sitk.Resample(
             working_contours[label],
             rotation_transform,
@@ -261,7 +271,7 @@ def generate_left_ventricle_segments(
             print("    Rotation centre: ", rotation_centre)
             print("    Rotation angle:  ", rotation_angle)
 
-        for label in contours:
+        for label in label_list:
             working_contours[label] = sitk.Resample(
                 working_contours[label],
                 rotation_transform,
