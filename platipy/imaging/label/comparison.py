@@ -31,11 +31,49 @@ def compute_volume(label):
 
     return sitk.GetArrayFromImage(label).sum() * np.product(label.GetSpacing()) / 1000
 
+def compute_surface_dsc(label_a, label_b, tau=3.0):
+    """Compute Surface Dice
+
+    From: Nikolov S et al. Clinically Applicable Segmentation of Head and Neck Anatomy for
+    Radiotherapy: Deep Learning Algorithm Development and Validation Study J Med Internet Res
+    2021;23(7):e26151, DOI: 10.2196/26151
+
+    Args:
+        label_a (sitk.Image): A mask to compare
+        label_b (sitk.Image): Another mask to compare
+        tau (float): Accepted deviation between contours (in mm)
+
+    Returns:
+        float: The Surface DSC between the two labels
+    """
+
+    binary_contour_filter = sitk.BinaryContourImageFilter()
+    binary_contour_filter.FullyConnectedOn()
+    a_contour = binary_contour_filter.Execute(label_a)
+    b_contour = binary_contour_filter.Execute(label_b)
+
+    dist_to_a = sitk.SignedMaurerDistanceMap(
+        a_contour, useImageSpacing=True, squaredDistance=False
+    )
+
+    dist_to_b = sitk.SignedMaurerDistanceMap(
+        b_contour, useImageSpacing=True, squaredDistance=False
+    )
+
+    b_intersection = sitk.GetArrayFromImage(b_contour * (dist_to_a <= tau)).sum()
+    a_intersection = sitk.GetArrayFromImage(a_contour * (dist_to_b <= tau)).sum()
+
+    surface_sum = (
+        sitk.GetArrayFromImage(a_contour).sum() + sitk.GetArrayFromImage(b_contour).sum()
+    )
+
+    return (b_intersection + a_intersection) / surface_sum
+
 
 def compute_surface_metrics(label_a, label_b, verbose=False):
     """Compute surface distance metrics between two labels. Surface metrics computed are:
     hausdorffDistance, meanSurfaceDistance, medianSurfaceDistance, maximumSurfaceDistance,
-    sigmaSurfaceDistance
+    sigmaSurfaceDistance, surfaceDSC
 
     Args:
         label_a (sitk.Image): A mask to compare
@@ -90,6 +128,7 @@ def compute_surface_metrics(label_a, label_b, verbose=False):
     result["medianSurfaceDistance"] = median_surf_dist
     result["maximumSurfaceDistance"] = max_surf_dist
     result["sigmaSurfaceDistance"] = std_surf_dist
+    result["surfaceDSC"] = compute_surface_dsc(label_a, label_b)
 
     return result
 
