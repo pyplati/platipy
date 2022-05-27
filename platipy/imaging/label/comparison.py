@@ -293,3 +293,91 @@ def compute_metric_hd(label_a, label_b, auto_crop=True):
     hausdorff_distance_value = hausdorff_distance.GetHausdorffDistance()
 
     return hausdorff_distance_value
+
+
+def compute_apl(label_ref, label_test, distance_threshold_mm=3):
+    """
+    helper function for computing the added path length
+
+    Args:
+        label_ref (sitk.Image): The reference (ground-truth) label
+        label_test (sitk.Image): The test label
+        distance_threshold_mm (float): Distances under this threshold will not contribute to the
+            added path length
+
+    Returns:
+        float: The total (slice-wise) added path length in mm
+    """
+    added_path_length_list = []
+    n_slices = label_ref.GetSize()[2]
+
+    # convert the distance threshold to voxel units
+    distance = int(np.ceil(distance_threshold_mm / np.mean(label_ref.GetSpacing()[:2])))
+
+    # iterate over each slice
+    for i in range(n_slices):
+
+        if (
+            sitk.GetArrayViewFromImage(label_ref)[i].sum()
+            + sitk.GetArrayViewFromImage(label_ref)[i].sum()
+        ) == 0:
+            continue
+
+        label_ref_contour = sitk.LabelContour(label_ref[:, :, i])
+        label_test_contour = sitk.LabelContour(label_test[:, :, i])
+
+        if distance_threshold_mm > 0:
+            label_ref_contour = sitk.BinaryDilate(label_ref_contour, np.repeat(distance, 2))
+
+        # mask out the locations in agreement
+        added_path = sitk.MaskNegated(label_test_contour, label_ref_contour)
+
+        # add up the voxels on the added path
+        added_path_length = sitk.GetArrayViewFromImage(added_path).sum()
+        added_path_length_list.append(added_path_length)
+
+    return added_path_length_list
+
+
+def compute_metric_total_apl(label_ref, label_test, distance_threshold_mm=3):
+    """Compute the total (slice-wise) added path length in mm
+
+    This operates on transaxial slices, which are assumed to be in the z-dimension (axis=2).
+
+    Args:
+        label_ref (sitk.Image): The reference (ground-truth) label
+        label_test (sitk.Image): The test label
+        distance_threshold_mm (float): Distances under this threshold will not contribute to the
+            added path length
+
+    Returns:
+        float: The total (slice-wise) added path length in mm
+    """
+
+    added_path_length_list = compute_apl(
+        label_ref, label_test, distance_threshold_mm=distance_threshold_mm
+    )
+
+    return np.sum(added_path_length_list) * np.mean(label_ref.GetSpacing()[:2])
+
+
+def compute_metric_mean_apl(label_ref, label_test, distance_threshold_mm=3):
+    """Compute the mean (slice-wise) added path length in mm
+
+    This operates on transaxial slices, which are assumed to be in the z-dimension (axis=2).
+
+    Args:
+        label_ref (sitk.Image): The reference (ground-truth) label
+        label_test (sitk.Image): The test label
+        distance_threshold_mm (float): Distances under this threshold will not contribute to the
+            added path length
+
+    Returns:
+        float: The mean (slice-wise) added path length in mm
+    """
+
+    added_path_length_list = compute_apl(
+        label_ref, label_test, distance_threshold_mm=distance_threshold_mm
+    )
+
+    return np.mean(added_path_length_list) * np.mean(label_ref.GetSpacing()[:2])
