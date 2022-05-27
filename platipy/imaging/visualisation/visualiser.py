@@ -211,7 +211,7 @@ class ImageVisualiser:
         self,
         scalar_image,
         name=None,
-        colormap=plt.cm.get_cmap("viridis"),
+        colormap=plt.cm.get_cmap("cubehelix"),
         alpha=0.75,
         min_value=False,
         max_value=False,
@@ -229,7 +229,7 @@ class ImageVisualiser:
                                   scalar image). Defaults to None.
             colormap (matplotlib.colors.Colormap, optional): The colormap to be used when
                                                              overlaying this scalar image. Defaults
-                                                             to plt.cm.get_cmap("viridis").
+                                                             to plt.cm.get_cmap("cubehelix").
             alpha (float, optional): Alpha to apply to overlay. Defaults to 0.75.
             min_value (float, optional): Values below this value aren't rendered. Defaults to 0.1.
 
@@ -265,7 +265,7 @@ class ImageVisualiser:
 
             # Use a default name if not specified
             if not name:
-                name = "input"
+                name = "Value"
                 self.__show_legend = False
 
             visualise_scalar = VisualiseScalarOverlay(
