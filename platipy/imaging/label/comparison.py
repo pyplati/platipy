@@ -294,6 +294,7 @@ def compute_metric_hd(label_a, label_b, auto_crop=True):
 
     return hausdorff_distance_value
 
+
 def compute_apl(label_ref, label_test, distance_threshold_mm=3):
     """
     helper function for computing the added path length
@@ -334,9 +335,8 @@ def compute_apl(label_ref, label_test, distance_threshold_mm=3):
         # add up the voxels on the added path
         added_path_length = sitk.GetArrayViewFromImage(added_path).sum()
         added_path_length_list.append(added_path_length)
-    
-    return added_path_length_list
 
+    return added_path_length_list
 
 
 def compute_metric_total_apl(label_ref, label_test, distance_threshold_mm=3):
@@ -355,15 +355,13 @@ def compute_metric_total_apl(label_ref, label_test, distance_threshold_mm=3):
     """
 
     added_path_length_list = compute_apl(
-        label_ref,
-        label_test,
-        distance_threshold_mm = distance_threshold_mm
+        label_ref, label_test, distance_threshold_mm=distance_threshold_mm
     )
 
-    return np.sum(added_path_length_list)* np.mean(label_ref.GetSpacing()[:2])
+    return np.sum(added_path_length_list) * np.mean(label_ref.GetSpacing()[:2])
 
 
-def compute_metric_mean_apl(label_ref, label_test, distance_threshold_mm=0):
+def compute_metric_mean_apl(label_ref, label_test, distance_threshold_mm=3):
     """Compute the mean (slice-wise) added path length in mm
 
     This operates on transaxial slices, which are assumed to be in the z-dimension (axis=2).
@@ -379,9 +377,7 @@ def compute_metric_mean_apl(label_ref, label_test, distance_threshold_mm=0):
     """
 
     added_path_length_list = compute_apl(
-        label_ref,
-        label_test,
-        distance_threshold_mm = distance_threshold_mm
+        label_ref, label_test, distance_threshold_mm=distance_threshold_mm
     )
 
-    return np.mean(added_path_length_list)* np.mean(label_ref.GetSpacing()[:2])
+    return np.mean(added_path_length_list) * np.mean(label_ref.GetSpacing()[:2])
