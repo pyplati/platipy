@@ -3,6 +3,7 @@ name: Package
 on:   
   repository_dispatch:
     types: [docker]
+  workflow_dispatch:
 
 jobs:
   docker:
