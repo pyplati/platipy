@@ -1165,7 +1165,7 @@ class ImageVisualiser:
 
             if self.__axis == "ortho":
 
-                ax_ax, _, ax_cor, ax_sag = self.__figure.axes
+                ax_ax, _, ax_cor, ax_sag = self.__figure.axes[:4]
                 ax = ax_ax
 
                 if not projection:
