@@ -36,17 +36,6 @@ jobs:
           tags: |
             platipy/platipy:latest
             ghcr.io/pyplati/platipy:latest
-
-      - name: Build and Push nnUNet Docker Image
-        uses: docker/build-push-action@v2
-        with:
-          context: services/nnunet
-          platforms: linux/amd64
-          push: true
-          tags: |
-            platipy/platipy:nnunet
-            ghcr.io/pyplati/platipy:nnunet
-
       - name: Build and Push Cardiac Docker Image
         uses: docker/build-push-action@v2
         with:
@@ -105,3 +94,13 @@ jobs:
           tags: |
             platipy/platipy:dirqa
             ghcr.io/pyplati/platipy:dirqa
+
+      - name: Build and Push nnUNet Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: services/nnunet
+          platforms: linux/amd64
+          push: true
+          tags: |
+            platipy/platipy:nnunet
+            ghcr.io/pyplati/platipy:nnunet
