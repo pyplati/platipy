@@ -69,7 +69,7 @@ def extract(
     if area < min_area_mm2:
         segment_img *= 0
 
-    return segment_img
+    return sitk.Cast(segment_img, template_img.GetPixelID())
 
 
 def generate_left_ventricle_segments(
@@ -129,10 +129,12 @@ def generate_left_ventricle_segments(
         label_left_ventricle,
         label_left_atrium,
         label_right_ventricle,
-        label_heart,
-        label_mitral_valve
+        label_heart
     ]
     working_contours = copy.deepcopy({s: contours[s] for s in label_list})
+
+    label_list.append(label_mitral_valve)
+
     output_contours = {}
     overall_transform_list = []
 
@@ -163,12 +165,12 @@ def generate_left_ventricle_segments(
     )
 
     for label in label_list:
-        working_contours[label] = crop_to_roi(contours[label], cb_size, cb_index)
+        working_contours[label] = crop_to_roi(working_contours[label], cb_size, cb_index)
 
     if verbose:
         print("Module 1: Cropping and initial alignment.")
-        vol_before = np.product(contours[label_heart].GetSpacing())
-        vol_after = np.product(working_contours[label_heart].GetSpacing())
+        vol_before = np.product(contours[label_heart].GetSize())
+        vol_after = np.product(working_contours[label_heart].GetSize())
         print(f"  Images cropped. Volume reduction: {vol_before/vol_after:.3f}")
 
     # Initially we should reorient based on the cardiac axis
@@ -564,6 +566,9 @@ def generate_left_ventricle_segments(
         # We will need numpy arrays here
         arr_lv_myo_slice = sitk.GetArrayViewFromImage(label_lv_myo_slice)
         loc_y, loc_x = np.where(arr_lv_myo_slice)
+
+        if arr_lv_myo_slice.sum() == 0:
+            continue
 
         # Now the origin
         y_0, x_0 = get_com(label_lv_myo_slice)
