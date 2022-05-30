@@ -446,7 +446,7 @@ class ProbUNet(pl.LightningModule):
                 prog_bar=True,
                 logger=True,
             )
-        return loss
+        return training_loss
 
     def validation_step(self, batch, _):
 
