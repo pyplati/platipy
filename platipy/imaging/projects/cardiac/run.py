@@ -255,6 +255,148 @@ CARDIAC_SETTINGS_DEFAULTS = {
     "return_proba_as_contours": False,
 }
 
+OPEN_ATLAS_SETTINGS = CARDIAC_SETTINGS_DEFAULTS.copy()
+OPEN_ATLAS_SETTINGS["atlas_settings"] = {
+    "atlas_id_list": [
+        "LCTSC-Test-S2-201",
+        "LCTSC-Test-S2-203",
+        "LCTSC-Test-S3-201",
+        "LCTSC-Train-S1-007",
+        "LCTSC-Train-S2-005",
+        "LCTSC-Train-S3-004",
+        "LUNG1-002",
+        "LUNG1-009",
+        "LUNG1-021",
+        "LUNG1-027",
+        "LUNG1-035",
+        "LUNG1-037",
+        "LUNG1-055",
+        "LUNG1-067",
+        "LUNG1-074",
+        "LUNG1-076",
+        "LUNG1-092",
+        "LUNG1-143",
+        "LUNG1-210",
+        "LUNG1-226",
+    ],
+    "atlas_structure_list": [
+        "LA",
+        "LV",
+        "RA",
+        "RV",
+        "AA",
+        "PA",
+        "SVC",
+        "LAD",
+        "LMCA",
+        "LCX",
+        "RCA",
+        "H",
+    ],
+    "atlas_path": ATLAS_PATH,
+    "atlas_image_format": "{0}/IMAGES/CT.nii.gz",
+    "atlas_label_format": "{0}/STRUCTURES/{1}.nii.gz",
+    "crop_atlas_to_structures": True,
+    "crop_atlas_expansion_mm": (50, 50, 50),
+    "guide_structure_name": "H",
+    "superior_extension": 30,
+}
+
+OPEN_ATLAS_SETTINGS["label_fusion_settings"] = {
+    "vote_type": "unweighted",
+    "vote_params": None,
+    "optimal_threshold": {
+        "LA": 0.5,
+        "LV": 0.5,
+        "RA": 0.5,
+        "RV": 0.5,
+        "AA": 0.5,
+        "PA": 0.5,
+        "SVC": 0.5,
+        "H": 0.5,
+    },
+}
+
+OPEN_ATLAS_SETTINGS["vessel_spline_settings"] = {
+    "vessel_name_list": [
+        "LAD",
+        "LCX",
+        "LMCA",
+        "RCA",
+    ],
+    "vessel_radius_mm_dict": {
+        "LAD": 2,
+        "LCX": 2,
+        "LMCA": 2,
+        "RCA": 2,
+    },
+    "scan_direction_dict": {
+        "LAD": "z",
+        "LCX": "z",
+        "LMCA": "x",
+        "RCA": "z",
+    },
+    "stop_condition_type_dict": {
+        "LAD": "count",
+        "LCX": "count",
+        "LMCA": "count",
+        "RCA": "count",
+    },
+    "stop_condition_value_dict": {
+        "LAD": 2,
+        "LCX": 2,
+        "LMCA": 2,
+        "RCA": 2,
+    },
+}
+
+OPEN_ATLAS_SETTINGS["geometric_segmentation_settings"]["atlas_structure_names"] = {
+    "atlas_left_ventricle": "LV",
+    "atlas_right_ventricle": "RV",
+    "atlas_left_atrium": "LA",
+    "atlas_right_atrium": "RA",
+    "atlas_ascending_aorta": "AA",
+    "atlas_pulmonary_artery": "PA",
+    "atlas_superior_vena_cava": "SVC",
+    "atlas_whole_heart": "H",
+}
+
+OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_binaryfillhole"] = [
+    "LA","LV","RA","RV","AA","PA","SVC","H",
+]
+
+OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_overlap_correction"] = [
+    "LA","LV","RA","RV","AA","PA","SVC","H",
+]
+
+OPEN_ATLAS_SETTINGS["return_proba_as_contours"] = True
+
+HYBRID_SETTINGS_DEFAULTS = {
+    "nnunet_settings": NNUNET_SETTINGS_DEFAULTS,
+    "cardiac_settings": OPEN_ATLAS_SETTINGS,
+}
+
+def run_hybrid_segmentation(img, settings=HYBRID_SETTINGS_DEFAULTS):
+    """Runs the hybrid cardiac segmentation
+
+    Args:
+        img (sitk.Image):
+        settings (dict, optional): Dictionary containing settings for algorithm.
+                                   Defaults to HYBRID_SETTINGS_DEFAULTS.
+
+    Returns:
+        dict: Dictionary containing output of segmentation
+    """
+
+    mask_wh = RUN_NNUNET(img, settings["nnunet_settings"])
+
+    return run_cardiac_segmentation(
+        img,
+        guide_structure=mask_wh,
+        settings=settings["cardiac_settings"]
+    )
+
+
 
 def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTINGS_DEFAULTS):
     """Runs the atlas-based cardiac segmentation
