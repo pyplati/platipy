@@ -144,7 +144,8 @@
 <h1>Command Line Tools<a class="headerlink" href="#command-line-tools" title="Permalink to this headline">¶</a></h1>
 <section id="dicom-crawler">
 <h2>dicom_crawler<a class="headerlink" href="#dicom-crawler" title="Permalink to this headline">¶</a></h2>
-<p>DICOM DIRECTORY CRAWLER</p>
+<blockquote>
+<div><p>DICOM DIRECTORY CRAWLER</p>
 <p>This tool makes it easier to bulk-convert DICOM files into other formats (default NifTI).
 There are quite a lot of options, but most do not need to be changed.</p>
 <p>You need to provide the input directory (-i), from which the crawler will recursively search
@@ -161,6 +162,7 @@ patient.</p>
 This would typically be PatientName, or PatientID, although any DICOM header tag is allowed.</p>
 <p>I hope you find this tool useful!</p>
 <p>If you have any feedback, let us know on github.com/pyplati/platipy</p>
+</div></blockquote>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dicom_crawler <span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -263,10 +265,12 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 </section>
 <section id="segmentation">
 <h2>segmentation<a class="headerlink" href="#segmentation" title="Permalink to this headline">¶</a></h2>
-<p>Run an auto-segmentation on an input image. Choose which algorithm to run and pass the path to
+<blockquote>
+<div><p>Run an auto-segmentation on an input image. Choose which algorithm to run and pass the path to
 the Nitfti input image OR a directory containing a DICOM series.</p>
 <p>Optionally, pass in a configuration file for the segmentation algorithm. Output the default
 configuration for an algorithm using the –default flag.</p>
+</div></blockquote>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>segmentation <span class="o">[</span>OPTIONS<span class="o">]</span> <span class="o">{</span>cardiac<span class="p">|</span>bronchus<span class="o">}</span> <span class="o">[</span>INPUT_PATH<span class="o">]</span>
 </pre></div>
 </div>
@@ -300,7 +304,9 @@ configuration for an algorithm using the –default flag.</p>
 </section>
 <section id="nifti-to-rtstruct">
 <h2>nifti_to_rtstruct<a class="headerlink" href="#nifti-to-rtstruct" title="Permalink to this headline">¶</a></h2>
-<p>Convert Nifti masks to Dicom RTStruct</p>
+<blockquote>
+<div><p>Convert Nifti masks to Dicom RTStruct</p>
+</div></blockquote>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>nifti_to_rtstruct <span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -323,7 +329,9 @@ configuration for an algorithm using the –default flag.</p>
 </section>
 <section id="nifti-to-series">
 <h2>nifti_to_series<a class="headerlink" href="#nifti-to-series" title="Permalink to this headline">¶</a></h2>
-<p>Convert a Nifti image to a Dicom image series</p>
+<blockquote>
+<div><p>Convert a Nifti image to a Dicom image series</p>
+</div></blockquote>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>nifti_to_series <span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
@@ -356,7 +364,9 @@ configuration for an algorithm using the –default flag.</p>
 </section>
 <section id="rtstruct-to-nifti">
 <h2>rtstruct_to_nifti<a class="headerlink" href="#rtstruct-to-nifti" title="Permalink to this headline">¶</a></h2>
-<p>Convert a DICOM RTSTRUCT file to Nifti format.</p>
+<blockquote>
+<div><p>Convert a DICOM RTSTRUCT file to Nifti format.</p>
+</div></blockquote>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rtstruct_to_nifti <span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>

@@ -222,7 +222,7 @@ Defaults to None.</p></li>
 scalar image). Defaults to None.</p></li>
 <li><p><strong>colormap</strong> (<em>matplotlib.colors.Colormap</em><em>, </em><em>optional</em>) – The colormap to be used when
 overlaying this scalar image. Defaults
-to plt.cm.get_cmap(“Spectral”).</p></li>
+to plt.cm.get_cmap(“cubehelix”).</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Alpha to apply to overlay. Defaults to 0.75.</p></li>
 <li><p><strong>min_value</strong> (<em>float</em><em>, </em><em>optional</em>) – Values below this value aren’t rendered. Defaults to 0.1.</p></li>
 </ul>
@@ -237,7 +237,7 @@ to plt.cm.get_cmap(“Spectral”).</p></li>
 </dd></dl>
 <dl class="py method">
 <dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_vector_overlay">
-<code class="sig-name descname"><span class="pre">add_vector_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">vector_image</span></em>, <em class="sig-param"><span class="pre">min_value=False</span></em>, <em class="sig-param"><span class="pre">max_value=False</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">arrow_scale=0.25</span></em>, <em class="sig-param"><span class="pre">arrow_width=1</span></em>, <em class="sig-param"><span class="pre">subsample=4</span></em>, <em class="sig-param"><span class="pre">color_function='perpendicular'</span></em>, <em class="sig-param"><span class="pre">show_colorbar=True</span></em>, <em class="sig-param"><span class="pre">name=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_vector_overlay" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">add_vector_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">vector_image</span></em>, <em class="sig-param"><span class="pre">min_value=False</span></em>, <em class="sig-param"><span class="pre">max_value=False</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">arrow_scale=1</span></em>, <em class="sig-param"><span class="pre">arrow_width=1</span></em>, <em class="sig-param"><span class="pre">subsample=8</span></em>, <em class="sig-param"><span class="pre">color_function='magnitude'</span></em>, <em class="sig-param"><span class="pre">show_colorbar=True</span></em>, <em class="sig-param"><span class="pre">name=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_vector_overlay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overlay a vector field on to the existing image</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -247,12 +247,12 @@ to plt.cm.get_cmap(“Spectral”).</p></li>
 sitk.Image as vector field). Defaults to None.</p></li>
 <li><p><strong>colormap</strong> (<em>matplotlib.colors.Colormap</em><em>, </em><em>optional</em>) – The colormap to be used when
 overlaying this vector field. Defaults
-to plt.cm.get_cmap(“Spectral”).</p></li>
+to plt.cm.get_cmap(“inferno”).</p></li>
 <li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Alpha to apply to overlay vectors. Defaults to 0.75.</p></li>
-<li><p><strong>arrow_scale</strong> (<em>float</em><em>, </em><em>optional</em>) – Relative scaling of vectors. Defaults to 0.25.</p></li>
-<li><p><strong>arrow_width</strong> (<em>float</em><em>, </em><em>optional</em>) – Width of vector field arrow. Defaults to 0.25.</p></li>
+<li><p><strong>arrow_scale</strong> (<em>float</em><em>, </em><em>optional</em>) – Relative scaling of vectors. Defaults to 1.</p></li>
+<li><p><strong>arrow_width</strong> (<em>float</em><em>, </em><em>optional</em>) – Width of vector field arrow. Defaults to 1.</p></li>
 <li><p><strong>subsample</strong> (<em>int</em><em>, </em><em>optional</em>) – Defines to subsampling ratio of displayed vectors.
-Defaults to 4.</p></li>
+Defaults to 8.</p></li>
 <li><p><strong>color_function</strong> (<em>str</em><em>, </em><em>optional</em>) – Determines how vectors are colored. Options:
 ‘perpendicular’ - vectors colored by perpendicular
 value

@@ -259,6 +259,27 @@ False.</p></li>
 <section id="module-platipy.imaging.label.comparison">
 <span id="comparison"></span><h2>Comparison<a class="headerlink" href="#module-platipy.imaging.label.comparison" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
+<dt id="platipy.imaging.label.comparison.compute_apl">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_apl</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_apl" title="Permalink to this definition">¶</a></dt>
+<dd><p>helper function for computing the added path length</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label_ref</strong> (<em>sitk.Image</em>) – The reference (ground-truth) label</p></li>
+<li><p><strong>label_test</strong> (<em>sitk.Image</em>) – The test label</p></li>
+<li><p><strong>distance_threshold_mm</strong> (<em>float</em>) – Distances under this threshold will not contribute to the
+added path length</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The total (slice-wise) added path length in mm</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
 <dt id="platipy.imaging.label.comparison.compute_metric_dsc">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_dsc</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_dsc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the Dice Similarity Coefficient between two labels</p>
@@ -316,6 +337,28 @@ False.</p></li>
 </dl>
 </dd></dl>
 <dl class="py function">
+<dt id="platipy.imaging.label.comparison.compute_metric_mean_apl">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_mean_apl</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_mean_apl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the mean (slice-wise) added path length in mm</p>
+<p>This operates on transaxial slices, which are assumed to be in the z-dimension (axis=2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label_ref</strong> (<em>sitk.Image</em>) – The reference (ground-truth) label</p></li>
+<li><p><strong>label_test</strong> (<em>sitk.Image</em>) – The test label</p></li>
+<li><p><strong>distance_threshold_mm</strong> (<em>float</em>) – Distances under this threshold will not contribute to the
+added path length</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The mean (slice-wise) added path length in mm</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
 <dt id="platipy.imaging.label.comparison.compute_metric_sensitivity">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_sensitivity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_sensitivity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the sensitivity between two labels</p>
@@ -354,11 +397,56 @@ False.</p></li>
 </dl>
 </dd></dl>
 <dl class="py function">
+<dt id="platipy.imaging.label.comparison.compute_metric_total_apl">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_total_apl</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_total_apl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the total (slice-wise) added path length in mm</p>
+<p>This operates on transaxial slices, which are assumed to be in the z-dimension (axis=2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label_ref</strong> (<em>sitk.Image</em>) – The reference (ground-truth) label</p></li>
+<li><p><strong>label_test</strong> (<em>sitk.Image</em>) – The test label</p></li>
+<li><p><strong>distance_threshold_mm</strong> (<em>float</em>) – Distances under this threshold will not contribute to the
+added path length</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The total (slice-wise) added path length in mm</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt id="platipy.imaging.label.comparison.compute_surface_dsc">
+<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_surface_dsc</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_surface_dsc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Surface Dice</p>
+<p>From: Nikolov S et al. Clinically Applicable Segmentation of Head and Neck Anatomy for
+Radiotherapy: Deep Learning Algorithm Development and Validation Study J Med Internet Res
+2021;23(7):e26151, DOI: 10.2196/26151</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label_a</strong> (<em>sitk.Image</em>) – A mask to compare</p></li>
+<li><p><strong>label_b</strong> (<em>sitk.Image</em>) – Another mask to compare</p></li>
+<li><p><strong>tau</strong> (<em>float</em>) – Accepted deviation between contours (in mm)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Surface DSC between the two labels</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
 <dt id="platipy.imaging.label.comparison.compute_surface_metrics">
 <code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_surface_metrics</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_surface_metrics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute surface distance metrics between two labels. Surface metrics computed are:
 hausdorffDistance, meanSurfaceDistance, medianSurfaceDistance, maximumSurfaceDistance,
-sigmaSurfaceDistance</p>
+sigmaSurfaceDistance, surfaceDSC</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

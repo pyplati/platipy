@@ -152,6 +152,14 @@ request</a> to merge your changes into the main branch
 (<strong>master</strong>). At this point the automated tests will run and maintainers will review your
 submission before merging.</p>
 </section>
+<section id="example-installation">
+<h2>Example Installation<a class="headerlink" href="#example-installation" title="Permalink to this headline">¶</a></h2>
+<p>To install a development environment run the following within a virtual environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -r requirements.txt -r requirements-dev.txt -r requirements-backend.txt
+pip install -e .
+</pre></div>
+</div>
+</section>
 <section id="style-guide">
 <h2>Style Guide<a class="headerlink" href="#style-guide" title="Permalink to this headline">¶</a></h2>
 <p>Python code should conform to
@@ -235,6 +243,7 @@ CLI tools in <code class="docutils literal notranslate"><span class="pre">platip
             <ul>
 <li><a class="reference internal" href="#">Contributing</a><ul>
 <li><a class="reference internal" href="#git">Git</a></li>
+<li><a class="reference internal" href="#example-installation">Example Installation</a></li>
 <li><a class="reference internal" href="#style-guide">Style Guide</a></li>
 <li><a class="reference internal" href="#structure">Structure</a></li>
 <li><a class="reference internal" href="#writing-unit-tests">Writing unit tests</a></li>
