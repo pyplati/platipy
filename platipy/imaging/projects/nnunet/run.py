@@ -1,6 +1,8 @@
 
 import os
 import tempfile
+import urllib.request
+import shutil
 from pathlib import Path
 from loguru import logger
 
@@ -33,6 +35,29 @@ NNUNET_SETTINGS_DEFAULTS = {
     "chk": "model_final_checkpoint"
 }
 
+def download_and_install_nnunet_task(task_name, zip_url):
+    """Downloads the Zip file and then installs via nnUNet.
+    
+    Avoid using the nnUNet built in function since it doesn't work when a HTTP_PROXY/HTTPS_PROXY
+    are set.
+
+    Args:
+        task_name (str): Task ID and name
+        zip_url (str): Zip file URL
+    """
+    
+    from nnunet.inference.pretrained_models.download_pretrained_model import install_model_from_zip_file
+
+    logger.info(f"Installing Task {task_name} from {zip_url}")
+    temp_dir = tempfile.mkdtemp()
+    temp_file = Path(temp_dir).joinpath(f"{task_name}.zip")
+    with urllib.request.urlopen(zip_url) as dl_file:
+        with open(temp_file, "wb") as out_file:
+            out_file.write(dl_file.read())
+
+    install_model_from_zip_file(temp_file)
+    shutil.rmtree(temp_dir)
+
 def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
 
     if not "RESULTS_FOLDER" in os.environ:
@@ -48,7 +73,6 @@ def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
     # Import in here to make sure environment is already set
     try:
         from nnunet.inference.predict import predict_from_folder
-        from nnunet.inference.pretrained_models.download_pretrained_model import download_and_install_from_url
     except ImportError:
         logger.error("nnUNet is not installed. Please pip install nnunet to use this functionality")
 
@@ -69,8 +93,7 @@ def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
             raise ValueError(f"{task} not available")
 
         task_url = available_models[task]["url"]
-        logger.info("Installing Task from URL")
-        download_and_install_from_url(task_url)
+        download_and_install_nnunet_task(task, task_url)
 
     # Prepare the image in a temporary directory for nnunet to run on
     input_path = Path(tempfile.mkdtemp())
