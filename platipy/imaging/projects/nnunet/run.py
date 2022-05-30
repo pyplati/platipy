@@ -44,9 +44,11 @@ def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
     nnunet_model_path = Path(os.environ["RESULTS_FOLDER"])
 
     task = settings["task"]
+    model = settings["model"]
 
     # Check if task model is already installed
     task_path = nnunet_model_path.joinpath("nnUNet", model, task)
+    print(task_path)
 
     if not task_path.exists():
         # Check if the task is available and install it if so
