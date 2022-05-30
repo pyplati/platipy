@@ -16,7 +16,6 @@
 import os
 import shutil
 import tempfile
-from distutils.dir_util import copy_tree
 from pathlib import Path
 import SimpleITK as sitk
 import numpy as np
@@ -395,10 +394,13 @@ def install_open_atlas(atlas_path):
         atlas_path (pathlib.Path): Path in which to place the atlas
     """
 
+    logger.info(f"Fetching and installing open cardiac atlas to {atlas_path}")
     temp_dir = tempfile.mkdtemp()
     download_and_extract_zip_file(OPEN_ATLAS_URL, temp_dir)
     temp_atlas_path = Path(temp_dir).joinpath("test_atlas")
-    copy_tree(temp_atlas_path, atlas_path)
+    if not atlas_path.parent.exists():
+        atlas_path.parent.mkdir(parents=True)
+    shutil.copytree(temp_atlas_path, atlas_path)
     shutil.rmtree(temp_dir)
 
 
@@ -415,7 +417,7 @@ def run_hybrid_segmentation(img, settings=HYBRID_SETTINGS_DEFAULTS):
     """
 
     # Make sure atlas path exists, if not fetch it if fetch open atlas setting is true
-    atlas_path = Path(settings["cardiac_settings"]["atlas_path"])
+    atlas_path = Path(settings["cardiac_settings"]["atlas_settings"]["atlas_path"])
     if not atlas_path.exists() or len(list(atlas_path.glob("*"))) == 0:
         if settings["fetch_open_atlas"]:
             # Fetch data from Zenodo
