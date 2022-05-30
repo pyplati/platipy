@@ -54,6 +54,8 @@ from platipy.imaging.generation.mask import extend_mask
 
 from platipy.imaging.label.utils import binary_encode_structure_list, correct_volume_overlap
 
+from platipy.imaging.projects.nnunet.run import run_segmentation, NNUNET_SETTINGS_DEFAULTS
+
 ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:
     ATLAS_PATH = os.environ["ATLAS_PATH"]
@@ -261,22 +263,22 @@ OPEN_ATLAS_SETTINGS["atlas_settings"] = {
         "LCTSC-Test-S2-201",
         "LCTSC-Test-S2-203",
         "LCTSC-Test-S3-201",
-        "LCTSC-Train-S1-007",
-        "LCTSC-Train-S2-005",
-        "LCTSC-Train-S3-004",
+#        "LCTSC-Train-S1-007",
+#        "LCTSC-Train-S2-005",
+#        "LCTSC-Train-S3-004",
         "LUNG1-002",
         "LUNG1-009",
         "LUNG1-021",
-        "LUNG1-027",
-        "LUNG1-035",
-        "LUNG1-037",
-        "LUNG1-055",
+#        "LUNG1-027",
+#        "LUNG1-035",
+#        "LUNG1-037",
+#        "LUNG1-055",
         "LUNG1-067",
-        "LUNG1-074",
-        "LUNG1-076",
-        "LUNG1-092",
-        "LUNG1-143",
-        "LUNG1-210",
+#        "LUNG1-074",
+#        "LUNG1-076",
+#        "LUNG1-092",
+#        "LUNG1-143",
+#        "LUNG1-210",
         "LUNG1-226",
     ],
     "atlas_structure_list": [
@@ -366,12 +368,13 @@ OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_binaryfillhole"] 
 ]
 
 OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_overlap_correction"] = [
-    "LA","LV","RA","RV","AA","PA","SVC","H",
+    "LA","LV","RA","RV","AA","PA","SVC",
 ]
 
 OPEN_ATLAS_SETTINGS["return_proba_as_contours"] = True
 
 HYBRID_SETTINGS_DEFAULTS = {
+    "use_zenodo_atlas": True,
     "nnunet_settings": NNUNET_SETTINGS_DEFAULTS,
     "cardiac_settings": OPEN_ATLAS_SETTINGS,
 }
@@ -388,11 +391,11 @@ def run_hybrid_segmentation(img, settings=HYBRID_SETTINGS_DEFAULTS):
         dict: Dictionary containing output of segmentation
     """
 
-    mask_wh = RUN_NNUNET(img, settings["nnunet_settings"])
+    mask_wh = run_segmentation(img, settings["nnunet_settings"])
 
     return run_cardiac_segmentation(
         img,
-        guide_structure=mask_wh,
+        guide_structure=mask_wh["Struct_0"],
         settings=settings["cardiac_settings"]
     )
 

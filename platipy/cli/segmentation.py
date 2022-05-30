@@ -28,14 +28,14 @@ from platipy.imaging.projects.bronchus.run import (
     BRONCHUS_SETTINGS_DEFAULTS,
 )
 from platipy.imaging.projects.cardiac.run import (
-    run_cardiac_segmentation,
-    CARDIAC_SETTINGS_DEFAULTS,
+    run_hybrid_segmentation,
+    HYBRID_SETTINGS_DEFAULTS,
 )
 
 segmentation_algorithms = {
     "cardiac": {
-        "algorithm": run_cardiac_segmentation,
-        "default_settings": CARDIAC_SETTINGS_DEFAULTS,
+        "algorithm": run_hybrid_segmentation,
+        "default_settings": HYBRID_SETTINGS_DEFAULTS,
     },
     "bronchus": {
         "algorithm": run_bronchus_segmentation,
