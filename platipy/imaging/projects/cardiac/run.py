@@ -14,6 +14,10 @@
 
 
 import os
+import shutil
+import tempfile
+from distutils.dir_util import copy_tree
+from pathlib import Path
 import SimpleITK as sitk
 import numpy as np
 
@@ -35,7 +39,6 @@ from platipy.imaging.label.fusion import (
     combine_labels,
 )
 from platipy.imaging.label.iar import run_iar
-
 from platipy.imaging.utils.vessel import vessel_spline_generation
 
 from platipy.imaging.utils.valve import (
@@ -49,16 +52,19 @@ from platipy.imaging.utils.conduction import (
 )
 
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
-
 from platipy.imaging.generation.mask import extend_mask
-
 from platipy.imaging.label.utils import binary_encode_structure_list, correct_volume_overlap
-
 from platipy.imaging.projects.nnunet.run import run_segmentation, NNUNET_SETTINGS_DEFAULTS
+from platipy.utils import download_and_extract_zip_file
 
 ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:
     ATLAS_PATH = os.environ["ATLAS_PATH"]
+else:
+    home = Path.home()
+    platipy_dir = home.joinpath(".platipy")
+    platipy_dir.mkdir(exist_ok=True)
+    ATLAS_PATH = str(platipy_dir.joinpath("cardiac", "test_atlas"))
 
 CARDIAC_SETTINGS_DEFAULTS = {
     "atlas_settings": {
@@ -257,6 +263,8 @@ CARDIAC_SETTINGS_DEFAULTS = {
     "return_proba_as_contours": False,
 }
 
+OPEN_ATLAS_URL = "https://zenodo.org/record/6592437/files/open_atlas.zip?download=1"
+
 OPEN_ATLAS_SETTINGS = CARDIAC_SETTINGS_DEFAULTS.copy()
 OPEN_ATLAS_SETTINGS["atlas_settings"] = {
     "atlas_id_list": [
@@ -374,10 +382,25 @@ OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_overlap_correctio
 OPEN_ATLAS_SETTINGS["return_proba_as_contours"] = True
 
 HYBRID_SETTINGS_DEFAULTS = {
-    "use_zenodo_atlas": True,
+    "fetch_open_atlas": True,
     "nnunet_settings": NNUNET_SETTINGS_DEFAULTS,
     "cardiac_settings": OPEN_ATLAS_SETTINGS,
 }
+
+
+def install_open_atlas(atlas_path):
+    """Fetch atlas from Zenodo and place into atlas_path
+
+    Args:
+        atlas_path (pathlib.Path): Path in which to place the atlas
+    """
+
+    temp_dir = tempfile.mkdtemp()
+    download_and_extract_zip_file(OPEN_ATLAS_URL, temp_dir)
+    temp_atlas_path = Path(temp_dir).joinpath("test_atlas")
+    copy_tree(temp_atlas_path, atlas_path)
+    shutil.rmtree(temp_dir)
+
 
 def run_hybrid_segmentation(img, settings=HYBRID_SETTINGS_DEFAULTS):
     """Runs the hybrid cardiac segmentation
@@ -391,15 +414,24 @@ def run_hybrid_segmentation(img, settings=HYBRID_SETTINGS_DEFAULTS):
         dict: Dictionary containing output of segmentation
     """
 
+    # Make sure atlas path exists, if not fetch it if fetch open atlas setting is true
+    atlas_path = Path(settings["cardiac_settings"]["atlas_path"])
+    if not atlas_path.exists() or len(list(atlas_path.glob("*"))) == 0:
+        if settings["fetch_open_atlas"]:
+            # Fetch data from Zenodo
+            install_open_atlas(atlas_path)
+        else:
+            raise SystemError(f"No atlas exists at {atlas_path}")
+
+    # Run the whole heart nnUNet segmentation
     mask_wh = run_segmentation(img, settings["nnunet_settings"])
 
+    # Run the 2nd part of the hybrid approach
     return run_cardiac_segmentation(
         img,
         guide_structure=mask_wh["Struct_0"],
         settings=settings["cardiac_settings"]
     )
-
-
 
 def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTINGS_DEFAULTS):
     """Runs the atlas-based cardiac segmentation
@@ -443,6 +475,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     logger.info("")
     # Settings
     atlas_path = settings["atlas_settings"]["atlas_path"]
+
     atlas_id_list = settings["atlas_settings"]["atlas_id_list"]
     atlas_structure_list = settings["atlas_settings"]["atlas_structure_list"]
 

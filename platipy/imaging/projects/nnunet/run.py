@@ -6,9 +6,9 @@ from loguru import logger
 
 import SimpleITK as sitk
 
-from nnunet.inference.pretrained_models.download_pretrained_model import get_available_models, download_and_install_from_url
-
 def available_nnunet_models():
+
+    from nnunet.inference.pretrained_models.download_pretrained_model import get_available_models
 
     available_models = get_available_models()
     available_models["Task400_OPEN_HEART_3d_lowres"] = {
@@ -40,6 +40,17 @@ def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
         platipy_dir = home.joinpath(".platipy")
         home.mkdir(exist_ok=True)
         os.environ["RESULTS_FOLDER"] = str(platipy_dir.joinpath("nnUNet_models"))
+
+        # Don't really need these here but set them anyway to supress warnings
+        os.environ["nnUNet_raw_data_base"] = tempfile.mkdtemp()
+        os.environ["nnUNet_preprocessed"] = tempfile.mkdtemp()
+    
+    # Import in here to make sure environment is already set
+    try:
+        from nnunet.inference.predict import predict_from_folder
+        from nnunet.inference.pretrained_models.download_pretrained_model import download_and_install_from_url
+    except ImportError:
+        logger.error("nnUNet is not installed. Please pip install nnunet to use this functionality")
 
     nnunet_model_path = Path(os.environ["RESULTS_FOLDER"])
 
@@ -88,9 +99,6 @@ def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
         trainer = trainer_class_name
 
     model_folder_name = task_path.joinpath(trainer + f"__{default_plans_identifier}")
-
-    # Import in here to make sure environment is already set
-    from nnunet.inference.predict import predict_from_folder
 
     predict_from_folder(str(model_folder_name), str(input_path), str(output_path), folds, False,
         num_threads_preprocessing, num_threads_nifti_save, lowres_segmentations, 0, 1,

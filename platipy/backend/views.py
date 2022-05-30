@@ -98,7 +98,8 @@ def fetch_status():
 
     status_context["applications"] = []
     for ak in APIKey.query.all():
-        status_context["applications"].append({"name": ak.name, "key": ak.key})
+        # Hide Key from the dashboard
+        status_context["applications"].append({"name": ak.name, "key": "XXX"})
 
     return jsonify(status_context)
 
