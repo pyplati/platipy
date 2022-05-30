@@ -54,6 +54,8 @@ from platipy.imaging.generation.mask import extend_mask
 
 from platipy.imaging.label.utils import binary_encode_structure_list, correct_volume_overlap
 
+from platipy.imaging.projects.nnunet.run import run_segmentation, NNUNET_SETTINGS_DEFAULTS
+
 ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:
     ATLAS_PATH = os.environ["ATLAS_PATH"]
@@ -255,6 +257,28 @@ CARDIAC_SETTINGS_DEFAULTS = {
     "return_proba_as_contours": False,
 }
 
+HYBRID_SETTINGS = {
+    "nnunet": NNUNET_SETTINGS_DEFAULTS,
+    "cardiac": CARDIAC_SETTINGS_DEFAULTS
+}
+
+# Set to the Open Heart model by default
+HYBRID_SETTINGS["nnunet"]["task"] = "Task400_OPEN_HEART_3d_lowres"
+
+def run_cardiac_hybrid_segmentation(img, settings=HYBRID_SETTINGS):
+
+    # Run nnUNet wholeheart
+    nnunet_results = run_segmentation(img, settings=settings["nnunet"])
+
+    nnunet_structures = list(nnunet_results.keys())
+
+    # Should only be one structure
+    if len(nnunet_structures) != 1:
+        raise SystemError(f"Expected 1 structure from nnUNet but got {len(nnunet_structures)}")
+
+    wholeheart = nnunet_results[nnunet_structures[0]]
+
+    return run_cardiac_segmentation(img, guide_structure=wholeheart, settings=settings["cardiac"])
 
 def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTINGS_DEFAULTS):
     """Runs the atlas-based cardiac segmentation
