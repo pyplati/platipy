@@ -103,23 +103,23 @@ class DicomLocationEndpoint(Resource):
         "name",
         required=True,
         help="Name to identify this Dicom location",
-        location="args",
+        location=["args", "headers", 'values'],
     )
     parser.add_argument(
         "host",
         required=True,
         help="Dicom location host name or IP address",
-        location="args",
+        location=["args", "headers", 'values'],
     )
     parser.add_argument(
         "port",
         type=int,
         required=True,
         help="The port of the Dicom location",
-        location="args",
+        location=["args", "headers", 'values'],
     )
     parser.add_argument(
-        "ae_title", help="AE Title of the Dicom location", location="args"
+        "ae_title", help="AE Title of the Dicom location", location=["args", "headers", 'values']
     )
 
     def get(self):
@@ -166,31 +166,31 @@ class DataObjectEndpoint(Resource):
         "dataset",
         required=True,
         help="Dataset ID to add Data Object to",
-        location="args",
+        location=["args", "headers", 'values'],
     )
     parser.add_argument(
         "type",
         choices=("DICOM", "FILE"),
         required=True,
         help="DICOM for Dicom objects to be fetched from the Dataset Dicom Location. FILE for file sent with request.",
-        location="args",
+        location=["args", "headers", 'values'],
     )
     parser.add_argument(
         "dicom_retrieve",
         choices=("MOVE", "GET", "SEND"),
         help="Used for DICOM type. The Dicom objects will be retrieved using this method.",
-        location="args",
+        location=["args", "headers", 'values'],
     )
-    parser.add_argument("seriesUID", location="args")
-    parser.add_argument("meta_data", location="args")
-    parser.add_argument("file_name", location="args")
+    parser.add_argument("seriesUID", location=["args", "headers", 'values'])
+    parser.add_argument("meta_data", location=["args", "headers", 'values'])
+    parser.add_argument("file_name", location=["args", "headers", 'values'])
     parser.add_argument(
         "file_data", type=werkzeug.datastructures.FileStorage, location="files"
     )
     parser.add_argument(
         "parent",
         help="Data Object ID to which this data object should be linked",
-        location="args",
+        location=["args", "headers", 'values'],
     )
 
     def get(self, dataobject_id):
@@ -436,14 +436,14 @@ class DatasetEndpoint(Resource):
     parser.add_argument(
         "from_dicom_location",
         help="ID of DicomLocation from which to retrieve DICOM data",
-        location="args",
+        location=["args", "headers", 'values'],
     )
     parser.add_argument(
         "to_dicom_location",
         help="ID of DicomLocation the send output data to",
-        location="args",
+        location=["args", "headers", 'values'],
     )
-    parser.add_argument("timeout", type=int, default=24, location="args")
+    parser.add_argument("timeout", type=int, default=24, location=["args", "headers", 'values'])
 
     def get(self, dataset_id):
 
@@ -527,18 +527,18 @@ class TriggerEndpoint(Resource):
         "algorithm",
         required=True,
         help="The name of the algorithm to trigger",
-        location="args",
+        location=["args", "headers", 'values'],
     )
     parser.add_argument(
         "dataset",
         required=True,
         help="The ID of the dataset to pass to the algorithm",
-        location="args",
+        location=["args", "headers", 'values'],
     )
     parser.add_argument(
         "config",
         help="JSON configuration for algorithm. Default configuration will be used if not set.",
-        location="args",
+        location=["args", "headers", 'values'],
     )
 
     def post(self):
