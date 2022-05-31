@@ -289,25 +289,25 @@ OPEN_ATLAS_SETTINGS["atlas_settings"] = {
         "LUNG1-226",
     ],
     "atlas_structure_list": [
-        "LA",
-        "LV",
-        "RA",
-        "RV",
-        "AA",
-        "PA",
-        "SVC",
-        "LAD",
-        "LMCA",
-        "LCX",
-        "RCA",
-        "H",
+        "Atrium_L",
+        "Ventricle_L",
+        "Atrium_R",
+        "Ventricle_R",
+        "A_Aorta",
+        "A_Pulmonary",
+        "V_Venacava_S",
+        "A_LAD",
+        "A_Coronary_L",
+        "A_Cflx",
+        "A_Coronary_R",
+        "Heart",
     ],
     "atlas_path": ATLAS_PATH,
     "atlas_image_format": "{0}/IMAGES/CT.nii.gz",
     "atlas_label_format": "{0}/STRUCTURES/{1}.nii.gz",
     "crop_atlas_to_structures": True,
     "crop_atlas_expansion_mm": (50, 50, 50),
-    "guide_structure_name": "H",
+    "guide_structure_name": "Heart",
     "superior_extension": 30,
 }
 
@@ -315,67 +315,67 @@ OPEN_ATLAS_SETTINGS["label_fusion_settings"] = {
     "vote_type": "unweighted",
     "vote_params": None,
     "optimal_threshold": {
-        "LA": 0.5,
-        "LV": 0.5,
-        "RA": 0.5,
-        "RV": 0.5,
-        "AA": 0.5,
-        "PA": 0.5,
-        "SVC": 0.5,
-        "H": 0.5,
+        "Atrium_L": 0.5,
+        "Ventricle_L": 0.5,
+        "Atrium_R": 0.5,
+        "Ventricle_R": 0.5,
+        "A_Aorta": 0.5,
+        "A_Pulmonary": 0.5,
+        "V_Venacava_S": 0.5,
+        "Heart": 0.5,
     },
 }
 
 OPEN_ATLAS_SETTINGS["vessel_spline_settings"] = {
     "vessel_name_list": [
-        "LAD",
-        "LCX",
-        "LMCA",
-        "RCA",
+        "A_LAD",
+        "A_Cflx",
+        "A_Coronary_L",
+        "A_Coronary_R",
     ],
     "vessel_radius_mm_dict": {
-        "LAD": 2,
-        "LCX": 2,
-        "LMCA": 2,
-        "RCA": 2,
+        "A_LAD": 2,
+        "A_Cflx": 2,
+        "A_Coronary_L": 2,
+        "A_Coronary_R": 2,
     },
     "scan_direction_dict": {
-        "LAD": "z",
-        "LCX": "z",
-        "LMCA": "x",
-        "RCA": "z",
+        "A_LAD": "z",
+        "A_Cflx": "z",
+        "A_Coronary_L": "x",
+        "A_Coronary_R": "z",
     },
     "stop_condition_type_dict": {
-        "LAD": "count",
-        "LCX": "count",
-        "LMCA": "count",
-        "RCA": "count",
+        "A_LAD": "count",
+        "A_Cflx": "count",
+        "A_Coronary_L": "count",
+        "A_Coronary_R": "count",
     },
     "stop_condition_value_dict": {
-        "LAD": 2,
-        "LCX": 2,
-        "LMCA": 2,
-        "RCA": 2,
+        "A_LAD": 2,
+        "A_Cflx": 2,
+        "A_Coronary_L": 2,
+        "A_Coronary_R": 2,
     },
 }
 
 OPEN_ATLAS_SETTINGS["geometric_segmentation_settings"]["atlas_structure_names"] = {
-    "atlas_left_ventricle": "LV",
-    "atlas_right_ventricle": "RV",
-    "atlas_left_atrium": "LA",
-    "atlas_right_atrium": "RA",
-    "atlas_ascending_aorta": "AA",
-    "atlas_pulmonary_artery": "PA",
-    "atlas_superior_vena_cava": "SVC",
-    "atlas_whole_heart": "H",
+    "atlas_left_ventricle": "Ventricle_L",
+    "atlas_right_ventricle": "Ventricle_R",
+    "atlas_left_atrium": "Atrium_L",
+    "atlas_right_atrium": "Atrium_R",
+    "atlas_ascending_aorta": "A_Aorta",
+    "atlas_pulmonary_artery": "A_Pulmonary",
+    "atlas_superior_vena_cava": "V_Venacava_S",
+    "atlas_whole_heart": "Heart",
 }
 
 OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_binaryfillhole"] = [
-    "LA","LV","RA","RV","AA","PA","SVC","H",
+    "Atrium_L","Ventricle_L","Atrium_R","Ventricle_R","A_Aorta","A_Pulmonary","V_Venacava_S","Heart",
 ]
 
 OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_overlap_correction"] = [
-    "LA","LV","RA","RV","AA","PA","SVC",
+    "Atrium_L","Ventricle_L","Atrium_R","Ventricle_R","A_Aorta","A_Pulmonary","V_Venacava_S",
 ]
 
 OPEN_ATLAS_SETTINGS["return_proba_as_contours"] = True
@@ -385,7 +385,7 @@ HYBRID_SETTINGS_DEFAULTS = {
     "nnunet_settings": NNUNET_SETTINGS_DEFAULTS,
     "cardiac_settings": OPEN_ATLAS_SETTINGS,
 }
-
+HYBRID_SETTINGS_DEFAULTS["nnunet_settings"]["folds"] = "all"
 
 def install_open_atlas(atlas_path):
     """Fetch atlas from Zenodo and place into atlas_path

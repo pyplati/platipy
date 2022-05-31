@@ -13,7 +13,7 @@ def available_nnunet_models():
     from nnunet.inference.pretrained_models.download_pretrained_model import get_available_models
 
     available_models = get_available_models()
-    available_models["Task400_OPEN_HEART_3d_lowres"] = {
+    available_models["Task400_OPEN_HEART_1FOLD"] = {
             'description': "Whole heart model (all folds, 3d_lowres only) trained on data from"
                 "TCIA (NSCLC-Radiomics & LCTSC)",
             'url': "https://zenodo.org/record/6585664/files/Task400_OPEN_HEART_3d_lowres.zip?download=1"
@@ -21,7 +21,7 @@ def available_nnunet_models():
     return available_models
 
 NNUNET_SETTINGS_DEFAULTS = {
-    "task": "Task400_OPEN_HEART_3d_lowres",
+    "task": "Task400_OPEN_HEART_1FOLD",
     "trainer_class_name": "nnUNetTrainerV2",
     "cascade_trainer_class_name": "nnUNetTrainerV2CascadeFullRes",
     "folds": None,
@@ -37,7 +37,7 @@ NNUNET_SETTINGS_DEFAULTS = {
 
 def download_and_install_nnunet_task(task_name, zip_url):
     """Downloads the Zip file and then installs via nnUNet.
-    
+
     Avoid using the nnUNet built in function since it doesn't work when a HTTP_PROXY/HTTPS_PROXY
     are set.
 
@@ -45,7 +45,7 @@ def download_and_install_nnunet_task(task_name, zip_url):
         task_name (str): Task ID and name
         zip_url (str): Zip file URL
     """
-    
+
     from nnunet.inference.pretrained_models.download_pretrained_model import install_model_from_zip_file
 
     logger.info(f"Installing Task {task_name} from {zip_url}")
@@ -56,7 +56,8 @@ def download_and_install_nnunet_task(task_name, zip_url):
             out_file.write(dl_file.read())
 
     install_model_from_zip_file(temp_file)
-    shutil.rmtree(temp_dir)
+    #shutil.rmtree(temp_dir)
+    print(temp_file)
 
 def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
 
@@ -69,7 +70,7 @@ def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
         # Don't really need these here but set them anyway to supress warnings
         os.environ["nnUNet_raw_data_base"] = tempfile.mkdtemp()
         os.environ["nnUNet_preprocessed"] = tempfile.mkdtemp()
-    
+
     # Import in here to make sure environment is already set
     try:
         from nnunet.inference.predict import predict_from_folder
