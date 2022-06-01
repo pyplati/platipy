@@ -270,22 +270,22 @@ OPEN_ATLAS_SETTINGS["atlas_settings"] = {
         "LCTSC-Test-S2-201",
         "LCTSC-Test-S2-203",
         "LCTSC-Test-S3-201",
-#        "LCTSC-Train-S1-007",
-#        "LCTSC-Train-S2-005",
-#        "LCTSC-Train-S3-004",
+        #        "LCTSC-Train-S1-007",
+        #        "LCTSC-Train-S2-005",
+        #        "LCTSC-Train-S3-004",
         "LUNG1-002",
         "LUNG1-009",
         "LUNG1-021",
-#        "LUNG1-027",
-#        "LUNG1-035",
-#        "LUNG1-037",
-#        "LUNG1-055",
+        #        "LUNG1-027",
+        #        "LUNG1-035",
+        #        "LUNG1-037",
+        #        "LUNG1-055",
         "LUNG1-067",
-#        "LUNG1-074",
-#        "LUNG1-076",
-#        "LUNG1-092",
-#        "LUNG1-143",
-#        "LUNG1-210",
+        #        "LUNG1-074",
+        #        "LUNG1-076",
+        #        "LUNG1-092",
+        #        "LUNG1-143",
+        #        "LUNG1-210",
         "LUNG1-226",
     ],
     "atlas_structure_list": [
@@ -371,11 +371,24 @@ OPEN_ATLAS_SETTINGS["geometric_segmentation_settings"]["atlas_structure_names"] 
 }
 
 OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_binaryfillhole"] = [
-    "LA","LV","RA","RV","AA","PA","SVC","H",
+    "LA",
+    "LV",
+    "RA",
+    "RV",
+    "AA",
+    "PA",
+    "SVC",
+    "H",
 ]
 
 OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_overlap_correction"] = [
-    "LA","LV","RA","RV","AA","PA","SVC",
+    "LA",
+    "LV",
+    "RA",
+    "RV",
+    "AA",
+    "PA",
+    "SVC",
 ]
 
 OPEN_ATLAS_SETTINGS["return_proba_as_contours"] = True
@@ -430,10 +443,9 @@ def run_hybrid_segmentation(img, settings=HYBRID_SETTINGS_DEFAULTS):
 
     # Run the 2nd part of the hybrid approach
     return run_cardiac_segmentation(
-        img,
-        guide_structure=mask_wh["Struct_0"],
-        settings=settings["cardiac_settings"]
+        img, guide_structure=mask_wh["Struct_0"], settings=settings["cardiac_settings"]
     )
+
 
 def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTINGS_DEFAULTS):
     """Runs the atlas-based cardiac segmentation
@@ -982,7 +994,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         geom_conduction_defs = geometric_segmentation_settings["conduction_system_definitions"]
 
         # 1 - MITRAL VALVE
-        mv_name = "MITRALVALVE" + geometric_segmentation_settings["geometric_name_suffix"]
+        mv_name = "Valve_Mitral"
         results[mv_name] = generate_valve_using_cylinder(
             label_atrium=results[geom_atlas_names["atlas_left_atrium"]],
             label_ventricle=results[geom_atlas_names["atlas_left_ventricle"]],
@@ -991,7 +1003,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         )
 
         # 2 - TRICUSPID VALVE
-        tv_name = "TRICUSPIDVALVE" + geometric_segmentation_settings["geometric_name_suffix"]
+        tv_name = "Valve_Tricuspid"
         results[tv_name] = generate_valve_using_cylinder(
             label_atrium=results[geom_atlas_names["atlas_right_atrium"]],
             label_ventricle=results[geom_atlas_names["atlas_right_ventricle"]],
@@ -1000,7 +1012,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         )
 
         # 3 - AORTIC VALVE
-        av_name = "AORTICVALVE" + geometric_segmentation_settings["geometric_name_suffix"]
+        av_name = "Valve_Aortic"
         results[av_name] = generate_valve_from_great_vessel(
             label_great_vessel=results[geom_atlas_names["atlas_ascending_aorta"]],
             label_ventricle=results[geom_atlas_names["atlas_left_ventricle"]],
@@ -1008,7 +1020,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         )
 
         # 4 - PULMONIC VALVE
-        pv_name = "PULMONICVALVE" + geometric_segmentation_settings["geometric_name_suffix"]
+        pv_name = "Valve_Pulmonic"
         results[pv_name] = generate_valve_from_great_vessel(
             label_great_vessel=results[geom_atlas_names["atlas_pulmonary_artery"]],
             label_ventricle=results[geom_atlas_names["atlas_right_ventricle"]],
@@ -1016,7 +1028,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         )
 
         # 5 - SINOATRIAL NODE
-        san_name = "SAN" + geometric_segmentation_settings["geometric_name_suffix"]
+        san_name = "CN_Sinoatrial"
         results[san_name] = geometric_sinoatrialnode(
             label_svc=results[geom_atlas_names["atlas_superior_vena_cava"]],
             label_ra=results[geom_atlas_names["atlas_right_atrium"]],
@@ -1025,7 +1037,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         )
 
         # 6 - ATRIOVENTRICULAR NODE
-        avn_name = "AVN" + geometric_segmentation_settings["geometric_name_suffix"]
+        avn_name = "CN_Atrioventricular"
         results[avn_name] = geometric_atrioventricularnode(
             label_la=results[geom_atlas_names["atlas_left_atrium"]],
             label_lv=results[geom_atlas_names["atlas_left_ventricle"]],
