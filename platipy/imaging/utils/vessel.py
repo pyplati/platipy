@@ -386,7 +386,17 @@ def vessel_spline_generation(
 
         initial_image_direction = reference_image.GetDirection()
 
-        image_list = [atlas_set[i][atlas_label][vessel_name] for i in atlas_set.keys()]
+        image_list = []
+        for i in atlas_set.keys():
+            try:
+                image_list.append(atlas_set[i][atlas_label][vessel_name])
+            except:
+                logger.warning(f"No match for ID={i}, label={atlas_label}, vessel={vessel_name}")
+
+        if len(image_list) == 0:
+            logger.warning(f"No structures found for vessel with name {vessel_name}!")
+            continue
+
         for im in image_list:
             im.SetDirection((1, 0, 0, 0, 1, 0, 0, 0, 1))
 
