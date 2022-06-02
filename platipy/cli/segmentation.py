@@ -28,14 +28,14 @@ from platipy.imaging.projects.bronchus.run import (
     BRONCHUS_SETTINGS_DEFAULTS,
 )
 from platipy.imaging.projects.cardiac.run import (
-    run_cardiac_segmentation,
-    CARDIAC_SETTINGS_DEFAULTS,
+    run_hybrid_segmentation,
+    HYBRID_SETTINGS_DEFAULTS,
 )
 
 segmentation_algorithms = {
     "cardiac": {
-        "algorithm": run_cardiac_segmentation,
-        "default_settings": CARDIAC_SETTINGS_DEFAULTS,
+        "algorithm": run_hybrid_segmentation,
+        "default_settings": HYBRID_SETTINGS_DEFAULTS
     },
     "bronchus": {
         "algorithm": run_bronchus_segmentation,
@@ -104,6 +104,11 @@ def click_command(algorithm, input_path, config, default, output):
 
     # Run the algorithm
     results = segmentation_algorithms[algorithm]["algorithm"](image, algorithm_config)
+
+    # If results is a tuple, the algorithm is returning other items as well as the semgmentation.
+    # We are only interested in the segmentation here (the first element of the tuple)
+    if isinstance(results, tuple):
+        results = results[0]
 
     # Save the output to the output directory
     if not output:

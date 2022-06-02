@@ -117,6 +117,7 @@ class Dataset(db.Model):
     output_data_objects = relationship(
         "DataObject",
         primaryjoin="and_(DataObject.dataset_id == Dataset.id, DataObject.is_input == False)",
+        overlaps="input_data_objects"
     )
 
     # The Dicom location from which to retrieve data
@@ -143,7 +144,7 @@ class DataObject(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("Dataset.id"), nullable=False)
-    dataset = relationship("Dataset")
+    dataset = relationship("Dataset", overlaps="input_data_objects,output_data_objects")
     is_input = db.Column(db.Boolean, default=False)
 
     path = db.Column(db.String(256))
@@ -163,7 +164,7 @@ class DataObject(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey("DataObject.id"), index=True)
     parent = relationship("DataObject", remote_side=[id])
     children = relationship(
-        "DataObject", primaryjoin="and_(DataObject.parent_id == DataObject.id)"
+        "DataObject", primaryjoin="and_(DataObject.parent_id == DataObject.id)", overlaps="parent"
     )
 
     def __repr__(self):

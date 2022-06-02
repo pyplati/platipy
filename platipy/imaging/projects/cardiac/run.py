@@ -14,6 +14,9 @@
 
 
 import os
+import shutil
+import tempfile
+from pathlib import Path
 import SimpleITK as sitk
 import numpy as np
 
@@ -35,7 +38,6 @@ from platipy.imaging.label.fusion import (
     combine_labels,
 )
 from platipy.imaging.label.iar import run_iar
-
 from platipy.imaging.utils.vessel import vessel_spline_generation
 
 from platipy.imaging.utils.valve import (
@@ -49,14 +51,19 @@ from platipy.imaging.utils.conduction import (
 )
 
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
-
 from platipy.imaging.generation.mask import extend_mask
-
 from platipy.imaging.label.utils import binary_encode_structure_list, correct_volume_overlap
+from platipy.imaging.projects.nnunet.run import run_segmentation, NNUNET_SETTINGS_DEFAULTS
+from platipy.utils import download_and_extract_zip_file
 
 ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:
     ATLAS_PATH = os.environ["ATLAS_PATH"]
+else:
+    home = Path.home()
+    platipy_dir = home.joinpath(".platipy")
+    platipy_dir.mkdir(exist_ok=True)
+    ATLAS_PATH = str(platipy_dir.joinpath("cardiac", "test_atlas"))
 
 CARDIAC_SETTINGS_DEFAULTS = {
     "atlas_settings": {
@@ -255,6 +262,177 @@ CARDIAC_SETTINGS_DEFAULTS = {
     "return_proba_as_contours": False,
 }
 
+OPEN_ATLAS_URL = "https://zenodo.org/record/6592437/files/open_atlas.zip?download=1"
+
+OPEN_ATLAS_SETTINGS = CARDIAC_SETTINGS_DEFAULTS.copy()
+OPEN_ATLAS_SETTINGS["atlas_settings"] = {
+    "atlas_id_list": [
+        "LCTSC-Test-S2-201",
+        "LCTSC-Test-S2-203",
+        "LCTSC-Test-S3-201",
+        #        "LCTSC-Train-S1-007",
+        #        "LCTSC-Train-S2-005",
+        #        "LCTSC-Train-S3-004",
+        "LUNG1-002",
+        "LUNG1-009",
+        "LUNG1-021",
+        #        "LUNG1-027",
+        #        "LUNG1-035",
+        #        "LUNG1-037",
+        #        "LUNG1-055",
+        "LUNG1-067",
+        #        "LUNG1-074",
+        #        "LUNG1-076",
+        #        "LUNG1-092",
+        #        "LUNG1-143",
+        #        "LUNG1-210",
+        "LUNG1-226",
+    ],
+    "atlas_structure_list": [
+        "Atrium_L",
+        "Ventricle_L",
+        "Atrium_R",
+        "Ventricle_R",
+        "A_Aorta",
+        "A_Pulmonary",
+        "V_Venacava_S",
+        "A_LAD",
+        "A_Coronary_L",
+        "A_Cflx",
+        "A_Coronary_R",
+        "Heart",
+    ],
+    "atlas_path": ATLAS_PATH,
+    "atlas_image_format": "{0}/IMAGES/CT.nii.gz",
+    "atlas_label_format": "{0}/STRUCTURES/{1}.nii.gz",
+    "crop_atlas_to_structures": True,
+    "crop_atlas_expansion_mm": (50, 50, 50),
+    "guide_structure_name": "Heart",
+    "superior_extension": 30,
+}
+
+OPEN_ATLAS_SETTINGS["label_fusion_settings"] = {
+    "vote_type": "unweighted",
+    "vote_params": None,
+    "optimal_threshold": {
+        "Atrium_L": 0.5,
+        "Ventricle_L": 0.5,
+        "Atrium_R": 0.5,
+        "Ventricle_R": 0.5,
+        "A_Aorta": 0.5,
+        "A_Pulmonary": 0.5,
+        "V_Venacava_S": 0.5,
+        "Heart": 0.5,
+    },
+}
+
+OPEN_ATLAS_SETTINGS["vessel_spline_settings"] = {
+    "vessel_name_list": [
+        "A_LAD",
+        "A_Cflx",
+        "A_Coronary_L",
+        "A_Coronary_R",
+    ],
+    "vessel_radius_mm_dict": {
+        "A_LAD": 2,
+        "A_Cflx": 2,
+        "A_Coronary_L": 2,
+        "A_Coronary_R": 2,
+    },
+    "scan_direction_dict": {
+        "A_LAD": "z",
+        "A_Cflx": "z",
+        "A_Coronary_L": "x",
+        "A_Coronary_R": "z",
+    },
+    "stop_condition_type_dict": {
+        "A_LAD": "count",
+        "A_Cflx": "count",
+        "A_Coronary_L": "count",
+        "A_Coronary_R": "count",
+    },
+    "stop_condition_value_dict": {
+        "A_LAD": 2,
+        "A_Cflx": 2,
+        "A_Coronary_L": 2,
+        "A_Coronary_R": 2,
+    },
+}
+
+OPEN_ATLAS_SETTINGS["geometric_segmentation_settings"]["atlas_structure_names"] = {
+    "atlas_left_ventricle": "Ventricle_L",
+    "atlas_right_ventricle": "Ventricle_R",
+    "atlas_left_atrium": "Atrium_L",
+    "atlas_right_atrium": "Atrium_R",
+    "atlas_ascending_aorta": "A_Aorta",
+    "atlas_pulmonary_artery": "A_Pulmonary",
+    "atlas_superior_vena_cava": "V_Venacava_S",
+    "atlas_whole_heart": "Heart",
+}
+
+OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_binaryfillhole"] = [
+    "Atrium_L","Ventricle_L","Atrium_R","Ventricle_R","A_Aorta","A_Pulmonary","V_Venacava_S","Heart",
+]
+
+OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_overlap_correction"] = [
+    "Atrium_L","Ventricle_L","Atrium_R","Ventricle_R","A_Aorta","A_Pulmonary","V_Venacava_S",
+]
+
+OPEN_ATLAS_SETTINGS["return_proba_as_contours"] = True
+
+HYBRID_SETTINGS_DEFAULTS = {
+    "fetch_open_atlas": True,
+    "nnunet_settings": NNUNET_SETTINGS_DEFAULTS,
+    "cardiac_settings": OPEN_ATLAS_SETTINGS,
+}
+HYBRID_SETTINGS_DEFAULTS["nnunet_settings"]["folds"] = "all"
+
+def install_open_atlas(atlas_path):
+    """Fetch atlas from Zenodo and place into atlas_path
+
+    Args:
+        atlas_path (pathlib.Path): Path in which to place the atlas
+    """
+
+    logger.info(f"Fetching and installing open cardiac atlas to {atlas_path}")
+    temp_dir = tempfile.mkdtemp()
+    download_and_extract_zip_file(OPEN_ATLAS_URL, temp_dir)
+    temp_atlas_path = Path(temp_dir).joinpath("test_atlas")
+    if not atlas_path.parent.exists():
+        atlas_path.parent.mkdir(parents=True)
+    shutil.copytree(temp_atlas_path, atlas_path)
+    shutil.rmtree(temp_dir)
+
+
+def run_hybrid_segmentation(img, settings=HYBRID_SETTINGS_DEFAULTS):
+    """Runs the hybrid cardiac segmentation
+
+    Args:
+        img (sitk.Image):
+        settings (dict, optional): Dictionary containing settings for algorithm.
+                                   Defaults to HYBRID_SETTINGS_DEFAULTS.
+
+    Returns:
+        dict: Dictionary containing output of segmentation
+    """
+
+    # Make sure atlas path exists, if not fetch it if fetch open atlas setting is true
+    atlas_path = Path(settings["cardiac_settings"]["atlas_settings"]["atlas_path"])
+    if not atlas_path.exists() or len(list(atlas_path.glob("*"))) == 0:
+        if settings["fetch_open_atlas"]:
+            # Fetch data from Zenodo
+            install_open_atlas(atlas_path)
+        else:
+            raise SystemError(f"No atlas exists at {atlas_path}")
+
+    # Run the whole heart nnUNet segmentation
+    mask_wh = run_segmentation(img, settings["nnunet_settings"])
+
+    # Run the 2nd part of the hybrid approach
+    return run_cardiac_segmentation(
+        img, guide_structure=mask_wh["Struct_0"], settings=settings["cardiac_settings"]
+    )
+
 
 def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTINGS_DEFAULTS):
     """Runs the atlas-based cardiac segmentation
@@ -298,6 +476,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     logger.info("")
     # Settings
     atlas_path = settings["atlas_settings"]["atlas_path"]
+
     atlas_id_list = settings["atlas_settings"]["atlas_id_list"]
     atlas_structure_list = settings["atlas_settings"]["atlas_structure_list"]
 
@@ -802,7 +981,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         geom_conduction_defs = geometric_segmentation_settings["conduction_system_definitions"]
 
         # 1 - MITRAL VALVE
-        mv_name = "MITRALVALVE" + geometric_segmentation_settings["geometric_name_suffix"]
+        mv_name = "Valve_Mitral"
         results[mv_name] = generate_valve_using_cylinder(
             label_atrium=results[geom_atlas_names["atlas_left_atrium"]],
             label_ventricle=results[geom_atlas_names["atlas_left_ventricle"]],
@@ -811,7 +990,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         )
 
         # 2 - TRICUSPID VALVE
-        tv_name = "TRICUSPIDVALVE" + geometric_segmentation_settings["geometric_name_suffix"]
+        tv_name = "Valve_Tricuspid"
         results[tv_name] = generate_valve_using_cylinder(
             label_atrium=results[geom_atlas_names["atlas_right_atrium"]],
             label_ventricle=results[geom_atlas_names["atlas_right_ventricle"]],
@@ -820,7 +999,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         )
 
         # 3 - AORTIC VALVE
-        av_name = "AORTICVALVE" + geometric_segmentation_settings["geometric_name_suffix"]
+        av_name = "Valve_Aortic"
         results[av_name] = generate_valve_from_great_vessel(
             label_great_vessel=results[geom_atlas_names["atlas_ascending_aorta"]],
             label_ventricle=results[geom_atlas_names["atlas_left_ventricle"]],
@@ -828,7 +1007,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         )
 
         # 4 - PULMONIC VALVE
-        pv_name = "PULMONICVALVE" + geometric_segmentation_settings["geometric_name_suffix"]
+        pv_name = "Valve_Pulmonic"
         results[pv_name] = generate_valve_from_great_vessel(
             label_great_vessel=results[geom_atlas_names["atlas_pulmonary_artery"]],
             label_ventricle=results[geom_atlas_names["atlas_right_ventricle"]],
@@ -836,7 +1015,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         )
 
         # 5 - SINOATRIAL NODE
-        san_name = "SAN" + geometric_segmentation_settings["geometric_name_suffix"]
+        san_name = "CN_Sinoatrialz"
         results[san_name] = geometric_sinoatrialnode(
             label_svc=results[geom_atlas_names["atlas_superior_vena_cava"]],
             label_ra=results[geom_atlas_names["atlas_right_atrium"]],
@@ -845,7 +1024,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         )
 
         # 6 - ATRIOVENTRICULAR NODE
-        avn_name = "AVN" + geometric_segmentation_settings["geometric_name_suffix"]
+        avn_name = "CN_Atrioventricular"
         results[avn_name] = geometric_atrioventricularnode(
             label_la=results[geom_atlas_names["atlas_left_atrium"]],
             label_lv=results[geom_atlas_names["atlas_left_ventricle"]],
