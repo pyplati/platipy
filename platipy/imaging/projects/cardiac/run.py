@@ -1015,7 +1015,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         )
 
         # 5 - SINOATRIAL NODE
-        san_name = "CN_Sinoatrialz"
+        san_name = "CN_Sinoatrial"
         results[san_name] = geometric_sinoatrialnode(
             label_svc=results[geom_atlas_names["atlas_superior_vena_cava"]],
             label_ra=results[geom_atlas_names["atlas_right_atrium"]],
