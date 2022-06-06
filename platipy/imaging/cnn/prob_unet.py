@@ -39,7 +39,7 @@ class Encoder(torch.nn.Module):
             down_sample = 0 if idx == 0 else -2
 
             layers.append(
-                Conv(input_filters, output_filters, up_down_sample=down_sample, ndims=ndims, dropout_probability=0.2)
+                Conv(input_filters, output_filters, up_down_sample=down_sample, ndims=ndims, dropout_probability=None)
             )
 
         self.layers = torch.nn.Sequential(*layers)
@@ -206,7 +206,7 @@ class ProbabilisticUnet(torch.nn.Module):
         loss_type="elbo",
         loss_params={"beta": 1},
         ndims=2,
-        dropout_probability=0.2,
+        dropout_probability=None,
     ):
         super(ProbabilisticUnet, self).__init__()
 
