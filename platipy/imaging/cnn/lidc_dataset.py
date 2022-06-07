@@ -171,24 +171,23 @@ class LIDCDataset(torch.utils.data.Dataset):
                 plt.savefig(fig_path)
                 plt.close(fig)
 
-        for img in self.img_dir.glob("*"):
-            case_and_slice = img.name.replace(".npy", "")
-            contour_mask = self.contour_mask_dir.joinpath(img.name)
-
-            for label in self.label_dir.glob(f"{case_and_slice}_*.npy"):
+        for case in case_ids:
+            for label in self.label_dir.glob(f"{case}_*.npy"):
                 case_id, z_slice, obs = label.name.replace(".npy", "").split("_")
 
-                if case_ids is not None and not case_id in case_ids:
-                    continue
+                img = self.img_dir.joinpath(f"{case_id}_{z_slice}.npy")
+                contour_mask = self.contour_mask_dir.joinpath(f"{case_id}_{z_slice}.npy")
+                assert img.exists()
+                assert contour_mask.exists()
 
                 self.slices.append(
                     {
-                        "z": z_slice,
-                        "image": img,
-                        "label": label,
-                        "contour_mask": contour_mask,
-                        "case": case_id,
-                        "observer": obs,
+                    "z": z_slice,
+                    "image": img,
+                    "label": label,
+                    "contour_mask": contour_mask,
+                    "case": case_id,
+                    "observer": obs,
                     }
                 )
 
