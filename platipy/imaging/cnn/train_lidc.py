@@ -1221,12 +1221,15 @@ class ProbUNet(pl.LightningModule):
             self.prob_unet.forward(x)
 
             pred_y = self.prob_unet.sample(testing=True)
+            pred_y = pred_y.to("cpu")
+            y = y.to("cpu")
 
             # Intersection over Union (also known as Jaccard Index)
             jaccard = JaccardIndex(num_classes=2)
             term_1 = 0
             for i in range(n):
                 for j in range(m):
+                    if pred_y[i,:,:,:].sum() == 0 and y[j,:,:,:].sum() == 0: continue
                     iou = jaccard(pred_y[i,:,:,:].unsqueeze(0), y[j,:,:,:].unsqueeze(0))
                     term_1 += 1 - iou
             term_1 = term_1 * (2/(m*n))
@@ -1234,6 +1237,7 @@ class ProbUNet(pl.LightningModule):
             term_2 = 0
             for i in range(n):
                 for j in range(n):
+                    if pred_y[i,:,:,:].sum() == 0 and pred_y[j,:,:,:].sum() == 0: continue
                     iou = jaccard(pred_y[i,:,:,:].unsqueeze(0), pred_y[j,:,:,:].unsqueeze(0).argmax(1))
                     term_2 += 1 - iou
             term_2 = term_2 * (1/(n*n))
@@ -1241,12 +1245,14 @@ class ProbUNet(pl.LightningModule):
             term_3 = 0
             for i in range(m):
                 for j in range(m):
+                    if y[i,:,:,:].sum() == 0 and y[j,:,:,:].sum() == 0: continue
                     iou = jaccard(y[i,:,:,:].unsqueeze(0), y[j,:,:,:].unsqueeze(0))
                     term_3 += 1 - iou
             term_3 = term_3 * (1/(m*m))
 
             D_ged = term_1 - term_2 - term_3
 
+        self.log("GED", D_ged)
         return D_ged
 
 
@@ -1308,11 +1314,11 @@ def main(args, config_json_path=None):
 
     # Save the best model
     checkpoint_callback = ModelCheckpoint(
-        monitor="scaled_DSC",
+        monitor="GED",
         dirpath=args.default_root_dir,
-        filename="probunet-{epoch:02d}-{scaled_DSC:.2f}",
+        filename="probunet-{epoch:02d}-{GED:.2f}",
         save_top_k=1,
-        mode="max",
+        mode="min",
     )
     trainer.callbacks.append(checkpoint_callback)
 
