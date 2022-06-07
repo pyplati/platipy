@@ -1024,12 +1024,12 @@ class LIDCDataModule(pl.LightningDataModule):
         )
         self.validation_set = LIDCDataset(
             self.working_dir,
-            augment_on_fly=augment_on_fly,
+            augment_on_fly=False,
             case_ids=self.validation_cases
         )
         self.test_set = LIDCDataset(
             self.working_dir,
-            augment_on_fly=augment_on_fly,
+            augment_on_fly=False,
             case_ids=self.test_cases
         )
 
@@ -1217,6 +1217,7 @@ class ProbUNet(pl.LightningModule):
 
             # Image will be same for all in batch
             x = x[0, :, :, :].unsqueeze(0)
+            vis = ImageVisualiser(sitk.GetImageFromArray(x[0,:,:,:]), axis="z")
             x = x.repeat(m, 1, 1, 1)
             self.prob_unet.forward(x)
 
@@ -1251,6 +1252,25 @@ class ProbUNet(pl.LightningModule):
             term_3 = term_3 * (1/(m*m))
 
             D_ged = term_1 - term_2 - term_3
+
+            contours = {}
+            for o in range(n):
+                contours[f"obs_{o}"] = sitk.GetImageFromArray(y[o,:,:,:])
+            for mm in range(m):
+                contours[f"sample_{mm}"] = sitk.GetImageFromArray(pred_y[j,:,:,:].argmax(1).unsqueeze(0))
+
+            vis.add_contour(contours, colormap=plt.cm.get_cmap("cool"))
+            vis.show()
+            
+            figure_path = "valid.png"
+            plt.savefig(figure_path, dpi=300)
+            plt.close("all")
+
+            try:
+                self.logger.experiment.log_image(figure_path)
+            except AttributeError:
+                # Likely offline mode
+                pass
 
         self.log("GED", D_ged)
         return D_ged
