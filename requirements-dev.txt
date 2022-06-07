@@ -13,3 +13,4 @@ nbstripout == 0.3.9
 furo == 2021.4.11b34
 nbsphinx == 0.8.5
 m2r2 == 0.2.7
+Jinja2 < 3.1

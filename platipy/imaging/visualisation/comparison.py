@@ -48,7 +48,7 @@ def contour_comparison(
     subsubtitle="",
     contour_cmap=plt.cm.get_cmap("rainbow"),
     structure_name_dict=None,
-    img_vis_kw={},
+    img_vis_kw=None,
 ):
     """Generates a custom figure for comparing two sets of contours (delineations) on an image.
 
@@ -86,6 +86,9 @@ def contour_comparison(
     # If no contour names are seleted we just use those which both contour_dicts have
     if s_select is None:
         s_select = [i for i in contour_dict_a.keys() if i in contour_dict_b.keys()]
+
+    if img_vis_kw is None:
+        img_vis_kw = {}
 
     if "cut" not in img_vis_kw:
 
@@ -177,9 +180,17 @@ def contour_comparison(
     else:
         rows = s_select
 
+    # Names
+    suffix_a = "A"
+    suffix_b = "B"
+    if contour_label_a != "Set A":  # the default
+        suffix_a = contour_label_a
+    if contour_label_b != "Set A":  # the default
+        suffix_b = contour_label_b
+
     # Compute some metrics
     df_metrics = pd.DataFrame(
-        columns=["STRUCTURE", "DSC", "MDA_mm", "HD_mm", "VOL_A_cm3", "VOL_B_cm3"]
+        columns=["STRUCTURE", "DSC", "MDA_mm", "HD_mm", f"VOL_{suffix_a}_cm3", f"VOL_{suffix_b}_cm3"]
     )
     columns = ("DSC", "MDA\n[mm]", "HD\n[mm]", "Vol.\nRatio")
 
@@ -202,17 +213,15 @@ def contour_comparison(
         )
 
         # compute metrics and add to dataframe
-        df_metrics = df_metrics.append(
-            {
+        row = pd.DataFrame([{
                 "STRUCTURE": s,
                 "DSC": dsc,
                 "MDA_mm": mda,
                 "HD_mm": hd,
-                "VOL_A_cm3": vol_a,
-                "VOL_B_cm3": vol_b,
-            },
-            ignore_index=True,
-        )
+                f"VOL_{suffix_a}_cm3": vol_a,
+                f"VOL_{suffix_b}_cm3": vol_b,
+        }])
+        df_metrics = pd.concat([df_metrics, row])
 
     # If there are no labels we can make the table bigger
     if title == "" and subsubtitle == "" and subsubtitle == "":

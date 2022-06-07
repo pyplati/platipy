@@ -115,13 +115,25 @@ def cardiac_structure_guided_service(data_objects, working_dir, settings):
 
         wholeheart = sitk.ReadImage(data_object.children[0].path)
 
-        results, _ = run_cardiac_segmentation(img, wholeheart, settings)
+        results, proba_results = run_cardiac_segmentation(img, wholeheart, settings)
 
         # Save resulting masks and add to output for service
         for output in results:
 
             mask_file = os.path.join(working_dir, "{0}.nii.gz".format(output))
             sitk.WriteImage(results[output], mask_file)
+
+            output_data_object = DataObject(type="FILE", path=mask_file, parent=data_object)
+            output_objects.append(output_data_object)
+
+        for output in proba_results:
+
+            suffix = "prob"
+            if settings["return_proba_as_contours"]:
+                suffix = "binenc"
+
+            mask_file = os.path.join(working_dir, "{0}_{1}.nii.gz".format(output, suffix))
+            sitk.WriteImage(proba_results[output], mask_file)
 
             output_data_object = DataObject(type="FILE", path=mask_file, parent=data_object)
             output_objects.append(output_data_object)

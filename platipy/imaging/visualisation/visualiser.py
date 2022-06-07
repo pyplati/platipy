@@ -211,7 +211,7 @@ class ImageVisualiser:
         self,
         scalar_image,
         name=None,
-        colormap=plt.cm.get_cmap("Spectral"),
+        colormap=plt.cm.get_cmap("cubehelix"),
         alpha=0.75,
         min_value=False,
         max_value=False,
@@ -229,7 +229,7 @@ class ImageVisualiser:
                                   scalar image). Defaults to None.
             colormap (matplotlib.colors.Colormap, optional): The colormap to be used when
                                                              overlaying this scalar image. Defaults
-                                                             to plt.cm.get_cmap("Spectral").
+                                                             to plt.cm.get_cmap("cubehelix").
             alpha (float, optional): Alpha to apply to overlay. Defaults to 0.75.
             min_value (float, optional): Values below this value aren't rendered. Defaults to 0.1.
 
@@ -265,7 +265,7 @@ class ImageVisualiser:
 
             # Use a default name if not specified
             if not name:
-                name = "input"
+                name = "Value"
                 self.__show_legend = False
 
             visualise_scalar = VisualiseScalarOverlay(
@@ -294,12 +294,12 @@ class ImageVisualiser:
         vector_image,
         min_value=False,
         max_value=False,
-        colormap=plt.cm.get_cmap("Spectral"),
+        colormap=plt.cm.get_cmap("inferno"),
         alpha=0.75,
-        arrow_scale=0.25,
+        arrow_scale=1,
         arrow_width=1,
-        subsample=4,
-        color_function="perpendicular",
+        subsample=8,
+        color_function="magnitude",
         show_colorbar=True,
         name=None,
     ):
@@ -311,12 +311,12 @@ class ImageVisualiser:
                                   sitk.Image as vector field). Defaults to None.
             colormap (matplotlib.colors.Colormap, optional): The colormap to be used when
                                                              overlaying this vector field. Defaults
-                                                             to plt.cm.get_cmap("Spectral").
+                                                             to plt.cm.get_cmap("inferno").
             alpha (float, optional): Alpha to apply to overlay vectors. Defaults to 0.75.
-            arrow_scale (float, optional): Relative scaling of vectors. Defaults to 0.25.
-            arrow_width (float, optional): Width of vector field arrow. Defaults to 0.25.
+            arrow_scale (float, optional): Relative scaling of vectors. Defaults to 1.
+            arrow_width (float, optional): Width of vector field arrow. Defaults to 1.
             subsample (int, optional): Defines to subsampling ratio of displayed vectors.
-                                       Defaults to 4.
+                                       Defaults to 8.
             color_function (str, optional): Determines how vectors are colored. Options:
                                             'perpendicular' - vectors colored by perpendicular
                                             value
@@ -333,7 +333,7 @@ class ImageVisualiser:
 
             # Use a default name if not specified
             if not name:
-                name = "input"
+                name = "Vector Field [mm]"
                 self.__show_legend = False
 
             visualise_vector_field = VisualiseVectorOverlay(
@@ -1013,17 +1013,23 @@ class ImageVisualiser:
                     contour_disp = sitk.GetArrayFromImage(contour_disp_proj)
 
                 try:
-                    temp = ax.contour(
+                    ax.contour(
                         contour_disp,
                         colors=[color_dict[c_name]],
                         levels=[0.5],
                         # alpha=0.8,
                         linewidths=lw_dict[c_name],
                         linestyles=ls_dict[c_name],
-                        label=c_name,
                         origin="lower",
                     )
-                    temp.collections[0].set_label(c_name)
+                    ax.plot(
+                        [0],
+                        [0],
+                        lw=lw_dict[c_name],
+                        ls=ls_dict[c_name],
+                        c=color_dict[c_name],
+                        label=c_name,
+                    )
                 except AttributeError:
                     pass
 
@@ -1078,7 +1084,7 @@ class ImageVisualiser:
                     )
                     contour_sag = sitk.GetArrayFromImage(contour_sag_proj)
 
-                temp = ax_ax.contour(
+                ax_ax.contour(
                     contour_ax,
                     levels=[0.5],
                     linewidths=lw_dict[c_name],
@@ -1086,7 +1092,14 @@ class ImageVisualiser:
                     colors=[color_dict[c_name]],
                     origin="lower",
                 )
-                temp.collections[0].set_label(c_name)
+                ax_ax.plot(
+                    [0],
+                    [0],
+                    lw=lw_dict[c_name],
+                    ls=ls_dict[c_name],
+                    c=color_dict[c_name],
+                    label=c_name,
+                )
 
                 ax_cor.contour(
                     contour_cor,
@@ -1152,7 +1165,7 @@ class ImageVisualiser:
 
             if self.__axis == "ortho":
 
-                ax_ax, _, ax_cor, ax_sag = self.__figure.axes
+                ax_ax, _, ax_cor, ax_sag = self.__figure.axes[:4]
                 ax = ax_ax
 
                 if not projection:
@@ -1440,7 +1453,14 @@ class ImageVisualiser:
                     (ax_ax, ax_cor, ax_sag), ("z", "y", "x"), self.__cut
                 ):
 
-                    slicer = subsample_vector_field(im_axis, im_cut, subsample)
+                    if not hasattr(subsample, "__iter__"):
+                        subsample = (subsample,) * 3
+
+                    subsample_img = [
+                        int(np.ceil((i / j))) for i, j in zip(subsample, image.GetSpacing()[::-1])
+                    ]
+
+                    slicer = subsample_vector_field(im_axis, im_cut, subsample_img)
                     vector_nda_slice = vector_nda.__getitem__(slicer)
 
                     vector_ax = vector_nda_slice[:, :, 2].T
@@ -1453,7 +1473,7 @@ class ImageVisualiser:
                         vector_plot_z,
                     ) = reorientate_vector_field(im_axis, vector_ax, vector_cor, vector_sag)
 
-                    plot_x_loc, plot_y_loc = vector_image_grid(im_axis, vector_nda, subsample)
+                    plot_x_loc, plot_y_loc = vector_image_grid(im_axis, vector_nda, subsample_img)
 
                     if color_function == "perpendicular":
                         vector_color = vector_plot_z
@@ -1614,11 +1634,13 @@ class ImageVisualiser:
                         len(self.__contours) + len(self.__bounding_boxes)
                     )
 
-                    plt.figlegend(
+                    leg = plt.figlegend(
                         loc="center left",
                         bbox_to_anchor=(x_pos_legend, y_pos_legend),
                         fontsize=min([10, 16 * approx_font_scaling]),
+                        ncol=1,  #!TODO modify this for large numbers of contours
                     )
+
         else:
             # these is probably only one axis
             if self.__show_legend:
