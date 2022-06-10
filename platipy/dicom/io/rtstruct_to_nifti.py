@@ -121,7 +121,7 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
         )
         dicom_image.SetSpacing(new_spacing)
 
-    struct_point_sequence = dicom_struct.ROIContourSequence
+    struct_point_sequence = { cs.ReferencedROINumber:cs for cs in dicom_struct.ROIContourSequence }
     struct_name_sequence = [
         "_".join(i.ROIName.split()) for i in dicom_struct.StructureSetROISequence
     ]
@@ -129,12 +129,19 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
     struct_list = []
     final_struct_name_sequence = []
 
-    for struct_index, struct_name in enumerate(struct_name_sequence):
+    for struct_ds in dicom_struct.StructureSetROISequence:
         image_blank = np.zeros(dicom_image.GetSize()[::-1], dtype=np.uint8)
+
+        struct_name = "_".join(struct_ds.ROIName.split())
+        struct_index = struct_ds.ROINumber
         logger.debug("Converting structure {0} with name: {1}".format(struct_index, struct_name))
 
+        if not struct_index in struct_point_sequence:
+            logger.debug("No ROIContourSequence found for this structure, skipping.")
+            continue
+
         if not hasattr(struct_point_sequence[struct_index], "ContourSequence"):
-            logger.debug("No contour sequence found for this structure, skipping.")
+            logger.debug("No ContourSequence found for this structure, skipping.")
             continue
 
         if len(struct_point_sequence[struct_index].ContourSequence) == 0:
