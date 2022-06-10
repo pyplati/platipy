@@ -366,7 +366,8 @@ def compute_apl(label_ref, label_test, distance_threshold_mm=3):
         label_test_contour = sitk.LabelContour(label_test[:, :, i])
 
         if distance_threshold_mm > 0:
-            label_ref_contour = sitk.BinaryDilate(label_ref_contour, np.repeat(distance, 2))
+            kernel = [int(distance) for k in range(2)]
+            label_ref_contour = sitk.BinaryDilate(label_ref_contour, kernel)
 
         # mask out the locations in agreement
         added_path = sitk.MaskNegated(label_test_contour, label_ref_contour)
