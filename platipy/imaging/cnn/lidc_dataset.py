@@ -39,7 +39,7 @@ def prepare_transforms():
                     translate_percent={"x": (-0.2, 0.2), "y": (-0.2, 0.2)},
                     rotate=(-15, 15),
                     shear=(-8, 8),
-                    cval=-1,
+                    cval=0,
                 )
             ),
             # execute 0 to 2 of the following (less important) augmenters per image
