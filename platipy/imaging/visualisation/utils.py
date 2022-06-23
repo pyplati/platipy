@@ -84,6 +84,8 @@ class VisualiseVectorOverlay:
         min_value=False,
         max_value=False,
         colormap=plt.cm.get_cmap("Spectral"),
+        discrete_levels=False,
+        mid_ticks=False,
         alpha=0.75,
         arrow_scale=0.25,
         arrow_width=1,
@@ -97,6 +99,8 @@ class VisualiseVectorOverlay:
         self.min_value = min_value
         self.max_value = max_value
         self.colormap = colormap
+        self.discrete_levels = discrete_levels
+        self.mid_ticks = mid_ticks
         self.alpha = alpha
         self.arrow_scale = arrow_scale
         self.arrow_width = arrow_width

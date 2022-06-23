@@ -295,6 +295,8 @@ class ImageVisualiser:
         min_value=False,
         max_value=False,
         colormap=plt.cm.get_cmap("inferno"),
+        discrete_levels=False,
+        mid_ticks=False,
         alpha=0.75,
         arrow_scale=1,
         arrow_width=1,
@@ -341,6 +343,8 @@ class ImageVisualiser:
                 min_value=min_value,
                 max_value=max_value,
                 colormap=colormap,
+                discrete_levels=discrete_levels,
+                mid_ticks=mid_ticks,
                 alpha=alpha,
                 arrow_scale=arrow_scale,
                 arrow_width=arrow_width,
@@ -1362,7 +1366,7 @@ class ImageVisualiser:
         if self.__projection and len(self.__vector_overlays) > 0:
             raise Warning("Vector overlay is not implemented in projection mode.")
 
-        for _, vector in enumerate(self.__vector_overlays):
+        for vector_index, vector in enumerate(self.__vector_overlays):
 
             image = vector.image
             colormap = vector.colormap
@@ -1378,6 +1382,10 @@ class ImageVisualiser:
 
             inverse_vector_image = image  # sitk.InvertDisplacementField(image)
             vector_nda = sitk.GetArrayFromImage(inverse_vector_image)
+
+            if vector.discrete_levels:
+                colormap_name = vector.colormap.name
+                colormap = plt.cm.get_cmap(colormap_name, vector.discrete_levels)
 
             # Test types of axes
             axes = self.__figure.axes
@@ -1414,9 +1422,9 @@ class ImageVisualiser:
                         vector_plot_x ** 2 + vector_plot_y ** 2 + vector_plot_z ** 2
                     )
 
-                if ~max_value:
+                if max_value is False:
                     max_value = vector_color.max()
-                if ~min_value:
+                if min_value is False:
                     min_value = vector_color.min()
 
                 sp_vector = ax.quiver(
@@ -1435,19 +1443,22 @@ class ImageVisualiser:
                     clim=[min_value, max_value],
                 )
 
-                if vector.show_colorbar:
-                    divider = make_axes_locatable(ax)
-                    cax = divider.append_axes("right", size="5%", pad=0.05)
-                    cbar = self.__figure.colorbar(sp_vector, cax=cax, orientation="vertical")
-                    cbar.set_label(vector.name)
-                    cbar.solids.set_alpha(1)
+                # if vector.show_colorbar:
+                #     divider = make_axes_locatable(ax)
+                #     cax = divider.append_axes("right", size="5%", pad=0.05)
+                #     cbar = self.__figure.colorbar(sp_vector, cax=cax, orientation="vertical")
+                #     cbar.set_label(vector.name)
+                #     cbar.solids.set_alpha(1)
 
-                    f_x, f_y = self.__figure.get_size_inches()
-                    self.__figure.set_size_inches(f_x * 1.15, f_y)
-                    self.__figure.subplots_adjust(left=0, right=0.88, bottom=0, top=1)
+                #     f_x, f_y = self.__figure.get_size_inches()
+                #     self.__figure.set_size_inches(f_x * 1.15, f_y)
+                #     self.__figure.subplots_adjust(left=0, right=0.88, bottom=0, top=1)
 
             elif len(axes) >= 4:
                 ax_ax, _, ax_cor, ax_sag = axes[:4]
+
+                # set this variable for colorbar reference
+                ax = ax_ax
 
                 for plot_axes, im_axis, im_cut in zip(
                     (ax_ax, ax_cor, ax_sag), ("z", "y", "x"), self.__cut
@@ -1482,9 +1493,9 @@ class ImageVisualiser:
                             vector_plot_x ** 2 + vector_plot_y ** 2 + vector_plot_z ** 2
                         )
 
-                    if max_value == False:
+                    if max_value is False:
                         max_value = vector_color.max()
-                    if min_value == False:
+                    if min_value is False:
                         min_value = vector_color.min()
 
                     sp_vector = plot_axes.quiver(
@@ -1502,41 +1513,75 @@ class ImageVisualiser:
                         clim=[min_value, max_value],
                     )
 
-                if vector.show_colorbar:
+            if vector.show_colorbar:
 
-                    ax_box = ax_ax.get_position(original=False)
-                    cbar_width = ax_box.width * 0.05  # 5% of axis width
+                # divider = make_axes_locatable(ax_view)
+                # cax = divider.append_axes("right", size="5%", pad=0.05)
 
-                    if len(self.__figure.axes) >= 5:
-                        # There is a colorbar, add a new one
+                ax_box = ax.get_position(original=False)
+                cbar_width = ax_box.width * 0.05  # 5% of axis width
+                cbar_color = "black"
 
-                        cbar_axes = self.__figure.axes[4:]
-
-                        cbar_axes_label_pos_list = [
-                            self.__figure.transFigure.inverted().transform(
-                                i.yaxis.get_label().get_position()
-                            )[0]
-                            for i in cbar_axes
-                        ]
-
-                        max_xpos = max(cbar_axes_label_pos_list)
-
-                        x_pos_legend = max_xpos + 0.025
-
-                    else:
-                        x_pos_legend = ax_box.x1 + 0.025
-
+                if self.__axis == "ortho":
                     cax = self.__figure.add_axes(
                         (
-                            x_pos_legend,
+                            ax_box.x1 + 0.02 + (cbar_width + 0.1) * vector_index,
                             ax_box.y0 * 1.025,
                             cbar_width,
                             ax_box.height - ax_box.y0 * 0.05,
                         )
                     )
 
-                    cbar = self.__figure.colorbar(sp_vector, cax=cax, orientation="vertical")
-                    cbar.set_label(vector.name)
+                else:
+                    cax = self.__figure.add_axes(
+                        (
+                            ax_box.x1 - 0.02 - (cbar_width + 0.1) * (vector_index + 1),
+                            0.025,
+                            cbar_width,
+                            ax_box.height - ax_box.y1 * 0.05,
+                        )
+                    )
+
+                    # check background values
+                    if np.linalg.norm(colormap(0)[:3]) < 0.1:
+                        # background is dark
+                        cbar_color = "white"
+
+                cbar = self.__figure.colorbar(sp_vector, cax=cax, orientation="vertical")
+
+                # set color
+                cbar.outline.set_edgecolor(color=cbar_color)
+                cbar.ax.tick_params(color=cbar_color)
+                cax.tick_params(axis="x", colors=cbar_color)
+                cax.tick_params(axis="y", colors=cbar_color)
+
+                cbar.set_label(vector.name, color=cbar_color)
+                cbar.solids.set_alpha(1)
+
+                if vector.discrete_levels:
+
+                    if vector.mid_ticks:
+
+                        delta_tick = (max_value - min_value) / vector.discrete_levels
+                        cbar.set_ticks(
+                            np.linspace(
+                                min_value + delta_tick / 2,
+                                max_value - delta_tick / 2,
+                                vector.discrete_levels,
+                            )
+                        )
+                        cbar.set_ticklabels(
+                            np.linspace(min_value, max_value, vector.discrete_levels)
+                        )
+
+                    else:
+                        cbar.set_ticks(
+                            np.linspace(
+                                min_value,
+                                max_value,
+                                vector.discrete_levels + 1,
+                            )
+                        )
 
     def draw_bounding_box_on_axes(self, ax, view, box, add_label=True):
 
