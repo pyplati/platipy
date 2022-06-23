@@ -1583,42 +1583,6 @@ class ImageVisualiser:
                             )
                         )
 
-                # if vector.show_colorbar:
-
-                #     ax_box = ax_ax.get_position(original=False)
-                #     cbar_width = ax_box.width * 0.05  # 5% of axis width
-
-                #     if len(self.__figure.axes) >= 5:
-                #         # There is a colorbar, add a new one
-
-                #         cbar_axes = self.__figure.axes[4:]
-
-                #         cbar_axes_label_pos_list = [
-                #             self.__figure.transFigure.inverted().transform(
-                #                 i.yaxis.get_label().get_position()
-                #             )[0]
-                #             for i in cbar_axes
-                #         ]
-
-                #         max_xpos = max(cbar_axes_label_pos_list)
-
-                #         x_pos_legend = max_xpos + 0.025
-
-                #     else:
-                #         x_pos_legend = ax_box.x1 + 0.025
-
-                #     cax = self.__figure.add_axes(
-                #         (
-                #             x_pos_legend,
-                #             ax_box.y0 * 1.025,
-                #             cbar_width,
-                #             ax_box.height - ax_box.y0 * 0.05,
-                #         )
-                #     )
-
-                #     cbar = self.__figure.colorbar(sp_vector, cax=cax, orientation="vertical")
-                #     cbar.set_label(vector.name)
-
     def draw_bounding_box_on_axes(self, ax, view, box, add_label=True):
 
         sag_0, cor_0, ax_0, sag_d, cor_d, ax_d = box.bounding_box
