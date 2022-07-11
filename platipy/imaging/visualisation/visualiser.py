@@ -990,6 +990,14 @@ class ImageVisualiser:
         # Test types of axes
         axes = self.__figure.axes[:4]
 
+        # Get the size - this is used for extent
+        size_ax, size_cor, size_sag = self.__image.GetSize()
+        extent_dict = {
+            "x": (0, size_cor, 0, size_ax),
+            "y": (0, size_sag, 0, size_ax),
+            "z": (0, size_sag, 0, size_cor),
+        }
+
         if self.__axis in ["x", "y", "z"]:
             ax = axes[0]
             s = return_slice(self.__axis, self.__cut)
@@ -1020,7 +1028,8 @@ class ImageVisualiser:
                         # alpha=0.8,
                         linewidths=lw_dict[c_name],
                         linestyles=ls_dict[c_name],
-                        origin="lower",
+                        origin="image",
+                        extent=extent_dict[self.__axis],
                     )
                     ax.plot(
                         [0],
@@ -1086,11 +1095,12 @@ class ImageVisualiser:
 
                 ax_ax.contour(
                     contour_ax,
-                    levels=[0.5],
+                    levels=[0],
                     linewidths=lw_dict[c_name],
                     linestyles=ls_dict[c_name],
                     colors=[color_dict[c_name]],
-                    origin="lower",
+                    origin="image",
+                    extent=extent_dict["z"],
                 )
                 ax_ax.plot(
                     [0],
@@ -1107,7 +1117,8 @@ class ImageVisualiser:
                     linewidths=lw_dict[c_name],
                     linestyles=ls_dict[c_name],
                     colors=[color_dict[c_name]],
-                    origin="lower",
+                    origin="image",
+                    extent=extent_dict["y"],
                 )
                 ax_sag.contour(
                     contour_sag,
@@ -1115,7 +1126,8 @@ class ImageVisualiser:
                     linewidths=lw_dict[c_name],
                     linestyles=ls_dict[c_name],
                     colors=[color_dict[c_name]],
-                    origin="lower",
+                    origin="image",
+                    extent=extent_dict["x"],
                 )
 
         else:
@@ -1153,9 +1165,19 @@ class ImageVisualiser:
             else:
                 norm = None
 
+            # Get the spacing
             sp_plane, _, sp_slice = scalar_image.GetSpacing()
 
+            # Get the aspect ratio
             asp = (1.0 * sp_slice) / sp_plane
+
+            # Get the size - this is used for extent
+            size_ax, size_cor, size_sag = self.__image.GetSize()
+            extent_dict = {
+                "x": (0, size_cor, 0, size_ax),
+                "y": (0, size_sag, 0, size_ax),
+                "z": (0, size_sag, 0, size_cor),
+            }
 
             # projection organisation
             if scalar.projection:
@@ -1218,6 +1240,7 @@ class ImageVisualiser:
                     vmax=s_max,
                     alpha=alpha,
                     norm=norm,
+                    extent=extent_dict["z"],
                 )
 
                 cor_view = ax_cor.imshow(
@@ -1231,6 +1254,7 @@ class ImageVisualiser:
                     vmax=s_max,
                     alpha=alpha,
                     norm=norm,
+                    extent=extent_dict["y"],
                 )
 
                 sag_view = ax_sag.imshow(
@@ -1244,6 +1268,7 @@ class ImageVisualiser:
                     vmax=s_max,
                     alpha=alpha,
                     norm=norm,
+                    extent=extent_dict["x"],
                 )
 
                 # this is for (work-in-progress) dynamic visualisation
@@ -1286,6 +1311,7 @@ class ImageVisualiser:
                     vmax=s_max,
                     alpha=alpha,
                     norm=norm,
+                    extent=extent_dict[self.__axis],
                 )
 
             if scalar.show_colorbar:
