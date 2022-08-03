@@ -1258,8 +1258,11 @@ class ProbUNet(pl.LightningModule):
 
             pred_y = self.prob_unet.sample(testing=True)
             pred_y = pred_y.to("cpu")
+            print(f"{pred_y[0,:,:,:].min()} {pred_y[0,:,:,:].max()}")
+            pred_y = torch.sigmoid(pred_y)
+            print(f"{pred_y[0,:,:,:].min()} {pred_y[0,:,:,:].max()}")
 
-            pred_y = pred_y.argmax(1)
+            pred_y = pred_y[:,1,:,:] > 0.5
             pred_y = pred_y.unsqueeze(1)
             y = y.to("cpu")
 
@@ -1295,9 +1298,9 @@ class ProbUNet(pl.LightningModule):
             for o in range(n):
                 contours[f"obs_{o}"] = sitk.GetImageFromArray(y[o,:,:,:])
             for mm in range(m):
-                samp_pred = pred_y[mm,:,:,:]
-                samp_pred = samp_pred.argmax(0)
-                samp_pred = samp_pred.unsqueeze(0)
+                samp_pred = pred_y[mm,:,:,:].float()
+                #samp_pred = samp_pred.argmax(0)
+                #samp_pred = samp_pred.unsqueeze(0)
                 contours[f"sample_{mm}"] = sitk.GetImageFromArray(samp_pred)
 
             vis.add_contour(contours, colormap=plt.cm.get_cmap("cool"))
