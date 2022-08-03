@@ -1040,6 +1040,7 @@ class LIDCDataModule(pl.LightningDataModule):
                     self.validation_cases = val_test_cases
                 else:
                     self.validation_cases = val_test_cases[: int(len(val_test_cases) / 2)]
+                    self.validation_cases = val_test_cases[: 5]
                     self.test_cases = val_test_cases[int(len(val_test_cases) / 2) :]
             else:
                 self.train_cases += cases[f * cases_per_fold : (f + 1) * cases_per_fold]
@@ -1194,7 +1195,7 @@ class ProbUNet(pl.LightningModule):
 
         # Add background layer for one-hot encoding
         #y = torch.unsqueeze(y, dim=1)
-        not_y = y.max(axis=1).values.logical_not()
+        not_y = 1 - y.max(axis=1).values
         not_y = torch.unsqueeze(not_y, dim=1)
         y = torch.cat((not_y, y), dim=1).float()
 
@@ -1257,6 +1258,9 @@ class ProbUNet(pl.LightningModule):
 
             pred_y = self.prob_unet.sample(testing=True)
             pred_y = pred_y.to("cpu")
+
+            pred_y = pred_y.argmax(1)
+            pred_y = pred_y.unsqueeze(1)
             y = y.to("cpu")
 
             # Intersection over Union (also known as Jaccard Index)
@@ -1273,7 +1277,7 @@ class ProbUNet(pl.LightningModule):
             for i in range(n):
                 for j in range(n):
                     if pred_y[i,:,:,:].sum() == 0 and pred_y[j,:,:,:].sum() == 0: continue
-                    iou = jaccard(pred_y[i,:,:,:].unsqueeze(0), pred_y[j,:,:,:].unsqueeze(0).argmax(1))
+                    iou = jaccard(pred_y[i,:,:,:].unsqueeze(0), pred_y[j,:,:,:].unsqueeze(0))
                     term_2 += 1 - iou
             term_2 = term_2 * (1/(n*n))
 
@@ -1291,7 +1295,7 @@ class ProbUNet(pl.LightningModule):
             for o in range(n):
                 contours[f"obs_{o}"] = sitk.GetImageFromArray(y[o,:,:,:])
             for mm in range(m):
-                samp_pred = pred_y[j,:,:,:]
+                samp_pred = pred_y[mm,:,:,:]
                 samp_pred = samp_pred.argmax(0)
                 samp_pred = samp_pred.unsqueeze(0)
                 contours[f"sample_{mm}"] = sitk.GetImageFromArray(samp_pred)
