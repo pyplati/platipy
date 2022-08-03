@@ -1256,14 +1256,19 @@ class ProbUNet(pl.LightningModule):
             x = x.repeat(m, 1, 1, 1)
             self.prob_unet.forward(x)
 
-            pred_y = self.prob_unet.sample(testing=True)
-            pred_y = pred_y.to("cpu")
-            print(f"{pred_y[0,:,:,:].min()} {pred_y[0,:,:,:].max()}")
-            pred_y = torch.sigmoid(pred_y)
-            print(f"{pred_y[0,:,:,:].min()} {pred_y[0,:,:,:].max()}")
+            py = self.prob_unet.sample(testing=True)
+            py = py.to("cpu")
+            # print(f"{pred_y[0,:,:,:].min()} {pred_y[0,:,:,:].max()}")
+            # pred_y = torch.sigmoid(pred_y)
+            # print(f"{pred_y[0,:,:,:].min()} {pred_y[0,:,:,:].max()}")
 
-            pred_y = pred_y[:,1,:,:] > 0.5
-            pred_y = pred_y.unsqueeze(1)
+            # pred_y = pred_y[:,1,:,:] > 0.5
+            # pred_y = pred_y.unsqueeze(1)
+            pred_y = torch.zeros(py[:,0,:].shape).int()
+            for b in range(py.shape[0]):
+                pred_y[b] = py[b,:].argmax(0).int()
+
+            y = y.squeeze(1)
             y = y.to("cpu")
 
             # Intersection over Union (also known as Jaccard Index)
@@ -1271,24 +1276,27 @@ class ProbUNet(pl.LightningModule):
             term_1 = 0
             for i in range(n):
                 for j in range(m):
-                    if pred_y[i,:,:,:].sum() == 0 and y[j,:,:,:].sum() == 0: continue
-                    iou = jaccard(pred_y[i,:,:,:].unsqueeze(0), y[j,:,:,:].unsqueeze(0))
+                    if pred_y[i].sum() + y[j].sum() == 0:
+                        continue
+                    iou = jaccard(pred_y[i], y[j])
                     term_1 += 1 - iou
             term_1 = term_1 * (2/(m*n))
 
             term_2 = 0
             for i in range(n):
                 for j in range(n):
-                    if pred_y[i,:,:,:].sum() == 0 and pred_y[j,:,:,:].sum() == 0: continue
-                    iou = jaccard(pred_y[i,:,:,:].unsqueeze(0), pred_y[j,:,:,:].unsqueeze(0))
+                    if pred_y[i].sum() + pred_y[j].sum() == 0:
+                        continue
+                    iou = jaccard(pred_y[i], pred_y[j])
                     term_2 += 1 - iou
             term_2 = term_2 * (1/(n*n))
 
             term_3 = 0
             for i in range(m):
                 for j in range(m):
-                    if y[i,:,:,:].sum() == 0 and y[j,:,:,:].sum() == 0: continue
-                    iou = jaccard(y[i,:,:,:].unsqueeze(0), y[j,:,:,:].unsqueeze(0))
+                    if y[i].sum() + y[j].sum() == 0:
+                        continue
+                    iou = jaccard(y[i], y[j])
                     term_3 += 1 - iou
             term_3 = term_3 * (1/(m*m))
 
@@ -1296,11 +1304,12 @@ class ProbUNet(pl.LightningModule):
 
             contours = {}
             for o in range(n):
-                contours[f"obs_{o}"] = sitk.GetImageFromArray(y[o,:,:,:])
+                obs_y = y[o].float()
+                obs_y = obs_y.unsqueeze(0)
+                contours[f"obs_{o}"] = sitk.GetImageFromArray(obs_y)
             for mm in range(m):
-                samp_pred = pred_y[mm,:,:,:].float()
-                #samp_pred = samp_pred.argmax(0)
-                #samp_pred = samp_pred.unsqueeze(0)
+                samp_pred = pred_y[mm].float()
+                samp_pred = samp_pred.unsqueeze(0)
                 contours[f"sample_{mm}"] = sitk.GetImageFromArray(samp_pred)
 
             vis.add_contour(contours, colormap=plt.cm.get_cmap("cool"))
