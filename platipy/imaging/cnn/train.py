@@ -399,8 +399,7 @@ class ProbUNet(pl.LightningModule):
         x, y, m, _ = batch
 
         # Add background layer for one-hot encoding
-        #y = torch.unsqueeze(y, dim=1)
-        not_y = y.max(axis=1).values.logical_not()
+        not_y = 1 - y.max(axis=1).values
         not_y = torch.unsqueeze(not_y, dim=1)
         y = torch.cat((not_y, y), dim=1).float()
 
@@ -450,113 +449,79 @@ class ProbUNet(pl.LightningModule):
 
     def validation_step(self, batch, _):
 
-        if self.validation_directory is None:
-            self.validation_directory = Path(tempfile.mkdtemp())
+        n = 4
+        m = 4
 
         with torch.set_grad_enabled(False):
             x, y, _, info = batch
-            for s in range(y.shape[0]):
 
-                img_file = self.validation_directory.joinpath(
-                    f"img_{info['case'][s]}_{info['z'][s]}.npy"
-                )
-                np.save(img_file, x[s].squeeze(0).cpu().numpy())
+            # Image will be same for all in batch
+            x = x[0, :, :, :].unsqueeze(0)
+            vis = ImageVisualiser(sitk.GetImageFromArray(x.to("cpu")[0,:,:,:]), axis="z")
+            x = x.repeat(m, 1, 1, 1)
+            self.prob_unet.forward(x)
 
-                mask_file = self.validation_directory.joinpath(
-                    f"mask_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
-                )
-                np.save(mask_file, y[s].cpu().numpy())
+            py = self.prob_unet.sample(testing=True)
+            py = py.to("cpu")
+            # print(f"{pred_y[0,:,:,:].min()} {pred_y[0,:,:,:].max()}")
+            # pred_y = torch.sigmoid(pred_y)
+            # print(f"{pred_y[0,:,:,:].min()} {pred_y[0,:,:,:].max()}")
 
-        return info
+            # pred_y = pred_y[:,1,:,:] > 0.5
+            # pred_y = pred_y.unsqueeze(1)
+            pred_y = torch.zeros(py[:,0,:].shape).int()
+            for b in range(py.shape[0]):
+                pred_y[b] = py[b,:].argmax(0).int()
 
-    def validation_epoch_end(self, validation_step_outputs):
+            y = y.squeeze(1)
+            y = y.to("cpu")
 
-        cases = {}
-        for info in validation_step_outputs:
+            # Intersection over Union (also known as Jaccard Index)
+            jaccard = JaccardIndex(num_classes=2)
+            term_1 = 0
+            for i in range(n):
+                for j in range(m):
+                    if pred_y[i].sum() + y[j].sum() == 0:
+                        continue
+                    iou = jaccard(pred_y[i], y[j])
+                    term_1 += 1 - iou
+            term_1 = term_1 * (2/(m*n))
 
-            for case, z, observer in zip(info["case"], info["z"], info["observer"]):
-                if not case in cases:
-                    cases[case] = {"slices": z.item(), "observers": [observer]}
-                else:
-                    if z.item() > cases[case]["slices"]:
+            term_2 = 0
+            for i in range(n):
+                for j in range(n):
+                    if pred_y[i].sum() + pred_y[j].sum() == 0:
+                        continue
+                    iou = jaccard(pred_y[i], pred_y[j])
+                    term_2 += 1 - iou
+            term_2 = term_2 * (1/(n*n))
 
-                        cases[case]["slices"] = z.item()
-                    if not observer in cases[case]["observers"]:
-                        cases[case]["observers"].append(observer)
+            term_3 = 0
+            for i in range(m):
+                for j in range(m):
+                    if y[i].sum() + y[j].sum() == 0:
+                        continue
+                    iou = jaccard(y[i], y[j])
+                    term_3 += 1 - iou
+            term_3 = term_3 * (1/(m*m))
 
-        metrics = ["DSC", "HD", "ASD"]
-        computed_metrics = {
-            **{f"probnet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
-            **{f"unet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
-        }
+            D_ged = term_1 - term_2 - term_3
 
-        for case in cases:
+            contours = {}
+            for o in range(n):
+                obs_y = y[o].float()
+                obs_y = obs_y.unsqueeze(0)
+                contours[f"obs_{o}"] = sitk.GetImageFromArray(obs_y)
+            for mm in range(m):
+                samp_pred = pred_y[mm].float()
+                samp_pred = samp_pred.unsqueeze(0)
+                contours[f"sample_{mm}"] = sitk.GetImageFromArray(samp_pred)
 
-            img_arrs = []
-            slices = []
+            vis.add_contour(contours, colormap=plt.cm.get_cmap("cool"))
+            vis.show()
 
-            if self.hparams.ndims == 2:
-                for z in range(cases[case]["slices"] + 1):
-                    img_file = self.validation_directory.joinpath(f"img_{case}_{z}.npy")
-                    if img_file.exists():
-                        img_arrs.append(np.load(img_file))
-                        slices.append(z)
-
-                img_arr = np.stack(img_arrs)
-
-            else:
-                img_file = self.validation_directory.joinpath(f"img_{case}_0.npy")
-                img_arr = np.load(img_file)
-            img = sitk.GetImageFromArray(img_arr)
-            img.SetSpacing(self.hparams.spacing)
-            try:
-                mean = self.infer(img, num_samples=1, sample_strategy="mean", preprocess=False)
-                samples = self.infer(
-                    img,
-                    sample_strategy="spaced",
-                    num_samples=5,
-                    spaced_range=[-1.5, 1.5],
-                    preprocess=False,
-                )
-            except Exception as e:
-                print(f"ERROR DURING VALIDATION INFERENCE: {e}")
-                return
-
-            observers = {}
-            for _, observer in enumerate(cases[case]["observers"]):
-
-                if self.hparams.ndims == 2:
-                    mask_arrs = []
-                    for z in slices:
-                        mask_file = self.validation_directory.joinpath(
-                            f"mask_{case}_{z}_{observer}.npy"
-                        )
-
-                        mask_arrs.append(np.load(mask_file))
-
-                    mask_arr = np.stack(mask_arrs, axis=1)
-
-                else:
-                    mask_file = self.validation_directory.joinpath(
-                        f"mask_{case}_{z}_{observer}.npy"
-                    )
-                    mask_arr = np.load(mask_file)
-
-                observers[f"manual_{observer}"] = {}
-                for idx, structure in enumerate(self.hparams.structures):
-                    mask = sitk.GetImageFromArray(mask_arr[idx])
-                    mask = sitk.Cast(mask, sitk.sitkUInt8)
-                    mask.CopyInformation(img)
-                    observers[f"manual_{observer}"][structure] = mask
-
-            #try:
-            result, fig = self.validate(img, observers, samples, mean, matching_type="best")
-            #except Exception as e:
-            #    print(f"ERROR DURING VALIDATION VALIDATE: {e}")
-            #    return
-
-            figure_path = f"valid_{case}.png"
-            fig.savefig(figure_path, dpi=300)
+            figure_path = "valid.png"
+            plt.savefig(figure_path, dpi=300)
             plt.close("all")
 
             try:
@@ -565,31 +530,150 @@ class ProbUNet(pl.LightningModule):
                 # Likely offline mode
                 pass
 
-            for t in result:
-                for m in metrics:
-                    computed_metrics[f"{t}_{m}"] += result[t][m]
+        self.log("GED", D_ged)
+        return D_ged
+    # def validation_step(self, batch, _):
 
-        if self.kl_div:
-            p = u = 0
-            for s in self.hparams.structures:
-                p += np.array(computed_metrics[f"probnet_{s}_DSC"]).mean()
-                u += np.array(computed_metrics[f"unet_{s}_DSC"]).mean()
+    #     if self.validation_directory is None:
+    #         self.validation_directory = Path(tempfile.mkdtemp())
 
-            p /= len(self.hparams.structures)
-            u /= len(self.hparams.structures)
-            computed_metrics["scaled_DSC"] = ((p + u) / 2) + (p - u) - self.kl_div
+    #     with torch.set_grad_enabled(False):
+    #         x, y, _, info = batch
+    #         for s in range(y.shape[0]):
 
-        for cm in computed_metrics:
-            self.log(
-                cm,
-                np.array(computed_metrics[cm]).mean(),
-                on_step=False,
-                on_epoch=True,
-                prog_bar=False,
-                logger=True,
-            )
+    #             img_file = self.validation_directory.joinpath(
+    #                 f"img_{info['case'][s]}_{info['z'][s]}.npy"
+    #             )
+    #             np.save(img_file, x[s].squeeze(0).cpu().numpy())
 
-        # shutil.rmtree(self.validation_directory)
+    #             mask_file = self.validation_directory.joinpath(
+    #                 f"mask_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
+    #             )
+    #             np.save(mask_file, y[s].cpu().numpy())
+
+    #     return info
+
+    # def validation_epoch_end(self, validation_step_outputs):
+
+    #     cases = {}
+    #     for info in validation_step_outputs:
+
+    #         for case, z, observer in zip(info["case"], info["z"], info["observer"]):
+    #             if not case in cases:
+    #                 cases[case] = {"slices": z.item(), "observers": [observer]}
+    #             else:
+    #                 if z.item() > cases[case]["slices"]:
+
+    #                     cases[case]["slices"] = z.item()
+    #                 if not observer in cases[case]["observers"]:
+    #                     cases[case]["observers"].append(observer)
+
+    #     metrics = ["DSC", "HD", "ASD"]
+    #     computed_metrics = {
+    #         **{f"probnet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
+    #         **{f"unet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
+    #     }
+
+    #     for case in cases:
+
+    #         img_arrs = []
+    #         slices = []
+
+    #         if self.hparams.ndims == 2:
+    #             for z in range(cases[case]["slices"] + 1):
+    #                 img_file = self.validation_directory.joinpath(f"img_{case}_{z}.npy")
+    #                 if img_file.exists():
+    #                     img_arrs.append(np.load(img_file))
+    #                     slices.append(z)
+
+    #             img_arr = np.stack(img_arrs)
+
+    #         else:
+    #             img_file = self.validation_directory.joinpath(f"img_{case}_0.npy")
+    #             img_arr = np.load(img_file)
+    #         img = sitk.GetImageFromArray(img_arr)
+    #         img.SetSpacing(self.hparams.spacing)
+    #         try:
+    #             mean = self.infer(img, num_samples=1, sample_strategy="mean", preprocess=False)
+    #             samples = self.infer(
+    #                 img,
+    #                 sample_strategy="spaced",
+    #                 num_samples=5,
+    #                 spaced_range=[-1.5, 1.5],
+    #                 preprocess=False,
+    #             )
+    #         except Exception as e:
+    #             print(f"ERROR DURING VALIDATION INFERENCE: {e}")
+    #             return
+
+    #         observers = {}
+    #         for _, observer in enumerate(cases[case]["observers"]):
+
+    #             if self.hparams.ndims == 2:
+    #                 mask_arrs = []
+    #                 for z in slices:
+    #                     mask_file = self.validation_directory.joinpath(
+    #                         f"mask_{case}_{z}_{observer}.npy"
+    #                     )
+
+    #                     mask_arrs.append(np.load(mask_file))
+
+    #                 mask_arr = np.stack(mask_arrs, axis=1)
+
+    #             else:
+    #                 mask_file = self.validation_directory.joinpath(
+    #                     f"mask_{case}_{z}_{observer}.npy"
+    #                 )
+    #                 mask_arr = np.load(mask_file)
+
+    #             observers[f"manual_{observer}"] = {}
+    #             for idx, structure in enumerate(self.hparams.structures):
+    #                 mask = sitk.GetImageFromArray(mask_arr[idx])
+    #                 mask = sitk.Cast(mask, sitk.sitkUInt8)
+    #                 mask.CopyInformation(img)
+    #                 observers[f"manual_{observer}"][structure] = mask
+
+    #         #try:
+    #         result, fig = self.validate(img, observers, samples, mean, matching_type="best")
+    #         #except Exception as e:
+    #         #    print(f"ERROR DURING VALIDATION VALIDATE: {e}")
+    #         #    return
+
+    #         figure_path = f"valid_{case}.png"
+    #         fig.savefig(figure_path, dpi=300)
+    #         plt.close("all")
+
+    #         try:
+    #             self.logger.experiment.log_image(figure_path)
+    #         except AttributeError:
+    #             # Likely offline mode
+    #             pass
+
+    #         for t in result:
+    #             for m in metrics:
+    #                 computed_metrics[f"{t}_{m}"] += result[t][m]
+
+    #     if self.kl_div:
+    #         p = u = 0
+    #         for s in self.hparams.structures:
+    #             p += np.array(computed_metrics[f"probnet_{s}_DSC"]).mean()
+    #             u += np.array(computed_metrics[f"unet_{s}_DSC"]).mean()
+
+    #         p /= len(self.hparams.structures)
+    #         u /= len(self.hparams.structures)
+    #         computed_metrics["scaled_DSC"] = ((p + u) / 2) + (p - u) - self.kl_div
+
+    #     for cm in computed_metrics:
+    #         self.log(
+    #             cm,
+    #             np.array(computed_metrics[cm]).mean(),
+    #             on_step=False,
+    #             on_epoch=True,
+    #             prog_bar=False,
+    #             logger=True,
+    #         )
+
+    #     # shutil.rmtree(self.validation_directory)
 
 
 def main(args, config_json_path=None):
@@ -650,11 +734,11 @@ def main(args, config_json_path=None):
 
     # Save the best model
     checkpoint_callback = ModelCheckpoint(
-        monitor="scaled_DSC",
+        monitor="GED",
         dirpath=args.default_root_dir,
-        filename="probunet-{epoch:02d}-{scaled_DSC:.2f}",
+        filename="probunet-{epoch:02d}-{GED:.2f}",
         save_top_k=1,
-        mode="max",
+        mode="min",
     )
     trainer.callbacks.append(checkpoint_callback)
 
