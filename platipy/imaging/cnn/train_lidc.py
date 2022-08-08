@@ -1040,7 +1040,7 @@ class LIDCDataModule(pl.LightningDataModule):
                     self.validation_cases = val_test_cases
                 else:
                     self.validation_cases = val_test_cases[: int(len(val_test_cases) / 2)]
-                    self.validation_cases = val_test_cases[: 5]
+                    # self.validation_cases = val_test_cases[: 5]
                     self.test_cases = val_test_cases[int(len(val_test_cases) / 2) :]
             else:
                 self.train_cases += cases[f * cases_per_fold : (f + 1) * cases_per_fold]
@@ -1188,6 +1188,17 @@ class ProbUNet(pl.LightningModule):
 
         return [optimizer], [scheduler]
 
+    def frange_cycle_linear(self, start, stop, n_epoch, n_cycle=4, ratio=0.5):
+        L = np.ones(n_epoch)
+        period = n_epoch/n_cycle
+        step = (stop-start)/(period*ratio) # linear schedule
+        for c in range(n_cycle):
+            v , i = start , 0
+            while v <= stop and (int(i+c*period) < n_epoch):
+                L[int(i+c*period)] = v
+                v += step
+                i += 1
+        return L
 
     def training_step(self, batch, _):
 
@@ -1205,6 +1216,8 @@ class ProbUNet(pl.LightningModule):
             self.prob_unet.forward(x, y)
 
         if self.hparams.prob_type == "prob":
+            beta_vals = self.frange_cycle_linear(0.0, 0.01, 100, 4, 1.0)
+#            loss = self.prob_unet.loss(y, mask=m, beta=beta_vals[self.current_epoch])
             loss = self.prob_unet.loss(y, mask=m)
         else:
             loss = self.prob_unet.loss(x, y, mask=m)

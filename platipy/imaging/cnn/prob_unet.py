@@ -366,7 +366,8 @@ class ProbabilisticUnet(torch.nn.Module):
         top_k_percentage=None,
         deterministic=True,
     ):
-        criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
+#        criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
+        criterion = torch.nn.BCEWithLogitsLoss(size_average = False, reduce=False, reduction=None)
 
         if z_posterior is None:
             z_posterior = self.posterior_latent_space.rsample()
@@ -429,7 +430,7 @@ class ProbabilisticUnet(torch.nn.Module):
 
         return ce_sum, ce_mean, mask
 
-    def loss(self, segm, mask=None):
+    def loss(self, segm, mask=None, beta=None):
         """
         Calculate the evidence lower bound of the log-likelihood of P(Y|X)
         """
@@ -455,7 +456,7 @@ class ProbabilisticUnet(torch.nn.Module):
                 contour_threshold = self.loss_params["kappa_contour"]
 
         # Here we use the posterior sample sampled above
-        _, rec_loss_mean, _ = self.reconstruction_loss(
+        rl_sum, rec_loss_mean, _ = self.reconstruction_loss(
             segm,
             z_posterior=z_posterior,
             top_k_percentage=top_k_percentage,
@@ -464,19 +465,22 @@ class ProbabilisticUnet(torch.nn.Module):
 
         # If using contour mask in loss, we get back those in a list. Unpack here.
         if contour_threshold:
-            contour_loss = rec_loss_mean[1]
-            contour_loss_mean = rec_loss_mean[1]
-            reconstruction_loss = rec_loss_mean[0]
-            rec_loss_mean = rec_loss_mean[0]
+            contour_loss = rl_sum[1]
+#            contour_loss_mean = rl_sum[1]
+            reconstruction_loss = rl_sum[0]
+ #           rec_loss_mean = rl_sum[0]
         else:
-            reconstruction_loss = rec_loss_mean
+            reconstruction_loss = rl_sum
 
         if self.loss_type == "elbo":
+            if beta==None:
+                beta = self.loss_params["beta"]
 
             return {
-                "loss": reconstruction_loss + self.loss_params["beta"] * kl_div,
+                "loss": reconstruction_loss + beta * kl_div,
                 "rec_loss": reconstruction_loss,
                 "kl_div": kl_div,
+                "beta": beta
             }
         elif self.loss_type == "geco":
 
@@ -484,7 +488,7 @@ class ProbabilisticUnet(torch.nn.Module):
 
                 moving_avg_factor = 0.8
 
-                rl = rec_loss_mean.detach()
+                rl = reconstruction_loss.detach()
                 if self._rec_moving_avg is None:
                     self._rec_moving_avg = rl
                 else:
@@ -496,7 +500,7 @@ class ProbabilisticUnet(torch.nn.Module):
 
                 cc = 0
                 if contour_threshold:
-                    cl = contour_loss_mean.detach()
+                    cl = contour_loss.detach()
                     if self._contour_moving_avg is None:
                         self._contour_moving_avg = rl
                     else:
