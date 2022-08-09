@@ -24,6 +24,7 @@ from scipy.optimize import linear_sum_assignment
 
 import comet_ml  # pylint: disable=unused-import
 from pytorch_lightning.loggers import CometLogger
+from torchmetrics import JaccardIndex
 
 import torch
 import pytorch_lightning as pl
@@ -474,6 +475,7 @@ class ProbUNet(pl.LightningModule):
                 pred_y[b] = py[b,:].argmax(0).int()
 
             y = y.squeeze(1)
+            y = y.int()
             y = y.to("cpu")
 
             # Intersection over Union (also known as Jaccard Index)
