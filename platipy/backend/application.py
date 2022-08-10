@@ -79,13 +79,19 @@ class FlaskApp(Flask):
             **options
         )
 
-    def run_dicom_listener(self, listen_port, listen_ae_title):
+    def run_dicom_listener(self, listen_port=None, listen_ae_title=None):
         """
         Background task that listens at a specific port for incoming dicom series
         """
 
         from .models import Dataset, DataObject
         from . import db
+
+        if listen_port is None:
+            listen_port = self.dicom_listener_port
+
+        if listen_ae_title is None:
+            listen_ae_title = self.dicom_listener_aetitle
 
         logger.info(
             "Starting Dicom Listener on port: {0} with AE Title: {1}",
