@@ -18,3 +18,6 @@ else
     echo "Running without SSL, not suitable for production use."
     exec gunicorn -b :8000  --timeout 300 --graceful-timeout 60 --access-logfile - --error-logfile - service:app
 fi
+
+# Start the DICOM listener for the service
+celery --app=service:celery call platipy.backend.tasks.run_dicom_listener
