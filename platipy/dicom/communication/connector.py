@@ -29,7 +29,7 @@ from pynetdicom import (
     PYNETDICOM_IMPLEMENTATION_VERSION,
 )
 from pynetdicom.sop_class import (
-    VerificationSOPClass,
+    Verification,
     PatientRootQueryRetrieveInformationModelFind,
     PatientRootQueryRetrieveInformationModelGet,
     PatientRootQueryRetrieveInformationModelMove
@@ -379,7 +379,7 @@ class DicomConnector:
         ae = AE(ae_title=ae_title)
 
         # Add the supported presentation context
-        ae.add_supported_context(VerificationSOPClass)
+        ae.add_supported_context(Verification)
         for context in StoragePresentationContexts:
             ae.add_supported_context(context.abstract_syntax)
 
