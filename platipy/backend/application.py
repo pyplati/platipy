@@ -137,7 +137,10 @@ class FlaskApp(Flask):
 
         try:
             dicom_listener = DicomListener(
-                port=listen_port, ae_title=listen_ae_title, on_released_callback=series_recieved
+                host="0.0.0.0",
+                port=listen_port,
+                ae_title=listen_ae_title,
+                on_released_callback=series_recieved
             )
 
             dicom_listener.start()
