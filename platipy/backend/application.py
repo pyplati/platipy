@@ -132,7 +132,7 @@ class FlaskApp(Flask):
             for do in dos:
 
                 do.is_fetched = True
-                do.path = dicom_path
+                do.path = str(dicom_path)
                 db.session.commit()
 
         try:
