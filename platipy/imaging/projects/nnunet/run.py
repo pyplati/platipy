@@ -2,7 +2,6 @@
 import os
 import tempfile
 import urllib.request
-import shutil
 from pathlib import Path
 from loguru import logger
 
@@ -35,6 +34,22 @@ NNUNET_SETTINGS_DEFAULTS = {
     "chk": "model_final_checkpoint"
 }
 
+def setup_nnunet_environment():
+    """Inserts suitable location for nnUNet environemnt variables if they are not already set in
+    the users environment.
+    """
+
+    # Setup the nnUNet environment variables
+    if not "RESULTS_FOLDER" in os.environ:
+        home = Path.home()
+        platipy_dir = home.joinpath(".platipy")
+        home.mkdir(exist_ok=True)
+        os.environ["RESULTS_FOLDER"] = str(platipy_dir.joinpath("nnUNet_models"))
+
+        # Don't really need these here but set them anyway to supress warnings
+        os.environ["nnUNet_raw_data_base"] = tempfile.mkdtemp()
+        os.environ["nnUNet_preprocessed"] = tempfile.mkdtemp()
+
 def download_and_install_nnunet_task(task_name, zip_url):
     """Downloads the Zip file and then installs via nnUNet.
 
@@ -61,15 +76,7 @@ def download_and_install_nnunet_task(task_name, zip_url):
 
 def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
 
-    if not "RESULTS_FOLDER" in os.environ:
-        home = Path.home()
-        platipy_dir = home.joinpath(".platipy")
-        home.mkdir(exist_ok=True)
-        os.environ["RESULTS_FOLDER"] = str(platipy_dir.joinpath("nnUNet_models"))
-
-        # Don't really need these here but set them anyway to supress warnings
-        os.environ["nnUNet_raw_data_base"] = tempfile.mkdtemp()
-        os.environ["nnUNet_preprocessed"] = tempfile.mkdtemp()
+    setup_nnunet_environment()
 
     # Import in here to make sure environment is already set
     try:
