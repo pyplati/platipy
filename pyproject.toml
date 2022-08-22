@@ -19,7 +19,7 @@ platipy = "platipy.cli.run:platipy_cli"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-click = "^7.1.2"
+click = "^8.0.3"
 SimpleITK = "^2.0.2"
 pydicom = "^2.1.2"
 scikit-image = "^0.17.2"
