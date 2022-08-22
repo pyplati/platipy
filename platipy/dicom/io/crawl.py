@@ -22,7 +22,8 @@ import numpy as np
 import SimpleITK as sitk
 
 from skimage.draw import polygon
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from datetime import datetime
 

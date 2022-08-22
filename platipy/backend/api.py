@@ -20,7 +20,8 @@ import time
 import uuid
 import werkzeug
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 import flask_restful
 from flask_restful import Api, reqparse

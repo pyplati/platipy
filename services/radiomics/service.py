@@ -14,7 +14,8 @@
 
 import os
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 import SimpleITK as sitk
 import numpy as np

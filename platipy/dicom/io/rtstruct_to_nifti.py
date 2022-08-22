@@ -18,7 +18,8 @@ import pydicom
 import numpy as np
 import SimpleITK as sitk
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 from skimage.draw import polygon
 
 

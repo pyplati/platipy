@@ -20,7 +20,8 @@ from pathlib import Path
 import SimpleITK as sitk
 import numpy as np
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from platipy.imaging.registration.utils import apply_transform, convert_mask_to_reg_structure
 

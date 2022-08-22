@@ -19,7 +19,8 @@ from pprint import pformat
 
 import requests
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 
 API_DICOM_LOCATION = "{0}/api/dicomlocation"

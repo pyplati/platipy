@@ -16,7 +16,8 @@
 import os
 
 import SimpleITK as sitk
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 # import pydicom
 

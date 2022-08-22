@@ -18,7 +18,8 @@ import os
 # import pydicom
 
 import SimpleITK as sitk
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 # Need include celery here to be able to from Docker container
 # pylint: disable=unused-import

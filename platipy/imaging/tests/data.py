@@ -14,7 +14,8 @@
 
 from pathlib import Path
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from platipy.utils import download_and_extract_zip_file
 

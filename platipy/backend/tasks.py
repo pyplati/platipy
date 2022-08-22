@@ -14,13 +14,14 @@
 
 from celery.schedules import crontab
 
-from loguru import logger
 import tempfile
 import pydicom
 import os
 import datetime
 import shutil
 import time
+import logging
+logger = logging.getLogger(__name__)
 
 
 from platipy.backend import celery, db, app

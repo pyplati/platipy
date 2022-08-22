@@ -14,7 +14,8 @@
 
 import tempfile
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from platipy.imaging.projects.bronchus.bronchus import (
     generate_lung_mask,

@@ -36,7 +36,8 @@ from pynetdicom.sop_class import (
 )
 from pynetdicom.pdu_primitives import SCP_SCU_RoleSelectionNegotiation
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 
 class DicomConnector:

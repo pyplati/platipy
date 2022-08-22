@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import warnings
+import logging
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -20,8 +21,6 @@ import matplotlib.gridspec as gridspec
 
 import numpy as np
 import SimpleITK as sitk
-
-from loguru import logger
 
 from platipy.imaging.utils.crop import label_to_roi
 
@@ -38,6 +37,8 @@ from platipy.imaging.visualisation.utils import (
     generate_comparison_colormix,
     project_onto_arbitrary_plane,
 )
+
+logger = logging.getLogger(__name__)
 
 """
 This Python script comprises two contributions to the code base:

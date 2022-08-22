@@ -15,7 +15,8 @@
 import os
 import subprocess
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 import SimpleITK as sitk
 import pandas as pd
 
@@ -260,7 +261,7 @@ if __name__ == "__main__":
     # Run app by calling "python service.py" from the command line
 
     DICOM_LISTENER_PORT = 7777
-    DICOM_LISTENER_AETITLE = "PINNACLE_EXPORT_SERVICE"
+    DICOM_LISTENER_AETITLE = "DIRQA_SERVICE"
 
     app.run(
         debug=True,

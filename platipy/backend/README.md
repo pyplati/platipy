@@ -45,7 +45,8 @@ can add a call to your function providing some algorithm. Save it in a file name
 import os
 import pydicom
 import SimpleITK as sitk
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from platipy.backend import app, DataObject, celery  # pylint: disable=unused-import
 from platipy.dicom.io.nifti_to_rtstruct import convert_nifti
@@ -168,7 +169,8 @@ generated above in the code below.
 
 ```python
 import os
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from platipy.backend.client import PlatiPyClient
 from platipy.imaging.tests.data import get_lung_nifti

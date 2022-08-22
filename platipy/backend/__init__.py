@@ -22,7 +22,8 @@ from celery import Celery
 
 from platipy.backend.application import FlaskApp
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 env_work = os.getcwd()
 if "WORK" in os.environ:

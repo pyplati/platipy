@@ -28,7 +28,8 @@ from platipy.imaging.projects.cardiac.run import (
     run_cardiac_segmentation,
     CARDIAC_SETTINGS_DEFAULTS,
 )
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture

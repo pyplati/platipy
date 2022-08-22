@@ -17,7 +17,8 @@ import subprocess
 
 from pathlib import Path
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 import SimpleITK as sitk
 
 from platipy.backend import app, DataObject, celery

@@ -19,7 +19,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
 import numpy as np
 import SimpleITK as sitk
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 
 class View:

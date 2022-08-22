@@ -16,7 +16,8 @@ import json
 import os
 
 from flask import Flask
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 import pydicom
 
 from pymedphys._dicom.connect.listen import DicomListener

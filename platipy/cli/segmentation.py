@@ -19,7 +19,8 @@ import sys
 import json
 
 import click
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 import SimpleITK as sitk
 
@@ -42,9 +43,6 @@ segmentation_algorithms = {
         "default_settings": BRONCHUS_SETTINGS_DEFAULTS,
     },
 }
-
-logger.remove()
-logger.add(sys.stderr, level="DEBUG")
 
 @click.command()
 @click.argument("algorithm", nargs=1, type=click.Choice(segmentation_algorithms.keys()))

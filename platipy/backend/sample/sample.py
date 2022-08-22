@@ -16,7 +16,8 @@ import sys
 import os
 import pydicom
 import SimpleITK as sitk
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from platipy.backend import app, DataObject
 from platipy.dicom.nifti_to_rtstruct.convert import convert_nifti

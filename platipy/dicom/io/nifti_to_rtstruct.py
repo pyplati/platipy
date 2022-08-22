@@ -18,7 +18,8 @@
 from pathlib import Path
 import SimpleITK as sitk
 import numpy as np
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 from matplotlib import cm
 
 from rt_utils import RTStructBuilder

@@ -4,7 +4,8 @@ import tempfile
 import urllib.request
 import shutil
 from pathlib import Path
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 import SimpleITK as sitk
 
