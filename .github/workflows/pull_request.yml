@@ -24,14 +24,14 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update -y && sudo apt-get install -y curl
-        curl -sSL https://install.python-poetry.org | python - --version 1.2.0
+        curl -sSL https://install.python-poetry.org | python - --preview
         poetry install --with dev,docs
         echo "PYTHONPATH=`pwd`" >> $GITHUB_ENV
     - name: Build Docs
       run: |
         sudo apt-get update -y && sudo apt-get install -y pandoc
-        sphinx-build -b html -a docs docs/site
+        poetry run sphinx-build -b html -a docs docs/site
 
     - name: Run Tests
       run: |
-        pytest
+        poetry run pytest
