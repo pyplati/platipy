@@ -16,7 +16,7 @@ import warnings
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
+#from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
 
 import numpy as np
 import SimpleITK as sitk
