@@ -450,6 +450,23 @@ class ProbUNet(pl.LightningModule):
 
     def validation_step(self, batch, _):
 
+        if self.validation_directory is None:
+            self.validation_directory = Path(tempfile.mkdtemp())
+
+        with torch.set_grad_enabled(False):
+            x, y, _, info = batch
+            for s in range(y.shape[0]):
+
+                img_file = self.validation_directory.joinpath(
+                    f"img_{info['case'][s]}_{info['z'][s]}.npy"
+                )
+                np.save(img_file, x[s].squeeze(0).cpu().numpy())
+
+                mask_file = self.validation_directory.joinpath(
+                    f"mask_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
+                )
+                np.save(mask_file, y[s].cpu().numpy())
+
         n = 4
         m = 4
 
@@ -533,149 +550,130 @@ class ProbUNet(pl.LightningModule):
                 pass
 
         self.log("GED", D_ged)
-        return D_ged
-    # def validation_step(self, batch, _):
 
-    #     if self.validation_directory is None:
-    #         self.validation_directory = Path(tempfile.mkdtemp())
+        return info
 
-    #     with torch.set_grad_enabled(False):
-    #         x, y, _, info = batch
-    #         for s in range(y.shape[0]):
+    def validation_epoch_end(self, validation_step_outputs):
 
-    #             img_file = self.validation_directory.joinpath(
-    #                 f"img_{info['case'][s]}_{info['z'][s]}.npy"
-    #             )
-    #             np.save(img_file, x[s].squeeze(0).cpu().numpy())
+        cases = {}
+        for info in validation_step_outputs:
 
-    #             mask_file = self.validation_directory.joinpath(
-    #                 f"mask_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
-    #             )
-    #             np.save(mask_file, y[s].cpu().numpy())
+            for case, z, observer in zip(info["case"], info["z"], info["observer"]):
+                if not case in cases:
+                    cases[case] = {"slices": z.item(), "observers": [observer]}
+                else:
+                    if z.item() > cases[case]["slices"]:
 
-    #     return info
+                        cases[case]["slices"] = z.item()
+                    if not observer in cases[case]["observers"]:
+                        cases[case]["observers"].append(observer)
 
-    # def validation_epoch_end(self, validation_step_outputs):
+        metrics = ["DSC", "HD", "ASD"]
+        computed_metrics = {
+            **{f"probnet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
+            **{f"unet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
+        }
 
-    #     cases = {}
-    #     for info in validation_step_outputs:
+        for case in cases:
 
-    #         for case, z, observer in zip(info["case"], info["z"], info["observer"]):
-    #             if not case in cases:
-    #                 cases[case] = {"slices": z.item(), "observers": [observer]}
-    #             else:
-    #                 if z.item() > cases[case]["slices"]:
+            img_arrs = []
+            slices = []
 
-    #                     cases[case]["slices"] = z.item()
-    #                 if not observer in cases[case]["observers"]:
-    #                     cases[case]["observers"].append(observer)
+            if self.hparams.ndims == 2:
+                for z in range(cases[case]["slices"] + 1):
+                    img_file = self.validation_directory.joinpath(f"img_{case}_{z}.npy")
+                    if img_file.exists():
+                        img_arrs.append(np.load(img_file))
+                        slices.append(z)
 
-    #     metrics = ["DSC", "HD", "ASD"]
-    #     computed_metrics = {
-    #         **{f"probnet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
-    #         **{f"unet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
-    #     }
+                img_arr = np.stack(img_arrs)
 
-    #     for case in cases:
+            else:
+                img_file = self.validation_directory.joinpath(f"img_{case}_0.npy")
+                img_arr = np.load(img_file)
+            img = sitk.GetImageFromArray(img_arr)
+            img.SetSpacing(self.hparams.spacing)
+            try:
+                mean = self.infer(img, num_samples=1, sample_strategy="mean", preprocess=False)
+                samples = self.infer(
+                    img,
+                    sample_strategy="spaced",
+                    num_samples=5,
+                    spaced_range=[-1.5, 1.5],
+                    preprocess=False,
+                )
+            except Exception as e:
+                print(f"ERROR DURING VALIDATION INFERENCE: {e}")
+                return
 
-    #         img_arrs = []
-    #         slices = []
+            observers = {}
+            for _, observer in enumerate(cases[case]["observers"]):
 
-    #         if self.hparams.ndims == 2:
-    #             for z in range(cases[case]["slices"] + 1):
-    #                 img_file = self.validation_directory.joinpath(f"img_{case}_{z}.npy")
-    #                 if img_file.exists():
-    #                     img_arrs.append(np.load(img_file))
-    #                     slices.append(z)
+                if self.hparams.ndims == 2:
+                    mask_arrs = []
+                    for z in slices:
+                        mask_file = self.validation_directory.joinpath(
+                            f"mask_{case}_{z}_{observer}.npy"
+                        )
 
-    #             img_arr = np.stack(img_arrs)
+                        mask_arrs.append(np.load(mask_file))
 
-    #         else:
-    #             img_file = self.validation_directory.joinpath(f"img_{case}_0.npy")
-    #             img_arr = np.load(img_file)
-    #         img = sitk.GetImageFromArray(img_arr)
-    #         img.SetSpacing(self.hparams.spacing)
-    #         try:
-    #             mean = self.infer(img, num_samples=1, sample_strategy="mean", preprocess=False)
-    #             samples = self.infer(
-    #                 img,
-    #                 sample_strategy="spaced",
-    #                 num_samples=5,
-    #                 spaced_range=[-1.5, 1.5],
-    #                 preprocess=False,
-    #             )
-    #         except Exception as e:
-    #             print(f"ERROR DURING VALIDATION INFERENCE: {e}")
-    #             return
+                    mask_arr = np.stack(mask_arrs, axis=1)
 
-    #         observers = {}
-    #         for _, observer in enumerate(cases[case]["observers"]):
+                else:
+                    mask_file = self.validation_directory.joinpath(
+                        f"mask_{case}_{z}_{observer}.npy"
+                    )
+                    mask_arr = np.load(mask_file)
 
-    #             if self.hparams.ndims == 2:
-    #                 mask_arrs = []
-    #                 for z in slices:
-    #                     mask_file = self.validation_directory.joinpath(
-    #                         f"mask_{case}_{z}_{observer}.npy"
-    #                     )
+                observers[f"manual_{observer}"] = {}
+                for idx, structure in enumerate(self.hparams.structures):
+                    mask = sitk.GetImageFromArray(mask_arr[idx])
+                    mask = sitk.Cast(mask, sitk.sitkUInt8)
+                    mask.CopyInformation(img)
+                    observers[f"manual_{observer}"][structure] = mask
 
-    #                     mask_arrs.append(np.load(mask_file))
+            #try:
+            result, fig = self.validate(img, observers, samples, mean, matching_type="best")
+            #except Exception as e:
+            #    print(f"ERROR DURING VALIDATION VALIDATE: {e}")
+            #    return
 
-    #                 mask_arr = np.stack(mask_arrs, axis=1)
+            figure_path = f"valid_{case}.png"
+            fig.savefig(figure_path, dpi=300)
+            plt.close("all")
 
-    #             else:
-    #                 mask_file = self.validation_directory.joinpath(
-    #                     f"mask_{case}_{z}_{observer}.npy"
-    #                 )
-    #                 mask_arr = np.load(mask_file)
+            try:
+                self.logger.experiment.log_image(figure_path)
+            except AttributeError:
+                # Likely offline mode
+                pass
 
-    #             observers[f"manual_{observer}"] = {}
-    #             for idx, structure in enumerate(self.hparams.structures):
-    #                 mask = sitk.GetImageFromArray(mask_arr[idx])
-    #                 mask = sitk.Cast(mask, sitk.sitkUInt8)
-    #                 mask.CopyInformation(img)
-    #                 observers[f"manual_{observer}"][structure] = mask
+            for t in result:
+                for m in metrics:
+                    computed_metrics[f"{t}_{m}"] += result[t][m]
 
-    #         #try:
-    #         result, fig = self.validate(img, observers, samples, mean, matching_type="best")
-    #         #except Exception as e:
-    #         #    print(f"ERROR DURING VALIDATION VALIDATE: {e}")
-    #         #    return
+        if self.kl_div:
+            p = u = 0
+            for s in self.hparams.structures:
+                p += np.array(computed_metrics[f"probnet_{s}_DSC"]).mean()
+                u += np.array(computed_metrics[f"unet_{s}_DSC"]).mean()
 
-    #         figure_path = f"valid_{case}.png"
-    #         fig.savefig(figure_path, dpi=300)
-    #         plt.close("all")
+            p /= len(self.hparams.structures)
+            u /= len(self.hparams.structures)
+            computed_metrics["scaled_DSC"] = ((p + u) / 2) + (p - u) - self.kl_div
 
-    #         try:
-    #             self.logger.experiment.log_image(figure_path)
-    #         except AttributeError:
-    #             # Likely offline mode
-    #             pass
+        for cm in computed_metrics:
+            self.log(
+                cm,
+                np.array(computed_metrics[cm]).mean(),
+                on_step=False,
+                on_epoch=True,
+                prog_bar=False,
+                logger=True,
+            )
 
-    #         for t in result:
-    #             for m in metrics:
-    #                 computed_metrics[f"{t}_{m}"] += result[t][m]
-
-    #     if self.kl_div:
-    #         p = u = 0
-    #         for s in self.hparams.structures:
-    #             p += np.array(computed_metrics[f"probnet_{s}_DSC"]).mean()
-    #             u += np.array(computed_metrics[f"unet_{s}_DSC"]).mean()
-
-    #         p /= len(self.hparams.structures)
-    #         u /= len(self.hparams.structures)
-    #         computed_metrics["scaled_DSC"] = ((p + u) / 2) + (p - u) - self.kl_div
-
-    #     for cm in computed_metrics:
-    #         self.log(
-    #             cm,
-    #             np.array(computed_metrics[cm]).mean(),
-    #             on_step=False,
-    #             on_epoch=True,
-    #             prog_bar=False,
-    #             logger=True,
-    #         )
-
-    #     # shutil.rmtree(self.validation_directory)
+        # shutil.rmtree(self.validation_directory)
 
 
 def main(args, config_json_path=None):

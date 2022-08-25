@@ -26,7 +26,7 @@ class Encoder(torch.nn.Module):
     """Encoder part of the probabilistic UNet"""
 
     def __init__(
-        self, input_channels, filters_per_layer=[64 * (2 ** x) for x in range(5)], ndims=2
+        self, input_channels, filters_per_layer=[64 * (2**x) for x in range(5)], ndims=2
     ):
         super(Encoder, self).__init__()
 
@@ -39,7 +39,13 @@ class Encoder(torch.nn.Module):
             down_sample = 0 if idx == 0 else -2
 
             layers.append(
-                Conv(input_filters, output_filters, up_down_sample=down_sample, ndims=ndims, dropout_probability=None)
+                Conv(
+                    input_filters,
+                    output_filters,
+                    up_down_sample=down_sample,
+                    ndims=ndims,
+                    dropout_probability=None,
+                )
             )
 
         self.layers = torch.nn.Sequential(*layers)
@@ -55,7 +61,7 @@ class AxisAlignedConvGaussian(torch.nn.Module):
     def __init__(
         self,
         input_channels,
-        filters_per_layer=[64 * (2 ** x) for x in range(5)],
+        filters_per_layer=[64 * (2**x) for x in range(5)],
         latent_dim=2,
         ndims=2,
     ):
@@ -113,9 +119,8 @@ class AxisAlignedConvGaussian(torch.nn.Module):
         if self.ndims == 3:
             mu_log_sigma = torch.squeeze(mu_log_sigma, dim=2)
 
-
-        mu = mu_log_sigma[:, :self.latent_dim].clamp(-1000, 1000)
-        log_sigma = mu_log_sigma[:, self.latent_dim:].clamp(-10, 10)
+        mu = mu_log_sigma[:, : self.latent_dim].clamp(-1000, 1000)
+        log_sigma = mu_log_sigma[:, self.latent_dim :].clamp(-10, 10)
 
         # This is a multivariate normal with diagonal covariance matrix sigma
         # https://github.com/pytorch/pytorch/pull/11178
@@ -200,7 +205,7 @@ class ProbabilisticUnet(torch.nn.Module):
         self,
         input_channels=1,
         num_classes=2,
-        filters_per_layer=[64 * (2 ** x) for x in range(5)],
+        filters_per_layer=[64 * (2**x) for x in range(5)],
         latent_dim=6,
         no_convs_fcomb=4,
         loss_type="elbo",
@@ -217,7 +222,12 @@ class ProbabilisticUnet(torch.nn.Module):
         self.z_prior_sample = 0
 
         self.unet = UNet(
-            input_channels, num_classes, filters_per_layer, final_layer=False, dropout_probability=dropout_probability, ndims=ndims
+            input_channels,
+            num_classes,
+            filters_per_layer,
+            final_layer=False,
+            dropout_probability=dropout_probability,
+            ndims=ndims,
         )
         self.prior = AxisAlignedConvGaussian(
             input_channels, filters_per_layer, latent_dim, ndims=ndims
@@ -366,8 +376,8 @@ class ProbabilisticUnet(torch.nn.Module):
         top_k_percentage=None,
         deterministic=True,
     ):
-#        criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
-        criterion = torch.nn.BCEWithLogitsLoss(size_average = False, reduce=False, reduction=None)
+        #        criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
+        criterion = torch.nn.BCEWithLogitsLoss(size_average=False, reduce=False, reduction=None)
 
         if z_posterior is None:
             z_posterior = self.posterior_latent_space.rsample()
@@ -381,9 +391,11 @@ class ProbabilisticUnet(torch.nn.Module):
         n_pixels_in_batch = y_flat.shape[0]
         batch_size = segm.shape[0]
 
-        pos_class_count = t_flat.sum(axis=0)/batch_size
-        neg_class_count = torch.logical_not(t_flat).sum(axis=0)/batch_size
-        self._pos_weight = self._pos_weight * 0.5 + (neg_class_count/pos_class_count).clamp(0, 10000) * 0.5
+        pos_class_count = t_flat.sum(axis=0) / batch_size
+        neg_class_count = torch.logical_not(t_flat).sum(axis=0) / batch_size
+        self._pos_weight = (
+            self._pos_weight * 0.5 + (neg_class_count / pos_class_count).clamp(0, 10000) * 0.5
+        )
 
         # criterion = torch.nn.BCEWithLogitsLoss(reduction="none", pos_weight=self._pos_weight)
         xe = criterion(input=y_flat, target=t_flat)
@@ -438,7 +450,7 @@ class ProbabilisticUnet(torch.nn.Module):
         z_posterior = self.posterior_latent_space.rsample()
 
         kl_div = torch.mean(self.kl_divergence())
-        #kl_div = torch.clamp(kl_div, 0.0, 100.0)
+        # kl_div = torch.clamp(kl_div, 0.0, 100.0)
 
         top_k_percentage = None
         if "top_k_percentage" in self.loss_params:
@@ -466,27 +478,27 @@ class ProbabilisticUnet(torch.nn.Module):
         # If using contour mask in loss, we get back those in a list. Unpack here.
         if contour_threshold:
             contour_loss = rl_sum[1]
-#            contour_loss_mean = rl_sum[1]
+            #            contour_loss_mean = rl_sum[1]
             reconstruction_loss = rl_sum[0]
- #           rec_loss_mean = rl_sum[0]
+        #           rec_loss_mean = rl_sum[0]
         else:
             reconstruction_loss = rl_sum
 
         if self.loss_type == "elbo":
-            if beta==None:
+            if beta == None:
                 beta = self.loss_params["beta"]
 
             return {
                 "loss": reconstruction_loss + beta * kl_div,
                 "rec_loss": reconstruction_loss,
                 "kl_div": kl_div,
-                "beta": beta
+                "beta": beta,
             }
         elif self.loss_type == "geco":
 
             with torch.no_grad():
 
-                moving_avg_factor = 0.8
+                moving_avg_factor = 0.5
 
                 rl = reconstruction_loss.detach()
                 if self._rec_moving_avg is None:
@@ -514,14 +526,20 @@ class ProbabilisticUnet(torch.nn.Module):
                 lambda_lower = self.loss_params["clamp_rec"][0]
                 lambda_upper = self.loss_params["clamp_rec"][1]
 
-                self._lambda[0] = (torch.exp(rc) * self._lambda[0]).clamp(lambda_lower, lambda_upper)
-                if self._lambda[0].isnan(): self._lambda[0] = lambda_upper
+                # self._lambda[0] = (torch.exp(rc) * self._lambda[0]).clamp(lambda_lower, lambda_upper)
+                self._lambda[0] = (rc * self._lambda[0]).clamp(lambda_lower, lambda_upper)
+                if self._lambda[0].isnan():
+                    self._lambda[0] = lambda_upper
                 if contour_threshold:
                     lambda_lower_contour = self.loss_params["clamp_contour"][0]
                     lambda_upper_contour = self.loss_params["clamp_contour"][1]
 
-                    self._lambda[1] = (torch.exp(cc) * self._lambda[1]).clamp(lambda_lower_contour, lambda_upper_contour)
-                    if self._lambda[1].isnan(): self._lambda[1] = lambda_upper_contour
+                    # self._lambda[1] = (torch.exp(cc) * self._lambda[1]).clamp(lambda_lower_contour, lambda_upper_contour)
+                    self._lambda[1] = (cc * self._lambda[1]).clamp(
+                        lambda_lower_contour, lambda_upper_contour
+                    )
+                    if self._lambda[1].isnan():
+                        self._lambda[1] = lambda_upper_contour
 
             # pylint: disable=access-member-before-definition
             loss = (self._lambda[0] * reconstruction_loss) + kl_div
