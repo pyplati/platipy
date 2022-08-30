@@ -5,13 +5,25 @@ import urllib.request
 import shutil
 from pathlib import Path
 import logging
-logger = logging.getLogger(__name__)
-
 import SimpleITK as sitk
 
-def available_nnunet_models():
 
-    from nnunet.inference.pretrained_models.download_pretrained_model import get_available_models
+logger = logging.getLogger(__name__)
+
+def available_nnunet_models():
+    """Fetch the available nnUNet models
+
+    Raises:
+        ImportError: Raised when nnUNet library hasn't been installed.
+
+    Returns:
+        dict: Dictionary describing models available.
+    """
+
+    try:
+        from nnunet.inference.pretrained_models.download_pretrained_model import get_available_models
+    except ImportError:
+        raise ImportError("nnUNet Library not found. Be sure to install platipy with the required extras: 'pip install platipy[cardiac]' or 'pip install platipy[nnunet]'")
 
     available_models = get_available_models()
     available_models["Task400_OPEN_HEART_1FOLD"] = {
@@ -47,7 +59,10 @@ def download_and_install_nnunet_task(task_name, zip_url):
         zip_url (str): Zip file URL
     """
 
-    from nnunet.inference.pretrained_models.download_pretrained_model import install_model_from_zip_file
+    try:
+        from nnunet.inference.pretrained_models.download_pretrained_model import install_model_from_zip_file
+    except ImportError:
+            raise ImportError("nnUNet Library not found. Be sure to install platipy with the required extras: 'pip install platipy[cardiac]' or 'pip install platipy[nnunet]'")
 
     logger.info(f"Installing Task {task_name} from {zip_url}")
     temp_dir = tempfile.mkdtemp()
@@ -57,8 +72,7 @@ def download_and_install_nnunet_task(task_name, zip_url):
             out_file.write(dl_file.read())
 
     install_model_from_zip_file(temp_file)
-    #shutil.rmtree(temp_dir)
-    print(temp_file)
+    shutil.rmtree(temp_dir)
 
 def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
 

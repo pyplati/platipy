@@ -20,10 +20,13 @@ logger = logging.getLogger(__name__)
 
 import numpy as np
 import SimpleITK as sitk
-import vtk
+
+try:
+    import vtk
+except ImportError:
+    raise ImportError("Unable to import VTK library. To use cardiac segmentation functionality be sure to install appropriate extras: pip install platipy[cardiac]")
 
 from vtk.util.numpy_support import vtk_to_numpy
-
 
 def com_from_image_list(
     sitk_image_list,
