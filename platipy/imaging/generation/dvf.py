@@ -103,7 +103,7 @@ def generate_field_shift(mask, vector_shift=(10, 10, 10), gaussian_smooth=5):
 
 
 def generate_field_asymmetric_contract(
-    mask_image, vector_asymmetric_contract=(10, 10, 10), gaussian_smooth=5
+    mask_image, vector_asymmetric_contract=(10, 10, 10), gaussian_smooth=5, compute_real_dvf=False
 ):
     """
     Contracts a structure (defined using a binary mask) using a specified vector.
@@ -118,6 +118,8 @@ def generate_field_asymmetric_contract(
                                                       Defaults to (10, 10, 10).
         gaussian_smooth (int | list, optional): Scale of a Gaussian kernel used to smooth the
                                                 deformation vector field. Defaults to 5.
+        compute_real_dvf (bool, optional): If True, the real deformation vector field is computed.
+                                           This involves a slower computation. Defaults to False.
 
     Returns:
         [SimpleITK.Image]: The binary mask following the contract.
@@ -144,6 +146,20 @@ def generate_field_asymmetric_contract(
     mask_image_asymmetric_contract = apply_transform(
         mask_image, transform=dvf_tfm, default_value=0, interpolator=sitk.sitkNearestNeighbor
     )
+
+    if compute_real_dvf:
+
+        reg_struct = convert_mask_to_reg_structure(mask_image, expansion=3)
+        reg_struct_def = convert_mask_to_reg_structure(mask_image_asymmetric_contract, expansion=3)
+
+        # Use DSGR to compute the realistic deformation vector field
+        _, _, dvf_template = fast_symmetric_forces_demons_registration(
+            reg_struct_def,
+            reg_struct,
+            isotropic_resample=True,
+            resolution_staging=[4, 2],
+            iteration_staging=[20, 10],
+        )
 
     # smooth
     if np.any(gaussian_smooth):

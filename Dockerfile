@@ -17,7 +17,10 @@ COPY requirements-backend.txt requirements-backend.txt
 RUN pip install -r requirements-backend.txt
 
 # COPY ./platipy platipy
-RUN pip install platipy
+# RUN pip install platipy
+
+# TODO Revert to pypi version
+RUN pip install git+https://github.com/pyplati/platipy.git
 
 COPY entrypoint.sh /entrypoint.sh
 
