@@ -76,7 +76,7 @@ class ProbUNet(pl.LightningModule):
         if self.hparams.prob_type == "prob":
             self.prob_unet = ProbabilisticUnet(
                 self.hparams.input_channels,
-                len(self.hparams.structures) + 1, # Add 1 to num classes for background class
+                len(self.hparams.structures) + 1,  # Add 1 to num classes for background class
                 self.hparams.filters_per_layer,
                 self.hparams.latent_dim,
                 self.hparams.no_convs_fcomb,
@@ -111,7 +111,7 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--lr_lambda", type=float, default=0.99)
         parser.add_argument("--input_channels", type=int, default=1)
         parser.add_argument(
-            "--filters_per_layer", nargs="+", type=int, default=[64 * (2 ** x) for x in range(5)]
+            "--filters_per_layer", nargs="+", type=int, default=[64 * (2**x) for x in range(5)]
         )
         parser.add_argument("--down_channels_per_block", nargs="+", type=int, default=None)
         parser.add_argument("--latent_dim", type=int, default=6)
@@ -271,7 +271,7 @@ class ProbUNet(pl.LightningModule):
             result[sample["name"]] = {}
 
             for idx, structure in enumerate(self.hparams.structures):
-                pred = sitk.GetImageFromArray(pred_arr[idx+1]) # Skip the background
+                pred = sitk.GetImageFromArray(pred_arr[idx + 1])  # Skip the background
                 pred = pred > 0.5  # Threshold softmax at 0.5
                 pred = sitk.Cast(pred, sitk.sitkUInt8)
 
@@ -296,7 +296,7 @@ class ProbUNet(pl.LightningModule):
         try:
             cut = get_com(mean["mean"][structures[0]])
         except ValueError:
-            cut = [int(i/2) for i in img.GetSize()][::-1]
+            cut = [int(i / 2) for i in img.GetSize()][::-1]
 
         vis = ImageVisualiser(img, cut=cut, figure_size_in=16, window=window)
 
@@ -323,7 +323,10 @@ class ProbUNet(pl.LightningModule):
             union_mask = get_union_mask(manual_observers_struct)
 
             vis.add_contour(
-                intersection_mask, name=f"intersection_{structure}", color=manual_color, linewidth=3
+                intersection_mask,
+                name=f"intersection_{structure}",
+                color=manual_color,
+                linewidth=3,
             )
             vis.add_contour(union_mask, name=f"union_{structure}", color=manual_color, linewidth=3)
 
@@ -355,7 +358,9 @@ class ProbUNet(pl.LightningModule):
                     sample_metrics = get_metrics(
                         manual_observers_struct[obs], samples_struct[samp]
                     )
-                    mean_metrics = get_metrics(manual_observers_struct[obs], mean_contours[f"mean_{structure}"])
+                    mean_metrics = get_metrics(
+                        manual_observers_struct[obs], mean_contours[f"mean_{structure}"]
+                    )
 
                     for k in sample_metrics:
                         sim[k][sid, oid] = sample_metrics[k]
@@ -453,8 +458,13 @@ class ProbUNet(pl.LightningModule):
         if self.validation_directory is None:
             self.validation_directory = Path(tempfile.mkdtemp())
 
+        n = 4
+        m = 4
+
         with torch.set_grad_enabled(False):
             x, y, _, info = batch
+
+            # Save off slices/volumes for analysis of entire structure in end of validation step
             for s in range(y.shape[0]):
 
                 img_file = self.validation_directory.joinpath(
@@ -467,29 +477,25 @@ class ProbUNet(pl.LightningModule):
                 )
                 np.save(mask_file, y[s].cpu().numpy())
 
-        n = 4
-        m = 4
-
-        with torch.set_grad_enabled(False):
-            x, y, _, info = batch
-
             # Image will be same for all in batch
-            x = x[0, :, :, :].unsqueeze(0)
-            vis = ImageVisualiser(sitk.GetImageFromArray(x.to("cpu")[0,:,:,:]), axis="z")
-            x = x.repeat(m, 1, 1, 1)
+            x = x[0].unsqueeze(0)
+            if self.hparams.ndims == 2:
+                vis = ImageVisualiser(sitk.GetImageFromArray(x.to("cpu")[0]), axis="z")
+            else:
+                vis = ImageVisualiser(sitk.GetImageFromArray(x.to("cpu")[0]))
+
+            if self.hparams.ndims == 2:
+                x = x.repeat(m, 1, 1, 1)
+            else:
+                x = x.repeat(m, 1, 1, 1, 1)
             self.prob_unet.forward(x)
 
             py = self.prob_unet.sample(testing=True)
             py = py.to("cpu")
-            # print(f"{pred_y[0,:,:,:].min()} {pred_y[0,:,:,:].max()}")
-            # pred_y = torch.sigmoid(pred_y)
-            # print(f"{pred_y[0,:,:,:].min()} {pred_y[0,:,:,:].max()}")
 
-            # pred_y = pred_y[:,1,:,:] > 0.5
-            # pred_y = pred_y.unsqueeze(1)
-            pred_y = torch.zeros(py[:,0,:].shape).int()
+            pred_y = torch.zeros(py[:, 0, :].shape).int()
             for b in range(py.shape[0]):
-                pred_y[b] = py[b,:].argmax(0).int()
+                pred_y[b] = py[b, :].argmax(0).int()
 
             y = y.squeeze(1)
             y = y.int()
@@ -504,7 +510,7 @@ class ProbUNet(pl.LightningModule):
                         continue
                     iou = jaccard(pred_y[i], y[j])
                     term_1 += 1 - iou
-            term_1 = term_1 * (2/(m*n))
+            term_1 = term_1 * (2 / (m * n))
 
             term_2 = 0
             for i in range(n):
@@ -513,7 +519,7 @@ class ProbUNet(pl.LightningModule):
                         continue
                     iou = jaccard(pred_y[i], pred_y[j])
                     term_2 += 1 - iou
-            term_2 = term_2 * (1/(n*n))
+            term_2 = term_2 * (1 / (n * n))
 
             term_3 = 0
             for i in range(m):
@@ -522,7 +528,7 @@ class ProbUNet(pl.LightningModule):
                         continue
                     iou = jaccard(y[i], y[j])
                     term_3 += 1 - iou
-            term_3 = term_3 * (1/(m*m))
+            term_3 = term_3 * (1 / (m * m))
 
             D_ged = term_1 - term_2 - term_3
 
@@ -539,7 +545,7 @@ class ProbUNet(pl.LightningModule):
             vis.add_contour(contours, colormap=plt.cm.get_cmap("cool"))
             vis.show()
 
-            figure_path = "valid.png"
+            figure_path = f"ged_{info['z'][s]}.png"
             plt.savefig(figure_path, dpi=300)
             plt.close("all")
 
@@ -633,9 +639,9 @@ class ProbUNet(pl.LightningModule):
                     mask.CopyInformation(img)
                     observers[f"manual_{observer}"][structure] = mask
 
-            #try:
+            # try:
             result, fig = self.validate(img, observers, samples, mean, matching_type="best")
-            #except Exception as e:
+            # except Exception as e:
             #    print(f"ERROR DURING VALIDATION VALIDATE: {e}")
             #    return
 

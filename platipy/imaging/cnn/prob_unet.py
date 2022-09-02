@@ -247,7 +247,7 @@ class ProbabilisticUnet(torch.nn.Module):
         if self.loss_type == "geco":
             self._rec_moving_avg = None
             self._contour_moving_avg = None
-            self.register_buffer("_lambda", torch.zeros(2, requires_grad=False))
+            self.register_buffer("_lambda", torch.ones(2, requires_grad=False))
 
         self.register_buffer("_pos_weight", torch.ones(num_classes, requires_grad=False))
 
@@ -478,9 +478,9 @@ class ProbabilisticUnet(torch.nn.Module):
         # If using contour mask in loss, we get back those in a list. Unpack here.
         if contour_threshold:
             contour_loss = rl_sum[1]
-            #            contour_loss_mean = rl_sum[1]
+            contour_loss_mean = rec_loss_mean[1]
             reconstruction_loss = rl_sum[0]
-        #           rec_loss_mean = rl_sum[0]
+            rec_loss_mean = rec_loss_mean[0]
         else:
             reconstruction_loss = rl_sum
 
@@ -500,7 +500,7 @@ class ProbabilisticUnet(torch.nn.Module):
 
                 moving_avg_factor = 0.5
 
-                rl = reconstruction_loss.detach()
+                rl = rec_loss_mean.detach()
                 if self._rec_moving_avg is None:
                     self._rec_moving_avg = rl
                 else:
@@ -512,7 +512,7 @@ class ProbabilisticUnet(torch.nn.Module):
 
                 cc = 0
                 if contour_threshold:
-                    cl = contour_loss.detach()
+                    cl = contour_loss_mean.detach()
                     if self._contour_moving_avg is None:
                         self._contour_moving_avg = rl
                     else:
@@ -526,18 +526,22 @@ class ProbabilisticUnet(torch.nn.Module):
                 lambda_lower = self.loss_params["clamp_rec"][0]
                 lambda_upper = self.loss_params["clamp_rec"][1]
 
-                # self._lambda[0] = (torch.exp(rc) * self._lambda[0]).clamp(lambda_lower, lambda_upper)
-                self._lambda[0] = (rc * self._lambda[0]).clamp(lambda_lower, lambda_upper)
+                self._lambda[0] = (torch.exp(rc) * self._lambda[0]).clamp(
+                    lambda_lower, lambda_upper
+                )
+                # self._lambda[0] = (rc * self._lambda[0]).clamp(lambda_lower, lambda_upper)
                 if self._lambda[0].isnan():
                     self._lambda[0] = lambda_upper
                 if contour_threshold:
                     lambda_lower_contour = self.loss_params["clamp_contour"][0]
                     lambda_upper_contour = self.loss_params["clamp_contour"][1]
 
-                    # self._lambda[1] = (torch.exp(cc) * self._lambda[1]).clamp(lambda_lower_contour, lambda_upper_contour)
-                    self._lambda[1] = (cc * self._lambda[1]).clamp(
+                    self._lambda[1] = (torch.exp(cc) * self._lambda[1]).clamp(
                         lambda_lower_contour, lambda_upper_contour
                     )
+                    # self._lambda[1] = (cc * self._lambda[1]).clamp(
+                    #     lambda_lower_contour, lambda_upper_contour
+                    # )
                     if self._lambda[1].isnan():
                         self._lambda[1] = lambda_upper_contour
 
