@@ -1,0 +1,3 @@
+FROM platipy/platipy:service
+
+RUN env -C /platipy /root/.local/bin/poetry install --with dev,docs --all-extras

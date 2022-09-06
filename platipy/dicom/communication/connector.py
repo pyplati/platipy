@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import logging
 import tempfile
 import pydicom
 
@@ -36,7 +37,6 @@ from pynetdicom.sop_class import (
 )
 from pynetdicom.pdu_primitives import SCP_SCU_RoleSelectionNegotiation
 
-import logging
 logger = logging.getLogger(__name__)
 
 
