@@ -485,7 +485,7 @@ class ProbabilisticUnet(torch.nn.Module):
             reconstruction_loss = rl_sum
 
         if self.loss_type == "elbo":
-            if beta == None:
+            if beta is None:
                 beta = self.loss_params["beta"]
 
             return {
