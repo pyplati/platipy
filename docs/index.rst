@@ -13,6 +13,13 @@ PlatiPy documentation
     contributing
 
 .. toctree::
+    :caption: Projects
+    :maxdepth: 2
+    :hidden:
+
+    cardiac
+
+.. toctree::
     :caption: Examples
     :maxdepth: 2
     :hidden:

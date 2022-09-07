@@ -41,6 +41,10 @@ celery.conf.timezone = "UTC"
 
 
 @celery.task(bind=True)
+def run_dicom_listener(task):
+    app.run_dicom_listener()
+
+@celery.task(bind=True)
 def clean_up_task(task):
     """
     Deletes DataObjects from expired Datasets

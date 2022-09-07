@@ -7,6 +7,9 @@ redis-server --daemonize yes
 celery --app=service:celery beat --loglevel=INFO &
 celery --app=service:celery worker --loglevel=INFO &
 
+# Start the DICOM listener for the service
+celery --app=service:celery call platipy.backend.tasks.run_dicom_listener
+
 # Run the gunicorn server
 CERT_FILE=service.crt
 KEY_FILE=service.key
