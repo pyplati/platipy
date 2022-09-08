@@ -458,8 +458,8 @@ class ProbUNet(pl.LightningModule):
         if self.validation_directory is None:
             self.validation_directory = Path(tempfile.mkdtemp())
 
-        n = 4
-        m = 4
+        n = self.hparams.num_observers
+        m = self.hparams.num_observers
 
         with torch.set_grad_enabled(False):
             x, y, _, info = batch
@@ -482,7 +482,7 @@ class ProbUNet(pl.LightningModule):
             if self.hparams.ndims == 2:
                 vis = ImageVisualiser(sitk.GetImageFromArray(x.to("cpu")[0]), axis="z")
             else:
-                vis = ImageVisualiser(sitk.GetImageFromArray(x.to("cpu")[0]))
+                vis = ImageVisualiser(sitk.GetImageFromArray(x.to("cpu")[0, 0]))
 
             if self.hparams.ndims == 2:
                 x = x.repeat(m, 1, 1, 1)
@@ -535,11 +535,13 @@ class ProbUNet(pl.LightningModule):
             contours = {}
             for o in range(n):
                 obs_y = y[o].float()
-                obs_y = obs_y.unsqueeze(0)
+                if self.hparams.ndims == 2:
+                    obs_y = obs_y.unsqueeze(0)
                 contours[f"obs_{o}"] = sitk.GetImageFromArray(obs_y)
             for mm in range(m):
                 samp_pred = pred_y[mm].float()
-                samp_pred = samp_pred.unsqueeze(0)
+                if self.hparams.ndims == 2:
+                    samp_pred = samp_pred.unsqueeze(0)
                 contours[f"sample_{mm}"] = sitk.GetImageFromArray(samp_pred)
 
             vis.add_contour(contours, colormap=plt.cm.get_cmap("cool"))
@@ -691,6 +693,7 @@ def main(args, config_json_path=None):
     # args.default_root_dir = str(args.working_dir)
     args.fold_dir = args.working_dir.joinpath(f"fold_{args.fold}")
     args.default_root_dir = str(args.fold_dir)
+    args.accumulate_grad_batches = {0: 20, 10: 10, 50: 5, 100: 1}
 
     comet_api_key = None
     comet_workspace = None
