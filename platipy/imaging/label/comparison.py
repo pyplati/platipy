@@ -358,7 +358,7 @@ def compute_apl(label_ref, label_test, distance_threshold_mm=3):
 
         if (
             sitk.GetArrayViewFromImage(label_ref)[i].sum()
-            + sitk.GetArrayViewFromImage(label_ref)[i].sum()
+            + sitk.GetArrayViewFromImage(label_test)[i].sum()
         ) == 0:
             continue
 
