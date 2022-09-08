@@ -71,7 +71,7 @@ def calculate_d_to_volume(dose_grid, label, volume, volume_in_cc=False):
     mask_array = sitk.GetArrayFromImage(label)
 
     if volume_in_cc:
-        volume = volume * 1000 / ((mask_array > 0).sum() * np.product(label.GetSpacing()))
+        volume = (volume * 1000 / ((mask_array > 0).sum() * np.product(label.GetSpacing()))) * 100
 
     return np.percentile(dose_array[mask_array > 0], volume)
 

@@ -133,12 +133,19 @@ def calculate_d_x(dvh, x, label=None):
     bins = np.array([b for b in dvh.columns if isinstance(b, float)])
     values = np.array(dvh[bins])
 
-    i, j = np.where(values >= x / 100)
-
     metrics = []
     for idx in range(len(dvh)):
         d = dvh.iloc[idx]
-        metrics.append({"label": d.label, "metric": f"D{x}", "value": bins[j][i == idx][-1]})
+        value = np.interp(x / 100, values[idx][::-1], bins[::-1])
+        if values[idx, 0] == np.sum(values[idx]):
+            value = 0
+        metrics.append(
+            {
+                "label": d.label,
+                "metric": f"D{x}",
+                "value": value,
+            }
+        )
 
     return pd.DataFrame(metrics)
 
@@ -162,18 +169,48 @@ def calculate_v_x(dvh, x, label=None):
     bins = np.array([b for b in dvh.columns if isinstance(b, float)])
     values = np.array(dvh[bins])
 
-    i = np.where(bins == x)
     metrics = []
     for idx in range(len(dvh)):
         d = dvh.iloc[idx]
-        value_idx = values[idx, i]
-        value = 0.0
-        if value_idx.shape[1] > 0:
-            value = d.cc * values[idx, i][0, 0]
+        value = np.interp(x, bins, values[idx]) * d.cc
 
         metric_name = f"V{x}"
         if x - int(x) == 0:
             metric_name = f"V{int(x)}"
         metrics.append({"label": d.label, "metric": metric_name, "value": value})
+
+    return pd.DataFrame(metrics)
+
+
+def calculate_d_cc_x(dvh, x, label=None):
+    """Compute the dose which is received by cc of the volume
+
+    Args:
+        dvh (pandas.DataFrame): DVH DataFrame as produced by calculate_dvh_for_labels
+        x (float): The cc to compute the dose at.
+        label (str, optional): The label to compute the metric for. Computes for all metrics if not
+            set. Defaults to None.
+
+    Returns:
+        pandas.DataFrame: Data frame with a row for each label containing the metric and value.
+    """
+
+    if label:
+        dvh = dvh[dvh.label == label]
+
+    metrics = []
+    for idx in range(len(dvh)):
+        cc_at = (x / dvh[dvh.label == d.label].cc.iloc[0]) * 100
+        cc_at = min(cc_at, 100)
+        cc_val = calculate_d_x(dvh[dvh.label == d.label], cc_at).value.iloc[0]
+
+        d = dvh.iloc[idx]
+        metrics.append(
+            {
+                "label": d.label,
+                "metric": f"D{x}cc",
+                "value": cc_val,
+            }
+        )
 
     return pd.DataFrame(metrics)
