@@ -159,6 +159,9 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
             logger.debug("This is not a closed planar structure, skipping.")
             continue
 
+
+        # Track in case something goes wrong in here we will skip the contour
+        skip_contour = False
         for sl in range(len(struct_point_sequence[struct_index].ContourSequence)):
 
             contour_data = fix_missing_data(
@@ -177,10 +180,11 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
             [x_vertex_arr_image, y_vertex_arr_image] = point_arr[[0, 1]]
             z_index = point_arr[2][0]
             if np.any(point_arr[2] != z_index):
-                logger.debug("Error: axial slice index varies in contour. Quitting now.")
+                logger.debug("Error: axial slice index varies in contour. Skipping Contour.")
                 logger.debug("Structure:   {0}".format(struct_name))
                 logger.debug("Slice index: {0}".format(z_index))
-                quit()
+                skip_contour = True
+                break
 
             if z_index >= dicom_image.GetSize()[2]:
                 logger.debug("Warning: Slice index greater than image size. Skipping slice.")
@@ -197,10 +201,11 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
 
             image_blank[z_index] += slice_arr
 
-        struct_image = sitk.GetImageFromArray(1 * (image_blank > 0))
-        struct_image.CopyInformation(dicom_image)
-        struct_list.append(sitk.Cast(struct_image, sitk.sitkUInt8))
-        final_struct_name_sequence.append(struct_name)
+        if not skip_contour:
+            struct_image = sitk.GetImageFromArray(1 * (image_blank > 0))
+            struct_image.CopyInformation(dicom_image)
+            struct_list.append(sitk.Cast(struct_image, sitk.sitkUInt8))
+            final_struct_name_sequence.append(struct_name)
 
     return struct_list, final_struct_name_sequence
 
