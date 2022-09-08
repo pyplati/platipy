@@ -496,6 +496,8 @@ class ProbabilisticUnet(torch.nn.Module):
             }
         elif self.loss_type == "geco":
 
+            rec_geco_step_size = 1e-02
+
             with torch.no_grad():
 
                 moving_avg_factor = 0.5
@@ -526,7 +528,7 @@ class ProbabilisticUnet(torch.nn.Module):
                 lambda_lower = self.loss_params["clamp_rec"][0]
                 lambda_upper = self.loss_params["clamp_rec"][1]
 
-                self._lambda[0] = (torch.exp(rc) * self._lambda[0]).clamp(
+                self._lambda[0] = (torch.exp(rc * rec_geco_step_size) * self._lambda[0]).clamp(
                     lambda_lower, lambda_upper
                 )
                 # self._lambda[0] = (rc * self._lambda[0]).clamp(lambda_lower, lambda_upper)
@@ -536,7 +538,7 @@ class ProbabilisticUnet(torch.nn.Module):
                     lambda_lower_contour = self.loss_params["clamp_contour"][0]
                     lambda_upper_contour = self.loss_params["clamp_contour"][1]
 
-                    self._lambda[1] = (torch.exp(cc) * self._lambda[1]).clamp(
+                    self._lambda[1] = (torch.exp(cc * rec_geco_step_size) * self._lambda[1]).clamp(
                         lambda_lower_contour, lambda_upper_contour
                     )
                     # self._lambda[1] = (cc * self._lambda[1]).clamp(
