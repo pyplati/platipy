@@ -693,7 +693,7 @@ def main(args, config_json_path=None):
     # args.default_root_dir = str(args.working_dir)
     args.fold_dir = args.working_dir.joinpath(f"fold_{args.fold}")
     args.default_root_dir = str(args.fold_dir)
-    args.accumulate_grad_batches = {0: 20, 10: 10, 50: 5, 100: 1}
+    # args.accumulate_grad_batches = {0: 20, 10: 10, 50: 5, 100: 1}
 
     comet_api_key = None
     comet_workspace = None
