@@ -119,7 +119,8 @@ def calculate_d_x(dvh, x, label=None):
 
     Args:
         dvh (pandas.DataFrame): DVH DataFrame as produced by calculate_dvh_for_labels
-        x (float): The dose which x percent of the volume receives
+        x (float|list): The dose threshold (or list of dose thresholds) which x percent of the
+            volume receives
         label (str, optional): The label to compute the metric for. Computes for all metrics if not
             set. Defaults to None.
 
@@ -130,22 +131,31 @@ def calculate_d_x(dvh, x, label=None):
     if label:
         dvh = dvh[dvh.label == label]
 
+    if not isinstance(x, list):
+        x = [x]
+
     bins = np.array([b for b in dvh.columns if isinstance(b, float)])
     values = np.array(dvh[bins])
 
     metrics = []
     for idx in range(len(dvh)):
         d = dvh.iloc[idx]
-        value = np.interp(x / 100, values[idx][::-1], bins[::-1])
-        if values[idx, 0] == np.sum(values[idx]):
-            value = 0
-        metrics.append(
-            {
-                "label": d.label,
-                "metric": f"D{x}",
-                "value": value,
-            }
-        )
+
+        m = {"label": d.label}
+
+        for threshold in x:
+            value = np.interp(threshold / 100, values[idx][::-1], bins[::-1])
+            if values[idx, 0] == np.sum(values[idx]):
+                value = 0
+
+            # Interp will return zero when computing D100, do compute this separately
+            if threshold == 100:
+                i, j = np.where(values == 1.0)
+                value = bins[j][i == idx][-1]
+
+            m[f"D{threshold}"] = value
+
+        metrics.append(m)
 
     return pd.DataFrame(metrics)
 
@@ -155,7 +165,7 @@ def calculate_v_x(dvh, x, label=None):
 
     Args:
         dvh (pandas.DataFrame): DVH DataFrame as produced by calculate_dvh_for_labels
-        x (float): The dose to get the volume for.
+        x (float|list): The dose threshold (or list of dose thresholds) to get the volume for.
         label (str, optional): The label to compute the metric for. Computes for all metrics if not
             set. Defaults to None.
 
@@ -166,18 +176,28 @@ def calculate_v_x(dvh, x, label=None):
     if label:
         dvh = dvh[dvh.label == label]
 
+    if not isinstance(x, list):
+        x = [x]
+
     bins = np.array([b for b in dvh.columns if isinstance(b, float)])
     values = np.array(dvh[bins])
 
     metrics = []
     for idx in range(len(dvh)):
         d = dvh.iloc[idx]
-        value = np.interp(x, bins, values[idx]) * d.cc
 
-        metric_name = f"V{x}"
-        if x - int(x) == 0:
-            metric_name = f"V{int(x)}"
-        metrics.append({"label": d.label, "metric": metric_name, "value": value})
+        m = {"label": d.label}
+
+        for threshold in x:
+            value = np.interp(threshold, bins, values[idx]) * d.cc
+
+            metric_name = f"V{threshold}"
+            if threshold - int(threshold) == 0:
+                metric_name = f"V{int(threshold)}"
+
+            m[metric_name] = value
+
+        metrics.append(m)
 
     return pd.DataFrame(metrics)
 
@@ -187,7 +207,7 @@ def calculate_d_cc_x(dvh, x, label=None):
 
     Args:
         dvh (pandas.DataFrame): DVH DataFrame as produced by calculate_dvh_for_labels
-        x (float): The cc to compute the dose at.
+        x (float|list): The cc (or list of cc's) to compute the dose at.
         label (str, optional): The label to compute the metric for. Computes for all metrics if not
             set. Defaults to None.
 
@@ -198,19 +218,22 @@ def calculate_d_cc_x(dvh, x, label=None):
     if label:
         dvh = dvh[dvh.label == label]
 
+    if not isinstance(x, list):
+        x = [x]
+
     metrics = []
     for idx in range(len(dvh)):
-        cc_at = (x / dvh[dvh.label == d.label].cc.iloc[0]) * 100
-        cc_at = min(cc_at, 100)
-        cc_val = calculate_d_x(dvh[dvh.label == d.label], cc_at).value.iloc[0]
 
         d = dvh.iloc[idx]
-        metrics.append(
-            {
-                "label": d.label,
-                "metric": f"D{x}cc",
-                "value": cc_val,
-            }
-        )
+        m = {"label": d.label}
+
+        for threshold in x:
+            cc_at = (threshold / dvh[dvh.label == d.label].cc.iloc[0]) * 100
+            cc_at = min(cc_at, 100)
+            cc_val = calculate_d_x(dvh[dvh.label == d.label], cc_at)[f"D{cc_at}"].iloc[0]
+
+            m[f"D{threshold}cc"] = cc_val
+
+        metrics.append(m)
 
     return pd.DataFrame(metrics)
