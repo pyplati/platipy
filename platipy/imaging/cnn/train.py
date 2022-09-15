@@ -85,18 +85,19 @@ class ProbUNet(pl.LightningModule):
                 self.hparams.ndims,
             )
         elif self.hparams.prob_type == "hierarchical":
-            self.prob_unet = HierarchicalProbabilisticUnet(
-                input_channels=self.hparams.input_channels,
-                num_classes=len(self.hparams.structures),
-                filters_per_layer=self.hparams.filters_per_layer,
-                down_channels_per_block=self.hparams.down_channels_per_block,
-                latent_dims=[self.hparams.latent_dim] * (len(self.hparams.filters_per_layer) - 1),
-                convs_per_block=self.hparams.convs_per_block,
-                blocks_per_level=self.hparams.blocks_per_level,
-                loss_type=self.hparams.loss_type,
-                loss_params=loss_params,
-                ndims=self.hparams.ndims,
-            )
+            raise NotImplementedError("Hierarchical Prob UNet current not working...")
+            # self.prob_unet = HierarchicalProbabilisticUnet(
+            #     input_channels=self.hparams.input_channels,
+            #     num_classes=len(self.hparams.structures),
+            #     filters_per_layer=self.hparams.filters_per_layer,
+            #     down_channels_per_block=self.hparams.down_channels_per_block,
+            #     latent_dims=[self.hparams.latent_dim] * (len(self.hparams.filters_per_layer) - 1),
+            #     convs_per_block=self.hparams.convs_per_block,
+            #     blocks_per_level=self.hparams.blocks_per_level,
+            #     loss_type=self.hparams.loss_type,
+            #     loss_params=loss_params,
+            #     ndims=self.hparams.ndims,
+            # )
 
         self.validation_directory = None
         self.kl_div = None
@@ -243,15 +244,15 @@ class ProbUNet(pl.LightningModule):
                                 use_mean=False,
                                 sample_x_stddev_from_mean=sample["std_dev_from_mean"],
                             )
-                    else:
-                        if sample["name"] == "mean":
-                            y = self.prob_unet.sample(x, mean=True)
-                        else:
-                            y = self.prob_unet.sample(
-                                x,
-                                mean=True,
-                                std_devs_from_mean=sample["std_dev_from_mean"],
-                            )
+                    # else:
+                    #     if sample["name"] == "mean":
+                    #         y = self.prob_unet.sample(x, mean=True)
+                    #     else:
+                    #         y = self.prob_unet.sample(
+                    #             x,
+                    #             mean=True,
+                    #             std_devs_from_mean=sample["std_dev_from_mean"],
+                    # )
 
                     y = y.squeeze(0)
                     # y = np.argmax(y.cpu().detach().numpy(), axis=0)
@@ -412,13 +413,13 @@ class ProbUNet(pl.LightningModule):
         # self.prob_unet.forward(x, y, training=True)
         if self.hparams.prob_type == "prob":
             self.prob_unet.forward(x, y, training=True)
-        else:
-            self.prob_unet.forward(x, y)
+        # else:
+        #     self.prob_unet.forward(x, y)
 
         if self.hparams.prob_type == "prob":
             loss = self.prob_unet.loss(y, mask=m)
-        else:
-            loss = self.prob_unet.loss(x, y, mask=m)
+        # else:
+        #     loss = self.prob_unet.loss(x, y, mask=m)
 
         training_loss = loss["loss"]
 

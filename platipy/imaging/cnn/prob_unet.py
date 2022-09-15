@@ -376,8 +376,8 @@ class ProbabilisticUnet(torch.nn.Module):
         top_k_percentage=None,
         deterministic=True,
     ):
-        #        criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
-        criterion = torch.nn.BCEWithLogitsLoss(size_average=False, reduce=False, reduction=None)
+        criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
+        # criterion = torch.nn.BCEWithLogitsLoss(size_average=False, reduce=False, reduction=None)
 
         if z_posterior is None:
             z_posterior = self.posterior_latent_space.rsample()
@@ -391,11 +391,11 @@ class ProbabilisticUnet(torch.nn.Module):
         n_pixels_in_batch = y_flat.shape[0]
         batch_size = segm.shape[0]
 
-        pos_class_count = t_flat.sum(axis=0) / batch_size
-        neg_class_count = torch.logical_not(t_flat).sum(axis=0) / batch_size
-        self._pos_weight = (
-            self._pos_weight * 0.5 + (neg_class_count / pos_class_count).clamp(0, 10000) * 0.5
-        )
+        # pos_class_count = t_flat.sum(axis=0) / batch_size
+        # neg_class_count = torch.logical_not(t_flat).sum(axis=0) / batch_size
+        # self._pos_weight = (
+        #     self._pos_weight * 0.5 + (neg_class_count / pos_class_count).clamp(0, 10000) * 0.5
+        # )
 
         # criterion = torch.nn.BCEWithLogitsLoss(reduction="none", pos_weight=self._pos_weight)
         xe = criterion(input=y_flat, target=t_flat)
