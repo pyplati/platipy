@@ -45,6 +45,13 @@ def label_to_roi(label, expansion_mm=[0, 0, 0], return_as_list=False):
     label_stats_image_filter.Execute(reference_label, reference_label)
     bounding_box = np.array(label_stats_image_filter.GetBoundingBox(1))
 
+    # If bounding_box is empty then the mask is likely empty. Just return entire mask as ROI.
+    if bounding_box.size == 0:
+        if return_as_list:
+            return [0, 0, 0] + [int(x) for x in label.GetSize()]
+
+        return [int(x) for x in label.GetSize()], [0, 0, 0]
+
     index = [bounding_box[x * 2] for x in range(3)]
     size = [bounding_box[(x * 2) + 1] - bounding_box[x * 2] for x in range(3)]
 

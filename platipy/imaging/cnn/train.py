@@ -126,7 +126,8 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--beta", type=float, default=1.0)
         parser.add_argument("--kappa", type=float, default=0.02)
         parser.add_argument("--kappa_contour", type=float, default=None)
-        parser.add_argument("--rec_geco_step_size", type=float, default=1e-02)
+        parser.add_argument("--rec_geco_step_size", type=float, default=1e-2)
+        parser.add_argument("--weight_decay", type=float, default=1e-2)
         parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
         parser.add_argument("--clamp_contour", nargs="+", type=float, default=[1e-3, 1e3])
         parser.add_argument("--top_k_percentage", type=float, default=None)
@@ -142,14 +143,31 @@ class ProbUNet(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(
-            self.parameters(), lr=self.hparams.learning_rate, weight_decay=0
+            self.parameters(),
+            lr=self.hparams.learning_rate,
+            weight_decay=self.hparams.weight_decay,
         )
 
-        scheduler = torch.optim.lr_scheduler.LambdaLR(
-            optimizer, lr_lambda=[lambda epoch: self.hparams.lr_lambda ** (epoch)]
-        )
+        # scheduler = torch.optim.lr_scheduler.LambdaLR(
+        #     optimizer, lr_lambda=[lambda epoch: self.hparams.lr_lambda ** (epoch)]
+        # )
+        # scheduler = torch.optim.lr_scheduler.CyclicLR(
+        #     optimizer,
+        #     base_lr=self.hparams.learning_rate / 10,
+        #     max_lr=self.hparams.learning_rate,
+        #     step_size_up=1000,
+        # )
 
-        return [optimizer], [scheduler]
+        # return [optimizer], [scheduler]
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
+                    optimizer, "max", patience=3, threshold=0.01, factor=0.5
+                ),
+                "monitor": "probabilisticSurfaceDice",
+            },
+        }
 
     def infer(
         self,
@@ -427,13 +445,14 @@ class ProbUNet(pl.LightningModule):
 
         training_loss = loss["loss"]
 
-        if self.hparams.prob_type == "prob":
-            reg_loss = (
-                l2_regularisation(self.prob_unet.posterior)
-                + l2_regularisation(self.prob_unet.prior)
-                + l2_regularisation(self.prob_unet.fcomb.layers)
-            )
-            training_loss = training_loss + 1e-5 * reg_loss
+        # Using weight decay instead
+        # if self.hparams.prob_type == "prob":
+        #     reg_loss = (
+        #         l2_regularisation(self.prob_unet.posterior)
+        #         + l2_regularisation(self.prob_unet.prior)
+        #         + l2_regularisation(self.prob_unet.fcomb.layers)
+        #     )
+        #     training_loss = training_loss + 1e-5 * reg_loss
         self.log(
             "training_loss",
             training_loss.detach(),
