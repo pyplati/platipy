@@ -30,7 +30,7 @@ from torchmetrics import JaccardIndex
 import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
-
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
 import matplotlib.pyplot as plt
 
@@ -165,7 +165,7 @@ class ProbUNet(pl.LightningModule):
                 "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
                     optimizer, "max", patience=3, threshold=0.01, factor=0.5
                 ),
-                "monitor": "probabilisticSurfaceDice",
+                "monitor": "probabilisticDice",
             },
         }
 
@@ -808,13 +808,18 @@ def main(args, config_json_path=None):
 
     # Save the best model
     checkpoint_callback = ModelCheckpoint(
-        monitor="probabilisticSurfaceDice",
+        monitor="probabilisticDice",
         dirpath=args.default_root_dir,
         filename="probunet-{epoch:02d}-{probabilisticSurfaceDice:.2f}",
         save_top_k=1,
         mode="max",
     )
     trainer.callbacks.append(checkpoint_callback)
+
+    early_stop_callback = EarlyStopping(
+        monitor="probabilisticDice", min_delta=0.005, patience=3, verbose=False, mode="max"
+    )
+    trainer.callbacks.append(early_stop_callback)
 
     trainer.fit(prob_unet, data_module)
 
