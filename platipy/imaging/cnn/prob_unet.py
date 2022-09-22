@@ -496,7 +496,7 @@ class ProbabilisticUnet(torch.nn.Module):
             }
         elif self.loss_type == "geco":
 
-            rec_geco_step_size = 1e-02
+            rec_geco_step_size = self.loss_params["rec_geco_step_size"]
 
             with torch.no_grad():
 

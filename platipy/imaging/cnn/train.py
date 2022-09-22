@@ -16,6 +16,7 @@ import sys
 import os
 import tempfile
 import json
+from argparse import ArgumentParser
 
 from pathlib import Path
 import SimpleITK as sitk
@@ -30,16 +31,17 @@ import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 
-from argparse import ArgumentParser
 
 import matplotlib.pyplot as plt
 
 from platipy.imaging.cnn.prob_unet import ProbabilisticUnet
-from platipy.imaging.cnn.hierarchical_prob_unet import HierarchicalProbabilisticUnet
+
+# from platipy.imaging.cnn.hierarchical_prob_unet import HierarchicalProbabilisticUnet
 from platipy.imaging.cnn.unet import l2_regularisation
 from platipy.imaging.cnn.dataload import UNetDataModule
 from platipy.imaging.cnn.dataset import crop_img_using_localise_model
 from platipy.imaging.cnn.utils import preprocess_image, postprocess_mask, get_metrics
+from platipy.imaging.cnn.metrics import probabilistic_dice
 
 from platipy.imaging import ImageVisualiser
 from platipy.imaging.label.utils import get_com, get_union_mask, get_intersection_mask
@@ -67,6 +69,7 @@ class ProbUNet(pl.LightningModule):
                 "clamp_rec": self.hparams.clamp_rec,
                 "clamp_contour": self.hparams.clamp_contour,
                 "kappa_contour": self.hparams.kappa_contour,
+                "rec_geco_step_size": self.hparams.rec_geco_step_size,
             }
 
         loss_params["top_k_percentage"] = self.hparams.top_k_percentage
@@ -123,6 +126,7 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--beta", type=float, default=1.0)
         parser.add_argument("--kappa", type=float, default=0.02)
         parser.add_argument("--kappa_contour", type=float, default=None)
+        parser.add_argument("--rec_geco_step_size", type=float, default=1e-02)
         parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
         parser.add_argument("--clamp_contour", nargs="+", type=float, default=[1e-3, 1e3])
         parser.add_argument("--top_k_percentage", type=float, default=None)
@@ -583,6 +587,9 @@ class ProbUNet(pl.LightningModule):
             **{f"unet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
         }
 
+        prob_surface_dice = 0
+        prob_dice = 0
+
         for case in cases:
 
             img_arrs = []
@@ -607,8 +614,8 @@ class ProbUNet(pl.LightningModule):
                 samples = self.infer(
                     img,
                     sample_strategy="spaced",
-                    num_samples=5,
-                    spaced_range=[-1.5, 1.5],
+                    num_samples=7,
+                    spaced_range=[-3, 3],
                     preprocess=False,
                 )
             except Exception as e:
@@ -662,6 +669,43 @@ class ProbUNet(pl.LightningModule):
                 for m in metrics:
                     computed_metrics[f"{t}_{m}"] += result[t][m]
 
+            # Compute the probabilistic (surface) dice
+            for idx, structure in enumerate(self.hparams.structures):
+
+                gt_labels = []
+                for _, observer in enumerate(cases[case]["observers"]):
+                    gt_labels.append(observers[f"manual_{observer}"][structure])
+
+                sample_labels = []
+                for rk in samples:
+                    sample_labels.append(samples[rk][structure])
+
+                # prob_surface_dice += probabilistic_surface_dice(gt_labels, sample_labels, tau=1)
+                prob_dice += probabilistic_dice(gt_labels, sample_labels, dsc_type="dsc")
+                prob_surface_dice += probabilistic_dice(
+                    gt_labels, sample_labels, dsc_type="sdsc", tau=3
+                )
+
+        prob_dice = prob_dice / len(cases)
+        self.log(
+            "probabilisticDice",
+            prob_dice,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=False,
+            logger=True,
+        )
+
+        prob_surface_dice = prob_surface_dice / len(cases)
+        self.log(
+            "probabilisticSurfaceDice",
+            prob_surface_dice,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=False,
+            logger=True,
+        )
+
         if self.kl_div:
             p = u = 0
             for s in self.hparams.structures:
@@ -695,6 +739,7 @@ def main(args, config_json_path=None):
     args.fold_dir = args.working_dir.joinpath(f"fold_{args.fold}")
     args.default_root_dir = str(args.fold_dir)
     # args.accumulate_grad_batches = {0: 20, 10: 10, 50: 5, 100: 1}
+    args.precision = 16
 
     comet_api_key = None
     comet_workspace = None
@@ -744,11 +789,11 @@ def main(args, config_json_path=None):
 
     # Save the best model
     checkpoint_callback = ModelCheckpoint(
-        monitor="GED",
+        monitor="probabilisticSurfaceDice",
         dirpath=args.default_root_dir,
-        filename="probunet-{epoch:02d}-{GED:.2f}",
+        filename="probunet-{epoch:02d}-{probabilisticSurfaceDice:.2f}",
         save_top_k=1,
-        mode="min",
+        mode="max",
     )
     trainer.callbacks.append(checkpoint_callback)
 
