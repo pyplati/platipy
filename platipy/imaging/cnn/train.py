@@ -817,7 +817,7 @@ def main(args, config_json_path=None):
     trainer.callbacks.append(checkpoint_callback)
 
     early_stop_callback = EarlyStopping(
-        monitor="probabilisticDice", min_delta=0.005, patience=10, verbose=False, mode="max"
+        monitor="probabilisticDice", min_delta=0.005, patience=25, verbose=False, mode="max"
     )
     trainer.callbacks.append(early_stop_callback)
 
