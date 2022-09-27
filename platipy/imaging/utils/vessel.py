@@ -16,15 +16,17 @@
 import warnings
 
 import logging
-logger = logging.getLogger(__name__)
 
 import numpy as np
 import SimpleITK as sitk
 
+logger = logging.getLogger(__name__)
+
 try:
     import vtk
-except ImportError:
-    raise ImportError("Unable to import VTK library. To use cardiac segmentation functionality be sure to install appropriate extras: pip install platipy[cardiac]")
+except ImportError as e:
+    raise ImportError("Unable to import VTK library. To use cardiac segmentation functionality be "
+                      "sure to install appropriate extras: pip install platipy[cardiac]") from e
 
 from vtk.util.numpy_support import vtk_to_numpy
 
@@ -287,7 +289,7 @@ def simpleitk_image_from_vtk_tube(tube, sitk_reference_image):
     final_image = imgstenc.GetOutput()
     final_array = final_image.GetPointData().GetScalars()
     final_array = vtk_to_numpy(final_array).reshape(sitk_reference_image.GetSize()[::-1])
-    logger.debug(f"Volume = {final_array.sum()*sum(spacing):.3f} mm^3")
+    logger.debug("Volume = %.3f mm^3", final_array.sum()*sum(spacing))
     final_image_sitk = sitk.GetImageFromArray(final_array)
     final_image_sitk.CopyInformation(sitk_reference_image)
 
@@ -395,10 +397,10 @@ def vessel_spline_generation(
             try:
                 image_list.append(atlas_set[i][atlas_label][vessel_name])
             except:
-                logger.warning(f"No match for ID={i}, label={atlas_label}, vessel={vessel_name}")
+                logger.warning("No match for ID=%s, label=%s, vessel=%s", i, atlas_label, vessel_name)
 
         if len(image_list) == 0:
-            logger.warning(f"No structures found for vessel with name {vessel_name}!")
+            logger.warning("No structures found for vessel with name %s!", vessel_name)
             continue
 
         for im in image_list:

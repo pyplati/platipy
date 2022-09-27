@@ -484,8 +484,8 @@ class ImageVisualiser:
                 window = (lower, upper - lower)
         try:
             logger.info(
-                f"Found a (z,y,x,{nda.shape[3]}) dimensional array - assuming this is an RGB"
-                "image."
+                "Found a (z,y,x,%s) dimensional array - assuming this is an RGB"
+                "image.", nda.shape[3]
             )
             nda /= nda.max()
         except ValueError:

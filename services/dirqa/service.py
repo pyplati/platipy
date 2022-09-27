@@ -69,8 +69,8 @@ def dirqa_service(data_objects, working_dir, settings):
     """
 
     logger.info("Running DIR QA")
-    logger.info("Using settings: {0}".format(settings))
-    logger.info("Working Dir: {0}".format(working_dir))
+    logger.info("Using settings: %s", settings)
+    logger.info("Working Dir: %s", working_dir)
 
     # First figure out what data object is which
     primary = None
@@ -89,15 +89,15 @@ def dirqa_service(data_objects, working_dir, settings):
         logger.error("Set the type on the data objects meta data.")
         return []
 
-    logger.info(f"Primary: {primary.path}")
-    logger.info(f"Secondary: {secondary.path}")
+    logger.info("Primary: %s", primary.path)
+    logger.info("Secondary: %s", secondary.path)
 
     # Compute SIFT point matches within each of the child contours
     # Contours with corresponding names set in metadata are expected in both the primary and
     # secondary child objects
     output_objects = []
     for primary_contour_object in primary.children:
-        logger.info(f"Contour: {primary_contour_object.path}")
+        logger.info(f"Contour: %s", primary_contour_object.path)
 
         # Make sure that the 'name' is set in the meta data
         if not "name" in primary_contour_object.meta_data.keys():
@@ -107,7 +107,7 @@ def dirqa_service(data_objects, working_dir, settings):
             )
             continue
 
-        logger.info(f"Primary Contour: {primary_contour_object.meta_data['name']}")
+        logger.info("Primary Contour: %s", primary_contour_object.meta_data['name'])
 
         secondary_contour_object = None
         for search_contour_object in secondary.children:
@@ -124,11 +124,11 @@ def dirqa_service(data_objects, working_dir, settings):
 
         if not secondary_contour_object:
             logger.error(
-                f"No matching contour found for {primary_contour_object.meta_data['name']}"
+                "No matching contour found for %s", primary_contour_object.meta_data['name']
             )
             continue
 
-        logger.info(f"Secondary Contour: {secondary_contour_object.meta_data['name']}")
+        logger.info("Secondary Contour: %s", secondary_contour_object.meta_data['name'])
 
         # Read the images
         primary_path = primary.path

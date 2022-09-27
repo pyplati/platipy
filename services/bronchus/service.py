@@ -41,7 +41,7 @@ def bronchus_service(data_objects, working_dir, settings):
 
     output_objects = []
     for data_object in data_objects:
-        logger.info("Running on data object: " + data_object.path)
+        logger.info("Running on data object: %s", data_object.path)
 
         # Read the image series
         load_path = data_object.path

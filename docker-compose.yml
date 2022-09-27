@@ -2,7 +2,7 @@ version: '3'
 
 services:
   platipy:
-    image: platipy/platipy
+    image: platipy/platipy:dev
     ports:
       - "8001:8000"
       - "7777:7777"
@@ -14,6 +14,8 @@ services:
     entrypoint: /bin/sh -c "while sleep 1000; do :; done"
     environment:
       PYTHONPATH: "/platipy"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     deploy:
       resources:
         limits:

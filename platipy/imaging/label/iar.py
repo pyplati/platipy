@@ -114,7 +114,7 @@ def run_iar(
     g_val_list = []
     logger.info("  Calculating surface distance maps: ")
     for test_id in remaining_id_list:
-        logger.info("    {0}".format(test_id))
+        logger.info("    %s", test_id)
         #   2. Calculate the distance from the surface to the consensus surface
 
         test_volume = atlas_set[test_id][label][reference_structure]
@@ -174,7 +174,7 @@ def run_iar(
             g_val_std = np.std(g_val_list_test, axis=0)
 
             if np.any(g_val_std == 0):
-                logger.info("    Std Dev zero count: {0}".format(np.sum(g_val_std == 0)))
+                logger.info("    Std Dev zero count: %d", np.sum(g_val_std == 0))
                 g_val_std[g_val_std == 0] = g_val_std.mean()
 
             z_score_vals_array = (g_vals - g_val_mean) / g_val_std
@@ -188,7 +188,7 @@ def run_iar(
                 logger.info(g_val_mad)
 
             if np.any(g_val_mad == 0):
-                logger.info("    MAD zero count: {0}".format(np.sum(g_val_mad == 0)))
+                logger.info("    MAD zero count: %d", np.sum(g_val_mad == 0))
                 g_val_mad[g_val_mad == 0] = np.median(g_val_mad)
 
             z_score_vals_array = (g_vals - g_val_median) / g_val_mad
@@ -196,17 +196,17 @@ def run_iar(
         else:
             logger.error(" Error!")
             logger.error(" z_score must be one of: MAD, STD")
-            sys.exit()
+            raise ValueError("z_score must be one of: MAD, STD")
 
         z_score_vals = np.ravel(z_score_vals_array)
 
-        logger.debug("      [{0}] Statistics of mZ-scores".format(test_id))
-        logger.debug("        Min(Z)    = {0:.2f}".format(z_score_vals.min()))
-        logger.debug("        Q1(Z)     = {0:.2f}".format(np.percentile(z_score_vals, 25)))
-        logger.debug("        Mean(Z)   = {0:.2f}".format(z_score_vals.mean()))
-        logger.debug("        Median(Z) = {0:.2f}".format(np.percentile(z_score_vals, 50)))
-        logger.debug("        Q3(Z)     = {0:.2f}".format(np.percentile(z_score_vals, 75)))
-        logger.debug("        Max(Z)    = {0:.2f}\n".format(z_score_vals.max()))
+        logger.debug("      [%s] Statistics of mZ-scores", test_id)
+        logger.debug("        Min(Z)    = %.2f", z_score_vals.min())
+        logger.debug("        Q1(Z)     = %.2f", np.percentile(z_score_vals, 25))
+        logger.debug("        Mean(Z)   = %.2f", z_score_vals.mean())
+        logger.debug("        Median(Z) = %.2f", np.percentile(z_score_vals, 50))
+        logger.debug("        Q3(Z)     = %.2f", np.percentile(z_score_vals, 75))
+        logger.debug("        Max(Z)    = %.2f\n", z_score_vals.max())
 
         # Calculate excess area from Gaussian: the Q-metric
         bins = np.linspace(-15, 15, 501)
@@ -249,16 +249,16 @@ def run_iar(
         sys.exit()
 
     logger.info("  Analysing results")
-    logger.info("   Outlier limit: {0:06.3f}".format(outlier_limit))
+    logger.info("   Outlier limit: %6.3f}", outlier_limit)
     keep_id_list = []
 
     logger.info(
-        "{0},{1},{2},{3:.4g}\n".format(
+        "%s,%s,%s,%.4g}\n",
             iteration,
             " ".join(remaining_id_list),
             " ".join(["{0:.4g}".format(i) for i in list(q_results.values())]),
             outlier_limit,
-        )
+        
     )
 
     for idx, result in q_results.items():
@@ -266,17 +266,17 @@ def run_iar(
         accept = result <= outlier_limit
 
         logger.info(
-            "      {0}: Q = {1:06.3f} [{2}]".format(
+            "      %s: Q = %6.3f [%s]",
                 idx, result, {True: "KEEP", False: "REMOVE"}[accept]
-            )
+            
         )
 
         if accept:
             keep_id_list.append(idx)
 
     if len(keep_id_list) < len(remaining_id_list):
-        logger.info("\n  Step {0} Complete".format(iteration))
-        logger.info("  Num. Removed = {0} --\n".format(len(remaining_id_list) - len(keep_id_list)))
+        logger.info("\n  Step %d Complete", iteration)
+        logger.info("  Num. Removed = %d --\n", len(remaining_id_list) - len(keep_id_list))
 
         iteration += 1
         atlas_set_new = {i: atlas_set[i] for i in keep_id_list}
@@ -298,6 +298,6 @@ def run_iar(
             label=label,
         )
 
-    logger.info("  End point reached. Keeping:\n   {0}".format(keep_id_list))
+    logger.info("  End point reached. Keeping:\n   %s", keep_id_list)
 
     return atlas_set

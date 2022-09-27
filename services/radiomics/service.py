@@ -86,7 +86,7 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
     """
 
     logger.info("Running PyRadiomics Extract")
-    logger.info("Using settings: " + str(settings))
+    logger.info("Using settings: %s", settings)
 
     pyrad_settings = settings["pyradiomics_settings"]
 
@@ -102,7 +102,7 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
         try:
             if len(data_obj.children) > 0:
 
-                logger.info("Running on data object: " + data_obj.path)
+                logger.info("Running on data object: %s", data_obj.path)
 
                 # Read the image series
                 load_path = data_obj.path
@@ -117,7 +117,7 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
                     if len(settings["contours"]) > 0 and not contour_name in settings["contours"]:
                         # If a contour list is provided and this contour isn't in the list then
                         # skip it
-                        logger.debug("Skipping Contour: ", contour_name)
+                        logger.debug("Skipping Contour: %s", contour_name)
                         continue
 
                     # Reload the image for each new contour in case resampling is occuring,
@@ -125,12 +125,12 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
                     image = sitk.ReadImage(load_path)
                     mask = sitk.ReadImage(child_obj.path)
 
-                    logger.debug("Image Origin: " + str(image.GetOrigin()))
-                    logger.debug("Mask Origin: " + str(mask.GetOrigin()))
-                    logger.debug("Image Direction: " + str(image.GetDirection()))
-                    logger.debug("Mask Direction: " + str(mask.GetDirection()))
-                    logger.debug("Image Size: " + str(image.GetSize()))
-                    logger.debug("Mask Size: " + str(mask.GetSize()))
+                    logger.debug("Image Origin: %s", image.GetOrigin())
+                    logger.debug("Mask Origin: %s", mask.GetOrigin())
+                    logger.debug("Image Direction: %s", image.GetDirection())
+                    logger.debug("Mask Direction: %s", mask.GetDirection())
+                    logger.debug("Image Size: %s", image.GetSize())
+                    logger.debug("Mask Size: %s", mask.GetSize())
 
                     logger.info(child_obj.path)
 
@@ -149,14 +149,14 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
                     # output[contour_name] = {"Contour": contour_name}
                     df_contour = pd.DataFrame()
 
-                    logger.info("Computing Radiomics for contour: {0}", contour_name)
+                    logger.info("Computing Radiomics for contour: %s", contour_name)
 
                     for rad in settings["radiomics"].keys():
 
-                        logger.info("Computing {0} radiomics".format(rad))
+                        logger.info("Computing %s radiomics", rad)
 
                         if rad not in AVAILABLE_RADIOMICS.keys():
-                            logger.warning("Radiomic Class not found: {0}", rad)
+                            logger.warning("Radiomic Class not found: %s", rad)
                             continue
 
                         radiomics_obj = AVAILABLE_RADIOMICS[rad]
@@ -175,7 +175,7 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
                                 features.enableFeatureByName(feature, True)
                             except LookupError:
                                 # Feature not available in this set
-                                logger.warning("Feature not found: {0}", feature)
+                                logger.warning("Feature not found: %s", feature)
 
                         feature_result = features.execute()
                         feature_result = dict(
@@ -219,7 +219,7 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
                 else:
                     results = results.append(output_frame)
         except Exception as exception:  # pylint: disable=broad-except
-            logger.error("An Error occurred while computing the Radiomics: {0}", exception)
+            logger.error("An Error occurred while computing the Radiomics: %s", exception)
 
     # Set the order of the columns output
     cols = results.columns.tolist()
@@ -232,7 +232,7 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
     results = results.reset_index()
     results = results.drop(columns=["index"])
     results.to_csv(output_file)
-    logger.info("Radiomics written to {0}".format(output_file))
+    logger.info("Radiomics written to %s", output_file)
 
     # Create the output Data Object and add it to output_objects
     data_object = DataObject(type="FILE", path=output_file)

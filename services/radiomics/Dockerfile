@@ -1,4 +1,4 @@
-FROM platipy/platipy
+FROM platipy/platipy:service
 
 COPY requirements-radiomics.txt requirements-radiomics.txt
 

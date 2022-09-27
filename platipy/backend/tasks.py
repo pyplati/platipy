@@ -93,7 +93,7 @@ def clean_up_task(task):
                     )
 
     logger.info(
-        "Clean Up Task Complete: Removed {0} DataObjects", num_data_objs_removed
+        "Clean Up Task Complete: Removed %s DataObjects", num_data_objs_removed
     )
 
 

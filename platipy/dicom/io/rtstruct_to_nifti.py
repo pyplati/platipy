@@ -132,7 +132,7 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
 
     for struct_index, struct_name in enumerate(struct_name_sequence):
         image_blank = np.zeros(dicom_image.GetSize()[::-1], dtype=np.uint8)
-        logger.debug("Converting structure {0} with name: {1}".format(struct_index, struct_name))
+        logger.debug("Converting structure %d with name: %s", struct_index, struct_name)
 
         if not hasattr(struct_point_sequence[struct_index], "ContourSequence"):
             logger.debug("No contour sequence found for this structure, skipping.")

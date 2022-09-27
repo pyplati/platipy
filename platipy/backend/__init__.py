@@ -19,11 +19,10 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from celery import Celery
+from loguru import logger
 
 from platipy.backend.application import FlaskApp
 
-import logging
-logger = logging.getLogger(__name__)
 
 env_work = os.getcwd()
 if "WORK" in os.environ:
@@ -38,9 +37,7 @@ app = FlaskApp(__name__)
 app.config["SECRET_KEY"] = uuid.uuid4().hex
 
 # Configure SQL Alchemy
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///{0}/{1}.db".format(
-    env_work, os.path.basename(os.getcwd())
-)
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{env_work}/{os.path.basename(os.getcwd())}.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
