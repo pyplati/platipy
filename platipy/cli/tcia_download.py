@@ -18,6 +18,7 @@ import sys
 
 import click
 import logging
+
 logger = logging.getLogger(__name__)
 
 from platipy.dicom.download.tcia import (
@@ -74,16 +75,16 @@ def click_command(collection, patients, modalities, nifti, output):
 
     collections = get_collections()
     if not collection in collections:
-        logger.error(f"Collection '{collection}' not found on TCIA")
+        logger.error("Collection '%s' not found on TCIA", collection)
         return
 
-    logger.info(f"Downloading from collection '{collection}'")
+    logger.info("Downloading from collection '%s'", collection)
 
     tcia_patients = get_patients_in_collection(collection)
     patients_ok = True
     for patient in patients:
         if not patient in tcia_patients:
-            logger.error(f"Patient '{patient}' not found in collection")
+            logger.error("Patient '%s' not found in collection", patient)
             patients_ok = False
 
     if not patients_ok:
@@ -92,13 +93,13 @@ def click_command(collection, patients, modalities, nifti, output):
     if len(patients) == 0:
         patients = tcia_patients
 
-    logger.info(f"Downloading patients: {patients}")
+    logger.info("Downloading patients: %s", patients)
 
     tcia_modalities = get_modalities_in_collection(collection)
     modalities_ok = True
     for modality in modalities:
         if not modality in tcia_modalities:
-            logger.error(f"Modality '{modality}' not available in collection")
+            logger.error("Modality '%s' not available in collection", modality)
             modalities_ok = False
 
     if not modalities_ok:
@@ -107,12 +108,12 @@ def click_command(collection, patients, modalities, nifti, output):
     if len(modalities) == 0:
         modalities = tcia_modalities
 
-    logger.info(f"Downloading modalities: {modalities}")
-    logger.info(f"Convert DICOM to NIFTI: {nifti}")
+    logger.info("Downloading modalities: %s", modalities)
+    logger.info("Convert DICOM to NIFTI: %s", nifti)
 
     if output is None:
         output = "./tcia"
-    logger.info(f"Downloading data to: {output}")
+    logger.info("Downloading data to: %s", output)
 
     fetch_data(
         collection,
