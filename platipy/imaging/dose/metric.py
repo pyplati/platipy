@@ -111,7 +111,7 @@ def calculate_v_receiving_dose(dose_grid, label, dose_threshold, relative=True):
     return relative_volume * total_volume
 
 
-def calculate_d_to_to_volume_for_labels(dose_grid, labels, volume, volume_in_cc=False):
+def calculate_d_to_volume_for_labels(dose_grid, labels, volume, volume_in_cc=False):
     """Calculate the dose which x percent of the volume receives for a set of labels
 
     Args:
