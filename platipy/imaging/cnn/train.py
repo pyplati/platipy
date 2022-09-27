@@ -163,7 +163,7 @@ class ProbUNet(pl.LightningModule):
             "optimizer": optimizer,
             "lr_scheduler": {
                 "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
-                    optimizer, "max", patience=25, threshold=0.01, factor=0.5
+                    optimizer, "max", patience=25, threshold=0.75, factor=0.5
                 ),
                 "monitor": "probabilisticDice",
             },
@@ -817,7 +817,7 @@ def main(args, config_json_path=None):
     trainer.callbacks.append(checkpoint_callback)
 
     early_stop_callback = EarlyStopping(
-        monitor="probabilisticDice", min_delta=0.005, patience=25, verbose=False, mode="max"
+        monitor="probabilisticDice", min_delta=0.005, patience=50, verbose=False, mode="max"
     )
     # trainer.callbacks.append(early_stop_callback)
 
