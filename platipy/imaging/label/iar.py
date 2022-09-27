@@ -15,7 +15,6 @@
 
 import sys
 import logging
-logger = logging.getLogger(__name__)
 
 import numpy as np
 import SimpleITK as sitk
@@ -32,6 +31,7 @@ from platipy.imaging.label.projection import (
     regrid_spherical_data,
 )
 
+logger = logging.getLogger(__name__)
 
 def median_absolute_deviation(data, axis=None):
     """Median Absolute Deviation: a "Robust" version of standard deviation.

@@ -97,13 +97,13 @@ def get_dicom_info_from_description(dicom_object, return_extra=False, sop_class_
     try:
         dicom_sop_class_name = dicom_object.SOPClassUID.name
     except AttributeError:
-        logger.warning(f"Could not find DICOM SOP Class UID, using {sop_class_name}.")
+        logger.warning("Could not find DICOM SOP Class UID, using %s.", sop_class_name)
         dicom_sop_class_name = sop_class_name
 
     if "Image" in dicom_sop_class_name:
         # Get the modality
         image_modality = dicom_object.Modality
-        logger.info(f"    Image modality: {image_modality}")
+        logger.info("    Image modality: %s", image_modality)
 
         if image_modality == "CT":
             # There is typically not much extra information
