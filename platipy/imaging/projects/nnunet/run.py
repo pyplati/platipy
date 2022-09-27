@@ -78,7 +78,7 @@ def download_and_install_nnunet_task(task_name, zip_url):
     try:
         from nnunet.inference.pretrained_models.download_pretrained_model import install_model_from_zip_file
     except ImportError:
-            raise ImportError("nnUNet Library not found. Be sure to install platipy with the required extras: 'pip install platipy[cardiac]' or 'pip install platipy[nnunet]'")
+        raise ImportError("nnUNet Library not found. Be sure to install platipy with the required extras: 'pip install platipy[cardiac]' or 'pip install platipy[nnunet]'")
 
     logger.info("Installing Task %s from %s", task_name, zip_url)
     temp_dir = tempfile.mkdtemp()
