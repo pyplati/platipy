@@ -1,6 +1,7 @@
 
 import os
 import tempfile
+import shutil
 import urllib.request
 from pathlib import Path
 import logging

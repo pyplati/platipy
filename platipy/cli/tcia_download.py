@@ -15,11 +15,10 @@
 # limitations under the License.
 
 import sys
-
-import click
 import logging
 
-logger = logging.getLogger(__name__)
+import click
+
 
 from platipy.dicom.download.tcia import (
     get_collections,
@@ -28,6 +27,7 @@ from platipy.dicom.download.tcia import (
     fetch_data,
 )
 
+logger = logging.getLogger(__name__)
 
 logger.remove()
 logger.add(sys.stderr, level="DEBUG")

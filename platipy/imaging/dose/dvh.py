@@ -49,8 +49,8 @@ def calculate_dvh(dose_grid, label, bins=1001):
     values = np.cumsum(counts[::-1])[::-1]
     if np.all(values == 0):
         return bins, values
-    else:
-        values = values / values.max()
+
+    values = values / values.max()
 
     return bins, values
 
@@ -106,7 +106,7 @@ def calculate_dvh_for_labels(dose_grid, labels, bin_width=0.1, max_dose=None):
                 "cc": cc,
                 "mean": mean_dose,
             },
-            **{d: c for d, c in zip(bins, values)},
+            **dict(zip(bins, values)),
         }
 
         dvh.append(entry)

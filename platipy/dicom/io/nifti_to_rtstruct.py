@@ -19,10 +19,11 @@ from pathlib import Path
 import SimpleITK as sitk
 import numpy as np
 import logging
-logger = logging.getLogger(__name__)
 from matplotlib import cm
 
 from rt_utils import RTStructBuilder
+
+logger = logging.getLogger(__name__)
 
 
 def convert_nifti(dcm_path, mask_input, output_file, color_map=cm.get_cmap("rainbow")):
