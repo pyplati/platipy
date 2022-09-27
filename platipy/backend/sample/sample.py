@@ -17,11 +17,11 @@ import os
 import pydicom
 import SimpleITK as sitk
 
-logger = logging.getLogger(__name__)
-
-from platipy.backend import app, DataObject, celery
+from platipy.backend import app, DataObject, celery  # pylint: disable=unused-import
 from platipy.dicom.io.nifti_to_rtstruct import convert_nifti
 
+
+logger = logging.getLogger(__name__)
 
 body_settings_defaults = {
     "outputContourName": "primitive_body_contour",
