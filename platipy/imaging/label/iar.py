@@ -258,7 +258,6 @@ def run_iar(
             " ".join(remaining_id_list),
             " ".join(["{0:.4g}".format(i) for i in list(q_results.values())]),
             outlier_limit,
-        
     )
 
     for idx, result in q_results.items():
@@ -268,7 +267,6 @@ def run_iar(
         logger.info(
             "      %s: Q = %6.3f [%s]",
                 idx, result, {True: "KEEP", False: "REMOVE"}[accept]
-            
         )
 
         if accept:

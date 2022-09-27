@@ -313,7 +313,7 @@ class DataObjectEndpoint(Resource):
 
                 # Trigger MOVE
                 logger.info(
-                    "Triggering MOVE at {0} for series UID: {1}",
+                    "Triggering MOVE at %s for series UID: %s",
                     app.dicom_listener_aetitle,
                     do.series_instance_uid,
                 )
@@ -413,7 +413,7 @@ class DataObjectDownloadEndpoint(Resource):
             if not os.path.exists(f):
                 return {"Error": "File could not be found, perhaps it has expired"}, 404
 
-            logger.info("Downloading file: {0}".format(f))
+            logger.info("Downloading file: %s", f)
             return send_from_directory(
                 os.path.dirname(f), os.path.basename(f), as_attachment=True
             )

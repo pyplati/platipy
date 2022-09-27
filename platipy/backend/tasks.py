@@ -12,22 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from celery.schedules import crontab
-
 import tempfile
-import pydicom
 import os
 import datetime
 import shutil
 import time
 import logging
-logger = logging.getLogger(__name__)
 
+from celery.schedules import crontab
 
 from platipy.backend import celery, db, app
 from platipy.dicom.communication import DicomConnector
 
 from .models import Dataset, DataObject
+
+logger = logging.getLogger(__name__)
 
 celery.conf.beat_schedule = {
     # Executes every hour
@@ -44,6 +43,7 @@ celery.conf.timezone = "UTC"
 @celery.task(bind=True)
 def run_dicom_listener(task):
     app.run_dicom_listener()
+
 
 @celery.task(bind=True)
 def clean_up_task(task):
@@ -70,14 +70,14 @@ def clean_up_task(task):
                 try:
                     if do.path:
                         if os.path.isdir(do.path):
-                            logger.debug("Removing Directory: ", do.path)
+                            logger.debug("Removing Directory: %s", do.path)
                             shutil.rmtree(do.path)
                         elif os.path.isfile(do.path):
-                            logger.debug("Removing File: ", do.path)
+                            logger.debug("Removing File: %s", do.path)
                             os.remove(do.path)
                         else:
                             logger.debug(
-                                "Data missing, must have already been deleted: ",
+                                "Data missing, must have already been deleted: %s",
                                 do.path,
                             )
 
@@ -88,13 +88,9 @@ def clean_up_task(task):
                         db.session.commit()
 
                 except Exception as e:
-                    logger.warning(
-                        "Exception occured when removing DataObject: " + str(do)
-                    )
+                    logger.warning("Exception occured when removing DataObject: %s", do)
 
-    logger.info(
-        "Clean Up Task Complete: Removed %s DataObjects", num_data_objs_removed
-    )
+    logger.info("Clean Up Task Complete: Removed %s DataObjects", num_data_objs_removed)
 
 
 @celery.task(bind=True)
@@ -114,11 +110,10 @@ def retrieve_task(task, data_object_id):
 
     if not dicom_verify:
         logger.error(
-            "Unable to connect to Dicom Location: {0} {1} {2}".format(
-                do.dataset.from_dicom_location.host,
-                do.dataset.from_dicom_location.port,
-                do.dataset.from_dicom_location.ae_title,
-            )
+            "Unable to connect to Dicom Location: %s %s %s",
+            do.dataset.from_dicom_location.host,
+            do.dataset.from_dicom_location.port,
+            do.dataset.from_dicom_location.ae_title,
         )
         return
 
@@ -149,7 +144,7 @@ def move_task(task, endpoint, seriesUIDs, host, port, ae_title):
 
     dicom_verify = dicom_connector.verify()
 
-    if dicom_verify == None:
+    if dicom_verify is None:
         return {
             "current": 100,
             "total": 100,
@@ -163,11 +158,11 @@ def move_task(task, endpoint, seriesUIDs, host, port, ae_title):
             meta={
                 "current": count,
                 "total": total,
-                "status": "Moving series for UID: {0}".format(suid),
+                "status": f"Moving series for UID: {suid}",
             },
         )
 
-        logger.info("Moving Series with UID: {0}".format(suid))
+        logger.info("Moving Series with UID: %s", suid)
         dicom_connector.move_series(suid)
 
         count = count + 1
@@ -196,9 +191,9 @@ def run_task(task, algorithm_name, config, dataset_id):
     ds = Dataset.query.filter_by(id=dataset_id).first()
     input_objects = ds.input_data_objects
 
-    logger.info("Will run algorithm: " + algorithm_name)
-    logger.info("Using settings: " + str(config))
-    logger.info("Number of data objects in dataset: " + str(len(input_objects)))
+    logger.info("Will run algorithm: %s", algorithm_name)
+    logger.info("Using settings: %s", config)
+    logger.info("Number of data objects in dataset: %d", len(input_objects))
 
     state_details = {
         "current": 0,
@@ -211,14 +206,10 @@ def run_task(task, algorithm_name, config, dataset_id):
     if config is None:
         output_data_objects = algorithm.function(input_objects, tempfile.mkdtemp())
     else:
-        output_data_objects = algorithm.function(
-            input_objects, tempfile.mkdtemp(), config
-        )
+        output_data_objects = algorithm.function(input_objects, tempfile.mkdtemp(), config)
 
     if not output_data_objects:
-        logger.warning(
-            "Algorithm ({0}) did not return any output objects".format(algorithm_name)
-        )
+        logger.warning("Algorithm (%s) did not return any output objects", algorithm_name)
 
     # Save the data objects
     for do in output_data_objects:
@@ -239,11 +230,10 @@ def run_task(task, algorithm_name, config, dataset_id):
 
                 if not dicom_verify:
                     logger.error(
-                        "Unable to connect to Dicom Location: {0} {1} {2}".format(
-                            do.dataset.to_dicom_location.host,
-                            do.dataset.to_dicom_location.port,
-                            do.dataset.to_dicom_location.ae_title,
-                        )
+                        "Unable to connect to Dicom Location: %s %s %s",
+                        do.dataset.to_dicom_location.host,
+                        do.dataset.to_dicom_location.port,
+                        do.dataset.to_dicom_location.ae_title,
                     )
                     continue
 
@@ -261,8 +251,8 @@ def run_task(task, algorithm_name, config, dataset_id):
 
     end = time.time()
     time_taken = end - start
-    logger.info("Dataset processing complete, took: " + str(time_taken))
-    logger.info("Number of data objects generated: " + str(len(output_data_objects)))
+    logger.info("Dataset processing complete, took: %.2f", time_taken)
+    logger.info("Number of data objects generated: %d", len(output_data_objects))
 
     state_details = {
         "current": len(input_objects),

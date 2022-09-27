@@ -61,11 +61,11 @@ MY_SETTINGS_DEFAULTS = {
 def my_segmentation_tool(data_objects, working_dir, settings):
 
     logger.info("Running My Segmentation Tool")
-    logger.info("Using settings: " + str(settings))
+    logger.info("Using settings: %s", settings)
 
     output_objects = []
     for d in data_objects:
-        logger.info(f"Running on data object: {d.path}")
+        logger.info("Running on data object: %s", d.path)
 
         # Read the image series
         load_path = d.path
@@ -91,7 +91,7 @@ def my_segmentation_tool(data_objects, working_dir, settings):
         if d.type == "DICOM":
 
             dicom_file = load_path[0]
-            logger.info("Will write Dicom using file: {0}".format(dicom_file))
+            logger.info("Will write Dicom using file: %s", dicom_file)
             masks = {settings["outputContourName"]: mask_file}
 
             # Use the image series UID for the file of the RTStruct

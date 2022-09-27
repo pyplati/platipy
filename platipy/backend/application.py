@@ -17,6 +17,7 @@ import os
 
 from flask import Flask
 import logging
+
 logger = logging.getLogger(__name__)
 import pydicom
 
@@ -95,13 +96,13 @@ class FlaskApp(Flask):
             listen_ae_title = self.dicom_listener_aetitle
 
         logger.info(
-            "Starting Dicom Listener on port: {0} with AE Title: {1}",
+            "Starting Dicom Listener on port: %s with AE Title: %s",
             listen_port,
             listen_ae_title,
         )
 
         def series_recieved(dicom_path):
-            logger.info("Series Recieved at path: {0}".format(dicom_path))
+            logger.info("Series Recieved at path: %s", dicom_path)
 
             # Get the SeriesUID
             series_uid = None
@@ -112,11 +113,11 @@ class FlaskApp(Flask):
                     d = pydicom.read_file(f)
                     series_uid = d.SeriesInstanceUID
                 except Exception as e:
-                    logger.debug("No Series UID in: {0}".format(f))
+                    logger.debug("No Series UID in: %s", f)
                     logger.debug(e)
 
             if series_uid:
-                logger.info("Image Series UID: {0}".format(series_uid))
+                logger.info("Image Series UID: %s", series_uid)
             else:
                 logger.error("Series UID could not be determined... Stopping")
                 return
@@ -125,9 +126,7 @@ class FlaskApp(Flask):
             dos = DataObject.query.filter_by(series_instance_uid=series_uid).all()
 
             if len(dos) == 0:
-                logger.error(
-                    "No Data Object found with Series UID: {0} ... Stopping".format(series_uid)
-                )
+                logger.error("No Data Object found with Series UID: %s ... Stopping", series_uid)
                 return
 
             for do in dos:
@@ -141,10 +140,10 @@ class FlaskApp(Flask):
                 host="0.0.0.0",
                 port=listen_port,
                 ae_title=listen_ae_title,
-                on_released_callback=series_recieved
+                on_released_callback=series_recieved,
             )
 
             dicom_listener.start()
 
         except Exception as e:
-            logger.error("Listener Error: " + str(e))
+            logger.error("Listener Error: %s", e)

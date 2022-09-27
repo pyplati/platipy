@@ -33,7 +33,7 @@ from pynetdicom.sop_class import (
     Verification,
     PatientRootQueryRetrieveInformationModelFind,
     PatientRootQueryRetrieveInformationModelGet,
-    PatientRootQueryRetrieveInformationModelMove
+    PatientRootQueryRetrieveInformationModelMove,
 )
 from pynetdicom.pdu_primitives import SCP_SCU_RoleSelectionNegotiation
 
@@ -47,12 +47,10 @@ class DicomConnector:
         self.ae_title = ae_title if ae_title else ""
 
         logger.debug(
-            "DicomConnector with host: "
-            + self.host
-            + " port: "
-            + str(self.port)
-            + " AETitle: "
-            + self.ae_title
+            "DicomConnector with host: %s port: %d AETitle: %s",
+            self.host,
+            self.port,
+            self.ae_title,
         )
 
         self.output_directory = output_directory
@@ -107,7 +105,7 @@ class DicomConnector:
             # Release the association
             assoc.release()
 
-        logger.info("Got " + str(len(results)) + " results")
+        logger.info("Got %d results", len(results))
 
         return results
 
@@ -293,13 +291,13 @@ class DicomConnector:
             status_ds.Status = 0x0000  # Success
         except IOError:
             logger.warning("Could not write file to specified directory:")
-            logger.warning("    {0!s}".format(os.path.dirname(filename)))
+            logger.warning("    %s", os.path.dirname(filename))
             logger.warning("Directory may not exist or you may not have write " "permission")
             # Failed - Out of Resources - IOError
             status_ds.Status = 0xA700
         except Exception as exception:
             logger.warning("Could not write file to specified directory:")
-            logger.warning("    {0!s}".format(os.path.dirname(filename)))
+            logger.warning("    %s", os.path.dirname(filename))
             logger.warning(exception)
             # Failed - Out of Resources - Miscellaneous error
             status_ds.Status = 0xA701
@@ -332,7 +330,7 @@ class DicomConnector:
 
         status = ""
         if assoc.is_established:
-            logger.debug("Sending file: {0!s}".format(dcm_file))
+            logger.debug("Sending file: %s", dcm_file)
 
             for dcm_file in dcm_files:
                 dataset = pydicom.read_file(dcm_file)
