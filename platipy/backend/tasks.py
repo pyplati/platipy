@@ -198,7 +198,7 @@ def run_task(task, algorithm_name, config, dataset_id):
     state_details = {
         "current": 0,
         "total": len(input_objects),
-        "status": "Running Algorithm: {0}".format(algorithm_name),
+        "status": f"Running Algorithm: {algorithm_name}",
     }
 
     task.update_state(state="RUNNING", meta=state_details)
@@ -257,7 +257,7 @@ def run_task(task, algorithm_name, config, dataset_id):
     state_details = {
         "current": len(input_objects),
         "total": len(input_objects),
-        "status": "Running Algorithm Complete: {0}".format(algorithm_name),
+        "status": f"Running Algorithm Complete: {algorithm_name}",
     }
 
     task.update_state(state="COMPLETE", meta=state_details)
