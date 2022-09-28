@@ -3,7 +3,7 @@ FROM platipy/platipy
 RUN apt-get update; DEBIAN_FRONTEND="noninteractive" apt-get install -y redis-server
 
 COPY . /code
-RUN env -C /code /root/.local/bin/poetry install -E backend
+RUN cd /code && poetry install -E backend --without dev,docs
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+from pathlib import Path
 
 import SimpleITK as sitk
 
@@ -20,9 +21,7 @@ from platipy.backend import app, DataObject, celery  # pylint: disable=unused-im
 
 logger = logging.getLogger(__name__)
 
-SAMPLE_SETTINGS = {
-    "HU_BONE_THRESHOLD": 200
-}
+SAMPLE_SETTINGS = {"HU_BONE_THRESHOLD": 200}
 
 
 @app.register("Bone Segmentation Sample", default_settings=SAMPLE_SETTINGS)
@@ -41,6 +40,8 @@ def bone_segmentation(data_objects, working_dir, settings):
     logger.info("Running bone segmentation sample")
     logger.info("Using settings: %s", settings)
 
+    working_dir = Path(working_dir)
+
     output_objects = []
     for data_obj in data_objects:
 
@@ -58,7 +59,7 @@ def bone_segmentation(data_objects, working_dir, settings):
         mask_file = working_dir.joinpath("mask.nii.gz")
         sitk.WriteImage(mask, mask_file)
 
-        mask_data_object = DataObject(type="FILE", path=mask_file, parent=data_obj)
+        mask_data_object = DataObject(type="FILE", path=str(mask_file), parent=data_obj)
         output_objects.append(mask_data_object)
 
     return output_objects

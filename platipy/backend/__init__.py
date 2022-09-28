@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+import sys
 import os
 import uuid
 
@@ -19,18 +21,45 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from celery import Celery
-from loguru import logger
+import celery.signals
 
 from platipy.backend.application import FlaskApp
-
 
 env_work = os.getcwd()
 if "WORK" in os.environ:
     env_work = os.environ["WORK"]
-
-# Configure Log file location
 log_file_path = os.path.join(env_work, "service.log")
-logger.add(log_file_path, rotation="1 day")
+
+
+def configure_logging():
+    logger = logging.getLogger()
+
+    logger.handlers.clear()
+    logger.setLevel(logging.DEBUG)
+
+    file_handler = logging.handlers.RotatingFileHandler(
+        log_file_path,
+        maxBytes=100 * 1024 * 1024,  # Max 100 MB per log file before rotating
+        backupCount=100,  # Keep up to 100 log files in history
+    )
+    file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    file_handler.setFormatter(file_formatter)
+    file_handler.setLevel(logging.DEBUG)
+    logger.addHandler(file_handler)
+
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    console_handler.setFormatter(console_formatter)
+    console_handler.setLevel(logging.DEBUG)
+    logger.addHandler(console_handler)
+
+
+@celery.signals.setup_logging.connect
+def on_celery_setup_logging(**kwargs):
+    configure_logging()
+
+
+configure_logging()
 
 # Create Flask app
 app = FlaskApp(__name__)
