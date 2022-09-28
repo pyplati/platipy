@@ -819,7 +819,7 @@ def main(args, config_json_path=None):
     early_stop_callback = EarlyStopping(
         monitor="probabilisticDice", min_delta=0.005, patience=50, verbose=False, mode="max"
     )
-    # trainer.callbacks.append(early_stop_callback)
+    trainer.callbacks.append(early_stop_callback)
 
     trainer.fit(prob_unet, data_module)
 
