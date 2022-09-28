@@ -172,7 +172,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from platipy.backend.client import PlatiPyClient
+from platipy.client import PlatiPyClient
 from platipy.imaging.tests.data import get_lung_nifti
 
 host = "127.0.0.1" # Set the host name or IP of the server running the service here
