@@ -182,11 +182,6 @@ api_key = "" # INSERT THE API KEY GENERATED HERE
 
 algorithm_name = "My Segmentation Tool" # The name of the algorithm
 
-log_level = "INFO" # Choose an appropriate level of logging output: "DEBUG" or "INFO"
-
-logger.remove()
-handler_id = logger.add(sys.stderr, level=log_level)
-
 # Fetch some data
 images = get_lung_nifti()
 

@@ -29,9 +29,6 @@ from platipy.dicom.download.tcia import (
 
 logger = logging.getLogger(__name__)
 
-logger.remove()
-logger.add(sys.stderr, level="DEBUG")
-
 
 @click.command()
 @click.argument(

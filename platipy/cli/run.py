@@ -17,6 +17,7 @@
 import sys
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 from platipy.cli import (
@@ -48,10 +49,6 @@ except ImportError:
         "at: https://github.com/pyplati/platipy/blob/master/requirements-backend.txt to use "
         "backend service functionality"
     )
-
-
-logger.remove()
-logger.add(sys.stderr, level="DEBUG")
 
 
 def platipy_cli():

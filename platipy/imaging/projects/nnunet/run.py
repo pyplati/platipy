@@ -1,4 +1,3 @@
-
 import os
 import tempfile
 import shutil
@@ -9,6 +8,7 @@ import SimpleITK as sitk
 
 
 logger = logging.getLogger(__name__)
+
 
 def available_nnunet_models():
     """Fetch the available nnUNet models
@@ -21,17 +21,22 @@ def available_nnunet_models():
     """
 
     try:
-        from nnunet.inference.pretrained_models.download_pretrained_model import get_available_models
+        from nnunet.inference.pretrained_models.download_pretrained_model import (
+            get_available_models,
+        )
     except ImportError:
-        raise ImportError("nnUNet Library not found. Be sure to install platipy with the required extras: 'pip install platipy[cardiac]' or 'pip install platipy[nnunet]'")
+        raise ImportError(
+            "nnUNet Library not found. Be sure to install platipy with the required extras: 'pip install platipy[cardiac]' or 'pip install platipy[nnunet]'"
+        )
 
     available_models = get_available_models()
     available_models["Task400_OPEN_HEART_1FOLD"] = {
-            'description': "Whole heart model (all folds, 3d_lowres only) trained on data from"
-                "TCIA (NSCLC-Radiomics & LCTSC)",
-            'url': "https://zenodo.org/record/6585664/files/Task400_OPEN_HEART_3d_lowres.zip?download=1"
-        }
+        "description": "Whole heart model (all folds, 3d_lowres only) trained on data from"
+        "TCIA (NSCLC-Radiomics & LCTSC)",
+        "url": "https://zenodo.org/record/6585664/files/Task400_OPEN_HEART_3d_lowres.zip?download=1",
+    }
     return available_models
+
 
 NNUNET_SETTINGS_DEFAULTS = {
     "task": "Task400_OPEN_HEART_1FOLD",
@@ -45,8 +50,9 @@ NNUNET_SETTINGS_DEFAULTS = {
     "disable_tta": False,
     "all_in_gpu": None,
     "disable_mixed_precision": False,
-    "chk": "model_final_checkpoint"
+    "chk": "model_final_checkpoint",
 }
+
 
 def setup_nnunet_environment():
     """Inserts suitable location for nnUNet environemnt variables if they are not already set in
@@ -64,6 +70,7 @@ def setup_nnunet_environment():
         os.environ["nnUNet_raw_data_base"] = tempfile.mkdtemp()
         os.environ["nnUNet_preprocessed"] = tempfile.mkdtemp()
 
+
 def download_and_install_nnunet_task(task_name, zip_url):
     """Downloads the Zip file and then installs via nnUNet.
 
@@ -76,9 +83,13 @@ def download_and_install_nnunet_task(task_name, zip_url):
     """
 
     try:
-        from nnunet.inference.pretrained_models.download_pretrained_model import install_model_from_zip_file
+        from nnunet.inference.pretrained_models.download_pretrained_model import (
+            install_model_from_zip_file,
+        )
     except ImportError:
-        raise ImportError("nnUNet Library not found. Be sure to install platipy with the required extras: 'pip install platipy[cardiac]' or 'pip install platipy[nnunet]'")
+        raise ImportError(
+            "nnUNet Library not found. Be sure to install platipy with the required extras: 'pip install platipy[cardiac]' or 'pip install platipy[nnunet]'"
+        )
 
     logger.info("Installing Task %s from %s", task_name, zip_url)
     temp_dir = tempfile.mkdtemp()
@@ -90,6 +101,7 @@ def download_and_install_nnunet_task(task_name, zip_url):
     install_model_from_zip_file(temp_file)
     shutil.rmtree(temp_dir)
 
+
 def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
 
     setup_nnunet_environment()
@@ -98,7 +110,9 @@ def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
     try:
         from nnunet.inference.predict import predict_from_folder
     except ImportError:
-        logger.error("nnUNet is not installed. Please pip install nnunet to use this functionality")
+        logger.error(
+            "nnUNet is not installed. Please pip install nnunet to use this functionality"
+        )
 
     nnunet_model_path = Path(os.environ["RESULTS_FOLDER"])
 
@@ -147,10 +161,25 @@ def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
 
     model_folder_name = task_path.joinpath(trainer + f"__{default_plans_identifier}")
 
-    predict_from_folder(str(model_folder_name), str(input_path), str(output_path), folds, False,
-        num_threads_preprocessing, num_threads_nifti_save, lowres_segmentations, 0, 1,
-        not disable_tta, overwrite_existing=True, mode=mode, overwrite_all_in_gpu=all_in_gpu,
-        mixed_precision=not disable_mixed_precision, step_size=0.5, checkpoint_name=chk)
+    predict_from_folder(
+        str(model_folder_name),
+        str(input_path),
+        str(output_path),
+        folds,
+        False,
+        num_threads_preprocessing,
+        num_threads_nifti_save,
+        lowres_segmentations,
+        0,
+        1,
+        not disable_tta,
+        overwrite_existing=True,
+        mode=mode,
+        overwrite_all_in_gpu=all_in_gpu,
+        mixed_precision=not disable_mixed_precision,
+        step_size=0.5,
+        checkpoint_name=chk,
+    )
 
     results = {}
     for op in output_path.glob("*.nii.gz"):
@@ -159,7 +188,7 @@ def run_segmentation(img, settings=NNUNET_SETTINGS_DEFAULTS):
         num_labels = sitk.GetArrayViewFromImage(label_map).max()
 
         for l in range(num_labels):
-            results[f"Struct_{l}"] = label_map == (l+1)
+            results[f"Struct_{l}"] = label_map == (l + 1)
 
     os.remove(io_path)
 

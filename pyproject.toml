@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "platipy"
-version = "0.5.0"
+version = "0.0.0"
 description = "Processing Library and Analysis Toolkit for Medical Imaging in Python"
 authors = ["Phillip Chlap & Robert Finnegan"]
 license = "Apache 2.0 License"
@@ -13,8 +13,9 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Visualization",
     "Development Status :: 4 - Beta",
 ]
+readme = "README.md"
 
-[project.scripts]
+[tool.poetry.scripts]
 platipy = "platipy.cli.run:platipy_cli"
 
 [tool.poetry.dependencies]
@@ -77,6 +78,9 @@ nbsphinx = "^0.8.9"
 m2r2 = "^0.3.3"
 Jinja2 = "^3.1"
 
+[tool.poetry-dynamic-versioning]
+enable = true
+
 [build-system]
-requires = ["poetry-core>=1.1.0rc1"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.1.0", "poetry-dynamic-versioning"]
+build-backend = "poetry_dynamic_versioning.backend"
