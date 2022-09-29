@@ -119,8 +119,8 @@ class AxisAlignedConvGaussian(torch.nn.Module):
         if self.ndims == 3:
             mu_log_sigma = torch.squeeze(mu_log_sigma, dim=2)
 
-        mu = mu_log_sigma[:, : self.latent_dim]#.clamp(-1000, 1000)
-        log_sigma = mu_log_sigma[:, self.latent_dim :]#.clamp(-10, 10)
+        mu = mu_log_sigma[:, : self.latent_dim].clamp(-1000, 1000)
+        log_sigma = mu_log_sigma[:, self.latent_dim :].clamp(-10, 10)
 
         # This is a multivariate normal with diagonal covariance matrix sigma
         # https://github.com/pytorch/pytorch/pull/11178
