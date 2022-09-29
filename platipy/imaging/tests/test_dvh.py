@@ -85,7 +85,7 @@ def test_compute_d_metric(nifti_data):
 
     dvh = compute_dvh_for_data(nifti_data)
     df_metrics = calculate_d_x(dvh, 95)
-    assert np.allclose(list(df_metrics.value), [0.0, 36.5, 60.2, 58.9, 6.5, 9.1, 7.3])
+    assert np.allclose(list(df_metrics["D95"]), [0.0, 36.5, 60.2, 58.9, 6.5, 9.1, 7.3])
 
 
 def test_compute_v_metric(nifti_data):
@@ -93,7 +93,7 @@ def test_compute_v_metric(nifti_data):
     dvh = compute_dvh_for_data(nifti_data)
     df_metrics = calculate_v_x(dvh, 40)
     assert np.allclose(
-        list(df_metrics.value),
+        list(df_metrics["V40"]),
         [
             0.0,
             59.137344,
