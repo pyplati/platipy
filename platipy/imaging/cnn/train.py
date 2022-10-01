@@ -86,6 +86,7 @@ class ProbUNet(pl.LightningModule):
                 self.hparams.loss_type,
                 loss_params,
                 self.hparams.ndims,
+                dropout_probability=self.hparams.dropout_probability
             )
         elif self.hparams.prob_type == "hierarchical":
             raise NotImplementedError("Hierarchical Prob UNet current not working...")
@@ -134,6 +135,7 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--contour_loss_lambda_threshold", type=float, default=None)
         parser.add_argument("--contour_loss_weight", type=float, default=0.0)  # no longer used
         parser.add_argument("--epochs_all_rec", type=int, default=0)  # no longer used
+        parser.add_argument("--dropout_probability", type=float, default=0.0)
 
         return parent_parser
 

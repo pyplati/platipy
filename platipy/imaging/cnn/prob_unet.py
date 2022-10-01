@@ -26,7 +26,7 @@ class Encoder(torch.nn.Module):
     """Encoder part of the probabilistic UNet"""
 
     def __init__(
-        self, input_channels, filters_per_layer=[64 * (2**x) for x in range(5)], ndims=2
+        self, input_channels, filters_per_layer=[64 * (2**x) for x in range(5)], ndims=2, dropout_probability=None
     ):
         super(Encoder, self).__init__()
 
@@ -44,7 +44,7 @@ class Encoder(torch.nn.Module):
                     output_filters,
                     up_down_sample=down_sample,
                     ndims=ndims,
-                    dropout_probability=None,
+                    dropout_probability=dropout_probability,
                 )
             )
 
@@ -64,13 +64,14 @@ class AxisAlignedConvGaussian(torch.nn.Module):
         filters_per_layer=[64 * (2**x) for x in range(5)],
         latent_dim=2,
         ndims=2,
+        dropout_probability=None
     ):
 
         super(AxisAlignedConvGaussian, self).__init__()
 
         self.latent_dim = latent_dim
 
-        self.encoder = Encoder(input_channels, filters_per_layer, ndims=ndims)
+        self.encoder = Encoder(input_channels, filters_per_layer, ndims=ndims, dropout_probability=dropout_probability)
 
         self.final = conv_nd(
             in_channels=filters_per_layer[-1],
@@ -230,10 +231,10 @@ class ProbabilisticUnet(torch.nn.Module):
             ndims=ndims,
         )
         self.prior = AxisAlignedConvGaussian(
-            input_channels, filters_per_layer, latent_dim, ndims=ndims
+            input_channels, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=dropout_probability
         )
         self.posterior = AxisAlignedConvGaussian(
-            input_channels + num_classes, filters_per_layer, latent_dim, ndims=ndims
+            input_channels + num_classes, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=dropout_probability
         )
         self.fcomb = Fcomb(filters_per_layer, latent_dim, num_classes, no_convs_fcomb, ndims=ndims)
 
