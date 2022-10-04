@@ -10,6 +10,13 @@ PlatiPy is available from the Python package repositories and can be installed w
 
 ``pip install platipy``
 
+The base installation of platipy does not include some large libraries needed for various
+components of platipy. The following extras are available to install to run specific platipy tools:
+
+``pip install platipy[cardiac]``
+``pip install platipy[nnunet]``
+``pip install platipy[backend]``
+
 If you have already installed the library, you can install the latest updates using:
 
 ``pip install --upgrade platipy``
