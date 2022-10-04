@@ -99,13 +99,20 @@ fig = vis.show()
 ![Figure 3](assets/figure_3.png)
 
 ## Getting started
-There aren't many requirements, just an installed Python interpreter (3.6 or greater). The list of
-required Python packages can be found in requirements.txt.
-
-PlatiPy can be installed with **pip**:
+There aren't many requirements, just an installed Python interpreter (3.7 or greater). PlatiPy can
+be installed with **pip**:
 
 ```bash
 pip install platipy
+```
+
+The base installation of platipy does not include some large libraries needed for various
+components of platipy. The following extras are available to install to run specific platipy tools:
+
+```bash
+pip install platipy[cardiac]
+pip install platipy[nnunet]
+pip install platipy[backend]
 ```
 
 ## Authors
