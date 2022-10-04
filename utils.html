@@ -1,62 +1,58 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="Registration" href="registration.html" />
 
-    <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
+    <meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
         <title>Utilities - PlatiPy documentation</title>
-      <link rel="stylesheet" href="_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
-    <link rel="stylesheet" href="_static/pygments.css">
-    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="_static/pygments_dark.css">
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
     
 
 
 <style>
-  :root {
+  body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
   
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
+  @media not print {
+    body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
     }
-  }
-
-  /* For allowing end-user-specific overrides */
-  .override-light {
-    --color-code-background: #f8f8f8;
-  --color-code-foreground: black;
-  
-  }
-  .override-dark {
-    --color-code-background: #202020;
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
+      }
+    }
   }
-</style><link rel="stylesheet" href="_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
-  <body dir="">
+</style></head>
+  <body>
     
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
     <title>Contents</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-      <path stroke="none" d="M0 0h24v24H0z"/>
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="10" y1="12" x2="20" y2="12" />
-      <line x1="6" y1="18" x2="20" y2="18" />
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
     </svg>
   </symbol>
   <symbol id="svg-menu" viewBox="0 0 24 24">
     <title>Menu</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-menu">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
       <line x1="3" y1="12" x2="21" y2="12"></line>
       <line x1="3" y1="6" x2="21" y2="6"></line>
       <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -64,18 +60,57 @@
   </symbol>
   <symbol id="svg-arrow-right" viewBox="0 0 24 24">
     <title>Expand</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-chevron-right">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
       <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
     </svg>
   </symbol>
 </svg>
 
 <input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
 <input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation"></label>
-<label class="overlay toc-overlay" for="__toc"></label>
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
 
 
 
@@ -83,6 +118,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
         <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
       </label>
     </div>
@@ -90,7 +126,16 @@
       <a href="index.html"><div class="brand">PlatiPy  documentation</div></a>
     </div>
     <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
       <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
     </div>
@@ -103,26 +148,27 @@
   
   <span class="sidebar-brand-text">PlatiPy  documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="search.html">
-  <input class="sidebar-search" placeholder=Search name="q">
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
-</form><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p><span class="caption-text">Introduction</span></p>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 </ul>
-<p><span class="caption-text">Projects</span></p>
+<p class="caption" role="heading"><span class="caption-text">Projects</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="cardiac.html">Cardiac Segmentation</a></li>
 </ul>
-<p><span class="caption-text">Examples</span></p>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="_examples/visualise.html">Visualise Images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis</a></li>
 </ul>
-<p><span class="caption-text">Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="visualiser.html">Image Visualiser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dicom.html">DICOM Conversion</a></li>
@@ -134,23 +180,42 @@
 
 </div>
 </div>
+
       </div>
       
     </div>
   </aside>
-  <main class="main">
+  <div class="main">
     <div class="content">
-      <article role="main">
-        <label class="toc-overlay-icon toc-content-icon" for="__toc">
-          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
-        </label>
-        <section id="utilities">
-<h1>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h1>
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="utilities">
+<h1>Utilities<a class="headerlink" href="#utilities" title="Permalink to this heading">#</a></h1>
 <section id="module-platipy.imaging.label.utils">
-<span id="labels"></span><h2>Labels<a class="headerlink" href="#module-platipy.imaging.label.utils" title="Permalink to this headline">¶</a></h2>
+<span id="labels"></span><h2>Labels<a class="headerlink" href="#module-platipy.imaging.label.utils" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
-<dt id="platipy.imaging.label.utils.binary_decode_image">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">binary_decode_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_encoded_img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.binary_decode_image" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.utils.binary_decode_image">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></span><span class="sig-name descname"><span class="pre">binary_decode_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_encoded_img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.binary_decode_image" title="Permalink to this definition">#</a></dt>
 <dd><p>Decode a binary label map to a list of structures.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -164,9 +229,10 @@
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.utils.binary_encode_structure_list">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">binary_encode_structure_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.binary_encode_structure_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.utils.binary_encode_structure_list">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></span><span class="sig-name descname"><span class="pre">binary_encode_structure_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.binary_encode_structure_list" title="Permalink to this definition">#</a></dt>
 <dd><p>Encode a list of binary labels using binary encoding</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -183,20 +249,23 @@
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.utils.correct_volume_overlap">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">correct_volume_overlap</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_label_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assign_overlap_to_largest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.correct_volume_overlap" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.utils.correct_volume_overlap">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></span><span class="sig-name descname"><span class="pre">correct_volume_overlap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_label_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assign_overlap_to_largest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.correct_volume_overlap" title="Permalink to this definition">#</a></dt>
 <dd><p>Label structures by primes
 Smallest prime = largest volume</p>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.utils.generate_primes">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">generate_primes</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.generate_primes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.utils.generate_primes">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></span><span class="sig-name descname"><span class="pre">generate_primes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.generate_primes" title="Permalink to this definition">#</a></dt>
 <dd><p>Generate an infinite sequence of prime numbers.</p>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.utils.get_com">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">get_com</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_int</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">real_coords</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.get_com" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.utils.get_com">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></span><span class="sig-name descname"><span class="pre">get_com</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_int</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">real_coords</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.get_com" title="Permalink to this definition">#</a></dt>
 <dd><blockquote>
 <div><p>Get centre of mass of a SimpleITK.Image</p>
 </div></blockquote>
@@ -217,9 +286,10 @@ False.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.utils.prime_decode_image">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">prime_decode_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prime_encoded_image</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.prime_decode_image" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.utils.prime_decode_image">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></span><span class="sig-name descname"><span class="pre">prime_decode_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prime_encoded_image</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.prime_decode_image" title="Permalink to this definition">#</a></dt>
 <dd><p>Decode a prime-encoded image</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -233,9 +303,10 @@ False.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.utils.prime_encode_structure_list">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">prime_encode_structure_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.prime_encode_structure_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.utils.prime_encode_structure_list">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></span><span class="sig-name descname"><span class="pre">prime_encode_structure_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.prime_encode_structure_list" title="Permalink to this definition">#</a></dt>
 <dd><p>Encode a list of structures using prime labels</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -249,22 +320,25 @@ False.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.utils.vectorised_transform_index_to_physical_point">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">vectorised_transform_index_to_physical_point</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.vectorised_transform_index_to_physical_point" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.utils.vectorised_transform_index_to_physical_point">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></span><span class="sig-name descname"><span class="pre">vectorised_transform_index_to_physical_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.vectorised_transform_index_to_physical_point" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforms a set of points from array indices to real-space</p>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.utils.vectorised_transform_physical_point_to_index">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></code><code class="sig-name descname"><span class="pre">vectorised_transform_physical_point_to_index</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.vectorised_transform_physical_point_to_index" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.utils.vectorised_transform_physical_point_to_index">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.utils.</span></span><span class="sig-name descname"><span class="pre">vectorised_transform_physical_point_to_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.utils.vectorised_transform_physical_point_to_index" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforms a set of points from real-space to array indices</p>
 </dd></dl>
+
 </section>
 <section id="module-platipy.imaging.label.comparison">
-<span id="comparison"></span><h2>Comparison<a class="headerlink" href="#module-platipy.imaging.label.comparison" title="Permalink to this headline">¶</a></h2>
+<span id="comparison"></span><h2>Comparison<a class="headerlink" href="#module-platipy.imaging.label.comparison" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
-<dt id="platipy.imaging.label.comparison.compute_apl">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_apl</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_apl" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_apl">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_apl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_apl" title="Permalink to this definition">#</a></dt>
 <dd><p>helper function for computing the added path length</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -283,9 +357,10 @@ added path length</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.comparison.compute_metric_dsc">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_dsc</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_dsc" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_metric_dsc">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_metric_dsc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_dsc" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the Dice Similarity Coefficient between two labels</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -302,9 +377,10 @@ added path length</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.comparison.compute_metric_hd">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_hd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_hd" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_metric_hd">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_metric_hd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_hd" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the Hausdorff distance between two labels</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -321,9 +397,10 @@ added path length</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.comparison.compute_metric_masd">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_masd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_masd" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_metric_masd">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_metric_masd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_masd" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the mean absolute distance between two labels</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -340,9 +417,10 @@ added path length</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.comparison.compute_metric_mean_apl">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_mean_apl</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_mean_apl" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_metric_mean_apl">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_metric_mean_apl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_mean_apl" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the mean (slice-wise) added path length in mm</p>
 <p>This operates on transaxial slices, which are assumed to be in the z-dimension (axis=2).</p>
 <dl class="field-list simple">
@@ -362,9 +440,10 @@ added path length</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.comparison.compute_metric_sensitivity">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_sensitivity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_sensitivity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_metric_sensitivity">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_metric_sensitivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_sensitivity" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the sensitivity between two labels</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -381,9 +460,10 @@ added path length</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.comparison.compute_metric_specificity">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_specificity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_specificity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_metric_specificity">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_metric_specificity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_specificity" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the specificity between two labels</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -400,9 +480,10 @@ added path length</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.comparison.compute_metric_total_apl">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_metric_total_apl</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_total_apl" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_metric_total_apl">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_metric_total_apl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_metric_total_apl" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the total (slice-wise) added path length in mm</p>
 <p>This operates on transaxial slices, which are assumed to be in the z-dimension (axis=2).</p>
 <dl class="field-list simple">
@@ -422,9 +503,10 @@ added path length</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.comparison.compute_surface_dsc">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_surface_dsc</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_surface_dsc" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_surface_dsc">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_surface_dsc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_surface_dsc" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute Surface Dice</p>
 <p>From: Nikolov S et al. Clinically Applicable Segmentation of Head and Neck Anatomy for
 Radiotherapy: Deep Learning Algorithm Development and Validation Study J Med Internet Res
@@ -445,9 +527,10 @@ Radiotherapy: Deep Learning Algorithm Development and Validation Study J Med Int
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.comparison.compute_surface_metrics">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_surface_metrics</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_surface_metrics" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_surface_metrics">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_surface_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_surface_metrics" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute surface distance metrics between two labels. Surface metrics computed are:
 hausdorffDistance, meanSurfaceDistance, medianSurfaceDistance, maximumSurfaceDistance,
 sigmaSurfaceDistance, surfaceDSC</p>
@@ -467,9 +550,10 @@ sigmaSurfaceDistance, surfaceDSC</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.comparison.compute_volume">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_volume</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_volume" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_volume">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_volume" title="Permalink to this definition">#</a></dt>
 <dd><p>Computes the volume in cubic centimetres</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -483,9 +567,10 @@ sigmaSurfaceDistance, surfaceDSC</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.label.comparison.compute_volume_metrics">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></code><code class="sig-name descname"><span class="pre">compute_volume_metrics</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_volume_metrics" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_volume_metrics">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_volume_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_volume_metrics" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute volume metrics between two labels. Volume metrics computed are:
 DSC, volumeOverlap fractionOverlap truePositiveFraction trueNegativeFraction
 falsePositiveFraction falseNegativeFraction</p>
@@ -504,20 +589,21 @@ falsePositiveFraction falseNegativeFraction</p>
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 <section id="module-platipy.imaging.utils.crop">
-<span id="cropping"></span><h2>Cropping<a class="headerlink" href="#module-platipy.imaging.utils.crop" title="Permalink to this headline">¶</a></h2>
+<span id="cropping"></span><h2>Cropping<a class="headerlink" href="#module-platipy.imaging.utils.crop" title="Permalink to this heading">#</a></h2>
 <p>Various useful utility functions for atlas based segmentation algorithms.</p>
 <dl class="py function">
-<dt id="platipy.imaging.utils.crop.crop_to_label_extent">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></code><code class="sig-name descname"><span class="pre">crop_to_label_extent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.crop_to_label_extent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.crop.crop_to_label_extent">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></span><span class="sig-name descname"><span class="pre">crop_to_label_extent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.crop_to_label_extent" title="Permalink to this definition">#</a></dt>
 <dd><p>Crop an image to the 3D extent defined by a binary mask (label).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image</strong> (<em>SimpleITK.Image</em>) – The image to crop.</p></li>
 <li><p><strong>label</strong> (<em>SimpleITK.Image</em>) – The binary mask (label) defining the region to crop to.</p></li>
-<li><p><strong>expansion_mm</strong> (<em>float | tuple | list</em><em>, </em><em>optional</em>) – An optional expansion in physical units.
+<li><p><strong>expansion_mm</strong> (<em>float</em><em> | </em><em>tuple</em><em> | </em><em>list</em><em>, </em><em>optional</em>) – An optional expansion in physical units.
 Can be defined as a single number or iterable: (axial, coronal, sagittal) expansion.
 Defaults to 0.</p></li>
 </ul>
@@ -530,20 +616,22 @@ Defaults to 0.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.crop.crop_to_roi">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></code><code class="sig-name descname"><span class="pre">crop_to_roi</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.crop_to_roi" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.crop.crop_to_roi">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></span><span class="sig-name descname"><span class="pre">crop_to_roi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.crop_to_roi" title="Permalink to this definition">#</a></dt>
 <dd><p>Utility function for cropping images</p>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.crop.label_to_roi">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></code><code class="sig-name descname"><span class="pre">label_to_roi</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_as_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.label_to_roi" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.crop.label_to_roi">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></span><span class="sig-name descname"><span class="pre">label_to_roi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_as_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.label_to_roi" title="Permalink to this definition">#</a></dt>
 <dd><p>Generates a region of interest (ROI), defined by a starting index (z,y,x)
 and size (s_z, s_y, s_x). This can be used to crop images/labels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>sitk.Image | list</em>) – Binary label image/mask/structure to define to ROI</p></li>
+<li><p><strong>label</strong> (<em>sitk.Image</em><em> | </em><em>list</em>) – Binary label image/mask/structure to define to ROI</p></li>
 <li><p><strong>expansion_mm</strong> (<em>list</em><em>, </em><em>optional</em>) – An optional expansion of the box (in each direciton).
 Defaults to [0, 0, 0].</p></li>
 </ul>
@@ -556,12 +644,13 @@ Defaults to [0, 0, 0].</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 <section id="module-platipy.imaging.utils.geometry">
-<span id="geometry"></span><h2>Geometry<a class="headerlink" href="#module-platipy.imaging.utils.geometry" title="Permalink to this headline">¶</a></h2>
+<span id="geometry"></span><h2>Geometry<a class="headerlink" href="#module-platipy.imaging.utils.geometry" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
-<dt id="platipy.imaging.utils.geometry.rotate_image">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.geometry.</span></code><code class="sig-name descname"><span class="pre">rotate_image</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_centre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_angle_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.geometry.rotate_image" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.geometry.rotate_image">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.geometry.</span></span><span class="sig-name descname"><span class="pre">rotate_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_centre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_angle_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.geometry.rotate_image" title="Permalink to this definition">#</a></dt>
 <dd><p>Rotates an image</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -583,9 +672,10 @@ Defaults to (0, 0, 0).</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.geometry.vector_angle">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.geometry.</span></code><code class="sig-name descname"><span class="pre">vector_angle</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smallest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.geometry.vector_angle" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.geometry.vector_angle">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.geometry.</span></span><span class="sig-name descname"><span class="pre">vector_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smallest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.geometry.vector_angle" title="Permalink to this definition">#</a></dt>
 <dd><p>Return the angle between two vectors</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -604,12 +694,13 @@ If False, direction is taken into account, so angle can be obtuse. Defaults to T
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 <section id="module-platipy.imaging.utils.io">
-<span id="io"></span><h2>IO<a class="headerlink" href="#module-platipy.imaging.utils.io" title="Permalink to this headline">¶</a></h2>
+<span id="io"></span><h2>IO<a class="headerlink" href="#module-platipy.imaging.utils.io" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
-<dt id="platipy.imaging.utils.io.write_nrrd_structure_set">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.io.</span></code><code class="sig-name descname"><span class="pre">write_nrrd_structure_set</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">masks</span></em>, <em class="sig-param"><span class="pre">output_file='structure_set.nrrd'</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">use_compression=True</span></em>, <em class="sig-param"><span class="pre">compression_level=9</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.io.write_nrrd_structure_set" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.io.write_nrrd_structure_set">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.io.</span></span><span class="sig-name descname"><span class="pre">write_nrrd_structure_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">masks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file='structure_set.nrrd'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_compression=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level=9</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.io.write_nrrd_structure_set" title="Permalink to this definition">#</a></dt>
 <dd><p>Write an nrrd structure given a set of masks. Useful for reading in Slicer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -617,7 +708,7 @@ If False, direction is taken into account, so angle can be obtuse. Defaults to T
 <li><p><strong>masks</strong> (<em>dict</em>) – Key is structure name, value is SimpleITK.Image</p></li>
 <li><p><strong>output_file</strong> (<em>str</em><em>, </em><em>optional</em>) – The path to write the nrrd file. Defaults to
 “structure_set.nrrd”.</p></li>
-<li><p><strong>colormap</strong> (<em>matplotlib.colors.Colormap | dict</em><em>, </em><em>optional</em>) – Colormap to use for output.
+<li><p><strong>colormap</strong> (<em>matplotlib.colors.Colormap</em><em> | </em><em>dict</em><em>, </em><em>optional</em>) – Colormap to use for output.
 Can also use a dictionary with keys as structure names and values as colors.
 Defaults to cm.get_cmap(“rainbow”).</p></li>
 <li><p><strong>use_compression</strong> (<em>bool</em><em>, </em><em>optional</em>) – Used by SimpleITK’s WriteImage function to enable
@@ -634,16 +725,18 @@ much compression to use. Should be an integer between 0-9. Defaults to 9.</p></l
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 </section>
 
-      </article>
+        </article>
+      </div>
       <footer>
         
         <div class="related-pages">
           
           <a class="prev-page" href="registration.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
@@ -654,14 +747,20 @@ much compression to use. Should be an integer between 0-9. Defaults to 9.</p></l
               </div>
             </a>
         </div>
-
-        <div class="related-information">
-              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
-            |
-            <a class="muted-link" href="_sources/utils.rst.txt"
-               rel="nofollow">
-              Show Source
-            </a>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
+            </div>
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
         </div>
         
       </footer>
@@ -672,18 +771,55 @@ much compression to use. Should be an integer between 0-9. Defaults to 9.</p></l
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Utilities</a><ul>
-<li><a class="reference internal" href="#module-platipy.imaging.label.utils">Labels</a></li>
-<li><a class="reference internal" href="#module-platipy.imaging.label.comparison">Comparison</a></li>
-<li><a class="reference internal" href="#module-platipy.imaging.utils.crop">Cropping</a></li>
-<li><a class="reference internal" href="#module-platipy.imaging.utils.geometry">Geometry</a></li>
-<li><a class="reference internal" href="#module-platipy.imaging.utils.io">IO</a></li>
+<li><a class="reference internal" href="#module-platipy.imaging.label.utils">Labels</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.label.utils.binary_decode_image"><code class="docutils literal notranslate"><span class="pre">binary_decode_image()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.utils.binary_encode_structure_list"><code class="docutils literal notranslate"><span class="pre">binary_encode_structure_list()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.utils.correct_volume_overlap"><code class="docutils literal notranslate"><span class="pre">correct_volume_overlap()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.utils.generate_primes"><code class="docutils literal notranslate"><span class="pre">generate_primes()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.utils.get_com"><code class="docutils literal notranslate"><span class="pre">get_com()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.utils.prime_decode_image"><code class="docutils literal notranslate"><span class="pre">prime_decode_image()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.utils.prime_encode_structure_list"><code class="docutils literal notranslate"><span class="pre">prime_encode_structure_list()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.utils.vectorised_transform_index_to_physical_point"><code class="docutils literal notranslate"><span class="pre">vectorised_transform_index_to_physical_point()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.utils.vectorised_transform_physical_point_to_index"><code class="docutils literal notranslate"><span class="pre">vectorised_transform_physical_point_to_index()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-platipy.imaging.label.comparison">Comparison</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.label.comparison.compute_apl"><code class="docutils literal notranslate"><span class="pre">compute_apl()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.comparison.compute_metric_dsc"><code class="docutils literal notranslate"><span class="pre">compute_metric_dsc()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.comparison.compute_metric_hd"><code class="docutils literal notranslate"><span class="pre">compute_metric_hd()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.comparison.compute_metric_masd"><code class="docutils literal notranslate"><span class="pre">compute_metric_masd()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.comparison.compute_metric_mean_apl"><code class="docutils literal notranslate"><span class="pre">compute_metric_mean_apl()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.comparison.compute_metric_sensitivity"><code class="docutils literal notranslate"><span class="pre">compute_metric_sensitivity()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.comparison.compute_metric_specificity"><code class="docutils literal notranslate"><span class="pre">compute_metric_specificity()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.comparison.compute_metric_total_apl"><code class="docutils literal notranslate"><span class="pre">compute_metric_total_apl()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.comparison.compute_surface_dsc"><code class="docutils literal notranslate"><span class="pre">compute_surface_dsc()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.comparison.compute_surface_metrics"><code class="docutils literal notranslate"><span class="pre">compute_surface_metrics()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.comparison.compute_volume"><code class="docutils literal notranslate"><span class="pre">compute_volume()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.label.comparison.compute_volume_metrics"><code class="docutils literal notranslate"><span class="pre">compute_volume_metrics()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-platipy.imaging.utils.crop">Cropping</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.utils.crop.crop_to_label_extent"><code class="docutils literal notranslate"><span class="pre">crop_to_label_extent()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.crop.crop_to_roi"><code class="docutils literal notranslate"><span class="pre">crop_to_roi()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.crop.label_to_roi"><code class="docutils literal notranslate"><span class="pre">label_to_roi()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-platipy.imaging.utils.geometry">Geometry</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.utils.geometry.rotate_image"><code class="docutils literal notranslate"><span class="pre">rotate_image()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.geometry.vector_angle"><code class="docutils literal notranslate"><span class="pre">vector_angle()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-platipy.imaging.utils.io">IO</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.utils.io.write_nrrd_structure_set"><code class="docutils literal notranslate"><span class="pre">write_nrrd_structure_set()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -694,12 +830,14 @@ much compression to use. Should be an integer between 0-9. Defaults to 9.</p></l
       
       
     </aside>
-  </main>
-</div>
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/scripts/furo.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
+    </body>
 </html>

@@ -1,62 +1,58 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Getting Started" href="getting_started.html" />
 
-    <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
-        <title>Home - PlatiPy documentation</title>
-      <link rel="stylesheet" href="_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
-    <link rel="stylesheet" href="_static/pygments.css">
-    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="_static/pygments_dark.css">
+    <meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
+        <title>PlatiPy documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
     
 
 
 <style>
-  :root {
+  body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
   
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
+  @media not print {
+    body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
     }
-  }
-
-  /* For allowing end-user-specific overrides */
-  .override-light {
-    --color-code-background: #f8f8f8;
-  --color-code-foreground: black;
-  
-  }
-  .override-dark {
-    --color-code-background: #202020;
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
+      }
+    }
   }
-</style><link rel="stylesheet" href="_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
-  <body dir="">
+</style></head>
+  <body>
     
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
     <title>Contents</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-      <path stroke="none" d="M0 0h24v24H0z"/>
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="10" y1="12" x2="20" y2="12" />
-      <line x1="6" y1="18" x2="20" y2="18" />
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
     </svg>
   </symbol>
   <symbol id="svg-menu" viewBox="0 0 24 24">
     <title>Menu</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-menu">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
       <line x1="3" y1="12" x2="21" y2="12"></line>
       <line x1="3" y1="6" x2="21" y2="6"></line>
       <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -64,18 +60,57 @@
   </symbol>
   <symbol id="svg-arrow-right" viewBox="0 0 24 24">
     <title>Expand</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-chevron-right">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
       <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
     </svg>
   </symbol>
 </svg>
 
 <input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
 <input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation"></label>
-<label class="overlay toc-overlay" for="__toc"></label>
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
 
 
 
@@ -83,6 +118,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
         <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
       </label>
     </div>
@@ -90,7 +126,16 @@
       <a href="#"><div class="brand">PlatiPy  documentation</div></a>
     </div>
     <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
       <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
     </div>
@@ -103,26 +148,27 @@
   
   <span class="sidebar-brand-text">PlatiPy  documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="search.html">
-  <input class="sidebar-search" placeholder=Search name="q">
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
-</form><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p><span class="caption-text">Introduction</span></p>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 </ul>
-<p><span class="caption-text">Projects</span></p>
+<p class="caption" role="heading"><span class="caption-text">Projects</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="cardiac.html">Cardiac Segmentation</a></li>
 </ul>
-<p><span class="caption-text">Examples</span></p>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="_examples/visualise.html">Visualise Images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis</a></li>
 </ul>
-<p><span class="caption-text">Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="visualiser.html">Image Visualiser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dicom.html">DICOM Conversion</a></li>
@@ -134,22 +180,41 @@
 
 </div>
 </div>
+
       </div>
       
     </div>
   </aside>
-  <main class="main">
+  <div class="main">
     <div class="content">
-      <article role="main">
-        <label class="toc-overlay-icon toc-content-icon" for="__toc">
-          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
-        </label>
-        <section id="platipy-documentation">
-<h1>PlatiPy documentation<a class="headerlink" href="#platipy-documentation" title="Permalink to this headline">¶</a></h1>
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="platipy-documentation">
+<h1>PlatiPy documentation<a class="headerlink" href="#platipy-documentation" title="Permalink to this heading">#</a></h1>
 <section id="platipy">
-<h2>PlatiPy<a class="headerlink" href="#platipy" title="Permalink to this headline">¶</a></h2>
+<h2>PlatiPy<a class="headerlink" href="#platipy" title="Permalink to this heading">#</a></h2>
 <section id="processing-library-and-analysis-toolkit-for-medical-imaging-in-python">
-<h3>Processing Library and Analysis Toolkit for Medical Imaging in Python<a class="headerlink" href="#processing-library-and-analysis-toolkit-for-medical-imaging-in-python" title="Permalink to this headline">¶</a></h3>
+<h3>Processing Library and Analysis Toolkit for Medical Imaging in Python<a class="headerlink" href="#processing-library-and-analysis-toolkit-for-medical-imaging-in-python" title="Permalink to this heading">#</a></h3>
 <p>PlatiPy is a library of <strong>amazing</strong> tools for image processing and analysis - designed specifically
 for medical imaging!</p>
 <p>Check out the <a class="reference external" href="https://pyplati.github.io/platipy/">PlatiPy documentation</a> for more info.</p>
@@ -162,7 +227,7 @@ We welcome feedback and contributions from the community (yes, you!) and you can
 information about contributing <a class="reference external" href="https://pyplati.github.io/platipy/contributing.html">here</a>.</p>
 </section>
 <section id="what-can-i-do-with-platipy">
-<h3>What can I do with <strong>platipy</strong>?<a class="headerlink" href="#what-can-i-do-with-platipy" title="Permalink to this headline">¶</a></h3>
+<h3>What can I do with <strong>platipy</strong>?<a class="headerlink" href="#what-can-i-do-with-platipy" title="Permalink to this heading">#</a></h3>
 <p>A lot! A good place to start is by looking in the
 <a class="reference external" href="https://github.com/pyplati/platipy/tree/master/examples">examples directory</a>.</p>
 <p>Some examples of what PlatiPy can do:</p>
@@ -206,7 +271,7 @@ information about contributing <a class="reference external" href="https://pypla
 </ul>
 <p>A major part of this package is <strong>visualisation</strong>, and some examples are shown below!</p>
 <section id="visualise-some-contours">
-<h4>Visualise some contours<a class="headerlink" href="#visualise-some-contours" title="Permalink to this headline">¶</a></h4>
+<h4>Visualise some contours<a class="headerlink" href="#visualise-some-contours" title="Permalink to this heading">#</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">platipy.imaging</span> <span class="kn">import</span> <span class="n">ImageVisualiser</span>
 
 <span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
@@ -214,10 +279,10 @@ information about contributing <a class="reference external" href="https://pypla
 <span class="n">fig</span> <span class="o">=</span> <span class="n">vis</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<a class="reference external image-reference" href="assets/figure_1.png"><img alt="Figure 1" src="assets/figure_1.png"/></a>
+<a class="reference external image-reference" href="assets/figure_1.png"><img alt="Figure 1" src="assets/figure_1.png" /></a>
 </section>
 <section id="register-some-images">
-<h4>Register some images<a class="headerlink" href="#register-some-images" title="Permalink to this headline">¶</a></h4>
+<h4>Register some images<a class="headerlink" href="#register-some-images" title="Permalink to this heading">#</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">platipy.imaging.registration.linear</span> <span class="kn">import</span> <span class="n">linear_registration</span>
 
 <span class="n">image_2_registered</span><span class="p">,</span> <span class="n">tfm</span> <span class="o">=</span> <span class="n">linear_registration</span><span class="p">(</span>
@@ -230,10 +295,10 @@ information about contributing <a class="reference external" href="https://pypla
 <span class="n">fig</span> <span class="o">=</span> <span class="n">vis</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<a class="reference external image-reference" href="assets/figure_2.png"><img alt="Figure 2" src="assets/figure_2.png"/></a>
+<a class="reference external image-reference" href="assets/figure_2.png"><img alt="Figure 2" src="assets/figure_2.png" /></a>
 </section>
 <section id="calculate-deformation-vector-fields">
-<h4>Calculate deformation vector fields<a class="headerlink" href="#calculate-deformation-vector-fields" title="Permalink to this headline">¶</a></h4>
+<h4>Calculate deformation vector fields<a class="headerlink" href="#calculate-deformation-vector-fields" title="Permalink to this heading">#</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">platipy.imaging.registration.deformable</span> <span class="kn">import</span> <span class="n">fast_symmetric_forces_demons_registration</span>
 
 <span class="n">image_2_deformed</span><span class="p">,</span> <span class="n">tfm_dir</span><span class="p">,</span> <span class="n">dvf</span> <span class="o">=</span> <span class="n">fast_symmetric_forces_demons_registration</span><span class="p">(</span>
@@ -241,36 +306,42 @@ information about contributing <a class="reference external" href="https://pypla
 <span class="n">image_2_registered</span>
 <span class="p">)</span>
 
-<span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">image_2_deformed</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">"z"</span><span class="p">)</span>
+<span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">image_2_deformed</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">)</span>
 <span class="n">vis</span><span class="o">.</span><span class="n">add_vector_overlay</span><span class="p">(</span>
     <span class="n">dvf</span><span class="p">,</span>
     <span class="n">subsample</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
     <span class="n">arrow_scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">arrow_width</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">magma</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">"DVF magnitude [mm]"</span><span class="p">,</span>
-    <span class="n">color_function</span><span class="o">=</span><span class="s2">"magnitude"</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DVF magnitude [mm]&quot;</span><span class="p">,</span>
+    <span class="n">color_function</span><span class="o">=</span><span class="s2">&quot;magnitude&quot;</span>
 <span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">vis</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<a class="reference external image-reference" href="assets/figure_3.png"><img alt="Figure 3" src="assets/figure_3.png"/></a>
+<a class="reference external image-reference" href="assets/figure_3.png"><img alt="Figure 3" src="assets/figure_3.png" /></a>
 </section>
 </section>
 <section id="getting-started">
-<h3>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h3>
-<p>There aren’t many requirements, just an installed Python interpreter (3.6 or greater). The list of
-required Python packages can be found in requirements.txt.</p>
-<p>PlatiPy can be installed with <strong>pip</strong>:</p>
+<h3>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this heading">#</a></h3>
+<p>There aren’t many requirements, just an installed Python interpreter (3.7 or greater). PlatiPy can
+be installed with <strong>pip</strong>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install platipy
+</pre></div>
+</div>
+<p>The base installation of platipy does not include some large libraries needed for various
+components of platipy. The following extras are available to install to run specific platipy tools:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install platipy<span class="o">[</span>cardiac<span class="o">]</span>
+pip install platipy<span class="o">[</span>nnunet<span class="o">]</span>
+pip install platipy<span class="o">[</span>backend<span class="o">]</span>
 </pre></div>
 </div>
 </section>
 <section id="authors">
-<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this headline">¶</a></h3>
+<h3>Authors<a class="headerlink" href="#authors" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
-<li><p><strong>Phillip Chlap</strong> - <a class="reference external" href="mailto:phillip.chlap%40unsw.edu.au">phillip<span>.</span>chlap<span>@</span>unsw<span>.</span>edu<span>.</span>au</a></p></li>
-<li><p><strong>Robert Finnegan</strong> - <a class="reference external" href="mailto:robert.finnegan%40sydney.edu.au">robert<span>.</span>finnegan<span>@</span>sydney<span>.</span>edu<span>.</span>au</a></p></li>
+<li><p><strong>Phillip Chlap</strong> - <a class="reference external" href="mailto:phillip&#46;chlap&#37;&#52;&#48;unsw&#46;edu&#46;au">phillip<span>&#46;</span>chlap<span>&#64;</span>unsw<span>&#46;</span>edu<span>&#46;</span>au</a></p></li>
+<li><p><strong>Robert Finnegan</strong> - <a class="reference external" href="mailto:robert&#46;finnegan&#37;&#52;&#48;sydney&#46;edu&#46;au">robert<span>&#46;</span>finnegan<span>&#64;</span>sydney<span>&#46;</span>edu<span>&#46;</span>au</a></p></li>
 </ul>
 <div class="toctree-wrapper compound">
 </div>
@@ -284,7 +355,8 @@ required Python packages can be found in requirements.txt.</p>
 </section>
 </section>
 
-      </article>
+        </article>
+      </div>
       <footer>
         
         <div class="related-pages">
@@ -295,18 +367,24 @@ required Python packages can be found in requirements.txt.</p>
                 </div>
                 <div class="title">Getting Started</div>
               </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
           
         </div>
-
-        <div class="related-information">
-              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
-            |
-            <a class="muted-link" href="_sources/index.rst.txt"
-               rel="nofollow">
-              Show Source
-            </a>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
+            </div>
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
         </div>
         
       </footer>
@@ -317,7 +395,7 @@ required Python packages can be found in requirements.txt.</p>
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
@@ -348,12 +426,14 @@ required Python packages can be found in requirements.txt.</p>
       
       
     </aside>
-  </main>
-</div>
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/scripts/furo.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
+    </body>
 </html>

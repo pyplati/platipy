@@ -1,62 +1,58 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
 
-    <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
+    <meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
         <title>platipy.imaging.projects.cardiac package - PlatiPy documentation</title>
-      <link rel="stylesheet" href="../_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
-    <link rel="stylesheet" href="../_static/pygments.css">
-    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="../_static/pygments_dark.css">
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
     
 
 
 <style>
-  :root {
+  body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
   
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
+  @media not print {
+    body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
     }
-  }
-
-  /* For allowing end-user-specific overrides */
-  .override-light {
-    --color-code-background: #f8f8f8;
-  --color-code-foreground: black;
-  
-  }
-  .override-dark {
-    --color-code-background: #202020;
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
+      }
+    }
   }
-</style><link rel="stylesheet" href="../_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
-  <body dir="">
+</style></head>
+  <body>
     
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
     <title>Contents</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-      <path stroke="none" d="M0 0h24v24H0z"/>
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="10" y1="12" x2="20" y2="12" />
-      <line x1="6" y1="18" x2="20" y2="18" />
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
     </svg>
   </symbol>
   <symbol id="svg-menu" viewBox="0 0 24 24">
     <title>Menu</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-menu">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
       <line x1="3" y1="12" x2="21" y2="12"></line>
       <line x1="3" y1="6" x2="21" y2="6"></line>
       <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -64,18 +60,57 @@
   </symbol>
   <symbol id="svg-arrow-right" viewBox="0 0 24 24">
     <title>Expand</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-chevron-right">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
       <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
     </svg>
   </symbol>
 </svg>
 
 <input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
 <input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation"></label>
-<label class="overlay toc-overlay" for="__toc"></label>
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
 
 
 
@@ -83,6 +118,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
         <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
       </label>
     </div>
@@ -90,7 +126,16 @@
       <a href="../index.html"><div class="brand">PlatiPy  documentation</div></a>
     </div>
     <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
       <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
     </div>
@@ -103,26 +148,27 @@
   
   <span class="sidebar-brand-text">PlatiPy  documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="../search.html">
-  <input class="sidebar-search" placeholder=Search name="q">
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
-</form><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p><span class="caption-text">Introduction</span></p>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
 </ul>
-<p><span class="caption-text">Projects</span></p>
+<p class="caption" role="heading"><span class="caption-text">Projects</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../cardiac.html">Cardiac Segmentation</a></li>
 </ul>
-<p><span class="caption-text">Examples</span></p>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../_examples/visualise.html">Visualise Images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../_examples/dvh_analysis.html">DVH Analysis Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_examples/dvh_analysis.html">DVH Analysis</a></li>
 </ul>
-<p><span class="caption-text">Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../visualiser.html">Image Visualiser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dicom.html">DICOM Conversion</a></li>
@@ -134,26 +180,60 @@
 
 </div>
 </div>
+
       </div>
       
     </div>
   </aside>
-  <main class="main">
+  <div class="main">
     <div class="content">
-      <article role="main">
-        <label class="toc-overlay-icon toc-content-icon" for="__toc">
-          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
-        </label>
-        <section id="platipy-imaging-projects-cardiac-package">
-<h1>platipy.imaging.projects.cardiac package<a class="headerlink" href="#platipy-imaging-projects-cardiac-package" title="Permalink to this headline">¶</a></h1>
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="platipy-imaging-projects-cardiac-package">
+<h1>platipy.imaging.projects.cardiac package<a class="headerlink" href="#platipy-imaging-projects-cardiac-package" title="Permalink to this heading">#</a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">#</a></h2>
 </section>
 <section id="module-platipy.imaging.projects.cardiac.run">
-<span id="platipy-imaging-projects-cardiac-run-module"></span><h2>platipy.imaging.projects.cardiac.run module<a class="headerlink" href="#module-platipy.imaging.projects.cardiac.run" title="Permalink to this headline">¶</a></h2>
+<span id="platipy-imaging-projects-cardiac-run-module"></span><h2>platipy.imaging.projects.cardiac.run module<a class="headerlink" href="#module-platipy.imaging.projects.cardiac.run" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
-<dt id="platipy.imaging.projects.cardiac.run.install_open_atlas">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.run.</span></code><code class="sig-name descname"><span class="pre">install_open_atlas</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atlas_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.run.install_open_atlas" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.projects.cardiac.run.display_open_cardiac_zip_url_locations">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.run.</span></span><span class="sig-name descname"><span class="pre">display_open_cardiac_zip_url_locations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.run.display_open_cardiac_zip_url_locations" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.projects.cardiac.run.install_atlas_from_zipfile">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.run.</span></span><span class="sig-name descname"><span class="pre">install_atlas_from_zipfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zip_file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atlas_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.run.install_atlas_from_zipfile" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.projects.cardiac.run.install_hybrid_cardiac_from_zip">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.run.</span></span><span class="sig-name descname"><span class="pre">install_hybrid_cardiac_from_zip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_nnunet_zip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_to_atlas_zip</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.run.install_hybrid_cardiac_from_zip" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.projects.cardiac.run.install_open_atlas">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.run.</span></span><span class="sig-name descname"><span class="pre">install_open_atlas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atlas_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.run.install_open_atlas" title="Permalink to this definition">#</a></dt>
 <dd><p>Fetch atlas from Zenodo and place into atlas_path</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -161,9 +241,10 @@
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.projects.cardiac.run.run_cardiac_segmentation">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.run.</span></code><code class="sig-name descname"><span class="pre">run_cardiac_segmentation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guide_structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'atlas_settings':</span> <span class="pre">{'atlas_id_list':</span> <span class="pre">['03',</span> <span class="pre">'05',</span> <span class="pre">'08',</span> <span class="pre">'10',</span> <span class="pre">'11',</span> <span class="pre">'12',</span> <span class="pre">'13',</span> <span class="pre">'16',</span> <span class="pre">'24',</span> <span class="pre">'35'],</span> <span class="pre">'atlas_image_format':</span> <span class="pre">'Case_{0}/Images/Case_{0}_CROP.nii.gz',</span> <span class="pre">'atlas_label_format':</span> <span class="pre">'Case_{0}/Structures/Case_{0}_{1}_CROP.nii.gz',</span> <span class="pre">'atlas_path':</span> <span class="pre">'/home/runner/.platipy/cardiac/test_atlas',</span> <span class="pre">'atlas_structure_list':</span> <span class="pre">['AORTICVALVE',</span> <span class="pre">'ASCENDINGAORTA',</span> <span class="pre">'LANTDESCARTERY',</span> <span class="pre">'LCIRCUMFLEXARTERY',</span> <span class="pre">'LCORONARYARTERY',</span> <span class="pre">'LEFTATRIUM',</span> <span class="pre">'LEFTVENTRICLE',</span> <span class="pre">'MITRALVALVE',</span> <span class="pre">'PULMONARYARTERY',</span> <span class="pre">'PULMONICVALVE',</span> <span class="pre">'RCORONARYARTERY',</span> <span class="pre">'RIGHTATRIUM',</span> <span class="pre">'RIGHTVENTRICLE',</span> <span class="pre">'SVC',</span> <span class="pre">'TRICUSPIDVALVE',</span> <span class="pre">'WHOLEHEART'],</span> <span class="pre">'crop_atlas_expansion_mm':</span> <span class="pre">(20,</span> <span class="pre">20,</span> <span class="pre">40),</span> <span class="pre">'crop_atlas_to_structures':</span> <span class="pre">False,</span> <span class="pre">'guide_structure_name':</span> <span class="pre">'WHOLEHEART',</span> <span class="pre">'superior_extension':</span> <span class="pre">30},</span> <span class="pre">'auto_crop_target_image_settings':</span> <span class="pre">{'expansion_mm':</span> <span class="pre">[20,</span> <span class="pre">20,</span> <span class="pre">40]},</span> <span class="pre">'deformable_registration_settings':</span> <span class="pre">{'default_value':</span> <span class="pre">0,</span> <span class="pre">'isotropic_resample':</span> <span class="pre">True,</span> <span class="pre">'iteration_staging':</span> <span class="pre">[200,</span> <span class="pre">150,</span> <span class="pre">100],</span> <span class="pre">'ncores':</span> <span class="pre">8,</span> <span class="pre">'resolution_staging':</span> <span class="pre">[6,</span> <span class="pre">3,</span> <span class="pre">1.5],</span> <span class="pre">'smoothing_sigmas':</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0],</span> <span class="pre">'verbose':</span> <span class="pre">False},</span> <span class="pre">'geometric_segmentation_settings':</span> <span class="pre">{'atlas_structure_names':</span> <span class="pre">{'atlas_ascending_aorta':</span> <span class="pre">'A_Aorta',</span> <span class="pre">'atlas_left_atrium':</span> <span class="pre">'Atrium_L',</span> <span class="pre">'atlas_left_ventricle':</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'atlas_pulmonary_artery':</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'atlas_right_atrium':</span> <span class="pre">'Atrium_R',</span> <span class="pre">'atlas_right_ventricle':</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'atlas_superior_vena_cava':</span> <span class="pre">'V_Venacava_S',</span> <span class="pre">'atlas_whole_heart':</span> <span class="pre">'Heart'},</span> <span class="pre">'conduction_system_definitions':</span> <span class="pre">{'atrioventricular_node_radius_mm':</span> <span class="pre">10,</span> <span class="pre">'sinoatrial_node_radius_mm':</span> <span class="pre">10},</span> <span class="pre">'geometric_name_suffix':</span> <span class="pre">'_GEOMETRIC',</span> <span class="pre">'run_geometric_algorithms':</span> <span class="pre">True,</span> <span class="pre">'valve_definitions':</span> <span class="pre">{'aortic_valve_thickness_mm':</span> <span class="pre">10,</span> <span class="pre">'mitral_valve_radius_mm':</span> <span class="pre">15,</span> <span class="pre">'mitral_valve_thickness_mm':</span> <span class="pre">10,</span> <span class="pre">'pulmonic_valve_thickness_mm':</span> <span class="pre">10,</span> <span class="pre">'tricuspid_valve_radius_mm':</span> <span class="pre">15,</span> <span class="pre">'tricuspid_valve_thickness_mm':</span> <span class="pre">10}},</span> <span class="pre">'iar_settings':</span> <span class="pre">{'min_best_atlases':</span> <span class="pre">5,</span> <span class="pre">'outlier_factor':</span> <span class="pre">1.5,</span> <span class="pre">'outlier_method':</span> <span class="pre">'iqr',</span> <span class="pre">'project_on_sphere':</span> <span class="pre">False,</span> <span class="pre">'reference_structure':</span> <span class="pre">False,</span> <span class="pre">'smooth_distance_maps':</span> <span class="pre">True,</span> <span class="pre">'smooth_sigma':</span> <span class="pre">1,</span> <span class="pre">'z_score_statistic':</span> <span class="pre">'mad'},</span> <span class="pre">'label_fusion_settings':</span> <span class="pre">{'optimal_threshold':</span> <span class="pre">{'AORTICVALVE':</span> <span class="pre">0.5,</span> <span class="pre">'ASCENDINGAORTA':</span> <span class="pre">0.44,</span> <span class="pre">'LEFTATRIUM':</span> <span class="pre">0.4,</span> <span class="pre">'LEFTVENTRICLE':</span> <span class="pre">0.45,</span> <span class="pre">'MITRALVALVE':</span> <span class="pre">0.5,</span> <span class="pre">'PULMONARYARTERY':</span> <span class="pre">0.46,</span> <span class="pre">'PULMONICVALVE':</span> <span class="pre">0.5,</span> <span class="pre">'RIGHTATRIUM':</span> <span class="pre">0.38,</span> <span class="pre">'RIGHTVENTRICLE':</span> <span class="pre">0.42,</span> <span class="pre">'SVC':</span> <span class="pre">0.44,</span> <span class="pre">'TRICUSPIDVALVE':</span> <span class="pre">0.5,</span> <span class="pre">'WHOLEHEART':</span> <span class="pre">0.5},</span> <span class="pre">'vote_params':</span> <span class="pre">None,</span> <span class="pre">'vote_type':</span> <span class="pre">'unweighted'},</span> <span class="pre">'linear_registration_settings':</span> <span class="pre">{'default_value':</span> <span class="pre">-</span> <span class="pre">1000,</span> <span class="pre">'metric':</span> <span class="pre">'mean_squares',</span> <span class="pre">'number_of_iterations':</span> <span class="pre">50,</span> <span class="pre">'optimiser':</span> <span class="pre">'gradient_descent_line_search',</span> <span class="pre">'reg_method':</span> <span class="pre">'affine',</span> <span class="pre">'sampling_rate':</span> <span class="pre">0.75,</span> <span class="pre">'shrink_factors':</span> <span class="pre">[16,</span> <span class="pre">8,</span> <span class="pre">4],</span> <span class="pre">'smooth_sigmas':</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0],</span> <span class="pre">'verbose':</span> <span class="pre">False},</span> <span class="pre">'postprocessing_settings':</span> <span class="pre">{'binaryfillhole_mm':</span> <span class="pre">3,</span> <span class="pre">'run_postprocessing':</span> <span class="pre">True,</span> <span class="pre">'structures_for_binaryfillhole':</span> <span class="pre">['Atrium_L',</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'Atrium_R',</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'A_Aorta',</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'V_Venacava_S',</span> <span class="pre">'Heart'],</span> <span class="pre">'structures_for_overlap_correction':</span> <span class="pre">['Atrium_L',</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'Atrium_R',</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'A_Aorta',</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'V_Venacava_S']},</span> <span class="pre">'return_as_cropped':</span> <span class="pre">False,</span> <span class="pre">'return_atlas_guide_structure':</span> <span class="pre">False,</span> <span class="pre">'return_proba_as_contours':</span> <span class="pre">False,</span> <span class="pre">'structure_guided_registration_settings':</span> <span class="pre">{'default_value':</span> <span class="pre">0,</span> <span class="pre">'isotropic_resample':</span> <span class="pre">True,</span> <span class="pre">'iteration_staging':</span> <span class="pre">[50,</span> <span class="pre">50,</span> <span class="pre">50],</span> <span class="pre">'ncores':</span> <span class="pre">8,</span> <span class="pre">'resolution_staging':</span> <span class="pre">[16,</span> <span class="pre">8,</span> <span class="pre">2],</span> <span class="pre">'smoothing_sigmas':</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0],</span> <span class="pre">'verbose':</span> <span class="pre">False},</span> <span class="pre">'vessel_spline_settings':</span> <span class="pre">{'scan_direction_dict':</span> <span class="pre">{'LANTDESCARTERY':</span> <span class="pre">'z',</span> <span class="pre">'LCIRCUMFLEXARTERY':</span> <span class="pre">'z',</span> <span class="pre">'LCORONARYARTERY':</span> <span class="pre">'x',</span> <span class="pre">'RCORONARYARTERY':</span> <span class="pre">'z'},</span> <span class="pre">'stop_condition_type_dict':</span> <span class="pre">{'LANTDESCARTERY':</span> <span class="pre">'count',</span> <span class="pre">'LCIRCUMFLEXARTERY':</span> <span class="pre">'count',</span> <span class="pre">'LCORONARYARTERY':</span> <span class="pre">'count',</span> <span class="pre">'RCORONARYARTERY':</span> <span class="pre">'count'},</span> <span class="pre">'stop_condition_value_dict':</span> <span class="pre">{'LANTDESCARTERY':</span> <span class="pre">2,</span> <span class="pre">'LCIRCUMFLEXARTERY':</span> <span class="pre">2,</span> <span class="pre">'LCORONARYARTERY':</span> <span class="pre">2,</span> <span class="pre">'RCORONARYARTERY':</span> <span class="pre">2},</span> <span class="pre">'vessel_name_list':</span> <span class="pre">['LANTDESCARTERY',</span> <span class="pre">'LCIRCUMFLEXARTERY',</span> <span class="pre">'LCORONARYARTERY',</span> <span class="pre">'RCORONARYARTERY'],</span> <span class="pre">'vessel_radius_mm_dict':</span> <span class="pre">{'LANTDESCARTERY':</span> <span class="pre">2,</span> <span class="pre">'LCIRCUMFLEXARTERY':</span> <span class="pre">2,</span> <span class="pre">'LCORONARYARTERY':</span> <span class="pre">2,</span> <span class="pre">'RCORONARYARTERY':</span> <span class="pre">2}}}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.run.run_cardiac_segmentation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.projects.cardiac.run.run_cardiac_segmentation">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.run.</span></span><span class="sig-name descname"><span class="pre">run_cardiac_segmentation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guide_structure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'atlas_settings':</span> <span class="pre">{'atlas_id_list':</span> <span class="pre">['03',</span> <span class="pre">'05',</span> <span class="pre">'08',</span> <span class="pre">'10',</span> <span class="pre">'11',</span> <span class="pre">'12',</span> <span class="pre">'13',</span> <span class="pre">'16',</span> <span class="pre">'24',</span> <span class="pre">'35'],</span> <span class="pre">'atlas_image_format':</span> <span class="pre">'Case_{0}/Images/Case_{0}_CROP.nii.gz',</span> <span class="pre">'atlas_label_format':</span> <span class="pre">'Case_{0}/Structures/Case_{0}_{1}_CROP.nii.gz',</span> <span class="pre">'atlas_path':</span> <span class="pre">'/home/runner/.platipy/cardiac/test_atlas',</span> <span class="pre">'atlas_structure_list':</span> <span class="pre">['AORTICVALVE',</span> <span class="pre">'ASCENDINGAORTA',</span> <span class="pre">'LANTDESCARTERY',</span> <span class="pre">'LCIRCUMFLEXARTERY',</span> <span class="pre">'LCORONARYARTERY',</span> <span class="pre">'LEFTATRIUM',</span> <span class="pre">'LEFTVENTRICLE',</span> <span class="pre">'MITRALVALVE',</span> <span class="pre">'PULMONARYARTERY',</span> <span class="pre">'PULMONICVALVE',</span> <span class="pre">'RCORONARYARTERY',</span> <span class="pre">'RIGHTATRIUM',</span> <span class="pre">'RIGHTVENTRICLE',</span> <span class="pre">'SVC',</span> <span class="pre">'TRICUSPIDVALVE',</span> <span class="pre">'WHOLEHEART'],</span> <span class="pre">'crop_atlas_expansion_mm':</span> <span class="pre">(20,</span> <span class="pre">20,</span> <span class="pre">40),</span> <span class="pre">'crop_atlas_to_structures':</span> <span class="pre">False,</span> <span class="pre">'guide_structure_name':</span> <span class="pre">'WHOLEHEART',</span> <span class="pre">'superior_extension':</span> <span class="pre">30},</span> <span class="pre">'auto_crop_target_image_settings':</span> <span class="pre">{'expansion_mm':</span> <span class="pre">[20,</span> <span class="pre">20,</span> <span class="pre">40]},</span> <span class="pre">'deformable_registration_settings':</span> <span class="pre">{'default_value':</span> <span class="pre">0,</span> <span class="pre">'isotropic_resample':</span> <span class="pre">True,</span> <span class="pre">'iteration_staging':</span> <span class="pre">[200,</span> <span class="pre">150,</span> <span class="pre">100],</span> <span class="pre">'ncores':</span> <span class="pre">8,</span> <span class="pre">'resolution_staging':</span> <span class="pre">[6,</span> <span class="pre">3,</span> <span class="pre">1.5],</span> <span class="pre">'smoothing_sigmas':</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0],</span> <span class="pre">'verbose':</span> <span class="pre">False},</span> <span class="pre">'geometric_segmentation_settings':</span> <span class="pre">{'atlas_structure_names':</span> <span class="pre">{'atlas_ascending_aorta':</span> <span class="pre">'A_Aorta',</span> <span class="pre">'atlas_left_atrium':</span> <span class="pre">'Atrium_L',</span> <span class="pre">'atlas_left_ventricle':</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'atlas_pulmonary_artery':</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'atlas_right_atrium':</span> <span class="pre">'Atrium_R',</span> <span class="pre">'atlas_right_ventricle':</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'atlas_superior_vena_cava':</span> <span class="pre">'V_Venacava_S',</span> <span class="pre">'atlas_whole_heart':</span> <span class="pre">'Heart'},</span> <span class="pre">'conduction_system_definitions':</span> <span class="pre">{'atrioventricular_node_radius_mm':</span> <span class="pre">10,</span> <span class="pre">'sinoatrial_node_radius_mm':</span> <span class="pre">10},</span> <span class="pre">'geometric_name_suffix':</span> <span class="pre">'_GEOMETRIC',</span> <span class="pre">'run_geometric_algorithms':</span> <span class="pre">True,</span> <span class="pre">'valve_definitions':</span> <span class="pre">{'aortic_valve_thickness_mm':</span> <span class="pre">10,</span> <span class="pre">'mitral_valve_radius_mm':</span> <span class="pre">15,</span> <span class="pre">'mitral_valve_thickness_mm':</span> <span class="pre">10,</span> <span class="pre">'pulmonic_valve_thickness_mm':</span> <span class="pre">10,</span> <span class="pre">'tricuspid_valve_radius_mm':</span> <span class="pre">15,</span> <span class="pre">'tricuspid_valve_thickness_mm':</span> <span class="pre">10}},</span> <span class="pre">'iar_settings':</span> <span class="pre">{'min_best_atlases':</span> <span class="pre">5,</span> <span class="pre">'outlier_factor':</span> <span class="pre">1.5,</span> <span class="pre">'outlier_method':</span> <span class="pre">'iqr',</span> <span class="pre">'project_on_sphere':</span> <span class="pre">False,</span> <span class="pre">'reference_structure':</span> <span class="pre">False,</span> <span class="pre">'smooth_distance_maps':</span> <span class="pre">True,</span> <span class="pre">'smooth_sigma':</span> <span class="pre">1,</span> <span class="pre">'z_score_statistic':</span> <span class="pre">'mad'},</span> <span class="pre">'label_fusion_settings':</span> <span class="pre">{'optimal_threshold':</span> <span class="pre">{'AORTICVALVE':</span> <span class="pre">0.5,</span> <span class="pre">'ASCENDINGAORTA':</span> <span class="pre">0.44,</span> <span class="pre">'LEFTATRIUM':</span> <span class="pre">0.4,</span> <span class="pre">'LEFTVENTRICLE':</span> <span class="pre">0.45,</span> <span class="pre">'MITRALVALVE':</span> <span class="pre">0.5,</span> <span class="pre">'PULMONARYARTERY':</span> <span class="pre">0.46,</span> <span class="pre">'PULMONICVALVE':</span> <span class="pre">0.5,</span> <span class="pre">'RIGHTATRIUM':</span> <span class="pre">0.38,</span> <span class="pre">'RIGHTVENTRICLE':</span> <span class="pre">0.42,</span> <span class="pre">'SVC':</span> <span class="pre">0.44,</span> <span class="pre">'TRICUSPIDVALVE':</span> <span class="pre">0.5,</span> <span class="pre">'WHOLEHEART':</span> <span class="pre">0.5},</span> <span class="pre">'vote_params':</span> <span class="pre">None,</span> <span class="pre">'vote_type':</span> <span class="pre">'unweighted'},</span> <span class="pre">'linear_registration_settings':</span> <span class="pre">{'default_value':</span> <span class="pre">-1000,</span> <span class="pre">'metric':</span> <span class="pre">'mean_squares',</span> <span class="pre">'number_of_iterations':</span> <span class="pre">50,</span> <span class="pre">'optimiser':</span> <span class="pre">'gradient_descent_line_search',</span> <span class="pre">'reg_method':</span> <span class="pre">'affine',</span> <span class="pre">'sampling_rate':</span> <span class="pre">0.75,</span> <span class="pre">'shrink_factors':</span> <span class="pre">[16,</span> <span class="pre">8,</span> <span class="pre">4],</span> <span class="pre">'smooth_sigmas':</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0],</span> <span class="pre">'verbose':</span> <span class="pre">False},</span> <span class="pre">'postprocessing_settings':</span> <span class="pre">{'binaryfillhole_mm':</span> <span class="pre">3,</span> <span class="pre">'run_postprocessing':</span> <span class="pre">True,</span> <span class="pre">'structures_for_binaryfillhole':</span> <span class="pre">['Atrium_L',</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'Atrium_R',</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'A_Aorta',</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'V_Venacava_S',</span> <span class="pre">'Heart'],</span> <span class="pre">'structures_for_overlap_correction':</span> <span class="pre">['Atrium_L',</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'Atrium_R',</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'A_Aorta',</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'V_Venacava_S']},</span> <span class="pre">'return_as_cropped':</span> <span class="pre">False,</span> <span class="pre">'return_atlas_guide_structure':</span> <span class="pre">False,</span> <span class="pre">'return_proba_as_contours':</span> <span class="pre">False,</span> <span class="pre">'structure_guided_registration_settings':</span> <span class="pre">{'default_value':</span> <span class="pre">0,</span> <span class="pre">'isotropic_resample':</span> <span class="pre">True,</span> <span class="pre">'iteration_staging':</span> <span class="pre">[50,</span> <span class="pre">50,</span> <span class="pre">50],</span> <span class="pre">'ncores':</span> <span class="pre">8,</span> <span class="pre">'resolution_staging':</span> <span class="pre">[16,</span> <span class="pre">8,</span> <span class="pre">2],</span> <span class="pre">'smoothing_sigmas':</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0],</span> <span class="pre">'verbose':</span> <span class="pre">False},</span> <span class="pre">'vessel_spline_settings':</span> <span class="pre">{'scan_direction_dict':</span> <span class="pre">{'LANTDESCARTERY':</span> <span class="pre">'z',</span> <span class="pre">'LCIRCUMFLEXARTERY':</span> <span class="pre">'z',</span> <span class="pre">'LCORONARYARTERY':</span> <span class="pre">'x',</span> <span class="pre">'RCORONARYARTERY':</span> <span class="pre">'z'},</span> <span class="pre">'stop_condition_type_dict':</span> <span class="pre">{'LANTDESCARTERY':</span> <span class="pre">'count',</span> <span class="pre">'LCIRCUMFLEXARTERY':</span> <span class="pre">'count',</span> <span class="pre">'LCORONARYARTERY':</span> <span class="pre">'count',</span> <span class="pre">'RCORONARYARTERY':</span> <span class="pre">'count'},</span> <span class="pre">'stop_condition_value_dict':</span> <span class="pre">{'LANTDESCARTERY':</span> <span class="pre">2,</span> <span class="pre">'LCIRCUMFLEXARTERY':</span> <span class="pre">2,</span> <span class="pre">'LCORONARYARTERY':</span> <span class="pre">2,</span> <span class="pre">'RCORONARYARTERY':</span> <span class="pre">2},</span> <span class="pre">'vessel_name_list':</span> <span class="pre">['LANTDESCARTERY',</span> <span class="pre">'LCIRCUMFLEXARTERY',</span> <span class="pre">'LCORONARYARTERY',</span> <span class="pre">'RCORONARYARTERY'],</span> <span class="pre">'vessel_radius_mm_dict':</span> <span class="pre">{'LANTDESCARTERY':</span> <span class="pre">2,</span> <span class="pre">'LCIRCUMFLEXARTERY':</span> <span class="pre">2,</span> <span class="pre">'LCORONARYARTERY':</span> <span class="pre">2,</span> <span class="pre">'RCORONARYARTERY':</span> <span class="pre">2}}}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.run.run_cardiac_segmentation" title="Permalink to this definition">#</a></dt>
 <dd><p>Runs the atlas-based cardiac segmentation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -181,9 +262,10 @@ Defaults to default_settings.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.projects.cardiac.run.run_hybrid_segmentation">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.run.</span></code><code class="sig-name descname"><span class="pre">run_hybrid_segmentation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'cardiac_settings':</span> <span class="pre">{'atlas_settings':</span> <span class="pre">{'atlas_id_list':</span> <span class="pre">['LCTSC-Test-S2-201',</span> <span class="pre">'LCTSC-Test-S2-203',</span> <span class="pre">'LCTSC-Test-S3-201',</span> <span class="pre">'LUNG1-002',</span> <span class="pre">'LUNG1-009',</span> <span class="pre">'LUNG1-021',</span> <span class="pre">'LUNG1-067',</span> <span class="pre">'LUNG1-226'],</span> <span class="pre">'atlas_image_format':</span> <span class="pre">'{0}/IMAGES/CT.nii.gz',</span> <span class="pre">'atlas_label_format':</span> <span class="pre">'{0}/STRUCTURES/{1}.nii.gz',</span> <span class="pre">'atlas_path':</span> <span class="pre">'/home/runner/.platipy/cardiac/test_atlas',</span> <span class="pre">'atlas_structure_list':</span> <span class="pre">['Atrium_L',</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'Atrium_R',</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'A_Aorta',</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'V_Venacava_S',</span> <span class="pre">'A_LAD',</span> <span class="pre">'A_Coronary_L',</span> <span class="pre">'A_Cflx',</span> <span class="pre">'A_Coronary_R',</span> <span class="pre">'Heart'],</span> <span class="pre">'crop_atlas_expansion_mm':</span> <span class="pre">(50,</span> <span class="pre">50,</span> <span class="pre">50),</span> <span class="pre">'crop_atlas_to_structures':</span> <span class="pre">True,</span> <span class="pre">'guide_structure_name':</span> <span class="pre">'Heart',</span> <span class="pre">'superior_extension':</span> <span class="pre">30},</span> <span class="pre">'auto_crop_target_image_settings':</span> <span class="pre">{'expansion_mm':</span> <span class="pre">[20,</span> <span class="pre">20,</span> <span class="pre">40]},</span> <span class="pre">'deformable_registration_settings':</span> <span class="pre">{'default_value':</span> <span class="pre">0,</span> <span class="pre">'isotropic_resample':</span> <span class="pre">True,</span> <span class="pre">'iteration_staging':</span> <span class="pre">[200,</span> <span class="pre">150,</span> <span class="pre">100],</span> <span class="pre">'ncores':</span> <span class="pre">8,</span> <span class="pre">'resolution_staging':</span> <span class="pre">[6,</span> <span class="pre">3,</span> <span class="pre">1.5],</span> <span class="pre">'smoothing_sigmas':</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0],</span> <span class="pre">'verbose':</span> <span class="pre">False},</span> <span class="pre">'geometric_segmentation_settings':</span> <span class="pre">{'atlas_structure_names':</span> <span class="pre">{'atlas_ascending_aorta':</span> <span class="pre">'A_Aorta',</span> <span class="pre">'atlas_left_atrium':</span> <span class="pre">'Atrium_L',</span> <span class="pre">'atlas_left_ventricle':</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'atlas_pulmonary_artery':</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'atlas_right_atrium':</span> <span class="pre">'Atrium_R',</span> <span class="pre">'atlas_right_ventricle':</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'atlas_superior_vena_cava':</span> <span class="pre">'V_Venacava_S',</span> <span class="pre">'atlas_whole_heart':</span> <span class="pre">'Heart'},</span> <span class="pre">'conduction_system_definitions':</span> <span class="pre">{'atrioventricular_node_radius_mm':</span> <span class="pre">10,</span> <span class="pre">'sinoatrial_node_radius_mm':</span> <span class="pre">10},</span> <span class="pre">'geometric_name_suffix':</span> <span class="pre">'_GEOMETRIC',</span> <span class="pre">'run_geometric_algorithms':</span> <span class="pre">True,</span> <span class="pre">'valve_definitions':</span> <span class="pre">{'aortic_valve_thickness_mm':</span> <span class="pre">10,</span> <span class="pre">'mitral_valve_radius_mm':</span> <span class="pre">15,</span> <span class="pre">'mitral_valve_thickness_mm':</span> <span class="pre">10,</span> <span class="pre">'pulmonic_valve_thickness_mm':</span> <span class="pre">10,</span> <span class="pre">'tricuspid_valve_radius_mm':</span> <span class="pre">15,</span> <span class="pre">'tricuspid_valve_thickness_mm':</span> <span class="pre">10}},</span> <span class="pre">'iar_settings':</span> <span class="pre">{'min_best_atlases':</span> <span class="pre">5,</span> <span class="pre">'outlier_factor':</span> <span class="pre">1.5,</span> <span class="pre">'outlier_method':</span> <span class="pre">'iqr',</span> <span class="pre">'project_on_sphere':</span> <span class="pre">False,</span> <span class="pre">'reference_structure':</span> <span class="pre">False,</span> <span class="pre">'smooth_distance_maps':</span> <span class="pre">True,</span> <span class="pre">'smooth_sigma':</span> <span class="pre">1,</span> <span class="pre">'z_score_statistic':</span> <span class="pre">'mad'},</span> <span class="pre">'label_fusion_settings':</span> <span class="pre">{'optimal_threshold':</span> <span class="pre">{'A_Aorta':</span> <span class="pre">0.5,</span> <span class="pre">'A_Pulmonary':</span> <span class="pre">0.5,</span> <span class="pre">'Atrium_L':</span> <span class="pre">0.5,</span> <span class="pre">'Atrium_R':</span> <span class="pre">0.5,</span> <span class="pre">'Heart':</span> <span class="pre">0.5,</span> <span class="pre">'V_Venacava_S':</span> <span class="pre">0.5,</span> <span class="pre">'Ventricle_L':</span> <span class="pre">0.5,</span> <span class="pre">'Ventricle_R':</span> <span class="pre">0.5},</span> <span class="pre">'vote_params':</span> <span class="pre">None,</span> <span class="pre">'vote_type':</span> <span class="pre">'unweighted'},</span> <span class="pre">'linear_registration_settings':</span> <span class="pre">{'default_value':</span> <span class="pre">-</span> <span class="pre">1000,</span> <span class="pre">'metric':</span> <span class="pre">'mean_squares',</span> <span class="pre">'number_of_iterations':</span> <span class="pre">50,</span> <span class="pre">'optimiser':</span> <span class="pre">'gradient_descent_line_search',</span> <span class="pre">'reg_method':</span> <span class="pre">'affine',</span> <span class="pre">'sampling_rate':</span> <span class="pre">0.75,</span> <span class="pre">'shrink_factors':</span> <span class="pre">[16,</span> <span class="pre">8,</span> <span class="pre">4],</span> <span class="pre">'smooth_sigmas':</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0],</span> <span class="pre">'verbose':</span> <span class="pre">False},</span> <span class="pre">'postprocessing_settings':</span> <span class="pre">{'binaryfillhole_mm':</span> <span class="pre">3,</span> <span class="pre">'run_postprocessing':</span> <span class="pre">True,</span> <span class="pre">'structures_for_binaryfillhole':</span> <span class="pre">['Atrium_L',</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'Atrium_R',</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'A_Aorta',</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'V_Venacava_S',</span> <span class="pre">'Heart'],</span> <span class="pre">'structures_for_overlap_correction':</span> <span class="pre">['Atrium_L',</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'Atrium_R',</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'A_Aorta',</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'V_Venacava_S']},</span> <span class="pre">'return_as_cropped':</span> <span class="pre">False,</span> <span class="pre">'return_atlas_guide_structure':</span> <span class="pre">False,</span> <span class="pre">'return_proba_as_contours':</span> <span class="pre">True,</span> <span class="pre">'structure_guided_registration_settings':</span> <span class="pre">{'default_value':</span> <span class="pre">0,</span> <span class="pre">'isotropic_resample':</span> <span class="pre">True,</span> <span class="pre">'iteration_staging':</span> <span class="pre">[50,</span> <span class="pre">50,</span> <span class="pre">50],</span> <span class="pre">'ncores':</span> <span class="pre">8,</span> <span class="pre">'resolution_staging':</span> <span class="pre">[16,</span> <span class="pre">8,</span> <span class="pre">2],</span> <span class="pre">'smoothing_sigmas':</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0],</span> <span class="pre">'verbose':</span> <span class="pre">False},</span> <span class="pre">'vessel_spline_settings':</span> <span class="pre">{'scan_direction_dict':</span> <span class="pre">{'A_Cflx':</span> <span class="pre">'z',</span> <span class="pre">'A_Coronary_L':</span> <span class="pre">'x',</span> <span class="pre">'A_Coronary_R':</span> <span class="pre">'z',</span> <span class="pre">'A_LAD':</span> <span class="pre">'z'},</span> <span class="pre">'stop_condition_type_dict':</span> <span class="pre">{'A_Cflx':</span> <span class="pre">'count',</span> <span class="pre">'A_Coronary_L':</span> <span class="pre">'count',</span> <span class="pre">'A_Coronary_R':</span> <span class="pre">'count',</span> <span class="pre">'A_LAD':</span> <span class="pre">'count'},</span> <span class="pre">'stop_condition_value_dict':</span> <span class="pre">{'A_Cflx':</span> <span class="pre">2,</span> <span class="pre">'A_Coronary_L':</span> <span class="pre">2,</span> <span class="pre">'A_Coronary_R':</span> <span class="pre">2,</span> <span class="pre">'A_LAD':</span> <span class="pre">2},</span> <span class="pre">'vessel_name_list':</span> <span class="pre">['A_LAD',</span> <span class="pre">'A_Cflx',</span> <span class="pre">'A_Coronary_L',</span> <span class="pre">'A_Coronary_R'],</span> <span class="pre">'vessel_radius_mm_dict':</span> <span class="pre">{'A_Cflx':</span> <span class="pre">2,</span> <span class="pre">'A_Coronary_L':</span> <span class="pre">2,</span> <span class="pre">'A_Coronary_R':</span> <span class="pre">2,</span> <span class="pre">'A_LAD':</span> <span class="pre">2}}},</span> <span class="pre">'fetch_open_atlas':</span> <span class="pre">True,</span> <span class="pre">'nnunet_settings':</span> <span class="pre">{'all_in_gpu':</span> <span class="pre">None,</span> <span class="pre">'cascade_trainer_class_name':</span> <span class="pre">'nnUNetTrainerV2CascadeFullRes',</span> <span class="pre">'chk':</span> <span class="pre">'model_final_checkpoint',</span> <span class="pre">'disable_mixed_precision':</span> <span class="pre">False,</span> <span class="pre">'disable_tta':</span> <span class="pre">False,</span> <span class="pre">'folds':</span> <span class="pre">'all',</span> <span class="pre">'lowres_segmentations':</span> <span class="pre">None,</span> <span class="pre">'model':</span> <span class="pre">'3d_lowres',</span> <span class="pre">'num_threads_nifti_save':</span> <span class="pre">2,</span> <span class="pre">'num_threads_preprocessing':</span> <span class="pre">6,</span> <span class="pre">'task':</span> <span class="pre">'Task400_OPEN_HEART_1FOLD',</span> <span class="pre">'trainer_class_name':</span> <span class="pre">'nnUNetTrainerV2'}}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.run.run_hybrid_segmentation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.projects.cardiac.run.run_hybrid_segmentation">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.run.</span></span><span class="sig-name descname"><span class="pre">run_hybrid_segmentation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'cardiac_settings':</span> <span class="pre">{'atlas_settings':</span> <span class="pre">{'atlas_id_list':</span> <span class="pre">['LCTSC-Test-S2-201',</span> <span class="pre">'LCTSC-Test-S2-203',</span> <span class="pre">'LCTSC-Test-S3-201',</span> <span class="pre">'LUNG1-002',</span> <span class="pre">'LUNG1-009',</span> <span class="pre">'LUNG1-021',</span> <span class="pre">'LUNG1-067',</span> <span class="pre">'LUNG1-226'],</span> <span class="pre">'atlas_image_format':</span> <span class="pre">'{0}/IMAGES/CT.nii.gz',</span> <span class="pre">'atlas_label_format':</span> <span class="pre">'{0}/STRUCTURES/{1}.nii.gz',</span> <span class="pre">'atlas_path':</span> <span class="pre">'/home/runner/.platipy/cardiac/test_atlas',</span> <span class="pre">'atlas_structure_list':</span> <span class="pre">['Atrium_L',</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'Atrium_R',</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'A_Aorta',</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'V_Venacava_S',</span> <span class="pre">'A_LAD',</span> <span class="pre">'A_Coronary_L',</span> <span class="pre">'A_Cflx',</span> <span class="pre">'A_Coronary_R',</span> <span class="pre">'Heart'],</span> <span class="pre">'crop_atlas_expansion_mm':</span> <span class="pre">(50,</span> <span class="pre">50,</span> <span class="pre">50),</span> <span class="pre">'crop_atlas_to_structures':</span> <span class="pre">True,</span> <span class="pre">'guide_structure_name':</span> <span class="pre">'Heart',</span> <span class="pre">'superior_extension':</span> <span class="pre">30},</span> <span class="pre">'auto_crop_target_image_settings':</span> <span class="pre">{'expansion_mm':</span> <span class="pre">[20,</span> <span class="pre">20,</span> <span class="pre">40]},</span> <span class="pre">'deformable_registration_settings':</span> <span class="pre">{'default_value':</span> <span class="pre">0,</span> <span class="pre">'isotropic_resample':</span> <span class="pre">True,</span> <span class="pre">'iteration_staging':</span> <span class="pre">[200,</span> <span class="pre">150,</span> <span class="pre">100],</span> <span class="pre">'ncores':</span> <span class="pre">8,</span> <span class="pre">'resolution_staging':</span> <span class="pre">[6,</span> <span class="pre">3,</span> <span class="pre">1.5],</span> <span class="pre">'smoothing_sigmas':</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0],</span> <span class="pre">'verbose':</span> <span class="pre">False},</span> <span class="pre">'geometric_segmentation_settings':</span> <span class="pre">{'atlas_structure_names':</span> <span class="pre">{'atlas_ascending_aorta':</span> <span class="pre">'A_Aorta',</span> <span class="pre">'atlas_left_atrium':</span> <span class="pre">'Atrium_L',</span> <span class="pre">'atlas_left_ventricle':</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'atlas_pulmonary_artery':</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'atlas_right_atrium':</span> <span class="pre">'Atrium_R',</span> <span class="pre">'atlas_right_ventricle':</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'atlas_superior_vena_cava':</span> <span class="pre">'V_Venacava_S',</span> <span class="pre">'atlas_whole_heart':</span> <span class="pre">'Heart'},</span> <span class="pre">'conduction_system_definitions':</span> <span class="pre">{'atrioventricular_node_radius_mm':</span> <span class="pre">10,</span> <span class="pre">'sinoatrial_node_radius_mm':</span> <span class="pre">10},</span> <span class="pre">'geometric_name_suffix':</span> <span class="pre">'_GEOMETRIC',</span> <span class="pre">'run_geometric_algorithms':</span> <span class="pre">True,</span> <span class="pre">'valve_definitions':</span> <span class="pre">{'aortic_valve_thickness_mm':</span> <span class="pre">10,</span> <span class="pre">'mitral_valve_radius_mm':</span> <span class="pre">15,</span> <span class="pre">'mitral_valve_thickness_mm':</span> <span class="pre">10,</span> <span class="pre">'pulmonic_valve_thickness_mm':</span> <span class="pre">10,</span> <span class="pre">'tricuspid_valve_radius_mm':</span> <span class="pre">15,</span> <span class="pre">'tricuspid_valve_thickness_mm':</span> <span class="pre">10}},</span> <span class="pre">'iar_settings':</span> <span class="pre">{'min_best_atlases':</span> <span class="pre">5,</span> <span class="pre">'outlier_factor':</span> <span class="pre">1.5,</span> <span class="pre">'outlier_method':</span> <span class="pre">'iqr',</span> <span class="pre">'project_on_sphere':</span> <span class="pre">False,</span> <span class="pre">'reference_structure':</span> <span class="pre">False,</span> <span class="pre">'smooth_distance_maps':</span> <span class="pre">True,</span> <span class="pre">'smooth_sigma':</span> <span class="pre">1,</span> <span class="pre">'z_score_statistic':</span> <span class="pre">'mad'},</span> <span class="pre">'label_fusion_settings':</span> <span class="pre">{'optimal_threshold':</span> <span class="pre">{'A_Aorta':</span> <span class="pre">0.5,</span> <span class="pre">'A_Pulmonary':</span> <span class="pre">0.5,</span> <span class="pre">'Atrium_L':</span> <span class="pre">0.5,</span> <span class="pre">'Atrium_R':</span> <span class="pre">0.5,</span> <span class="pre">'Heart':</span> <span class="pre">0.5,</span> <span class="pre">'V_Venacava_S':</span> <span class="pre">0.5,</span> <span class="pre">'Ventricle_L':</span> <span class="pre">0.5,</span> <span class="pre">'Ventricle_R':</span> <span class="pre">0.5},</span> <span class="pre">'vote_params':</span> <span class="pre">None,</span> <span class="pre">'vote_type':</span> <span class="pre">'unweighted'},</span> <span class="pre">'linear_registration_settings':</span> <span class="pre">{'default_value':</span> <span class="pre">-1000,</span> <span class="pre">'metric':</span> <span class="pre">'mean_squares',</span> <span class="pre">'number_of_iterations':</span> <span class="pre">50,</span> <span class="pre">'optimiser':</span> <span class="pre">'gradient_descent_line_search',</span> <span class="pre">'reg_method':</span> <span class="pre">'affine',</span> <span class="pre">'sampling_rate':</span> <span class="pre">0.75,</span> <span class="pre">'shrink_factors':</span> <span class="pre">[16,</span> <span class="pre">8,</span> <span class="pre">4],</span> <span class="pre">'smooth_sigmas':</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0],</span> <span class="pre">'verbose':</span> <span class="pre">False},</span> <span class="pre">'postprocessing_settings':</span> <span class="pre">{'binaryfillhole_mm':</span> <span class="pre">3,</span> <span class="pre">'run_postprocessing':</span> <span class="pre">True,</span> <span class="pre">'structures_for_binaryfillhole':</span> <span class="pre">['Atrium_L',</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'Atrium_R',</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'A_Aorta',</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'V_Venacava_S',</span> <span class="pre">'Heart'],</span> <span class="pre">'structures_for_overlap_correction':</span> <span class="pre">['Atrium_L',</span> <span class="pre">'Ventricle_L',</span> <span class="pre">'Atrium_R',</span> <span class="pre">'Ventricle_R',</span> <span class="pre">'A_Aorta',</span> <span class="pre">'A_Pulmonary',</span> <span class="pre">'V_Venacava_S']},</span> <span class="pre">'return_as_cropped':</span> <span class="pre">False,</span> <span class="pre">'return_atlas_guide_structure':</span> <span class="pre">False,</span> <span class="pre">'return_proba_as_contours':</span> <span class="pre">True,</span> <span class="pre">'structure_guided_registration_settings':</span> <span class="pre">{'default_value':</span> <span class="pre">0,</span> <span class="pre">'isotropic_resample':</span> <span class="pre">True,</span> <span class="pre">'iteration_staging':</span> <span class="pre">[50,</span> <span class="pre">50,</span> <span class="pre">50],</span> <span class="pre">'ncores':</span> <span class="pre">8,</span> <span class="pre">'resolution_staging':</span> <span class="pre">[16,</span> <span class="pre">8,</span> <span class="pre">2],</span> <span class="pre">'smoothing_sigmas':</span> <span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0],</span> <span class="pre">'verbose':</span> <span class="pre">False},</span> <span class="pre">'vessel_spline_settings':</span> <span class="pre">{'scan_direction_dict':</span> <span class="pre">{'A_Cflx':</span> <span class="pre">'z',</span> <span class="pre">'A_Coronary_L':</span> <span class="pre">'x',</span> <span class="pre">'A_Coronary_R':</span> <span class="pre">'z',</span> <span class="pre">'A_LAD':</span> <span class="pre">'z'},</span> <span class="pre">'stop_condition_type_dict':</span> <span class="pre">{'A_Cflx':</span> <span class="pre">'count',</span> <span class="pre">'A_Coronary_L':</span> <span class="pre">'count',</span> <span class="pre">'A_Coronary_R':</span> <span class="pre">'count',</span> <span class="pre">'A_LAD':</span> <span class="pre">'count'},</span> <span class="pre">'stop_condition_value_dict':</span> <span class="pre">{'A_Cflx':</span> <span class="pre">2,</span> <span class="pre">'A_Coronary_L':</span> <span class="pre">2,</span> <span class="pre">'A_Coronary_R':</span> <span class="pre">2,</span> <span class="pre">'A_LAD':</span> <span class="pre">2},</span> <span class="pre">'vessel_name_list':</span> <span class="pre">['A_LAD',</span> <span class="pre">'A_Cflx',</span> <span class="pre">'A_Coronary_L',</span> <span class="pre">'A_Coronary_R'],</span> <span class="pre">'vessel_radius_mm_dict':</span> <span class="pre">{'A_Cflx':</span> <span class="pre">2,</span> <span class="pre">'A_Coronary_L':</span> <span class="pre">2,</span> <span class="pre">'A_Coronary_R':</span> <span class="pre">2,</span> <span class="pre">'A_LAD':</span> <span class="pre">2}}},</span> <span class="pre">'fetch_open_atlas':</span> <span class="pre">True,</span> <span class="pre">'nnunet_settings':</span> <span class="pre">{'all_in_gpu':</span> <span class="pre">None,</span> <span class="pre">'cascade_trainer_class_name':</span> <span class="pre">'nnUNetTrainerV2CascadeFullRes',</span> <span class="pre">'chk':</span> <span class="pre">'model_final_checkpoint',</span> <span class="pre">'disable_mixed_precision':</span> <span class="pre">False,</span> <span class="pre">'disable_tta':</span> <span class="pre">False,</span> <span class="pre">'folds':</span> <span class="pre">'all',</span> <span class="pre">'lowres_segmentations':</span> <span class="pre">None,</span> <span class="pre">'model':</span> <span class="pre">'3d_lowres',</span> <span class="pre">'num_threads_nifti_save':</span> <span class="pre">2,</span> <span class="pre">'num_threads_preprocessing':</span> <span class="pre">6,</span> <span class="pre">'task':</span> <span class="pre">'Task400_OPEN_HEART_1FOLD',</span> <span class="pre">'trainer_class_name':</span> <span class="pre">'nnUNetTrainerV2'}}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.run.run_hybrid_segmentation" title="Permalink to this definition">#</a></dt>
 <dd><p>Runs the hybrid cardiac segmentation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -201,40 +283,50 @@ Defaults to HYBRID_SETTINGS_DEFAULTS.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 <section id="module-platipy.imaging.projects.cardiac.service">
-<span id="platipy-imaging-projects-cardiac-service-module"></span><h2>platipy.imaging.projects.cardiac.service module<a class="headerlink" href="#module-platipy.imaging.projects.cardiac.service" title="Permalink to this headline">¶</a></h2>
+<span id="platipy-imaging-projects-cardiac-service-module"></span><h2>platipy.imaging.projects.cardiac.service module<a class="headerlink" href="#module-platipy.imaging.projects.cardiac.service" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
-<dt id="platipy.imaging.projects.cardiac.service.cardiac_service">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.service.</span></code><code class="sig-name descname"><span class="pre">cardiac_service</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_objects</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.service.cardiac_service" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.projects.cardiac.service.cardiac_service">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.service.</span></span><span class="sig-name descname"><span class="pre">cardiac_service</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_objects</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.service.cardiac_service" title="Permalink to this definition">#</a></dt>
 <dd><p>Implements the platipy framework to provide cardiac atlas based segmentation.</p>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.projects.cardiac.service.cardiac_structure_guided_service">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.service.</span></code><code class="sig-name descname"><span class="pre">cardiac_structure_guided_service</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_objects</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.service.cardiac_structure_guided_service" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.projects.cardiac.service.cardiac_structure_guided_service">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.projects.cardiac.service.</span></span><span class="sig-name descname"><span class="pre">cardiac_structure_guided_service</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_objects</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">working_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.projects.cardiac.service.cardiac_structure_guided_service" title="Permalink to this definition">#</a></dt>
 <dd><p>Runs the structure guided cardiac segmentation service</p>
 </dd></dl>
+
 </section>
 <section id="module-platipy.imaging.projects.cardiac">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.projects.cardiac" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.projects.cardiac" title="Permalink to this heading">#</a></h2>
 </section>
 </section>
 
-      </article>
+        </article>
+      </div>
       <footer>
         
         <div class="related-pages">
           
           
         </div>
-
-        <div class="related-information">
-              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
-            |
-            <a class="muted-link" href="../_sources/gen/platipy.imaging.projects.cardiac.rst.txt"
-               rel="nofollow">
-              Show Source
-            </a>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
+            </div>
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
         </div>
         
       </footer>
@@ -245,7 +337,7 @@ Defaults to HYBRID_SETTINGS_DEFAULTS.</p></li>
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
@@ -253,8 +345,20 @@ Defaults to HYBRID_SETTINGS_DEFAULTS.</p></li>
             <ul>
 <li><a class="reference internal" href="#">platipy.imaging.projects.cardiac package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-platipy.imaging.projects.cardiac.run">platipy.imaging.projects.cardiac.run module</a></li>
-<li><a class="reference internal" href="#module-platipy.imaging.projects.cardiac.service">platipy.imaging.projects.cardiac.service module</a></li>
+<li><a class="reference internal" href="#module-platipy.imaging.projects.cardiac.run">platipy.imaging.projects.cardiac.run module</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.projects.cardiac.run.display_open_cardiac_zip_url_locations"><code class="docutils literal notranslate"><span class="pre">display_open_cardiac_zip_url_locations()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.projects.cardiac.run.install_atlas_from_zipfile"><code class="docutils literal notranslate"><span class="pre">install_atlas_from_zipfile()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.projects.cardiac.run.install_hybrid_cardiac_from_zip"><code class="docutils literal notranslate"><span class="pre">install_hybrid_cardiac_from_zip()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.projects.cardiac.run.install_open_atlas"><code class="docutils literal notranslate"><span class="pre">install_open_atlas()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.projects.cardiac.run.run_cardiac_segmentation"><code class="docutils literal notranslate"><span class="pre">run_cardiac_segmentation()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.projects.cardiac.run.run_hybrid_segmentation"><code class="docutils literal notranslate"><span class="pre">run_hybrid_segmentation()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-platipy.imaging.projects.cardiac.service">platipy.imaging.projects.cardiac.service module</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.projects.cardiac.service.cardiac_service"><code class="docutils literal notranslate"><span class="pre">cardiac_service()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.projects.cardiac.service.cardiac_structure_guided_service"><code class="docutils literal notranslate"><span class="pre">cardiac_structure_guided_service()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-platipy.imaging.projects.cardiac">Module contents</a></li>
 </ul>
 </li>
@@ -266,12 +370,14 @@ Defaults to HYBRID_SETTINGS_DEFAULTS.</p></li>
       
       
     </aside>
-  </main>
-</div>
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="../_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
+    </body>
 </html>

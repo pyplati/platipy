@@ -1,62 +1,58 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Registration" href="registration.html" /><link rel="prev" title="Dose" href="dose.html" />
 
-    <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
+    <meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
         <title>Command Line Tools - PlatiPy documentation</title>
-      <link rel="stylesheet" href="_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
-    <link rel="stylesheet" href="_static/pygments.css">
-    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="_static/pygments_dark.css">
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
     
 
 
 <style>
-  :root {
+  body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
   
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
+  @media not print {
+    body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
     }
-  }
-
-  /* For allowing end-user-specific overrides */
-  .override-light {
-    --color-code-background: #f8f8f8;
-  --color-code-foreground: black;
-  
-  }
-  .override-dark {
-    --color-code-background: #202020;
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
+      }
+    }
   }
-</style><link rel="stylesheet" href="_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
-  <body dir="">
+</style></head>
+  <body>
     
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
     <title>Contents</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-      <path stroke="none" d="M0 0h24v24H0z"/>
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="10" y1="12" x2="20" y2="12" />
-      <line x1="6" y1="18" x2="20" y2="18" />
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
     </svg>
   </symbol>
   <symbol id="svg-menu" viewBox="0 0 24 24">
     <title>Menu</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-menu">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
       <line x1="3" y1="12" x2="21" y2="12"></line>
       <line x1="3" y1="6" x2="21" y2="6"></line>
       <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -64,18 +60,57 @@
   </symbol>
   <symbol id="svg-arrow-right" viewBox="0 0 24 24">
     <title>Expand</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-chevron-right">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
       <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
     </svg>
   </symbol>
 </svg>
 
 <input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
 <input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation"></label>
-<label class="overlay toc-overlay" for="__toc"></label>
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
 
 
 
@@ -83,6 +118,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
         <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
       </label>
     </div>
@@ -90,7 +126,16 @@
       <a href="index.html"><div class="brand">PlatiPy  documentation</div></a>
     </div>
     <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
       <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
     </div>
@@ -103,26 +148,27 @@
   
   <span class="sidebar-brand-text">PlatiPy  documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="search.html">
-  <input class="sidebar-search" placeholder=Search name="q">
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
-</form><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p><span class="caption-text">Introduction</span></p>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 </ul>
-<p><span class="caption-text">Projects</span></p>
+<p class="caption" role="heading"><span class="caption-text">Projects</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="cardiac.html">Cardiac Segmentation</a></li>
 </ul>
-<p><span class="caption-text">Examples</span></p>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="_examples/visualise.html">Visualise Images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis</a></li>
 </ul>
-<p><span class="caption-text">Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="visualiser.html">Image Visualiser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dicom.html">DICOM Conversion</a></li>
@@ -134,22 +180,40 @@
 
 </div>
 </div>
+
       </div>
       
     </div>
   </aside>
-  <main class="main">
+  <div class="main">
     <div class="content">
-      <article role="main">
-        <label class="toc-overlay-icon toc-content-icon" for="__toc">
-          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
-        </label>
-        <section id="command-line-tools">
-<h1>Command Line Tools<a class="headerlink" href="#command-line-tools" title="Permalink to this headline">¶</a></h1>
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="command-line-tools">
+<h1>Command Line Tools<a class="headerlink" href="#command-line-tools" title="Permalink to this heading">#</a></h1>
 <section id="dicom-crawler">
-<h2>dicom_crawler<a class="headerlink" href="#dicom-crawler" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><p>DICOM DIRECTORY CRAWLER</p>
+<h2>dicom_crawler<a class="headerlink" href="#dicom-crawler" title="Permalink to this heading">#</a></h2>
+<p>DICOM DIRECTORY CRAWLER</p>
 <p>This tool makes it easier to bulk-convert DICOM files into other formats (default NifTI).
 There are quite a lot of options, but most do not need to be changed.</p>
 <p>You need to provide the input directory (-i), from which the crawler will recursively search
@@ -166,19 +230,19 @@ patient.</p>
 This would typically be PatientName, or PatientID, although any DICOM header tag is allowed.</p>
 <p>I hope you find this tool useful!</p>
 <p>If you have any feedback, let us know on github.com/pyplati/platipy</p>
-</div></blockquote>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dicom_crawler <span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
 <dl class="std option">
-<dt id="cmdoption-dicom_crawler-i">
-<code class="sig-name descname"><span class="pre">-i</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--input_dir</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;input_dir&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-i" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-dicom_crawler-i">
+<span class="sig-name descname"><span class="pre">-i</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--input_dir</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;input_dir&gt;</span></span><a class="headerlink" href="#cmdoption-dicom_crawler-i" title="Permalink to this definition">#</a></dt>
 <dd><p><strong>Required</strong> Input DICOM directory. This should be at the same level as the parent field (default=PatientName).</p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-dicom_crawler-o">
-<code class="sig-name descname"><span class="pre">-o</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--output_dir</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;output_dir&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-o" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-dicom_crawler-o">
+<span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--output_dir</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output_dir&gt;</span></span><a class="headerlink" href="#cmdoption-dicom_crawler-o" title="Permalink to this definition">#</a></dt>
 <dd><p>Output directory. A folder structure will be created at this location.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
@@ -186,9 +250,10 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-dicom_crawler-b">
-<code class="sig-name descname"><span class="pre">-b</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--sort_by</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;sort_by&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-b" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-dicom_crawler-b">
+<span class="sig-name descname"><span class="pre">-b</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--sort_by</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;sort_by&gt;</span></span><a class="headerlink" href="#cmdoption-dicom_crawler-b" title="Permalink to this definition">#</a></dt>
 <dd><p>DICOM tag to sort at the highest level.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
@@ -196,9 +261,10 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-dicom_crawler-image_format">
-<code class="sig-name descname"><span class="pre">--image_format</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;image_format&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-image_format" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-dicom_crawler-image_format">
+<span class="sig-name descname"><span class="pre">--image_format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;image_format&gt;</span></span><a class="headerlink" href="#cmdoption-dicom_crawler-image_format" title="Permalink to this definition">#</a></dt>
 <dd><p>Format for output images. There are three special options that can be used: parent_sorting_data (same as sort_by option), study_uid_index (a counter for distinct DICOM studies), image_desc (info from DICOM header, more nicely formatted). Additionally, any DICOM header tag can be used (e.g. Modality, SeriesNumber, AcquisitionData). Any DICOM header tag that doesn’t exist will return a 0.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
@@ -206,9 +272,10 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-dicom_crawler-structure_format">
-<code class="sig-name descname"><span class="pre">--structure_format</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;structure_format&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-structure_format" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-dicom_crawler-structure_format">
+<span class="sig-name descname"><span class="pre">--structure_format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;structure_format&gt;</span></span><a class="headerlink" href="#cmdoption-dicom_crawler-structure_format" title="Permalink to this definition">#</a></dt>
 <dd><p>Format for output structures. Any of the options for images can be used, as well as: structure_name</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
@@ -216,9 +283,10 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-dicom_crawler-dose_format">
-<code class="sig-name descname"><span class="pre">--dose_format</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;dose_format&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-dose_format" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-dicom_crawler-dose_format">
+<span class="sig-name descname"><span class="pre">--dose_format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dose_format&gt;</span></span><a class="headerlink" href="#cmdoption-dicom_crawler-dose_format" title="Permalink to this definition">#</a></dt>
 <dd><p>Format for output radiotherapy dose distributions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
@@ -226,9 +294,10 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-dicom_crawler-overwrite">
-<code class="sig-name descname"><span class="pre">--overwrite</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dicom_crawler-overwrite" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-dicom_crawler-overwrite">
+<span class="sig-name descname"><span class="pre">--overwrite</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-dicom_crawler-overwrite" title="Permalink to this definition">#</a></dt>
 <dd><p>Overwrite files if they exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
@@ -236,9 +305,10 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-dicom_crawler-file_suffix">
-<code class="sig-name descname"><span class="pre">--file_suffix</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;file_suffix&gt;</span></code><a class="headerlink" href="#cmdoption-dicom_crawler-file_suffix" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-dicom_crawler-file_suffix">
+<span class="sig-name descname"><span class="pre">--file_suffix</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;file_suffix&gt;</span></span><a class="headerlink" href="#cmdoption-dicom_crawler-file_suffix" title="Permalink to this definition">#</a></dt>
 <dd><p>Output file suffix. Defines the file type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
@@ -246,9 +316,10 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-dicom_crawler-s">
-<code class="sig-name descname"><span class="pre">-s</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--short_description</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dicom_crawler-s" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-dicom_crawler-s">
+<span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--short_description</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-dicom_crawler-s" title="Permalink to this definition">#</a></dt>
 <dd><p>Use less verbose descriptions for DICOM images.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
@@ -256,9 +327,10 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-dicom_crawler-v">
-<code class="sig-name descname"><span class="pre">-v</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--verbose</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dicom_crawler-v" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-dicom_crawler-v">
+<span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbose</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-dicom_crawler-v" title="Permalink to this definition">#</a></dt>
 <dd><p>Print more information while running.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
@@ -266,98 +338,104 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 <section id="segmentation">
-<h2>segmentation<a class="headerlink" href="#segmentation" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><p>Run an auto-segmentation on an input image. Choose which algorithm to run and pass the path to
+<h2>segmentation<a class="headerlink" href="#segmentation" title="Permalink to this heading">#</a></h2>
+<p>Run an auto-segmentation on an input image. Choose which algorithm to run and pass the path to
 the Nitfti input image OR a directory containing a DICOM series.</p>
 <p>Optionally, pass in a configuration file for the segmentation algorithm. Output the default
 configuration for an algorithm using the –default flag.</p>
-</div></blockquote>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>segmentation <span class="o">[</span>OPTIONS<span class="o">]</span> <span class="o">{</span>cardiac<span class="p">|</span>bronchus<span class="o">}</span> <span class="o">[</span>INPUT_PATH<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
 <dl class="std option">
-<dt id="cmdoption-segmentation-c">
-<code class="sig-name descname"><span class="pre">-c</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--config</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;config&gt;</span></code><a class="headerlink" href="#cmdoption-segmentation-c" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-segmentation-c">
+<span class="sig-name descname"><span class="pre">-c</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--config</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;config&gt;</span></span><a class="headerlink" href="#cmdoption-segmentation-c" title="Permalink to this definition">#</a></dt>
 <dd><p>Path to JSON file containing algorithm settings</p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-segmentation-d">
-<code class="sig-name descname"><span class="pre">-d</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--default</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-segmentation-d" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-segmentation-d">
+<span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--default</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-segmentation-d" title="Permalink to this definition">#</a></dt>
 <dd><p>Print the default configuration for the selected algorithm</p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-segmentation-o">
-<code class="sig-name descname"><span class="pre">-o</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--output</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;output&gt;</span></code><a class="headerlink" href="#cmdoption-segmentation-o" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-segmentation-o">
+<span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--output</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output&gt;</span></span><a class="headerlink" href="#cmdoption-segmentation-o" title="Permalink to this definition">#</a></dt>
 <dd><p>Path to directory for output</p>
 </dd></dl>
+
 <p class="rubric">Arguments</p>
 <dl class="std option">
-<dt id="cmdoption-segmentation-arg-ALGORITHM">
-<code class="sig-name descname"><span class="pre">ALGORITHM</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-segmentation-arg-ALGORITHM" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-segmentation-arg-ALGORITHM">
+<span class="sig-name descname"><span class="pre">ALGORITHM</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-segmentation-arg-ALGORITHM" title="Permalink to this definition">#</a></dt>
 <dd><p>Required argument</p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-segmentation-arg-INPUT_PATH">
-<code class="sig-name descname"><span class="pre">INPUT_PATH</span></code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-segmentation-arg-INPUT_PATH" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-segmentation-arg-INPUT_PATH">
+<span class="sig-name descname"><span class="pre">INPUT_PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-segmentation-arg-INPUT_PATH" title="Permalink to this definition">#</a></dt>
 <dd><p>Optional argument</p>
 </dd></dl>
+
 </section>
 <section id="nifti-to-rtstruct">
-<h2>nifti_to_rtstruct<a class="headerlink" href="#nifti-to-rtstruct" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><p>Convert Nifti masks to Dicom RTStruct</p>
-</div></blockquote>
+<h2>nifti_to_rtstruct<a class="headerlink" href="#nifti-to-rtstruct" title="Permalink to this heading">#</a></h2>
+<p>Convert Nifti masks to Dicom RTStruct</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>nifti_to_rtstruct <span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
 <dl class="std option">
-<dt id="cmdoption-nifti_to_rtstruct-d">
-<code class="sig-name descname"><span class="pre">-d</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--dcm_file</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;dcm_file&gt;</span></code><a class="headerlink" href="#cmdoption-nifti_to_rtstruct-d" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-nifti_to_rtstruct-d">
+<span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--dcm_file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dcm_file&gt;</span></span><a class="headerlink" href="#cmdoption-nifti_to_rtstruct-d" title="Permalink to this definition">#</a></dt>
 <dd><p><strong>Required</strong> Reference DICOM file from which header tags will be copied</p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-nifti_to_rtstruct-m">
-<code class="sig-name descname"><span class="pre">-m</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--mask</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;mask&gt;</span></code><a class="headerlink" href="#cmdoption-nifti_to_rtstruct-m" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-nifti_to_rtstruct-m">
+<span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--mask</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;mask&gt;</span></span><a class="headerlink" href="#cmdoption-nifti_to_rtstruct-m" title="Permalink to this definition">#</a></dt>
 <dd><p><strong>Required</strong> Mask pairs with name,filename</p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-nifti_to_rtstruct-o">
-<code class="sig-name descname"><span class="pre">-o</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--out_rt_filename</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;out_rt_filename&gt;</span></code><a class="headerlink" href="#cmdoption-nifti_to_rtstruct-o" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-nifti_to_rtstruct-o">
+<span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--out_rt_filename</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;out_rt_filename&gt;</span></span><a class="headerlink" href="#cmdoption-nifti_to_rtstruct-o" title="Permalink to this definition">#</a></dt>
 <dd><p><strong>Required</strong> Name of RT struct output</p>
 </dd></dl>
+
 </section>
 <section id="nifti-to-series">
-<h2>nifti_to_series<a class="headerlink" href="#nifti-to-series" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><p>Convert a Nifti image to a Dicom image series</p>
-</div></blockquote>
+<h2>nifti_to_series<a class="headerlink" href="#nifti-to-series" title="Permalink to this heading">#</a></h2>
+<p>Convert a Nifti image to a Dicom image series</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>nifti_to_series <span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
 <dl class="std option">
-<dt id="cmdoption-nifti_to_series-d">
-<code class="sig-name descname"><span class="pre">-d</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--dcm</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;dcm&gt;</span></code><a class="headerlink" href="#cmdoption-nifti_to_series-d" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-nifti_to_series-d">
+<span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--dcm</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dcm&gt;</span></span><a class="headerlink" href="#cmdoption-nifti_to_series-d" title="Permalink to this definition">#</a></dt>
 <dd><p><strong>Required</strong> Reference DICOM folder containing series from which header tags will be copied</p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-nifti_to_series-i">
-<code class="sig-name descname"><span class="pre">-i</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--image</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;image&gt;</span></code><a class="headerlink" href="#cmdoption-nifti_to_series-i" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-nifti_to_series-i">
+<span class="sig-name descname"><span class="pre">-i</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--image</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;image&gt;</span></span><a class="headerlink" href="#cmdoption-nifti_to_series-i" title="Permalink to this definition">#</a></dt>
 <dd><p><strong>Required</strong> Nifti Image file to convert to Dicom series</p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-nifti_to_series-t">
-<code class="sig-name descname"><span class="pre">-t</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--tag</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;tag&gt;</span></code><a class="headerlink" href="#cmdoption-nifti_to_series-t" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-nifti_to_series-t">
+<span class="sig-name descname"><span class="pre">-t</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--tag</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;tag&gt;</span></span><a class="headerlink" href="#cmdoption-nifti_to_series-t" title="Permalink to this definition">#</a></dt>
 <dd><p>Override Dicom Tags by providing key:value pairs</p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-nifti_to_series-o">
-<code class="sig-name descname"><span class="pre">-o</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--output_directory</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;output_directory&gt;</span></code><a class="headerlink" href="#cmdoption-nifti_to_series-o" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-nifti_to_series-o">
+<span class="sig-name descname"><span class="pre">-o</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--output_directory</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output_directory&gt;</span></span><a class="headerlink" href="#cmdoption-nifti_to_series-o" title="Permalink to this definition">#</a></dt>
 <dd><p>Directory in which Dicom series files will be generated</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
@@ -365,34 +443,36 @@ configuration for an algorithm using the –default flag.</p>
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 <section id="rtstruct-to-nifti">
-<h2>rtstruct_to_nifti<a class="headerlink" href="#rtstruct-to-nifti" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><p>Convert a DICOM RTSTRUCT file to Nifti format.</p>
-</div></blockquote>
+<h2>rtstruct_to_nifti<a class="headerlink" href="#rtstruct-to-nifti" title="Permalink to this heading">#</a></h2>
+<p>Convert a DICOM RTSTRUCT file to Nifti format.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rtstruct_to_nifti <span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
 <dl class="std option">
-<dt id="cmdoption-rtstruct_to_nifti-i">
-<code class="sig-name descname"><span class="pre">-i</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--dcm_img</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;dcm_img&gt;</span></code><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-i" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-rtstruct_to_nifti-i">
+<span class="sig-name descname"><span class="pre">-i</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--dcm_img</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dcm_img&gt;</span></span><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-i" title="Permalink to this definition">#</a></dt>
 <dd><p><strong>Required</strong> Directory containing the image series linked to the contour to convert</p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-rtstruct_to_nifti-r">
-<code class="sig-name descname"><span class="pre">-r</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--dcm_rt_file</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;dcm_rt_file&gt;</span></code><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-r" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-rtstruct_to_nifti-r">
+<span class="sig-name descname"><span class="pre">-r</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--dcm_rt_file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dcm_rt_file&gt;</span></span><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-r" title="Permalink to this definition">#</a></dt>
 <dd><p><strong>Required</strong> Dicom RTStruct file containing the contours to convert</p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-rtstruct_to_nifti-p">
-<code class="sig-name descname"><span class="pre">-p</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--prefix</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;prefix&gt;</span></code><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-p" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prefix for output files (e.g. <a href="#system-message-1"><span class="problematic" id="problematic-1">Case_01_</span></a></p>
+<dt class="sig sig-object std" id="cmdoption-rtstruct_to_nifti-p">
+<span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--prefix</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;prefix&gt;</span></span><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-p" title="Permalink to this definition">#</a></dt>
+<dd><p>Prefix for output files (e.g. <a href="#id1"><span class="problematic" id="id2">Case_01_</span></a></p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-rtstruct_to_nifti-od">
-<code class="sig-name descname"><span class="pre">-od</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--output_dir</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;output_dir&gt;</span></code><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-od" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-rtstruct_to_nifti-od">
+<span class="sig-name descname"><span class="pre">-od</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--output_dir</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output_dir&gt;</span></span><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-od" title="Permalink to this definition">#</a></dt>
 <dd><p>Directory in which to place converted files</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
@@ -400,20 +480,24 @@ configuration for an algorithm using the –default flag.</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-rtstruct_to_nifti-oi">
-<code class="sig-name descname"><span class="pre">-oi</span></code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname"><span class="pre">,</span> </code><code class="sig-name descname"><span class="pre">--output_img</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;output_img&gt;</span></code><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-oi" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-rtstruct_to_nifti-oi">
+<span class="sig-name descname"><span class="pre">-oi</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--output_img</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;output_img&gt;</span></span><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-oi" title="Permalink to this definition">#</a></dt>
 <dd><p>Output name of converted image series</p>
 </dd></dl>
+
 <dl class="std option">
-<dt id="cmdoption-rtstruct_to_nifti-spacing">
-<code class="sig-name descname"><span class="pre">--spacing</span></code><code class="sig-prename descclassname"> <span class="pre">&lt;spacing&gt;</span></code><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-spacing" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object std" id="cmdoption-rtstruct_to_nifti-spacing">
+<span class="sig-name descname"><span class="pre">--spacing</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;spacing&gt;</span></span><a class="headerlink" href="#cmdoption-rtstruct_to_nifti-spacing" title="Permalink to this definition">#</a></dt>
 <dd><p>DICOM image spacing override with format x,y,z (0 indicates to leave as is, e.g. 0,0,3)</p>
 </dd></dl>
+
 </section>
 </section>
 
-      </article>
+        </article>
+      </div>
       <footer>
         
         <div class="related-pages">
@@ -424,10 +508,10 @@ configuration for an algorithm using the –default flag.</p>
                 </div>
                 <div class="title">Registration</div>
               </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
           <a class="prev-page" href="dose.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
@@ -438,14 +522,20 @@ configuration for an algorithm using the –default flag.</p>
               </div>
             </a>
         </div>
-
-        <div class="related-information">
-              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
-            |
-            <a class="muted-link" href="_sources/cli.rst.txt"
-               rel="nofollow">
-              Show Source
-            </a>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
+            </div>
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
         </div>
         
       </footer>
@@ -456,7 +546,7 @@ configuration for an algorithm using the –default flag.</p>
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
@@ -478,12 +568,14 @@ configuration for an algorithm using the –default flag.</p>
       
       
     </aside>
-  </main>
-</div>
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/scripts/furo.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
+    </body>
 </html>

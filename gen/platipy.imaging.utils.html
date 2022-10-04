@@ -1,62 +1,58 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
 
-    <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
+    <meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
         <title>platipy.imaging.utils package - PlatiPy documentation</title>
-      <link rel="stylesheet" href="../_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
-    <link rel="stylesheet" href="../_static/pygments.css">
-    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="../_static/pygments_dark.css">
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
     
 
 
 <style>
-  :root {
+  body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
   
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
+  @media not print {
+    body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
     }
-  }
-
-  /* For allowing end-user-specific overrides */
-  .override-light {
-    --color-code-background: #f8f8f8;
-  --color-code-foreground: black;
-  
-  }
-  .override-dark {
-    --color-code-background: #202020;
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
+      }
+    }
   }
-</style><link rel="stylesheet" href="../_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
-  <body dir="">
+</style></head>
+  <body>
     
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
     <title>Contents</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-      <path stroke="none" d="M0 0h24v24H0z"/>
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="10" y1="12" x2="20" y2="12" />
-      <line x1="6" y1="18" x2="20" y2="18" />
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
     </svg>
   </symbol>
   <symbol id="svg-menu" viewBox="0 0 24 24">
     <title>Menu</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-menu">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
       <line x1="3" y1="12" x2="21" y2="12"></line>
       <line x1="3" y1="6" x2="21" y2="6"></line>
       <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -64,18 +60,57 @@
   </symbol>
   <symbol id="svg-arrow-right" viewBox="0 0 24 24">
     <title>Expand</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-chevron-right">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
       <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
     </svg>
   </symbol>
 </svg>
 
 <input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
 <input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation"></label>
-<label class="overlay toc-overlay" for="__toc"></label>
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
 
 
 
@@ -83,6 +118,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
         <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
       </label>
     </div>
@@ -90,7 +126,16 @@
       <a href="../index.html"><div class="brand">PlatiPy  documentation</div></a>
     </div>
     <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
       <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
     </div>
@@ -103,26 +148,27 @@
   
   <span class="sidebar-brand-text">PlatiPy  documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="../search.html">
-  <input class="sidebar-search" placeholder=Search name="q">
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
-</form><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p><span class="caption-text">Introduction</span></p>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
 </ul>
-<p><span class="caption-text">Projects</span></p>
+<p class="caption" role="heading"><span class="caption-text">Projects</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../cardiac.html">Cardiac Segmentation</a></li>
 </ul>
-<p><span class="caption-text">Examples</span></p>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../_examples/visualise.html">Visualise Images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../_examples/dvh_analysis.html">DVH Analysis Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_examples/dvh_analysis.html">DVH Analysis</a></li>
 </ul>
-<p><span class="caption-text">Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../visualiser.html">Image Visualiser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dicom.html">DICOM Conversion</a></li>
@@ -134,34 +180,53 @@
 
 </div>
 </div>
+
       </div>
       
     </div>
   </aside>
-  <main class="main">
+  <div class="main">
     <div class="content">
-      <article role="main">
-        <label class="toc-overlay-icon toc-content-icon" for="__toc">
-          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
-        </label>
-        <section id="platipy-imaging-utils-package">
-<h1>platipy.imaging.utils package<a class="headerlink" href="#platipy-imaging-utils-package" title="Permalink to this headline">¶</a></h1>
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="platipy-imaging-utils-package">
+<h1>platipy.imaging.utils package<a class="headerlink" href="#platipy-imaging-utils-package" title="Permalink to this heading">#</a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">#</a></h2>
 </section>
 <section id="module-platipy.imaging.utils.crop">
-<span id="platipy-imaging-utils-crop-module"></span><h2>platipy.imaging.utils.crop module<a class="headerlink" href="#module-platipy.imaging.utils.crop" title="Permalink to this headline">¶</a></h2>
+<span id="platipy-imaging-utils-crop-module"></span><h2>platipy.imaging.utils.crop module<a class="headerlink" href="#module-platipy.imaging.utils.crop" title="Permalink to this heading">#</a></h2>
 <p>Various useful utility functions for atlas based segmentation algorithms.</p>
 <dl class="py function">
-<dt id="platipy.imaging.utils.crop.crop_to_label_extent">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></code><code class="sig-name descname"><span class="pre">crop_to_label_extent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.crop_to_label_extent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.crop.crop_to_label_extent">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></span><span class="sig-name descname"><span class="pre">crop_to_label_extent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.crop_to_label_extent" title="Permalink to this definition">#</a></dt>
 <dd><p>Crop an image to the 3D extent defined by a binary mask (label).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image</strong> (<em>SimpleITK.Image</em>) – The image to crop.</p></li>
 <li><p><strong>label</strong> (<em>SimpleITK.Image</em>) – The binary mask (label) defining the region to crop to.</p></li>
-<li><p><strong>expansion_mm</strong> (<em>float | tuple | list</em><em>, </em><em>optional</em>) – An optional expansion in physical units.
+<li><p><strong>expansion_mm</strong> (<em>float</em><em> | </em><em>tuple</em><em> | </em><em>list</em><em>, </em><em>optional</em>) – An optional expansion in physical units.
 Can be defined as a single number or iterable: (axial, coronal, sagittal) expansion.
 Defaults to 0.</p></li>
 </ul>
@@ -174,20 +239,22 @@ Defaults to 0.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.crop.crop_to_roi">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></code><code class="sig-name descname"><span class="pre">crop_to_roi</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.crop_to_roi" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.crop.crop_to_roi">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></span><span class="sig-name descname"><span class="pre">crop_to_roi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.crop_to_roi" title="Permalink to this definition">#</a></dt>
 <dd><p>Utility function for cropping images</p>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.crop.label_to_roi">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></code><code class="sig-name descname"><span class="pre">label_to_roi</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_as_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.label_to_roi" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.crop.label_to_roi">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.crop.</span></span><span class="sig-name descname"><span class="pre">label_to_roi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_as_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.crop.label_to_roi" title="Permalink to this definition">#</a></dt>
 <dd><p>Generates a region of interest (ROI), defined by a starting index (z,y,x)
 and size (s_z, s_y, s_x). This can be used to crop images/labels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>sitk.Image | list</em>) – Binary label image/mask/structure to define to ROI</p></li>
+<li><p><strong>label</strong> (<em>sitk.Image</em><em> | </em><em>list</em>) – Binary label image/mask/structure to define to ROI</p></li>
 <li><p><strong>expansion_mm</strong> (<em>list</em><em>, </em><em>optional</em>) – An optional expansion of the box (in each direciton).
 Defaults to [0, 0, 0].</p></li>
 </ul>
@@ -200,12 +267,13 @@ Defaults to [0, 0, 0].</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 <section id="module-platipy.imaging.utils.lung">
-<span id="platipy-imaging-utils-lung-module"></span><h2>platipy.imaging.utils.lung module<a class="headerlink" href="#module-platipy.imaging.utils.lung" title="Permalink to this headline">¶</a></h2>
+<span id="platipy-imaging-utils-lung-module"></span><h2>platipy.imaging.utils.lung module<a class="headerlink" href="#module-platipy.imaging.utils.lung" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
-<dt id="platipy.imaging.utils.lung.detect_holes">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.lung.</span></code><code class="sig-name descname"><span class="pre">detect_holes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">400</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.lung.detect_holes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.lung.detect_holes">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.lung.</span></span><span class="sig-name descname"><span class="pre">detect_holes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-400</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.lung.detect_holes" title="Permalink to this definition">#</a></dt>
 <dd><p>Detect all (air) holes in given image. Default threshold values given are defined for CT.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -224,9 +292,10 @@ labels: a list of holes detected and some of their properties</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.lung.fill_holes">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.lung.</span></code><code class="sig-name descname"><span class="pre">fill_holes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lung_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.lung.fill_holes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.lung.fill_holes">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.lung.</span></span><span class="sig-name descname"><span class="pre">fill_holes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">external_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lung_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.lung.fill_holes" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the input image with all holes filled (except for the external and lung holes).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -246,9 +315,10 @@ labels: a list of holes detected and some of their properties</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.lung.get_external_mask">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.lung.</span></code><code class="sig-name descname"><span class="pre">get_external_mask</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.lung.get_external_mask" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.lung.get_external_mask">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.lung.</span></span><span class="sig-name descname"><span class="pre">get_external_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.lung.get_external_mask" title="Permalink to this definition">#</a></dt>
 <dd><p>Get a External mask given a label image and labels computed with detect_holes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -266,9 +336,10 @@ labels: a list of holes detected and some of their properties</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.lung.get_lung_mask">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.lung.</span></code><code class="sig-name descname"><span class="pre">get_lung_mask</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.lung.get_lung_mask" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.lung.get_lung_mask">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.lung.</span></span><span class="sig-name descname"><span class="pre">get_lung_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.lung.get_lung_mask" title="Permalink to this definition">#</a></dt>
 <dd><p>Get a Lung mask given a label image and labels computed with detect_holes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -286,12 +357,13 @@ labels: a list of holes detected and some of their properties</p>
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 <section id="module-platipy.imaging.utils.valve">
-<span id="platipy-imaging-utils-valve-module"></span><h2>platipy.imaging.utils.valve module<a class="headerlink" href="#module-platipy.imaging.utils.valve" title="Permalink to this headline">¶</a></h2>
+<span id="platipy-imaging-utils-valve-module"></span><h2>platipy.imaging.utils.valve module<a class="headerlink" href="#module-platipy.imaging.utils.valve" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
-<dt id="platipy.imaging.utils.valve.generate_valve_from_great_vessel">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.valve.</span></code><code class="sig-name descname"><span class="pre">generate_valve_from_great_vessel</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_great_vessel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_ventricle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valve_thickness_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.valve.generate_valve_from_great_vessel" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.valve.generate_valve_from_great_vessel">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.valve.</span></span><span class="sig-name descname"><span class="pre">generate_valve_from_great_vessel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_great_vessel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_ventricle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valve_thickness_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.valve.generate_valve_from_great_vessel" title="Permalink to this definition">#</a></dt>
 <dd><p>Generates a geometrically-defined valve.
 This function is suitable for the pulmonic and aortic valves.</p>
 <dl class="field-list simple">
@@ -311,9 +383,10 @@ This function is suitable for the pulmonic and aortic valves.</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.valve.generate_valve_using_cylinder">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.valve.</span></code><code class="sig-name descname"><span class="pre">generate_valve_using_cylinder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_atrium</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_ventricle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.valve.generate_valve_using_cylinder" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.valve.generate_valve_using_cylinder">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.valve.</span></span><span class="sig-name descname"><span class="pre">generate_valve_using_cylinder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_atrium</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_ventricle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.valve.generate_valve_using_cylinder" title="Permalink to this definition">#</a></dt>
 <dd><p>Generates a geometrically-defined valve.
 This function is suitable for the tricuspid and mitral valves.</p>
 <dl class="field-list simple">
@@ -334,12 +407,13 @@ Defaults to 10.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 </section>
 <section id="module-platipy.imaging.utils.vessel">
-<span id="platipy-imaging-utils-vessel-module"></span><h2>platipy.imaging.utils.vessel module<a class="headerlink" href="#module-platipy.imaging.utils.vessel" title="Permalink to this headline">¶</a></h2>
+<span id="platipy-imaging-utils-vessel-module"></span><h2>platipy.imaging.utils.vessel module<a class="headerlink" href="#module-platipy.imaging.utils.vessel" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
-<dt id="platipy.imaging.utils.vessel.com_from_image_list">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></code><code class="sig-name descname"><span class="pre">com_from_image_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sitk_image_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'count'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'z'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.com_from_image_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.vessel.com_from_image_list">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></span><span class="sig-name descname"><span class="pre">com_from_image_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sitk_image_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'count'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'z'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.com_from_image_list" title="Permalink to this definition">#</a></dt>
 <dd><dl class="simple">
 <dt>Input: list of SimpleITK images</dt><dd><p>minimum total slice area required for the tube to be inserted at that slice
 scan direction: x = sagittal, y=coronal, z=axial</p>
@@ -348,9 +422,10 @@ scan direction: x = sagittal, y=coronal, z=axial</p>
 <p>Output: mean centre of mass positions, with shape (NumSlices, 2)
 Note: positions are converted into image space by default</p>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.vessel.convert_simpleitk_to_vtk">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></code><code class="sig-name descname"><span class="pre">convert_simpleitk_to_vtk</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.convert_simpleitk_to_vtk" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.vessel.convert_simpleitk_to_vtk">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></span><span class="sig-name descname"><span class="pre">convert_simpleitk_to_vtk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.convert_simpleitk_to_vtk" title="Permalink to this definition">#</a></dt>
 <dd><p>Converts from SimpleITK to VTK representation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -361,23 +436,26 @@ Note: positions are converted into image space by default</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.vessel.simpleitk_image_from_vtk_tube">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></code><code class="sig-name descname"><span class="pre">simpleitk_image_from_vtk_tube</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sitk_reference_image</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.simpleitk_image_from_vtk_tube" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.vessel.simpleitk_image_from_vtk_tube">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></span><span class="sig-name descname"><span class="pre">simpleitk_image_from_vtk_tube</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sitk_reference_image</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.simpleitk_image_from_vtk_tube" title="Permalink to this definition">#</a></dt>
 <dd><p>Input: VTK tube, referenceImage (used for spacing, etc.)
 Output: SimpleITK image
 Note: Uses binary output (background 0, foreground 1)</p>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.vessel.tube_from_com_list">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></code><code class="sig-name descname"><span class="pre">tube_from_com_list</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">com_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.tube_from_com_list" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.vessel.tube_from_com_list">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></span><span class="sig-name descname"><span class="pre">tube_from_com_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">com_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.tube_from_com_list" title="Permalink to this definition">#</a></dt>
 <dd><p>Input: image-space positions along the tube centreline.
 Output: VTK tube
 Note: positions do not have to be continuous - the tube is interpolated in real space</p>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.vessel.vessel_spline_generation">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></code><code class="sig-name descname"><span class="pre">vessel_spline_generation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atlas_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vessel_name_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vessel_radius_mm_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_condition_type_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_condition_value_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_direction_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atlas_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DIR'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.vessel_spline_generation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.vessel.vessel_spline_generation">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></span><span class="sig-name descname"><span class="pre">vessel_spline_generation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atlas_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vessel_name_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vessel_radius_mm_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_condition_type_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_condition_value_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_direction_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atlas_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DIR'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.vessel_spline_generation" title="Permalink to this definition">#</a></dt>
 <dd><p>Generates a splined vessel from a list of binary masks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -430,34 +508,43 @@ vessel.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py function">
-<dt id="platipy.imaging.utils.vessel.write_vtk_tube_to_file">
-<code class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></code><code class="sig-name descname"><span class="pre">write_vtk_tube_to_file</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.write_vtk_tube_to_file" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.utils.vessel.write_vtk_tube_to_file">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></span><span class="sig-name descname"><span class="pre">write_vtk_tube_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.write_vtk_tube_to_file" title="Permalink to this definition">#</a></dt>
 <dd><p>Input: VTK tube
 Output: exit success
 Note: format is XML VTP</p>
 </dd></dl>
+
 </section>
 <section id="module-platipy.imaging.utils">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.utils" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.utils" title="Permalink to this heading">#</a></h2>
 </section>
 </section>
 
-      </article>
+        </article>
+      </div>
       <footer>
         
         <div class="related-pages">
           
           
         </div>
-
-        <div class="related-information">
-              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
-            |
-            <a class="muted-link" href="../_sources/gen/platipy.imaging.utils.rst.txt"
-               rel="nofollow">
-              Show Source
-            </a>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
+            </div>
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
         </div>
         
       </footer>
@@ -468,7 +555,7 @@ Note: format is XML VTP</p>
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
@@ -476,10 +563,33 @@ Note: format is XML VTP</p>
             <ul>
 <li><a class="reference internal" href="#">platipy.imaging.utils package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-platipy.imaging.utils.crop">platipy.imaging.utils.crop module</a></li>
-<li><a class="reference internal" href="#module-platipy.imaging.utils.lung">platipy.imaging.utils.lung module</a></li>
-<li><a class="reference internal" href="#module-platipy.imaging.utils.valve">platipy.imaging.utils.valve module</a></li>
-<li><a class="reference internal" href="#module-platipy.imaging.utils.vessel">platipy.imaging.utils.vessel module</a></li>
+<li><a class="reference internal" href="#module-platipy.imaging.utils.crop">platipy.imaging.utils.crop module</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.utils.crop.crop_to_label_extent"><code class="docutils literal notranslate"><span class="pre">crop_to_label_extent()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.crop.crop_to_roi"><code class="docutils literal notranslate"><span class="pre">crop_to_roi()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.crop.label_to_roi"><code class="docutils literal notranslate"><span class="pre">label_to_roi()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-platipy.imaging.utils.lung">platipy.imaging.utils.lung module</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.utils.lung.detect_holes"><code class="docutils literal notranslate"><span class="pre">detect_holes()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.lung.fill_holes"><code class="docutils literal notranslate"><span class="pre">fill_holes()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.lung.get_external_mask"><code class="docutils literal notranslate"><span class="pre">get_external_mask()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.lung.get_lung_mask"><code class="docutils literal notranslate"><span class="pre">get_lung_mask()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-platipy.imaging.utils.valve">platipy.imaging.utils.valve module</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.utils.valve.generate_valve_from_great_vessel"><code class="docutils literal notranslate"><span class="pre">generate_valve_from_great_vessel()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.valve.generate_valve_using_cylinder"><code class="docutils literal notranslate"><span class="pre">generate_valve_using_cylinder()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-platipy.imaging.utils.vessel">platipy.imaging.utils.vessel module</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.utils.vessel.com_from_image_list"><code class="docutils literal notranslate"><span class="pre">com_from_image_list()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.vessel.convert_simpleitk_to_vtk"><code class="docutils literal notranslate"><span class="pre">convert_simpleitk_to_vtk()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.vessel.simpleitk_image_from_vtk_tube"><code class="docutils literal notranslate"><span class="pre">simpleitk_image_from_vtk_tube()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.vessel.tube_from_com_list"><code class="docutils literal notranslate"><span class="pre">tube_from_com_list()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.vessel.vessel_spline_generation"><code class="docutils literal notranslate"><span class="pre">vessel_spline_generation()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.vessel.write_vtk_tube_to_file"><code class="docutils literal notranslate"><span class="pre">write_vtk_tube_to_file()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-platipy.imaging.utils">Module contents</a></li>
 </ul>
 </li>
@@ -491,12 +601,14 @@ Note: format is XML VTP</p>
       
       
     </aside>
-  </main>
-</div>
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="../_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
+    </body>
 </html>

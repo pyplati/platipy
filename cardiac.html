@@ -1,62 +1,58 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Visualise Images" href="_examples/visualise.html" /><link rel="prev" title="Contributing" href="contributing.html" />
 
-    <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
+    <meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
         <title>Cardiac Segmentation - PlatiPy documentation</title>
-      <link rel="stylesheet" href="_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
-    <link rel="stylesheet" href="_static/pygments.css">
-    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="_static/pygments_dark.css">
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
     
 
 
 <style>
-  :root {
+  body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
   
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
+  @media not print {
+    body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
     }
-  }
-
-  /* For allowing end-user-specific overrides */
-  .override-light {
-    --color-code-background: #f8f8f8;
-  --color-code-foreground: black;
-  
-  }
-  .override-dark {
-    --color-code-background: #202020;
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
+      }
+    }
   }
-</style><link rel="stylesheet" href="_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
-  <body dir="">
+</style></head>
+  <body>
     
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
     <title>Contents</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-      <path stroke="none" d="M0 0h24v24H0z"/>
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="10" y1="12" x2="20" y2="12" />
-      <line x1="6" y1="18" x2="20" y2="18" />
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
     </svg>
   </symbol>
   <symbol id="svg-menu" viewBox="0 0 24 24">
     <title>Menu</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-menu">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
       <line x1="3" y1="12" x2="21" y2="12"></line>
       <line x1="3" y1="6" x2="21" y2="6"></line>
       <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -64,18 +60,57 @@
   </symbol>
   <symbol id="svg-arrow-right" viewBox="0 0 24 24">
     <title>Expand</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-chevron-right">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
       <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
     </svg>
   </symbol>
 </svg>
 
 <input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
 <input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation"></label>
-<label class="overlay toc-overlay" for="__toc"></label>
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
 
 
 
@@ -83,6 +118,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
         <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
       </label>
     </div>
@@ -90,7 +126,16 @@
       <a href="index.html"><div class="brand">PlatiPy  documentation</div></a>
     </div>
     <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
       <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
     </div>
@@ -103,26 +148,27 @@
   
   <span class="sidebar-brand-text">PlatiPy  documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="search.html">
-  <input class="sidebar-search" placeholder=Search name="q">
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
-</form><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p><span class="caption-text">Introduction</span></p>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 </ul>
-<p><span class="caption-text">Projects</span></p>
+<p class="caption" role="heading"><span class="caption-text">Projects</span></p>
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Cardiac Segmentation</a></li>
 </ul>
-<p><span class="caption-text">Examples</span></p>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="_examples/visualise.html">Visualise Images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis</a></li>
 </ul>
-<p><span class="caption-text">Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="visualiser.html">Image Visualiser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dicom.html">DICOM Conversion</a></li>
@@ -134,18 +180,37 @@
 
 </div>
 </div>
+
       </div>
       
     </div>
   </aside>
-  <main class="main">
+  <div class="main">
     <div class="content">
-      <article role="main">
-        <label class="toc-overlay-icon toc-content-icon" for="__toc">
-          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
-        </label>
-        <section id="cardiac-segmentation">
-<h1>Cardiac Segmentation<a class="headerlink" href="#cardiac-segmentation" title="Permalink to this headline">¶</a></h1>
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="cardiac-segmentation">
+<h1>Cardiac Segmentation<a class="headerlink" href="#cardiac-segmentation" title="Permalink to this heading">#</a></h1>
 <p>This project consists of an algorithm to automatically segment the heart plus 17 cardiac
 sub-structures in typical Radiotherapy CT scans. The hybrid algorithm <a class="reference external" href="#references">[1]</a> first segments the whole
 heart using a deep learning model (nnUNet <a class="reference external" href="#references">[2]</a>) followed by a multi-atlas based mapping of the
@@ -153,7 +218,8 @@ cardiac sub-structures <a class="reference external" href="#references">[3]</a> 
 cardiac structures are generated by the auto-segmentation algorithm. By default, structure names
 are formatted to conform to the <a class="reference external" href="https://www.aapm.org/pubs/reports/RPT_263.pdf">TG-263</a>
 guidelines:</p>
-<div class="table-wrapper"><table class="docutils align-default">
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Structure</p></th>
 <th class="head"><p>Name</p></th>
@@ -215,15 +281,16 @@ guidelines:</p>
 <td><p>CN_Atrioventricular</p></td>
 </tr>
 </tbody>
-</table></div>
-<a class="reference external image-reference" href="https://raw.githubusercontent.com/pyplati/platipy/master/assets/cardiac.png"><img alt="Example Results" src="https://raw.githubusercontent.com/pyplati/platipy/master/assets/cardiac.png"/></a>
+</table>
+</div>
+<a class="reference external image-reference" href="https://raw.githubusercontent.com/pyplati/platipy/master/assets/cardiac.png"><img alt="Example Results" src="https://raw.githubusercontent.com/pyplati/platipy/master/assets/cardiac.png" /></a>
 <section id="quickstart">
-<h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h2>
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this heading">#</a></h2>
 <p>These steps have been tested on an Ubuntu 20.04 operating system using Python 3.8. Other Linux operating systems
 and Python versions 3.7-3.9 are expected to work. This tool is untested and likely won’t run on a
 Windows operating system at this time (contributions are welcome).</p>
 <section id="system-requirements">
-<h3>System Requirements<a class="headerlink" href="#system-requirements" title="Permalink to this headline">¶</a></h3>
+<h3>System Requirements<a class="headerlink" href="#system-requirements" title="Permalink to this heading">#</a></h3>
 <p>On a system with the following specifications, one case takes approximately 5 minutes process:</p>
 <ul class="simple">
 <li><p>24 core Intel i9 processor</p></li>
@@ -237,18 +304,15 @@ runtime on the first run.</p>
 </div></blockquote>
 </section>
 <section id="installation">
-<h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
-<p>Install PlatiPy and nnUNet in your Python environment:</p>
-<blockquote>
-<div><p>Important: Ensure you are using the latest version of pip: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">pip</span></code></p>
-</div></blockquote>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install platipy
-pip install nnunet
+<h3>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h3>
+<p>Install PlatiPy with the required extras (cardiac extra installs some additional libraries needed
+for the cardiac auto-segmentation):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install platipy<span class="o">[</span>cardiac<span class="o">]</span>
 </pre></div>
 </div>
 </section>
 <section id="run-from-a-python-script">
-<h3>Run from a Python script<a class="headerlink" href="#run-from-a-python-script" title="Permalink to this headline">¶</a></h3>
+<h3>Run from a Python script<a class="headerlink" href="#run-from-a-python-script" title="Permalink to this heading">#</a></h3>
 <p>This code snippet first pulls some Lung CT data into a folder called <code class="docutils literal notranslate"><span class="pre">data</span></code>. Next it runs the
 auto-segmentation algorithm on one example case and saves the results within the patient directory.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">platipy</span>
@@ -266,31 +330,31 @@ auto-segmentation algorithm on one example case and saves the results within the
 <span class="n">data_path</span> <span class="o">=</span> <span class="n">get_lung_nifti</span><span class="p">()</span>
 
 <span class="c1"># Pick out a case to run on</span>
-<span class="n">test_pat_path</span> <span class="o">=</span> <span class="n">data_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"LCTSC-Test-S1-201"</span><span class="p">)</span>
-<span class="n">test_image</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"IMAGES/LCTSC_TEST_S1_201_0_CT_0.nii.gz"</span><span class="p">)))</span>
+<span class="n">test_pat_path</span> <span class="o">=</span> <span class="n">data_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;LCTSC-Test-S1-201&quot;</span><span class="p">)</span>
+<span class="n">test_image</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;IMAGES/LCTSC_TEST_S1_201_0_CT_0.nii.gz&quot;</span><span class="p">)))</span>
 
 <span class="c1"># Compute the auto-segmented sub-structures</span>
 <span class="n">auto_structures</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">run_hybrid_segmentation</span><span class="p">(</span><span class="n">test_image</span><span class="p">)</span>
 
 <span class="c1"># Save the results</span>
-<span class="n">output_directory</span> <span class="o">=</span> <span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"substructures"</span><span class="p">)</span>
+<span class="n">output_directory</span> <span class="o">=</span> <span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;substructures&quot;</span><span class="p">)</span>
 <span class="n">output_directory</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">struct_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">auto_structures</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-    <span class="n">sitk</span><span class="o">.</span><span class="n">WriteImage</span><span class="p">(</span><span class="n">auto_structures</span><span class="p">[</span><span class="n">struct_name</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_directory</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">struct_name</span><span class="si">}</span><span class="s2">.nii.gz"</span><span class="p">)))</span>
+    <span class="n">sitk</span><span class="o">.</span><span class="n">WriteImage</span><span class="p">(</span><span class="n">auto_structures</span><span class="p">[</span><span class="n">struct_name</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_directory</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">struct_name</span><span class="si">}</span><span class="s2">.nii.gz&quot;</span><span class="p">)))</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Segmentations saved to: </span><span class="si">{</span><span class="n">output_directory</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Segmentations saved to: </span><span class="si">{</span><span class="n">output_directory</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="c1"># Visualise the results and save a snapshot</span>
-<span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">test_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">auto_structures</span><span class="p">[</span><span class="s2">"Heart"</span><span class="p">]))</span>
+<span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">test_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">auto_structures</span><span class="p">[</span><span class="s2">&quot;Heart&quot;</span><span class="p">]))</span>
 <span class="n">vis</span><span class="o">.</span><span class="n">add_contour</span><span class="p">({</span><span class="n">struct</span><span class="p">:</span> <span class="n">auto_structures</span><span class="p">[</span><span class="n">struct</span><span class="p">]</span> <span class="k">for</span> <span class="n">struct</span> <span class="ow">in</span> <span class="n">auto_structures</span><span class="o">.</span><span class="n">keys</span><span class="p">()})</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">vis</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output_directory</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">"snapshot.png"</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output_directory</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;snapshot.png&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </section>
 <section id="run-from-command-line-interface-cli">
-<h3>Run from Command Line Interface (CLI)<a class="headerlink" href="#run-from-command-line-interface-cli" title="Permalink to this headline">¶</a></h3>
+<h3>Run from Command Line Interface (CLI)<a class="headerlink" href="#run-from-command-line-interface-cli" title="Permalink to this heading">#</a></h3>
 <p>This command assumes you have a thorax CT image stored in Nifti format at the location
 <code class="docutils literal notranslate"><span class="pre">/path/to/ct.nii.gz</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy segmentation cardiac -o /path/to/output_folder /path/to/ct.nii.gz
@@ -298,30 +362,30 @@ auto-segmentation algorithm on one example case and saves the results within the
 </div>
 </section>
 <section id="run-from-a-jupyter-notebook">
-<h3>Run from a Jupyter Notebook<a class="headerlink" href="#run-from-a-jupyter-notebook" title="Permalink to this headline">¶</a></h3>
+<h3>Run from a Jupyter Notebook<a class="headerlink" href="#run-from-a-jupyter-notebook" title="Permalink to this heading">#</a></h3>
 <p>A <a class="reference external" href="https://github.com/pyplati/platipy/blob/master/examples/cardiac_segmentation.ipynb">Jupyter Notebook</a>
 is available containing an example.</p>
-<a class="reference external image-reference" href="https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/cardiac_segmentation.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg"/></a>
+<a class="reference external image-reference" href="https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/cardiac_segmentation.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
 </section>
 </section>
 <section id="troubleshooting">
-<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h2>
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this heading">#</a></h2>
 <section id="problem-i-get-an-error-message-indicating-a-cuda-error-no-kernel-image-is-available-for-execution-on-the-device">
-<h3>Problem: I get an error message indicating a <code class="docutils literal notranslate"><span class="pre">CUDA</span> <span class="pre">error:</span> <span class="pre">no</span> <span class="pre">kernel</span> <span class="pre">image</span> <span class="pre">is</span> <span class="pre">available</span> <span class="pre">for</span> <span class="pre">execution</span> <span class="pre">on</span> <span class="pre">the</span> <span class="pre">device</span></code><a class="headerlink" href="#problem-i-get-an-error-message-indicating-a-cuda-error-no-kernel-image-is-available-for-execution-on-the-device" title="Permalink to this headline">¶</a></h3>
+<h3>Problem: I get an error message indicating a <code class="docutils literal notranslate"><span class="pre">CUDA</span> <span class="pre">error:</span> <span class="pre">no</span> <span class="pre">kernel</span> <span class="pre">image</span> <span class="pre">is</span> <span class="pre">available</span> <span class="pre">for</span> <span class="pre">execution</span> <span class="pre">on</span> <span class="pre">the</span> <span class="pre">device</span></code><a class="headerlink" href="#problem-i-get-an-error-message-indicating-a-cuda-error-no-kernel-image-is-available-for-execution-on-the-device" title="Permalink to this heading">#</a></h3>
 <p>Solution: The pytorch version installed via the usual pip command above isn’t always necessarily
 the correct version needed for your operating system and CUDA version. Follow instructions
 <a class="reference external" href="https://pytorch.org/get-started/locally/">here</a> to install the correct version of pytorch.</p>
 </section>
 <section id="problem-installing-platipy-hangs-or-indicates-a-dependency-error">
-<h3>Problem: Installing PlatiPy hangs or indicates a dependency error<a class="headerlink" href="#problem-installing-platipy-hangs-or-indicates-a-dependency-error" title="Permalink to this headline">¶</a></h3>
+<h3>Problem: Installing PlatiPy hangs or indicates a dependency error<a class="headerlink" href="#problem-installing-platipy-hangs-or-indicates-a-dependency-error" title="Permalink to this heading">#</a></h3>
 <p>Solution: Upgrade your version of pip and try again: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">pip</span></code></p>
 </section>
 <section id="problem-i-m-unable-to-run-the-example-jupyter-notebook-on-google-colab">
-<h3>Problem: I’m unable to run the example Jupyter Notebook on Google Colab<a class="headerlink" href="#problem-i-m-unable-to-run-the-example-jupyter-notebook-on-google-colab" title="Permalink to this headline">¶</a></h3>
+<h3>Problem: I’m unable to run the example Jupyter Notebook on Google Colab<a class="headerlink" href="#problem-i-m-unable-to-run-the-example-jupyter-notebook-on-google-colab" title="Permalink to this heading">#</a></h3>
 <p>Solution: Create a new code cell and upgrade the version of pip. Then reinstall the platipy
 library:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>!pip install --upgrade pip
-!pip install platipy
+!pip install platipy[cardiac]
 </pre></div>
 </div>
 <p>If you continue to experience issues, restart the Colab runtime (Runtime-&gt;Restart Runtime) and try
@@ -334,16 +398,18 @@ issue tracker</a>. Any contributions to the code via
 </section>
 </section>
 <section id="references">
-<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<h2>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h2>
 <ol class="arabic simple">
-<li><p>Finnegan R, Chin V, Chlap P, et al. Open-source, fully-automated hybrid cardiac substructure segmentation: development and optimisation, Submitted to Radiotherapy and Oncology. 2022. (Under Review)</p></li>
+<li><p>Finnegan R, Chin V, Chlap P, et al. Open-source, fully-automated hybrid cardiac substructure
+segmentation: development and optimisation. Physics in Medicine and Biology. 2022. (Under Review)</p></li>
 <li><p>Isensee F, Jaeger PF, Kohl SAA, Petersen J, Maier-Hein KH. nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nat Methods. 2021;18(2):203-211. doi:10.1038/s41592-020-01008-z</p></li>
 <li><p>Finnegan R, Dowling J, Koh E-S, et al. Feasibility of multi-atlas cardiac segmentation from thoracic planning CT in a probabilistic framework. Phys Med Biol. 2019;64(8):085006. doi:10.1088/1361-6560/ab0ea6</p></li>
 </ol>
 </section>
 </section>
 
-      </article>
+        </article>
+      </div>
       <footer>
         
         <div class="related-pages">
@@ -354,10 +420,10 @@ issue tracker</a>. Any contributions to the code via
                 </div>
                 <div class="title">Visualise Images</div>
               </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
           <a class="prev-page" href="contributing.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
@@ -368,14 +434,20 @@ issue tracker</a>. Any contributions to the code via
               </div>
             </a>
         </div>
-
-        <div class="related-information">
-              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
-            |
-            <a class="muted-link" href="_sources/cardiac.rst.txt"
-               rel="nofollow">
-              Show Source
-            </a>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
+            </div>
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
         </div>
         
       </footer>
@@ -386,7 +458,7 @@ issue tracker</a>. Any contributions to the code via
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
@@ -418,12 +490,14 @@ issue tracker</a>. Any contributions to the code via
       
       
     </aside>
-  </main>
-</div>
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/scripts/furo.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
+    </body>
 </html>

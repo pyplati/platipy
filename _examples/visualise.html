@@ -1,62 +1,58 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="DVH Analysis Example" href="dvh_analysis.html" /><link rel="prev" title="Cardiac Segmentation" href="../cardiac.html" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="DVH Analysis" href="dvh_analysis.html" /><link rel="prev" title="Cardiac Segmentation" href="../cardiac.html" />
 
-    <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
+    <meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
         <title>Visualise Images - PlatiPy documentation</title>
-      <link rel="stylesheet" href="../_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
-    <link rel="stylesheet" href="../_static/pygments.css">
-    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="../_static/pygments_dark.css">
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
     
 
 
 <style>
-  :root {
+  body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
   
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
+  @media not print {
+    body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
     }
-  }
-
-  /* For allowing end-user-specific overrides */
-  .override-light {
-    --color-code-background: #f8f8f8;
-  --color-code-foreground: black;
-  
-  }
-  .override-dark {
-    --color-code-background: #202020;
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
+      }
+    }
   }
-</style><link rel="stylesheet" href="../_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
-  <body dir="">
+</style></head>
+  <body>
     
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
     <title>Contents</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-      <path stroke="none" d="M0 0h24v24H0z"/>
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="10" y1="12" x2="20" y2="12" />
-      <line x1="6" y1="18" x2="20" y2="18" />
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
     </svg>
   </symbol>
   <symbol id="svg-menu" viewBox="0 0 24 24">
     <title>Menu</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-menu">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
       <line x1="3" y1="12" x2="21" y2="12"></line>
       <line x1="3" y1="6" x2="21" y2="6"></line>
       <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -64,18 +60,57 @@
   </symbol>
   <symbol id="svg-arrow-right" viewBox="0 0 24 24">
     <title>Expand</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-chevron-right">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
       <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
     </svg>
   </symbol>
 </svg>
 
 <input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
 <input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation"></label>
-<label class="overlay toc-overlay" for="__toc"></label>
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
 
 
 
@@ -83,6 +118,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
         <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
       </label>
     </div>
@@ -90,7 +126,16 @@
       <a href="../index.html"><div class="brand">PlatiPy  documentation</div></a>
     </div>
     <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
       <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
     </div>
@@ -103,26 +148,27 @@
   
   <span class="sidebar-brand-text">PlatiPy  documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="../search.html">
-  <input class="sidebar-search" placeholder=Search name="q">
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
-</form><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p><span class="caption-text">Introduction</span></p>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
 </ul>
-<p><span class="caption-text">Projects</span></p>
+<p class="caption" role="heading"><span class="caption-text">Projects</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../cardiac.html">Cardiac Segmentation</a></li>
 </ul>
-<p><span class="caption-text">Examples</span></p>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Visualise Images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dvh_analysis.html">DVH Analysis Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dvh_analysis.html">DVH Analysis</a></li>
 </ul>
-<p><span class="caption-text">Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../visualiser.html">Image Visualiser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dicom.html">DICOM Conversion</a></li>
@@ -134,17 +180,36 @@
 
 </div>
 </div>
+
       </div>
       
     </div>
   </aside>
-  <main class="main">
+  <div class="main">
     <div class="content">
-      <article role="main">
-        <label class="toc-overlay-icon toc-content-icon" for="__toc">
-          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
-        </label>
-        
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          
 <style>
 /* CSS for nbsphinx extension */
 
@@ -354,11 +419,12 @@ div.nboutput.container div.output_area > div[class^='highlight']{
 }
 
 /* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
-.prompt a.copybtn {
+.prompt .copybtn {
     display: none;
 }
 
 /* Some additional styling taken form the Jupyter notebook CSS */
+.jp-RenderedHTMLCommon table,
 div.rendered_html table {
   border: none;
   border-collapse: collapse;
@@ -367,10 +433,14 @@ div.rendered_html table {
   font-size: 12px;
   table-layout: fixed;
 }
+.jp-RenderedHTMLCommon thead,
 div.rendered_html thead {
   border-bottom: 1px solid black;
   vertical-align: bottom;
 }
+.jp-RenderedHTMLCommon tr,
+.jp-RenderedHTMLCommon th,
+.jp-RenderedHTMLCommon td,
 div.rendered_html tr,
 div.rendered_html th,
 div.rendered_html td {
@@ -382,32 +452,34 @@ div.rendered_html td {
   max-width: none;
   border: none;
 }
+.jp-RenderedHTMLCommon th,
 div.rendered_html th {
   font-weight: bold;
 }
+.jp-RenderedHTMLCommon tbody tr:nth-child(odd),
 div.rendered_html tbody tr:nth-child(odd) {
   background: #f5f5f5;
 }
+.jp-RenderedHTMLCommon tbody tr:hover,
 div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
 <section id="Visualise-Images">
-<h1>Visualise Images<a class="headerlink" href="#Visualise-Images" title="Permalink to this headline">¶</a></h1>
+<h1>Visualise Images<a class="headerlink" href="#Visualise-Images" title="Permalink to this heading">#</a></h1>
 <p>This notebook demonstrates how to display an image along with some contours, scalar overlays and bounding boxes.</p>
 <section id="Import-Modules">
-<h2>Import Modules<a class="headerlink" href="#Import-Modules" title="Permalink to this headline">¶</a></h2>
+<h2>Import Modules<a class="headerlink" href="#Import-Modules" title="Permalink to this heading">#</a></h2>
 <p>The following cell imports the modules needed for this example. This ‘ImageVisualiser’ class does most of the heavy lifting regarding visualisation. It has a number of helpful functions, and makes adding additional information to an image (relatively) pain-free.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Check if platipy is installed, if not install it.</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check if platipy is installed, if not install it.</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">platipy</span>
 <span class="k">except</span><span class="p">:</span>
-    <span class="o">!</span>pip install git+https://github.com/pyplati/platipy.git
+    <span class="o">!</span>pip install platipy
     <span class="kn">import</span> <span class="nn">platipy</span>
 
 <span class="c1"># The ImageVisualiser clas</span>
@@ -433,20 +505,19 @@ div.rendered_html tbody tr:hover {
 </div>
 </section>
 <section id="Download-Test-Data">
-<h2>Download Test Data<a class="headerlink" href="#Download-Test-Data" title="Permalink to this headline">¶</a></h2>
+<h2>Download Test Data<a class="headerlink" href="#Download-Test-Data" title="Permalink to this heading">#</a></h2>
 <p>Some Lung test data from LCTSC is fetched here for use in this example notebook.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">input_directory</span> <span class="o">=</span> <span class="n">get_lung_nifti</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">input_directory</span> <span class="o">=</span> <span class="n">get_lung_nifti</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 </section>
 <section id="Read-in-the-data">
-<h2>Read in the data<a class="headerlink" href="#Read-in-the-data" title="Permalink to this headline">¶</a></h2>
+<h2>Read in the data<a class="headerlink" href="#Read-in-the-data" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>ct_image: the x-ray computed tomography scan (3D)</p></li>
 <li><p>contours: a dictionary of binary masks</p></li>
@@ -455,19 +526,18 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">pat_directory</span> <span class="o">=</span> <span class="n">input_directory</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"LCTSC-Test-S1-101"</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pat_directory</span> <span class="o">=</span> <span class="n">input_directory</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;LCTSC-Test-S1-101&quot;</span><span class="p">)</span>
 
 <span class="c1"># Read in the CT image</span>
-<span class="n">ct_filename</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">pat_directory</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"**/IMAGES/*.nii.gz"</span><span class="p">))</span>
+<span class="n">ct_filename</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">pat_directory</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;**/IMAGES/*.nii.gz&quot;</span><span class="p">))</span>
 <span class="n">ct_image</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="n">ct_filename</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
 
 <span class="c1"># Read in the RTStruct contours as binary masks</span>
-<span class="n">contour_filename_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">pat_directory</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"**/STRUCTURES/*.nii.gz"</span><span class="p">))</span>
+<span class="n">contour_filename_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">pat_directory</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;**/STRUCTURES/*.nii.gz&quot;</span><span class="p">))</span>
 
 <span class="n">contours</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="k">for</span> <span class="n">contour_filename</span> <span class="ow">in</span> <span class="n">contour_filename_list</span><span class="p">:</span>
-    <span class="n">_name</span> <span class="o">=</span> <span class="n">contour_filename</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">".nii.gz"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"RTSTRUCT_"</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="n">contour_filename</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.nii.gz&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;RTSTRUCT_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="n">contours</span><span class="p">[</span><span class="n">_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="n">contour_filename</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
 </pre></div>
@@ -475,7 +545,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </section>
 <section id="Display-Image-with-Contours">
-<h2>Display Image with Contours<a class="headerlink" href="#Display-Image-with-Contours" title="Permalink to this headline">¶</a></h2>
+<h2>Display Image with Contours<a class="headerlink" href="#Display-Image-with-Contours" title="Permalink to this heading">#</a></h2>
 <p>Here we define ‘cut’, the location of orthogonal slices</p>
 <ul class="simple">
 <li><p>cut: ( transaxial slice location <em>or</em> first axis, coronal slice location <em>or</em> second axis, saggital slice location <em>or</em> third axis, )</p></li>
@@ -484,23 +554,31 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">256</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">256</span><span class="p">))</span>
 <span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">image_visualiser</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/runner/work/platipy/platipy/platipy/imaging/visualisation/visualiser.py:1139: UserWarning: No contour levels were found within the data range.
+  origin={&#34;normal&#34;: &#34;upper&#34;, &#34;reversed&#34;: &#34;lower&#34;}[self.__origin],
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_visualise_7_0.png" src="../_images/_examples_visualise_7_0.png"/>
+<img alt="../_images/_examples_visualise_7_1.png" src="../_images/_examples_visualise_7_1.png" />
 </div>
 </div>
 </section>
 <section id="Display-Image-without-Contours">
-<h2>Display Image without Contours<a class="headerlink" href="#Display-Image-without-Contours" title="Permalink to this headline">¶</a></h2>
+<h2>Display Image without Contours<a class="headerlink" href="#Display-Image-without-Contours" title="Permalink to this heading">#</a></h2>
 <p>Here we change the intensity windowing, for example to better visualise lung tissue</p>
 <ul class="simple">
 <li><p>window: ( minimum intensity, range in intensity )</p></li>
@@ -512,10 +590,9 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">900</span><span class="p">,</span> <span class="mi">1100</span><span class="p">),</span> <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">"terrain"</span><span class="p">),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">900</span><span class="p">,</span> <span class="mi">1100</span><span class="p">),</span> <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;terrain&quot;</span><span class="p">),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">set_limits_from_label</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"LUNG_L"</span><span class="p">]</span> <span class="o">+</span> <span class="n">contours</span><span class="p">[</span><span class="s2">"LUNG_R"</span><span class="p">])</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">set_limits_from_label</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;LUNG_L&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">contours</span><span class="p">[</span><span class="s2">&quot;LUNG_R&quot;</span><span class="p">])</span>
 
 <span class="n">fig</span> <span class="o">=</span> <span class="n">image_visualiser</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -525,21 +602,20 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_visualise_9_0.png" src="../_images/_examples_visualise_9_0.png"/>
+<img alt="../_images/_examples_visualise_9_0.png" src="../_images/_examples_visualise_9_0.png" />
 </div>
 </div>
 </section>
 <section id="Display-Image-using-Projection">
-<h2>Display Image using Projection<a class="headerlink" href="#Display-Image-using-Projection" title="Permalink to this headline">¶</a></h2>
+<h2>Display Image using Projection<a class="headerlink" href="#Display-Image-using-Projection" title="Permalink to this heading">#</a></h2>
 <p>Another way to visualise a 3D image volume is using a projection. Here we demonstrate a mean intensity projection.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.8</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.8</span><span class="p">))</span>
 
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_bounding_box</span><span class="p">(</span><span class="n">label_to_roi</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART"</span><span class="p">],</span> <span class="n">return_as_list</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"HEART BOUNDING BOX"</span><span class="p">)</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_bounding_box</span><span class="p">(</span><span class="n">label_to_roi</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART&quot;</span><span class="p">],</span> <span class="n">return_as_list</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;HEART BOUNDING BOX&quot;</span><span class="p">)</span>
 
 <span class="n">fig</span> <span class="o">=</span> <span class="n">image_visualiser</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -549,26 +625,25 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_visualise_11_0.png" src="../_images/_examples_visualise_11_0.png"/>
+<img alt="../_images/_examples_visualise_11_0.png" src="../_images/_examples_visualise_11_0.png" />
 </div>
 </div>
 </section>
 <section id="Display-Scalar-Field-on-Image">
-<h2>Display Scalar Field on Image<a class="headerlink" href="#Display-Scalar-Field-on-Image" title="Permalink to this headline">¶</a></h2>
+<h2>Display Scalar Field on Image<a class="headerlink" href="#Display-Scalar-Field-on-Image" title="Permalink to this heading">#</a></h2>
 <p>There are also tools to visualise scalar fields. Here is an example using a normalised distance map, which we compute for the heart volume.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ndm_heart</span> <span class="o">=</span> <span class="n">convert_mask_to_reg_structure</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART"</span><span class="p">],</span> <span class="n">expansion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ndm_heart</span> <span class="o">=</span> <span class="n">convert_mask_to_reg_structure</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART&quot;</span><span class="p">],</span> <span class="n">expansion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART"</span><span class="p">]),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART&quot;</span><span class="p">]),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_scalar_overlay</span><span class="p">(</span><span class="n">ndm_heart</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Normalised distance from edge"</span><span class="p">,</span> <span class="n">discrete_levels</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART"</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Heart"</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_scalar_overlay</span><span class="p">(</span><span class="n">ndm_heart</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Normalised distance from edge&quot;</span><span class="p">,</span> <span class="n">discrete_levels</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART&quot;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Heart&quot;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">set_limits_from_label</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART"</span><span class="p">],</span> <span class="n">expansion</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">set_limits_from_label</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART&quot;</span><span class="p">],</span> <span class="n">expansion</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 
 <span class="n">fig</span> <span class="o">=</span> <span class="n">image_visualiser</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -578,28 +653,26 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_visualise_13_0.png" src="../_images/_examples_visualise_13_0.png"/>
+<img alt="../_images/_examples_visualise_13_0.png" src="../_images/_examples_visualise_13_0.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
 </div>
 </section>
 <section id="Overlay-Vector-Fields-on-Image">
-<h2>Overlay Vector Fields on Image<a class="headerlink" href="#Overlay-Vector-Fields-on-Image" title="Permalink to this headline">¶</a></h2>
+<h2>Overlay Vector Fields on Image<a class="headerlink" href="#Overlay-Vector-Fields-on-Image" title="Permalink to this heading">#</a></h2>
 <p>We can also display vector fields. Here we compute one, simulated by expanding the heart volume by 5mm (for this simulation, we also use some nice tools in platipy).</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART_EXPAND"</span><span class="p">],</span> <span class="n">tfm_expansion</span><span class="p">,</span> <span class="n">dvf_expansion</span> <span class="o">=</span> <span class="n">generate_field_asymmetric_extend</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART"</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART_EXPAND&quot;</span><span class="p">],</span> <span class="n">tfm_expansion</span><span class="p">,</span> <span class="n">dvf_expansion</span> <span class="o">=</span> <span class="n">generate_field_asymmetric_extend</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -607,25 +680,24 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART"</span><span class="p">]),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART&quot;</span><span class="p">]),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
 
 <span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_vector_overlay</span><span class="p">(</span>
     <span class="n">dvf_expansion</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">"DVF magnitude [mm]"</span><span class="p">,</span>
-    <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">"gnuplot2"</span><span class="p">),</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DVF magnitude [mm]&quot;</span><span class="p">,</span>
+    <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;gnuplot2&quot;</span><span class="p">),</span>
     <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span>
     <span class="n">arrow_scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">arrow_width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">subsample</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span>
-    <span class="n">color_function</span><span class="o">=</span><span class="s1">'magnitude'</span><span class="p">,</span>
+    <span class="n">color_function</span><span class="o">=</span><span class="s1">&#39;magnitude&#39;</span><span class="p">,</span>
     <span class="n">show_colorbar</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART_EXPAND"</span><span class="p">],</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">"Heart (expanded)"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#880088"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART"</span><span class="p">],</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">"Heart (original)"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#88FF88"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART_EXPAND&quot;</span><span class="p">],</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Heart (expanded)&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#880088&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART&quot;</span><span class="p">],</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Heart (original)&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#88FF88&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">set_limits_from_label</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART_EXPAND"</span><span class="p">],</span> <span class="n">expansion</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">set_limits_from_label</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART_EXPAND&quot;</span><span class="p">],</span> <span class="n">expansion</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
 
 <span class="n">fig</span> <span class="o">=</span> <span class="n">image_visualiser</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -635,20 +707,19 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_visualise_17_0.png" src="../_images/_examples_visualise_17_0.png"/>
+<img alt="../_images/_examples_visualise_17_0.png" src="../_images/_examples_visualise_17_0.png" />
 </div>
 </div>
 </section>
 <section id="Compare-two-Images">
-<h2>Compare two Images<a class="headerlink" href="#Compare-two-Images" title="Permalink to this headline">¶</a></h2>
+<h2>Compare two Images<a class="headerlink" href="#Compare-two-Images" title="Permalink to this heading">#</a></h2>
 <p>We can also visualise comparisons between images. This can be helpful for checking registration performance visually.</p>
 <p>In this example, we deform the ct_image using the transformation above (heart expansion).</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ct_image_deformed</span> <span class="o">=</span> <span class="n">apply_transform</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ct_image_deformed</span> <span class="o">=</span> <span class="n">apply_transform</span><span class="p">(</span>
     <span class="n">input_image</span><span class="o">=</span><span class="n">ct_image</span><span class="p">,</span>
     <span class="n">reference_image</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">transform</span><span class="o">=</span><span class="n">tfm_expansion</span><span class="p">,</span>
@@ -656,11 +727,11 @@ div.rendered_html tbody tr:hover {
     <span class="n">interpolator</span><span class="o">=</span><span class="n">sitk</span><span class="o">.</span><span class="n">sitkBSpline</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART"</span><span class="p">]),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
+<span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART&quot;</span><span class="p">]),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
 
 <span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_comparison_overlay</span><span class="p">(</span><span class="n">ct_image_deformed</span><span class="p">)</span>
 
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">set_limits_from_label</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART_EXPAND"</span><span class="p">],</span> <span class="n">expansion</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">set_limits_from_label</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART_EXPAND&quot;</span><span class="p">],</span> <span class="n">expansion</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
 
 <span class="n">fig</span> <span class="o">=</span> <span class="n">image_visualiser</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -670,52 +741,51 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_visualise_19_0.png" src="../_images/_examples_visualise_19_0.png"/>
+<img alt="../_images/_examples_visualise_19_0.png" src="../_images/_examples_visualise_19_0.png" />
 </div>
 </div>
 </section>
 <section id="Combine-Visualisations">
-<h2>Combine Visualisations<a class="headerlink" href="#Combine-Visualisations" title="Permalink to this headline">¶</a></h2>
+<h2>Combine Visualisations<a class="headerlink" href="#Combine-Visualisations" title="Permalink to this heading">#</a></h2>
 <p>For experienced matplotlib users, it is also possible to customise the figure after it has been created. We can add test, more axes, etc. as usual…</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART"</span><span class="p">]),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART&quot;</span><span class="p">]),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
 
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_scalar_overlay</span><span class="p">(</span><span class="n">ndm_heart</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Normalised distance from edge"</span><span class="p">,</span> <span class="n">discrete_levels</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_scalar_overlay</span><span class="p">(</span><span class="n">ndm_heart</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Normalised distance from edge&quot;</span><span class="p">,</span> <span class="n">discrete_levels</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART_EXPAND"</span><span class="p">],</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">"Heart (expanded)"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#880088"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART"</span><span class="p">],</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">"Heart (original)"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#88FF88"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART_EXPAND&quot;</span><span class="p">],</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Heart (expanded)&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#880088&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART&quot;</span><span class="p">],</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Heart (original)&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#88FF88&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 
 <span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_vector_overlay</span><span class="p">(</span>
     <span class="n">dvf_expansion</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">"DVF magnitude [mm]"</span><span class="p">,</span>
-    <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">"gnuplot2"</span><span class="p">),</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DVF magnitude [mm]&quot;</span><span class="p">,</span>
+    <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;gnuplot2&quot;</span><span class="p">),</span>
     <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
     <span class="n">arrow_scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">arrow_width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">subsample</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span>
-    <span class="n">color_function</span><span class="o">=</span><span class="s1">'magnitude'</span><span class="p">,</span>
+    <span class="n">color_function</span><span class="o">=</span><span class="s1">&#39;magnitude&#39;</span><span class="p">,</span>
     <span class="n">show_colorbar</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 
-<span class="n">image_visualiser</span><span class="o">.</span><span class="n">set_limits_from_label</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">"HEART_EXPAND"</span><span class="p">],</span> <span class="n">expansion</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+<span class="n">image_visualiser</span><span class="o">.</span><span class="n">set_limits_from_label</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART_EXPAND&quot;</span><span class="p">],</span> <span class="n">expansion</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
 
 <span class="n">fig</span> <span class="o">=</span> <span class="n">image_visualiser</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 <span class="c1"># Here we can add stuff to the figure</span>
 
-<span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">,</span> <span class="s2">"TEST VISUALISATION"</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">"top"</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">"right"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.96</span><span class="p">,</span> <span class="s2">"using platipy"</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">"top"</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">"right"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"italic"</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">"red"</span><span class="p">);</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">,</span> <span class="s2">&quot;TEST VISUALISATION&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.96</span><span class="p">,</span> <span class="s2">&quot;using platipy&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;italic&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">);</span>
 
 <span class="n">test_axis</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">(</span> <span class="p">(</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">0.55</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span> <span class="p">)</span>
-<span class="n">test_axis</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">1000</span><span class="p">),</span> <span class="n">histtype</span><span class="o">=</span><span class="s2">"stepfilled"</span><span class="p">,</span> <span class="n">fc</span> <span class="o">=</span> <span class="s2">"#1144EE"</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">test_axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Results"</span><span class="p">)</span>
+<span class="n">test_axis</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">1000</span><span class="p">),</span> <span class="n">histtype</span><span class="o">=</span><span class="s2">&quot;stepfilled&quot;</span><span class="p">,</span> <span class="n">fc</span> <span class="o">=</span> <span class="s2">&quot;#1144EE&quot;</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">test_axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Results&quot;</span><span class="p">)</span>
 
 <span class="c1"># Optionally, save the figure</span>
-<span class="c1"># fig.savefig("./output.jpeg", dpi=500)</span>
+<span class="c1"># fig.savefig(&quot;./output.jpeg&quot;, dpi=500)</span>
 </pre></div>
 </div>
 </div>
@@ -725,29 +795,29 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Text(0.5, 0, 'Results')
+Text(0.5, 0, &#39;Results&#39;)
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_visualise_21_1.png" src="../_images/_examples_visualise_21_1.png"/>
+<img alt="../_images/_examples_visualise_21_1.png" src="../_images/_examples_visualise_21_1.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
 </div>
 </section>
 </section>
 
-      </article>
+        </article>
+      </div>
       <footer>
         
         <div class="related-pages">
@@ -756,12 +826,12 @@ Text(0.5, 0, 'Results')
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">DVH Analysis Example</div>
+                <div class="title">DVH Analysis</div>
               </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
           <a class="prev-page" href="../cardiac.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
@@ -772,14 +842,20 @@ Text(0.5, 0, 'Results')
               </div>
             </a>
         </div>
-
-        <div class="related-information">
-              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
-            |
-            <a class="muted-link" href="../_sources/_examples/visualise.ipynb.txt"
-               rel="nofollow">
-              Show Source
-            </a>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
+            </div>
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
         </div>
         
       </footer>
@@ -790,7 +866,7 @@ Text(0.5, 0, 'Results')
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
@@ -817,14 +893,16 @@ Text(0.5, 0, 'Results')
       
       
     </aside>
-  </main>
-</div>
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-    <script src="../_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
 </html>

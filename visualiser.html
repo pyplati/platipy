@@ -1,62 +1,58 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="DICOM Conversion" href="dicom.html" /><link rel="prev" title="DVH Analysis Example" href="_examples/dvh_analysis.html" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="DICOM Conversion" href="dicom.html" /><link rel="prev" title="DVH Analysis" href="_examples/dvh_analysis.html" />
 
-    <meta name="generator" content="sphinx-3.5.1, furo 2021.04.11.beta34"/>
+    <meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
         <title>Image Visualiser - PlatiPy documentation</title>
-      <link rel="stylesheet" href="_static/styles/furo.css?digest=59ab60ac09ea94ccfe6deddff6d715cce948a6fc">
-    <link rel="stylesheet" href="_static/pygments.css">
-    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="_static/pygments_dark.css">
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
     
 
 
 <style>
-  :root {
+  body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
   
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
+  @media not print {
+    body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
     }
-  }
-
-  /* For allowing end-user-specific overrides */
-  .override-light {
-    --color-code-background: #f8f8f8;
-  --color-code-foreground: black;
-  
-  }
-  .override-dark {
-    --color-code-background: #202020;
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
+      }
+    }
   }
-</style><link rel="stylesheet" href="_static/styles/furo-extensions.css?digest=d391b54134226e4196576da3bdb6dddb7e05ba2b"></head>
-  <body dir="">
+</style></head>
+  <body>
     
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
     <title>Contents</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-      <path stroke="none" d="M0 0h24v24H0z"/>
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="10" y1="12" x2="20" y2="12" />
-      <line x1="6" y1="18" x2="20" y2="18" />
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
     </svg>
   </symbol>
   <symbol id="svg-menu" viewBox="0 0 24 24">
     <title>Menu</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-menu">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
       <line x1="3" y1="12" x2="21" y2="12"></line>
       <line x1="3" y1="6" x2="21" y2="6"></line>
       <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -64,18 +60,57 @@
   </symbol>
   <symbol id="svg-arrow-right" viewBox="0 0 24 24">
     <title>Expand</title>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-      class="feather feather-chevron-right">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
       <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
     </svg>
   </symbol>
 </svg>
 
 <input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
 <input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
-<label class="overlay sidebar-overlay" for="__navigation"></label>
-<label class="overlay toc-overlay" for="__toc"></label>
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
 
 
 
@@ -83,6 +118,7 @@
   <header class="mobile-header">
     <div class="header-left">
       <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
         <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
       </label>
     </div>
@@ -90,7 +126,16 @@
       <a href="index.html"><div class="brand">PlatiPy  documentation</div></a>
     </div>
     <div class="header-right">
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
     </div>
@@ -103,26 +148,27 @@
   
   <span class="sidebar-brand-text">PlatiPy  documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="search.html">
-  <input class="sidebar-search" placeholder=Search name="q">
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
-</form><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p><span class="caption-text">Introduction</span></p>
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 </ul>
-<p><span class="caption-text">Projects</span></p>
+<p class="caption" role="heading"><span class="caption-text">Projects</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="cardiac.html">Cardiac Segmentation</a></li>
 </ul>
-<p><span class="caption-text">Examples</span></p>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="_examples/visualise.html">Visualise Images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis</a></li>
 </ul>
-<p><span class="caption-text">Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Image Visualiser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dicom.html">DICOM Conversion</a></li>
@@ -134,38 +180,57 @@
 
 </div>
 </div>
+
       </div>
       
     </div>
   </aside>
-  <main class="main">
+  <div class="main">
     <div class="content">
-      <article role="main">
-        <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
-          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
-        </label>
-        <section id="image-visualiser">
-<h1>Image Visualiser<a class="headerlink" href="#image-visualiser" title="Permalink to this headline">¶</a></h1>
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="image-visualiser">
+<h1>Image Visualiser<a class="headerlink" href="#image-visualiser" title="Permalink to this heading">#</a></h1>
 <dl class="py class">
-<dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.visualiser.</span></code><code class="sig-name descname"><span class="pre">ImageVisualiser</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">image</span></em>, <em class="sig-param"><span class="pre">cut=None</span></em>, <em class="sig-param"><span class="pre">axis='ortho'</span></em>, <em class="sig-param"><span class="pre">window=None</span></em>, <em class="sig-param"><span class="pre">figure_size_in=10</span></em>, <em class="sig-param"><span class="pre">limits=None</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">origin='normal'</span></em>, <em class="sig-param"><span class="pre">projection=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.visualisation.visualiser.ImageVisualiser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">platipy.imaging.visualisation.visualiser.</span></span><span class="sig-name descname"><span class="pre">ImageVisualiser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cut=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis='ortho'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figure_size_in=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limits=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin='normal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection=False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class to assist with visualising images and overlaying contours, scalars and bounding
 boxes.</p>
 <dl class="py method">
-<dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_bounding_box">
-<code class="sig-name descname"><span class="pre">add_bounding_box</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding_box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_bounding_box" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_bounding_box">
+<span class="sig-name descname"><span class="pre">add_bounding_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bounding_box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_bounding_box" title="Permalink to this definition">#</a></dt>
 <dd><p>Add a bounding box to draw.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>bounding_box</strong> (<em>dict|list|tuple|sitk.Image</em>) – Dictionary of bounding boxes where list key
+<li><p><strong>bounding_box</strong> (<em>dict</em><em>|</em><em>list</em><em>|</em><em>tuple</em><em>|</em><em>sitk.Image</em>) – Dictionary of bounding boxes where list key
 is the name of the bounding box. If list or tuple then pass
 bounding box in format (x, y, z, w, h, d). If sitk.Image then
 mask is assumed and bounding box around this mask is used.</p></li>
 <li><p><strong>name</strong> (<em>list</em><em>, </em><em>optional</em>) – Name of this bounding box if bounding_box is list, tuple or
 sitk.Image. Defaults to None.</p></li>
-<li><p><strong>color</strong> (<em>str|tuple|list</em><em>, </em><em>optional</em>) – The color to use when drawing the bounding box(es).
+<li><p><strong>color</strong> (<em>str</em><em>|</em><em>tuple</em><em>|</em><em>list</em><em>, </em><em>optional</em>) – The color to use when drawing the bounding box(es).
 Defaults to None.</p></li>
 <li><p><strong>linewidth</strong> (<em>int</em><em>, </em><em>optional</em>) – The line width of the bounding box(es). Defaults to 2.</p></li>
 </ul>
@@ -175,9 +240,10 @@ Defaults to None.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py method">
-<dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_comparison_overlay">
-<code class="sig-name descname"><span class="pre">add_comparison_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.35</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_comparison_overlay" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_comparison_overlay">
+<span class="sig-name descname"><span class="pre">add_comparison_overlay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.35</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_comparison_overlay" title="Permalink to this definition">#</a></dt>
 <dd><p>Overlay a comparison image on the existing image</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -192,17 +258,18 @@ Defaults to None.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py method">
-<dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_contour">
-<code class="sig-name descname"><span class="pre">add_contour</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">contour</span></em>, <em class="sig-param"><span class="pre">name=None</span></em>, <em class="sig-param"><span class="pre">color=None</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">linewidth=2</span></em>, <em class="sig-param"><span class="pre">linestyle='solid'</span></em>, <em class="sig-param"><span class="pre">show_legend=True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_contour" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_contour">
+<span class="sig-name descname"><span class="pre">add_contour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contour</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth=2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linestyle='solid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_legend=True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_contour" title="Permalink to this definition">#</a></dt>
 <dd><p>Add a contour as overlay</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>contour</strong> (<em>sitk.Image|dict</em>) – Contour mask or dict containing contour masks.</p></li>
+<li><p><strong>contour</strong> (<em>sitk.Image</em><em>|</em><em>dict</em>) – Contour mask or dict containing contour masks.</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name to give the contour (only used if passing sitk.Image as
 contour). Defaults to None.</p></li>
-<li><p><strong>color</strong> (<em>str|tuple|list</em><em>, </em><em>optional</em>) – The color to use when drawing the contour(s).
+<li><p><strong>color</strong> (<em>str</em><em>|</em><em>tuple</em><em>|</em><em>list</em><em>, </em><em>optional</em>) – The color to use when drawing the contour(s).
 Defaults to None.</p></li>
 </ul>
 </dd>
@@ -214,14 +281,15 @@ Defaults to None.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py method">
-<dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_scalar_overlay">
-<code class="sig-name descname"><span class="pre">add_scalar_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">scalar_image</span></em>, <em class="sig-param"><span class="pre">name=None</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">min_value=False</span></em>, <em class="sig-param"><span class="pre">max_value=False</span></em>, <em class="sig-param"><span class="pre">discrete_levels=False</span></em>, <em class="sig-param"><span class="pre">mid_ticks=False</span></em>, <em class="sig-param"><span class="pre">show_colorbar=True</span></em>, <em class="sig-param"><span class="pre">norm=None</span></em>, <em class="sig-param"><span class="pre">projection=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_scalar_overlay" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_scalar_overlay">
+<span class="sig-name descname"><span class="pre">add_scalar_overlay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scalar_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap=&lt;matplotlib.colors.LinearSegmentedColormap</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha=0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_value=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_value=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discrete_levels=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid_ticks=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_colorbar=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection=False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_scalar_overlay" title="Permalink to this definition">#</a></dt>
 <dd><p>Overlay a scalar image on to the existing image</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sitk.Image|dict</strong><strong>)</strong> (<em>scalar_image</em>) – Scalar image or dict containing scalar images.</p></li>
+<li><p><strong>sitk.Image</strong><strong>|</strong><strong>dict</strong><strong>)</strong> (<em>scalar_image</em>) – Scalar image or dict containing scalar images.</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name to give the scalar image (only used if passing sitk.Image as
 scalar image). Defaults to None.</p></li>
 <li><p><strong>colormap</strong> (<em>matplotlib.colors.Colormap</em><em>, </em><em>optional</em>) – The colormap to be used when
@@ -239,14 +307,15 @@ to plt.cm.get_cmap(“cubehelix”).</p></li>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py method">
-<dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_vector_overlay">
-<code class="sig-name descname"><span class="pre">add_vector_overlay</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">vector_image</span></em>, <em class="sig-param"><span class="pre">min_value=False</span></em>, <em class="sig-param"><span class="pre">max_value=False</span></em>, <em class="sig-param"><span class="pre">colormap=&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;</span></em>, <em class="sig-param"><span class="pre">alpha=0.75</span></em>, <em class="sig-param"><span class="pre">arrow_scale=1</span></em>, <em class="sig-param"><span class="pre">arrow_width=1</span></em>, <em class="sig-param"><span class="pre">subsample=8</span></em>, <em class="sig-param"><span class="pre">color_function='magnitude'</span></em>, <em class="sig-param"><span class="pre">show_colorbar=True</span></em>, <em class="sig-param"><span class="pre">name=None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_vector_overlay" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.visualisation.visualiser.ImageVisualiser.add_vector_overlay">
+<span class="sig-name descname"><span class="pre">add_vector_overlay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_value=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_value=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap=&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discrete_levels=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid_ticks=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha=0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_scale=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_width=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsample=8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_function='magnitude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_colorbar=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_vector_overlay" title="Permalink to this definition">#</a></dt>
 <dd><p>Overlay a vector field on to the existing image</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sitk.Image|dict</strong><strong>)</strong> (<em>vector_image</em>) – Vector image (will be displayed as ).</p></li>
+<li><p><strong>sitk.Image</strong><strong>|</strong><strong>dict</strong><strong>)</strong> (<em>vector_image</em>) – Vector image (will be displayed as ).</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name to give the vector field (only used if passing
 sitk.Image as vector field). Defaults to None.</p></li>
 <li><p><strong>colormap</strong> (<em>matplotlib.colors.Colormap</em><em>, </em><em>optional</em>) – The colormap to be used when
@@ -268,33 +337,40 @@ value
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py method">
-<dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser.clear">
-<code class="sig-name descname"><span class="pre">clear</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.clear" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.visualisation.visualiser.ImageVisualiser.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.clear" title="Permalink to this definition">#</a></dt>
 <dd><p>Clear all overlays</p>
 </dd></dl>
+
 <dl class="py method">
-<dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser.set_limits_from_label">
-<code class="sig-name descname"><span class="pre">set_limits_from_label</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.set_limits_from_label" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.visualisation.visualiser.ImageVisualiser.set_limits_from_label">
+<span class="sig-name descname"><span class="pre">set_limits_from_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.set_limits_from_label" title="Permalink to this definition">#</a></dt>
 <dd><p>Sets the limits of the axes to the bounds of the given label.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<em>sitk.Image</em>) – The label around which to set the limits</p></li>
-<li><p><strong>expansion</strong> (<em>list</em><em>, </em><em>optional</em>) – Expansion (in mm) around the label. Defaults to [0, 0, 0].</p></li>
+<li><p><strong>expansion</strong> (<em>list</em><em> | </em><em>float</em><em>, </em><em>optional</em>) – Expansion (in mm) around the label.
+Defaults to 2.</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py method">
-<dt id="platipy.imaging.visualisation.visualiser.ImageVisualiser.show">
-<code class="sig-name descname"><span class="pre">show</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.show" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="platipy.imaging.visualisation.visualiser.ImageVisualiser.show">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.show" title="Permalink to this definition">#</a></dt>
 <dd><p>Render the image with all overlays</p>
 </dd></dl>
+
 </dd></dl>
+
 </section>
 
-      </article>
+        </article>
+      </div>
       <footer>
         
         <div class="related-pages">
@@ -305,43 +381,80 @@ value
                 </div>
                 <div class="title">DICOM Conversion</div>
               </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
           <a class="prev-page" href="_examples/dvh_analysis.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">DVH Analysis Example</div>
+                <div class="title">DVH Analysis</div>
                 
               </div>
             </a>
         </div>
-
-        <div class="related-information">
-              Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
-            |
-            <a class="muted-link" href="_sources/visualiser.rst.txt"
-               rel="nofollow">
-              Show Source
-            </a>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
+            </div>
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
         </div>
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Image Visualiser</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser"><code class="docutils literal notranslate"><span class="pre">ImageVisualiser</span></code></a><ul>
+<li><a class="reference internal" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_bounding_box"><code class="docutils literal notranslate"><span class="pre">ImageVisualiser.add_bounding_box()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_comparison_overlay"><code class="docutils literal notranslate"><span class="pre">ImageVisualiser.add_comparison_overlay()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_contour"><code class="docutils literal notranslate"><span class="pre">ImageVisualiser.add_contour()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_scalar_overlay"><code class="docutils literal notranslate"><span class="pre">ImageVisualiser.add_scalar_overlay()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.add_vector_overlay"><code class="docutils literal notranslate"><span class="pre">ImageVisualiser.add_vector_overlay()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.clear"><code class="docutils literal notranslate"><span class="pre">ImageVisualiser.clear()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.set_limits_from_label"><code class="docutils literal notranslate"><span class="pre">ImageVisualiser.set_limits_from_label()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.visualisation.visualiser.ImageVisualiser.show"><code class="docutils literal notranslate"><span class="pre">ImageVisualiser.show()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
-  </main>
-</div>
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/scripts/furo.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></body>
+    </body>
 </html>
