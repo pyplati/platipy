@@ -13,15 +13,14 @@
 # limitations under the License.
 
 import warnings
+import logging
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
+#from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
 
 import numpy as np
 import SimpleITK as sitk
-
-from loguru import logger
 
 from platipy.imaging.utils.crop import label_to_roi
 
@@ -38,6 +37,8 @@ from platipy.imaging.visualisation.utils import (
     generate_comparison_colormix,
     project_onto_arbitrary_plane,
 )
+
+logger = logging.getLogger(__name__)
 
 """
 This Python script comprises two contributions to the code base:
@@ -484,8 +485,8 @@ class ImageVisualiser:
                 window = (lower, upper - lower)
         try:
             logger.info(
-                f"Found a (z,y,x,{nda.shape[3]}) dimensional array - assuming this is an RGB"
-                "image."
+                "Found a (z,y,x,%s) dimensional array - assuming this is an RGB"
+                "image.", nda.shape[3]
             )
             nda /= nda.max()
         except ValueError:

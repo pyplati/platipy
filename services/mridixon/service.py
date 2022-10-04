@@ -14,7 +14,8 @@
 
 import os
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 import SimpleITK as sitk
 
@@ -37,7 +38,7 @@ def mri_dixon_analysis(data_objects, working_dir, settings):
     """
 
     logger.info("Running Dixon analysis Calculation")
-    logger.info("Using settings: " + str(settings))
+    logger.info("Using settings: %s", settings)
 
     output_objects = []
 

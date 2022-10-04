@@ -19,7 +19,9 @@ import os
 from pathlib import Path
 
 import requests
-from loguru import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 from platipy.dicom.io.crawl import (
     process_dicom_directory,
@@ -146,7 +148,7 @@ def fetch_data(
     output_directory.mkdir(exist_ok=True, parents=True)
 
     modalities_available = get_modalities_in_collection(collection)
-    logger.debug(f"Modalities available: {modalities_available}")
+    logger.debug("Modalities available: %s", modalities_available)
 
     if modalities is None:
         logger.debug("Will fetch all modalities in collection")
@@ -157,7 +159,7 @@ def fetch_data(
         for modality in modalities:
             if not modality in modalities_available:
                 modalities_all_available = False
-                logger.error(f"Modality not available in collection: {modality}")
+                logger.error("Modality not available in collection: %s", modality)
 
         if not modalities_all_available:
             raise ValueError("Modalities aren't all available in collection")
@@ -173,7 +175,7 @@ def fetch_data(
         result[pid] = {}
         result[pid]["DICOM"] = {}
 
-        logger.debug(f"Fetching data for Patient: {pid}")
+        logger.debug("Fetching data for Patient: %s", pid)
 
         for modality in modalities:
             res = requests.get(
@@ -193,11 +195,11 @@ def fetch_data(
                 result[pid]["DICOM"][modality][series_uid] = target_directory
                 if target_directory.exists():
                     logger.warning(
-                        f"Series directory exists: {target_directory}, won't fetch data"
+                        "Series directory exists: %s, won't fetch data", target_directory
                     )
                     continue
 
-                logger.debug(f"Downloading Series: {series_uid}")
+                logger.debug("Downloading Series: %s", series_uid)
 
                 target_directory.mkdir(parents=True)
 
@@ -218,7 +220,7 @@ def fetch_data(
                 os.remove(save_path)
 
         if nifti:
-            logger.info(f"Converting data for {pid} to Nifti")
+            logger.info("Converting data for %s to Nifti", pid)
             nifti_results = process_dicom_directory(
                 dicom_directory, output_directory=nifti_directory
             )

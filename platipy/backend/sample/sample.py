@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+import logging
 import os
 import pydicom
 import SimpleITK as sitk
-from loguru import logger
 
-from platipy.backend import app, DataObject
-from platipy.dicom.nifti_to_rtstruct.convert import convert_nifti
+from platipy.backend import app, DataObject, celery  # pylint: disable=unused-import
+from platipy.dicom.io.nifti_to_rtstruct import convert_nifti
 
+
+logger = logging.getLogger(__name__)
 
 body_settings_defaults = {
     "outputContourName": "primitive_body_contour",
@@ -35,11 +36,11 @@ body_settings_defaults = {
 def primitive_body_segmentation(data_objects, working_dir, settings):
 
     logger.info("Running Primitive Body Segmentation")
-    logger.info("Using settings: " + str(settings))
+    logger.info("Using settings: %s", settings)
 
     output_objects = []
     for d in data_objects:
-        logger.info("Running on data object: " + d.path)
+        logger.info("Running on data object: %s", d.path)
 
         # Read the image series
         load_path = d.path
@@ -63,9 +64,7 @@ def primitive_body_segmentation(data_objects, working_dir, settings):
         mask = sitk.BinaryNot(seg_clean)
 
         # Write the mask to a file in the working_dir
-        mask_file = os.path.join(
-            working_dir, "{0}.nii.gz".format(settings["outputContourName"])
-        )
+        mask_file = os.path.join(working_dir, "{0}.nii.gz".format(settings["outputContourName"]))
         sitk.WriteImage(mask, mask_file)
 
         # Create the output Data Object and add it to the list of output_objects
@@ -76,7 +75,7 @@ def primitive_body_segmentation(data_objects, working_dir, settings):
         if d.type == "DICOM":
 
             dicom_file = load_path[0]
-            logger.info("Will write Dicom using file: {0}".format(dicom_file))
+            logger.info("Will write Dicom using file: %s", dicom_file)
             masks = {settings["outputContourName"]: mask_file}
 
             # Use the image series UID for the file of the RTStruct

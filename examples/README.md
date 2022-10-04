@@ -1,5 +1,4 @@
 
-
 ### Demonstration of PlatiPy's Visualisation tools
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/visualise.ipynb)
@@ -12,11 +11,7 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/tcia.ipynb)
 
-### Examples to Generate Synthetic Deformations for Head & Neck
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/generate_synthetic_head_neck_deformation.ipynb)
-
-### Example to Perform Atlas-Based Heart Segmentation
+### Example to Perform Hybrid (Deep Learning+Atlas) Heart Segmentation
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/cardiac_segmentation.ipynb)
 
@@ -24,6 +19,6 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/bronchus_segmentation.ipynb)
 
-### Example to Generate Animations
+### Examples to Generate Synthetic Deformations for Head & Neck
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/generate_animations.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/generate_synthetic_head_neck_deformation.ipynb)

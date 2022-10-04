@@ -15,7 +15,8 @@
 import numpy as np
 import SimpleITK as sitk
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 
 def registration_command_iteration(method):

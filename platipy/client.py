@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import time
 import os
 import json
@@ -19,7 +20,7 @@ from pprint import pformat
 
 import requests
 
-from loguru import logger
+logger = logging.getLogger(__name__)
 
 
 API_DICOM_LOCATION = "{0}/api/dicomlocation"
@@ -57,7 +58,7 @@ class PlatiPyClient:
 
         self.base_url = f"{protocol}://{host}:{port}"
 
-        logger.info(f"Initializing client with URL: {self.base_url}")
+        logger.info("Initializing client with URL: %s", self.base_url)
 
         self.api_key = api_key
         self.algorithm_name = algorithm_name
@@ -110,7 +111,7 @@ class PlatiPyClient:
 
         location = self.get_dicom_location(name)
         if location:
-            logger.info(f"Location with name '{name}' already exists")
+            logger.info("Location with name '%s' already exists", name)
             return location
 
         params = {"name": name, "host": host, "port": port}
@@ -444,5 +445,5 @@ class PlatiPyClient:
                 filename = res.headers["Content-Disposition"].split("filename=")[1]
 
                 output_file = os.path.join(output_path, filename)
-                logger.info("Downloading to: {0}".format(output_file))
+                logger.info("Downloading to: %s", output_file)
                 open(output_file, "wb").write(res.content)

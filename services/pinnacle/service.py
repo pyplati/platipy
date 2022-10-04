@@ -12,18 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+import logging
 import os
 import tarfile
 import tempfile
 import shutil
 import json
-import pydicom
 
-from loguru import logger
+import pydicom
 
 from pymedphys.experimental.pinnacle import PinnacleExport
 
-from platipy.backend import app, DataObject, celery
+from platipy.backend import app, DataObject, celery # pylint: disable=unused-import
+
+logger = logging.getLogger(__name__)
 
 PINNACLE_EXPORT_SETTINGS_DEFAULTS = {
     "exportModalities": ["CT", "RTSTRUCT", "RTPLAN", "RTDOSE"],
@@ -38,15 +41,15 @@ def pinnacle_export_service(data_objects, working_dir, settings):
     """
 
     logger.info("Running Pinnacle Export")
-    logger.info("Using settings: " + str(settings))
+    logger.info("Using settings: %s", settings)
 
     return_objects = []
     for data_object in data_objects:
-        logger.info("Running on data object: " + data_object.path)
+        logger.info("Running on data object: %s", data_object.path)
 
         if not data_object.type == "FILE" or not tarfile.is_tarfile(data_object.path):
             logger.error(
-                f"Can only process TAR file. Skipping file: {data_object.path}"
+                "Can only process TAR file. Skipping file: %s", data_object.path
             )
             continue
 

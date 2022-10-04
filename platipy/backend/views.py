@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 import psutil
 
 from flask import Flask, request, render_template, jsonify

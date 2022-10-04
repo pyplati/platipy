@@ -51,13 +51,11 @@ runtime on the first run.
 
 ### Installation
 
-Install PlatiPy and nnUNet in your Python environment:
-
-> Important: Ensure you are using the latest version of pip: `pip install --upgrade pip`
+Install PlatiPy with the required extras (cardiac extra installs some additional libraries needed
+for the cardiac auto-segmentation):
 
 ```bash
-pip install platipy
-pip install nnunet
+pip install platipy[cardiac]
 ```
 
 ### Run from a Python script
@@ -138,7 +136,7 @@ library:
 
 ```python
 !pip install --upgrade pip
-!pip install platipy
+!pip install platipy[cardiac]
 ```
 
 If you continue to experience issues, restart the Colab runtime (Runtime->Restart Runtime) and try
@@ -150,6 +148,7 @@ issue tracker](https://github.com/pyplati/platipy/issues/new). Any contributions
 
 ## References
 
-1. Finnegan R, Chin V, Chlap P, et al. Open-source, fully-automated hybrid cardiac substructure segmentation: development and optimisation, Submitted to Radiotherapy and Oncology. 2022. (Under Review)
+1. Finnegan R, Chin V, Chlap P, et al. Open-source, fully-automated hybrid cardiac substructure
+segmentation: development and optimisation. Physics in Medicine and Biology. 2022. (Under Review)
 1. Isensee F, Jaeger PF, Kohl SAA, Petersen J, Maier-Hein KH. nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nat Methods. 2021;18(2):203-211. doi:10.1038/s41592-020-01008-z
 2. Finnegan R, Dowling J, Koh E-S, et al. Feasibility of multi-atlas cardiac segmentation from thoracic planning CT in a probabilistic framework. Phys Med Biol. 2019;64(8):085006. doi:10.1088/1361-6560/ab0ea6

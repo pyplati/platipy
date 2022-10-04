@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import logging
 import os
 import shutil
 import tempfile
-from pathlib import Path
 import zipfile
+from pathlib import Path
+
 import SimpleITK as sitk
 import numpy as np
-
-from loguru import logger
 
 from platipy.imaging.registration.utils import apply_transform, convert_mask_to_reg_structure
 
@@ -54,8 +53,15 @@ from platipy.imaging.utils.conduction import (
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 from platipy.imaging.generation.mask import extend_mask
 from platipy.imaging.label.utils import binary_encode_structure_list, correct_volume_overlap
-from platipy.imaging.projects.nnunet.run import run_segmentation, available_nnunet_models, setup_nnunet_environment, NNUNET_SETTINGS_DEFAULTS
+from platipy.imaging.projects.nnunet.run import (
+    run_segmentation,
+    available_nnunet_models,
+    setup_nnunet_environment,
+    NNUNET_SETTINGS_DEFAULTS,
+)
 from platipy.utils import download_and_extract_zip_file
+
+logger = logging.getLogger(__name__)
 
 ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:
@@ -372,11 +378,24 @@ OPEN_ATLAS_SETTINGS["geometric_segmentation_settings"]["atlas_structure_names"] 
 }
 
 OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_binaryfillhole"] = [
-    "Atrium_L","Ventricle_L","Atrium_R","Ventricle_R","A_Aorta","A_Pulmonary","V_Venacava_S","Heart",
+    "Atrium_L",
+    "Ventricle_L",
+    "Atrium_R",
+    "Ventricle_R",
+    "A_Aorta",
+    "A_Pulmonary",
+    "V_Venacava_S",
+    "Heart",
 ]
 
 OPEN_ATLAS_SETTINGS["postprocessing_settings"]["structures_for_overlap_correction"] = [
-    "Atrium_L","Ventricle_L","Atrium_R","Ventricle_R","A_Aorta","A_Pulmonary","V_Venacava_S",
+    "Atrium_L",
+    "Ventricle_L",
+    "Atrium_R",
+    "Ventricle_R",
+    "A_Aorta",
+    "A_Pulmonary",
+    "V_Venacava_S",
 ]
 
 OPEN_ATLAS_SETTINGS["return_proba_as_contours"] = True
@@ -388,6 +407,7 @@ HYBRID_SETTINGS_DEFAULTS = {
 }
 HYBRID_SETTINGS_DEFAULTS["nnunet_settings"]["folds"] = "all"
 
+
 def install_open_atlas(atlas_path):
     """Fetch atlas from Zenodo and place into atlas_path
 
@@ -395,7 +415,7 @@ def install_open_atlas(atlas_path):
         atlas_path (pathlib.Path): Path in which to place the atlas
     """
 
-    logger.info(f"Fetching and installing open cardiac atlas to {atlas_path}")
+    logger.info("Fetching and installing open cardiac atlas to %s", atlas_path)
     temp_dir = tempfile.mkdtemp()
     download_and_extract_zip_file(OPEN_ATLAS_URL, temp_dir)
     temp_atlas_path = Path(temp_dir).joinpath("test_atlas")
@@ -416,31 +436,36 @@ def install_atlas_from_zipfile(zip_file_path, atlas_path):
 
         if not atlas_path.parent.exists():
             atlas_path.parent.mkdir(parents=True)
-            
+
         shutil.copytree(temp_atlas_path, atlas_path)
+
 
 def display_open_cardiac_zip_url_locations():
     open_nnunet_heart_model = "Task400_OPEN_HEART_1FOLD"
 
     nnunet_models = available_nnunet_models()
     nnunet_zip_url = nnunet_models[open_nnunet_heart_model]["url"]
-    
+
     print("Please download the following two zip files:")
     print(nnunet_zip_url)
     print(OPEN_ATLAS_URL)
     print()
-    print("Once downloaded, pass where these are located on your filesystem to the "
-          "install_hybrid_cardiac_from_zip function.")
+    print(
+        "Once downloaded, pass where these are located on your filesystem to the "
+        "install_hybrid_cardiac_from_zip function."
+    )
 
 
 def install_hybrid_cardiac_from_zip(path_to_nnunet_zip, path_to_atlas_zip):
 
-    from nnunet.inference.pretrained_models.download_pretrained_model import install_model_from_zip_file
-            
+    from nnunet.inference.pretrained_models.download_pretrained_model import (
+        install_model_from_zip_file,
+    )
+
     # Install nnUNet model
     setup_nnunet_environment()
     install_model_from_zip_file(path_to_nnunet_zip)
-    
+
     # Install atlas model
     install_atlas_from_zipfile(path_to_atlas_zip, Path(ATLAS_PATH).parent)
 
@@ -540,7 +565,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         }
 
         if crop_atlas_to_structures:
-            logger.info(f"Automatically cropping atlas: {atlas_id}")
+            logger.info("Automatically cropping atlas: %s", atlas_id)
 
             original_volume = np.product(image.GetSize())
 
@@ -552,7 +577,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
             final_volume = np.product(image.GetSize())
 
-            logger.info(f"  > Volume reduced by factor {original_volume/final_volume:.2f}")
+            logger.info("  > Volume reduced by factor %.2f", original_volume / final_volume)
 
             for struct in atlas_structure_list:
                 structures[struct] = crop_to_roi(
@@ -604,7 +629,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
         for atlas_id in atlas_id_list[: min([8, len(atlas_id_list)])]:
 
-            logger.info(f"  > atlas {atlas_id}")
+            logger.info("  > atlas %s", atlas_id)
 
             # Register the atlases
             atlas_set[atlas_id]["RIR"] = {}
@@ -627,9 +652,9 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         img_crop = crop_to_roi(img, crop_box_size, crop_box_index)
 
     logger.info("Calculated crop box:")
-    logger.info(f"  > {crop_box_index}")
-    logger.info(f"  > {crop_box_size}")
-    logger.info(f"  > Vol reduction = {np.product(img.GetSize())/np.product(crop_box_size):.2f}")
+    logger.info("  > %s", crop_box_index)
+    logger.info("  > %s", crop_box_size)
+    logger.info("  > Vol reduction = %.2f", np.product(img.GetSize()) / np.product(crop_box_size))
 
     """
     Step 2 - Rigid registration of target images
@@ -639,13 +664,13 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     linear_registration_settings = settings["linear_registration_settings"]
 
     logger.info(
-        f"Running {linear_registration_settings['reg_method']} tranform to align atlas images"
+        "Running %s tranform to align atlas images", linear_registration_settings["reg_method"]
     )
 
     for atlas_id in atlas_id_list:
         # Register the atlases
 
-        logger.info(f"  > atlas {atlas_id}")
+        logger.info("  > atlas %s", atlas_id)
 
         atlas_set[atlas_id]["RIR"] = {}
 
@@ -726,7 +751,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
         for atlas_id in atlas_id_list:
 
-            logger.info(f"  > atlas {atlas_id}")
+            logger.info("  > atlas %s", atlas_id)
 
             # Register the atlases
             atlas_set[atlas_id]["DIR_STRUCT"] = {}
@@ -776,7 +801,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
     for atlas_id in atlas_id_list:
 
-        logger.info(f"  > atlas {atlas_id}")
+        logger.info("  > atlas %s", atlas_id)
 
         # Register the atlases
         atlas_set[atlas_id]["DIR"] = {}
@@ -915,8 +940,10 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
             if settings["return_proba_as_contours"]:
                 atlas_contours = [
-                    atlas_set[atlas_id]["DIR"][structure_name] >= 2 for atlas_id in atlas_id_list
+                    process_probability_image(atlas_set[atlas_id]["DIR"][structure_name], 0.5)
+                    for atlas_id in atlas_id_list
                 ]
+
                 results_prob[structure_name] = binary_encode_structure_list(atlas_contours)
 
             else:
@@ -930,9 +957,11 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
                 results_prob[guide_structure_name] = guide_structure
 
         else:
+
             if settings["return_proba_as_contours"]:
                 atlas_contours = [
-                    atlas_set[atlas_id]["DIR"][structure_name] >= 2 for atlas_id in atlas_id_list
+                    process_probability_image(atlas_set[atlas_id]["DIR"][structure_name], 0.5)
+                    for atlas_id in atlas_id_list
                 ]
                 probability_img = binary_encode_structure_list(atlas_contours)
                 template_img_prob = sitk.Cast((img * 0), sitk.sitkUInt32)

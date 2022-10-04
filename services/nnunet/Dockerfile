@@ -1,14 +1,8 @@
-FROM platipy/platipy
+FROM platipy/platipy:service
 
-COPY requirements-nnunet.txt requirements-nnunet.txt
+RUN env -C /platipy /root/.local/bin/poetry install --E backend,nnunet
 
-RUN pip3 install -r requirements-nnunet.txt
-
-RUN cd /; git clone https://github.com/MIC-DKFZ/nnUNet.git
-
-COPY ./nnUNetTrainerHeart.py /nnUNet/nnunet/training/network_training/nnUNetTrainerHeart.py
-
-RUN cd /nnUNet; pip3 install -e .
+COPY ./nnUNetTrainerHeart.py /usr/lib/python3.8/site-packages/nnunet/training/network_training/nnUNetTrainerHeart.py
 
 COPY . /home/service
 

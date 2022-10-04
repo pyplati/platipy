@@ -17,11 +17,12 @@ import subprocess
 
 from pathlib import Path
 
-from loguru import logger
+import logging
 import SimpleITK as sitk
 
-from platipy.backend import app, DataObject, celery
+from platipy.backend import app, DataObject, celery # pylint: disable=unused-import
 
+logger = logging.getLogger(__name__)
 
 NNUNET_SETTINGS_DEFAULTS = {
     "task": "TaskXXX",
@@ -62,8 +63,8 @@ def nnunet_service(data_objects, working_dir, settings):
     output_objects = []
 
     logger.info("Running nnUNet")
-    logger.info("Using settings: {0}".format(settings))
-    logger.info("Working Dir: {0}".format(working_dir))
+    logger.info("Using settings: %s", settings)
+    logger.info("Working Dir: %s", working_dir)
 
     input_path = Path(working_dir).joinpath("input")
     input_path.mkdir()
@@ -100,7 +101,7 @@ def nnunet_service(data_objects, working_dir, settings):
         if settings["trainer"]:
             command += ["-tr", settings["trainer"]]
 
-        logger.info(f"Running command: {command}")
+        logger.info("Running command: %s", command)
         subprocess.call(command)
 
         for op in output_path.glob("*.nii.gz"):
