@@ -45,7 +45,8 @@ can add a call to your function providing some algorithm. Save it in a file name
 import os
 import pydicom
 import SimpleITK as sitk
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 from platipy.backend import app, DataObject, celery  # pylint: disable=unused-import
 from platipy.dicom.io.nifti_to_rtstruct import convert_nifti
@@ -60,11 +61,11 @@ MY_SETTINGS_DEFAULTS = {
 def my_segmentation_tool(data_objects, working_dir, settings):
 
     logger.info("Running My Segmentation Tool")
-    logger.info("Using settings: " + str(settings))
+    logger.info("Using settings: %s", settings)
 
     output_objects = []
     for d in data_objects:
-        logger.info(f"Running on data object: {d.path}")
+        logger.info("Running on data object: %s", d.path)
 
         # Read the image series
         load_path = d.path
@@ -90,7 +91,7 @@ def my_segmentation_tool(data_objects, working_dir, settings):
         if d.type == "DICOM":
 
             dicom_file = load_path[0]
-            logger.info("Will write Dicom using file: {0}".format(dicom_file))
+            logger.info("Will write Dicom using file: %s", dicom_file)
             masks = {settings["outputContourName"]: mask_file}
 
             # Use the image series UID for the file of the RTStruct
@@ -168,9 +169,10 @@ generated above in the code below.
 
 ```python
 import os
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
-from platipy.backend.client import PlatiPyClient
+from platipy.client import PlatiPyClient
 from platipy.imaging.tests.data import get_lung_nifti
 
 host = "127.0.0.1" # Set the host name or IP of the server running the service here
@@ -179,11 +181,6 @@ port = 8000 # Set the port the service was configured to run on here
 api_key = "" # INSERT THE API KEY GENERATED HERE
 
 algorithm_name = "My Segmentation Tool" # The name of the algorithm
-
-log_level = "INFO" # Choose an appropriate level of logging output: "DEBUG" or "INFO"
-
-logger.remove()
-handler_id = logger.add(sys.stderr, level=log_level)
 
 # Fetch some data
 images = get_lung_nifti()

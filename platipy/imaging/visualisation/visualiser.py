@@ -13,15 +13,14 @@
 # limitations under the License.
 
 import warnings
+import logging
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
+#from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
 
 import numpy as np
 import SimpleITK as sitk
-
-from loguru import logger
 
 from platipy.imaging.utils.crop import label_to_roi
 
@@ -38,6 +37,8 @@ from platipy.imaging.visualisation.utils import (
     generate_comparison_colormix,
     project_onto_arbitrary_plane,
 )
+
+logger = logging.getLogger(__name__)
 
 """
 This Python script comprises two contributions to the code base:
@@ -108,12 +109,13 @@ class ImageVisualiser:
         self.__comparison_overlays = []
         self.__vector_overlays = []
 
-    def set_limits_from_label(self, label, expansion=[0, 0, 0]):
+    def set_limits_from_label(self, label, expansion=2):
         """Sets the limits of the axes to the bounds of the given label.
 
         Args:
             label (sitk.Image): The label around which to set the limits
-            expansion (list, optional): Expansion (in mm) around the label. Defaults to [0, 0, 0].
+            expansion (list | float, optional): Expansion (in mm) around the label.
+                Defaults to 2.
         """
 
         (sag_size, cor_size, ax_size), (sag_0, cor_0, ax_0) = label_to_roi(
@@ -483,8 +485,8 @@ class ImageVisualiser:
                 window = (lower, upper - lower)
         try:
             logger.info(
-                f"Found a (z,y,x,{nda.shape[3]}) dimensional array - assuming this is an RGB"
-                "image."
+                "Found a (z,y,x,%s) dimensional array - assuming this is an RGB"
+                "image.", nda.shape[3]
             )
             nda /= nda.max()
         except ValueError:
@@ -494,6 +496,14 @@ class ImageVisualiser:
 
         sp_plane, _, sp_slice = image.GetSpacing()
         asp = (1.0 * sp_slice) / sp_plane
+
+        # Get the size - this is used for extent
+        size_sag, size_cor, size_ax = self.__image.GetSize()
+        extent_dict = {
+            "x": (0, size_cor, 0, size_ax),
+            "y": (0, size_sag, 0, size_ax),
+            "z": (0, size_sag, 0, size_cor),
+        }
 
         if self.__projection is True:
             projection = "max"
@@ -568,6 +578,7 @@ class ImageVisualiser:
                 origin={"normal": "upper", "reversed": "lower"}[self.__origin],
                 cmap=self.__colormap,
                 clim=(window[0], window[0] + window[1]),
+                extent=extent_dict["z"],
             )
             cor_view = ax_cor.imshow(
                 cor_img,
@@ -576,6 +587,7 @@ class ImageVisualiser:
                 interpolation="none",
                 cmap=self.__colormap,
                 clim=(window[0], window[0] + window[1]),
+                extent=extent_dict["y"],
             )
             sag_view = ax_sag.imshow(
                 sag_img,
@@ -584,6 +596,7 @@ class ImageVisualiser:
                 interpolation="none",
                 cmap=self.__colormap,
                 clim=(window[0], window[0] + window[1]),
+                extent=extent_dict["x"],
             )
 
             ax_ax.axis("off")
@@ -664,6 +677,7 @@ class ImageVisualiser:
                 origin=org,
                 cmap=self.__colormap,
                 clim=(window[0], window[0] + window[1]),
+                extent=extent_dict[self.__axis],
             )
             ax.axis("off")
 
@@ -712,6 +726,14 @@ class ImageVisualiser:
                 upper = np.percentile(nda_original, 99)
                 window = (lower, upper - lower)
 
+        # Get the size - this is used for extent
+        size_sag, size_cor, size_ax = self.__image.GetSize()
+        extent_dict = {
+            "x": (0, size_cor, 0, size_ax),
+            "y": (0, size_sag, 0, size_ax),
+            "z": (0, size_sag, 0, size_cor),
+        }
+
         if self.__axis == "ortho":
             figure_size = (
                 self.__figure_size,
@@ -752,6 +774,7 @@ class ImageVisualiser:
                 aspect=1.0,
                 origin={"normal": "upper", "reversed": "lower"}[self.__origin],
                 interpolation="none",
+                extent=extent_dict["z"],
             )
 
             nda_colormix = generate_comparison_colormix(
@@ -766,6 +789,7 @@ class ImageVisualiser:
                 origin="lower",
                 aspect=asp,
                 interpolation="none",
+                extent=extent_dict["y"],
             )
 
             nda_colormix = generate_comparison_colormix(
@@ -780,6 +804,7 @@ class ImageVisualiser:
                 origin="lower",
                 aspect=asp,
                 interpolation="none",
+                extent=extent_dict["x"],
             )
 
             ax_ax.axis("off")
@@ -841,6 +866,7 @@ class ImageVisualiser:
                 aspect=asp,
                 interpolation="none",
                 origin=org,
+                extent=extent_dict[self.__axis],
             )
             ax.axis("off")
 
@@ -888,11 +914,12 @@ class ImageVisualiser:
                     1 / asp * (cor_orig_1 - cor_orig_0) + (ax_orig_1 - ax_orig_0)
                 )
 
-                if origin == "reversed":
-                    cor_0, cor_1 = cor_1, cor_0
-
                 ax_ax.set_xlim(sag_0, sag_1)
-                ax_ax.set_ylim(cor_1, cor_0)
+
+                if origin == "reversed":
+                    ax_ax.set_ylim(cor_0, cor_1)
+                else:
+                    ax_ax.set_ylim(cor_orig_1 - cor_1, cor_orig_1 - cor_0)
 
                 ax_cor.set_xlim(sag_0, sag_1)
                 ax_cor.set_ylim(ax_0, ax_1)
@@ -949,7 +976,7 @@ class ImageVisualiser:
                 x_0, x_1 = sorted([x_0, x_1])
                 y_0, y_1 = sorted([y_0, y_1])
 
-                if self.__axis == "z":
+                if self.__axis == "z" and self.__origin == "normal":
                     y_0, y_1 = y_1, y_0
 
                 ratio_x = np.abs(x_1 - x_0) / np.abs(x_orig_1 - x_orig_0)
@@ -994,6 +1021,14 @@ class ImageVisualiser:
         # Test types of axes
         axes = self.__figure.axes[:4]
 
+        # Get the size - this is used for extent
+        size_sag, size_cor, size_ax = self.__image.GetSize()
+        extent_dict = {
+            "x": (0, size_cor, 0, size_ax),
+            "y": (0, size_sag, 0, size_ax),
+            "z": (0, size_sag, 0, size_cor),
+        }
+
         if self.__axis in ["x", "y", "z"]:
             ax = axes[0]
             s = return_slice(self.__axis, self.__cut)
@@ -1016,6 +1051,11 @@ class ImageVisualiser:
                     )
                     contour_disp = sitk.GetArrayFromImage(contour_disp_proj)
 
+                if self.__axis == "z":
+                    origin = {"normal": "upper", "reversed": "lower"}[self.__origin]
+                else:
+                    origin = "lower"
+
                 try:
                     ax.contour(
                         contour_disp,
@@ -1024,7 +1064,8 @@ class ImageVisualiser:
                         # alpha=0.8,
                         linewidths=lw_dict[c_name],
                         linestyles=ls_dict[c_name],
-                        origin="lower",
+                        extent=extent_dict[self.__axis],
+                        origin=origin,
                     )
                     ax.plot(
                         [0],
@@ -1090,11 +1131,12 @@ class ImageVisualiser:
 
                 ax_ax.contour(
                     contour_ax,
-                    levels=[0.5],
+                    levels=[0],
                     linewidths=lw_dict[c_name],
                     linestyles=ls_dict[c_name],
                     colors=[color_dict[c_name]],
-                    origin="lower",
+                    extent=extent_dict["z"],
+                    origin={"normal": "upper", "reversed": "lower"}[self.__origin],
                 )
                 ax_ax.plot(
                     [0],
@@ -1111,6 +1153,7 @@ class ImageVisualiser:
                     linewidths=lw_dict[c_name],
                     linestyles=ls_dict[c_name],
                     colors=[color_dict[c_name]],
+                    extent=extent_dict["y"],
                     origin="lower",
                 )
                 ax_sag.contour(
@@ -1119,6 +1162,7 @@ class ImageVisualiser:
                     linewidths=lw_dict[c_name],
                     linestyles=ls_dict[c_name],
                     colors=[color_dict[c_name]],
+                    extent=extent_dict["x"],
                     origin="lower",
                 )
 
@@ -1157,9 +1201,19 @@ class ImageVisualiser:
             else:
                 norm = None
 
+            # Get the spacing
             sp_plane, _, sp_slice = scalar_image.GetSpacing()
 
+            # Get the aspect ratio
             asp = (1.0 * sp_slice) / sp_plane
+
+            # Get the size - this is used for extent
+            size_sag, size_cor, size_ax = self.__image.GetSize()
+            extent_dict = {
+                "x": (0, size_cor, 0, size_ax),
+                "y": (0, size_sag, 0, size_ax),
+                "z": (0, size_sag, 0, size_cor),
+            }
 
             # projection organisation
             if scalar.projection:
@@ -1222,6 +1276,7 @@ class ImageVisualiser:
                     vmax=s_max,
                     alpha=alpha,
                     norm=norm,
+                    extent=extent_dict["z"],
                 )
 
                 cor_view = ax_cor.imshow(
@@ -1235,6 +1290,7 @@ class ImageVisualiser:
                     vmax=s_max,
                     alpha=alpha,
                     norm=norm,
+                    extent=extent_dict["y"],
                 )
 
                 sag_view = ax_sag.imshow(
@@ -1248,6 +1304,7 @@ class ImageVisualiser:
                     vmax=s_max,
                     alpha=alpha,
                     norm=norm,
+                    extent=extent_dict["x"],
                 )
 
                 # this is for (work-in-progress) dynamic visualisation
@@ -1278,18 +1335,24 @@ class ImageVisualiser:
 
                 asp = {"x": asp, "y": asp, "z": 1}[self.__axis]
 
+                if self.__axis == "z":
+                    origin = {"normal": "upper", "reversed": "lower"}[self.__origin]
+                else:
+                    origin = "lower"
+
                 s = return_slice(self.__axis, self.__cut)
                 ax_view = ax.imshow(
                     disp_img,
                     interpolation="none",
                     cmap=colormap,
                     clim=(s_min, s_max),
-                    origin="lower",
+                    origin=origin,
                     aspect=asp,
                     vmin=s_min,
                     vmax=s_max,
                     alpha=alpha,
                     norm=norm,
+                    extent=extent_dict[self.__axis],
                 )
 
             if scalar.show_colorbar:

@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import logging
 import os
+
 import SimpleITK as sitk
 import numpy as np
-
-from loguru import logger
 
 from platipy.imaging.registration.utils import apply_transform
 
@@ -38,6 +37,8 @@ from platipy.imaging.label.fusion import (
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
 from platipy.imaging.label.utils import correct_volume_overlap
+
+logger = logging.getLogger(__name__)
 
 ATLAS_PATH = "/atlas"
 if "ATLAS_PATH" in os.environ:
@@ -164,7 +165,7 @@ def run_segmentation(img, settings=MUTLIATLAS_SETTINGS_DEFAULTS):
         }
 
         if crop_atlas_to_structures:
-            logger.info(f"Automatically cropping atlas: {atlas_id}")
+            logger.info("Automatically cropping atlas: %s", atlas_id)
 
             original_volume = np.product(image.GetSize())
 
@@ -176,7 +177,7 @@ def run_segmentation(img, settings=MUTLIATLAS_SETTINGS_DEFAULTS):
 
             final_volume = np.product(image.GetSize())
 
-            logger.info(f"  > Volume reduced by factor {original_volume/final_volume:.2f}")
+            logger.info("  > Volume reduced by factor %.2f", original_volume/final_volume)
 
             for struct in atlas_structure_list:
                 structures[struct] = crop_to_roi(
@@ -219,7 +220,7 @@ def run_segmentation(img, settings=MUTLIATLAS_SETTINGS_DEFAULTS):
 
     for atlas_id in atlas_id_list[: min([8, len(atlas_id_list)])]:
 
-        logger.info(f"  > atlas {atlas_id}")
+        logger.info("  > atlas %s", atlas_id)
 
         # Register the atlases
         atlas_set[atlas_id]["RIR"] = {}
@@ -242,9 +243,9 @@ def run_segmentation(img, settings=MUTLIATLAS_SETTINGS_DEFAULTS):
     img_crop = crop_to_roi(img, crop_box_size, crop_box_index)
 
     logger.info("Calculated crop box:")
-    logger.info(f"  > {crop_box_index}")
-    logger.info(f"  > {crop_box_size}")
-    logger.info(f"  > Vol reduction = {np.product(img.GetSize())/np.product(crop_box_size):.2f}")
+    logger.info("  > %s", crop_box_index)
+    logger.info("  > %s", crop_box_size)
+    logger.info("  > Vol reduction = %.2f", np.product(img.GetSize())/np.product(crop_box_size))
 
     """
     Step 2 - Rigid registration of target images
@@ -254,13 +255,13 @@ def run_segmentation(img, settings=MUTLIATLAS_SETTINGS_DEFAULTS):
     linear_registration_settings = settings["linear_registration_settings"]
 
     logger.info(
-        f"Running {linear_registration_settings['reg_method']} tranform to align atlas images"
+        "Running %s tranform to align atlas images", linear_registration_settings['reg_method']
     )
 
     for atlas_id in atlas_id_list:
         # Register the atlases
 
-        logger.info(f"  > atlas {atlas_id}")
+        logger.info("  > atlas %s", atlas_id)
 
         atlas_set[atlas_id]["RIR"] = {}
 
@@ -310,7 +311,7 @@ def run_segmentation(img, settings=MUTLIATLAS_SETTINGS_DEFAULTS):
 
     for atlas_id in atlas_id_list:
 
-        logger.info(f"  > atlas {atlas_id}")
+        logger.info("  > atlas %s", atlas_id)
 
         # Register the atlases
         atlas_set[atlas_id]["DIR"] = {}
@@ -417,7 +418,7 @@ def run_segmentation(img, settings=MUTLIATLAS_SETTINGS_DEFAULTS):
 
         for structure_name in postprocessing_settings["structures_for_binaryfillhole"]:
 
-            if structure_name not in results.keys():
+            if structure_name not in results:
                 continue
 
             contour_s = results[structure_name]

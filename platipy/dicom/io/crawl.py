@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+import logging
 import re
 import sys
 
@@ -22,9 +23,11 @@ import numpy as np
 import SimpleITK as sitk
 
 from skimage.draw import polygon
-from loguru import logger
 
 from datetime import datetime
+
+
+logger = logging.getLogger(__name__)
 
 
 def flatten(itr):
@@ -96,13 +99,13 @@ def get_dicom_info_from_description(dicom_object, return_extra=False, sop_class_
     try:
         dicom_sop_class_name = dicom_object.SOPClassUID.name
     except AttributeError:
-        logger.warning(f"Could not find DICOM SOP Class UID, using {sop_class_name}.")
+        logger.warning("Could not find DICOM SOP Class UID, using %s.", sop_class_name)
         dicom_sop_class_name = sop_class_name
 
     if "Image" in dicom_sop_class_name:
         # Get the modality
         image_modality = dicom_object.Modality
-        logger.info(f"    Image modality: {image_modality}")
+        logger.info("    Image modality: %s", image_modality)
 
         if image_modality == "CT":
             # There is typically not much extra information
@@ -284,9 +287,7 @@ def transform_point_set_from_dicom_struct(image, dicom_struct, spacing_override=
 
     for structIndex, structure_name in enumerate(struct_name_sequence):
         image_blank = np.zeros(image.GetSize()[::-1], dtype=np.uint8)
-        logger.info(
-            "    Converting structure {0} with name: {1}".format(structIndex, structure_name)
-        )
+        logger.info("    Converting structure %d with name: %s", structIndex, structure_name)
 
         if structIndex >= len(struct_point_sequence):
             logger.warning("    Contour sequence is missing, skipping.")
@@ -327,14 +328,14 @@ def transform_point_set_from_dicom_struct(image, dicom_struct, spacing_override=
 
             if np.any(point_arr[2] != zIndex):
                 logger.error("    Axial slice index varies in contour. Quitting now.")
-                logger.error("    Structure:   {0}".format(structure_name))
-                logger.error("    Slice index: {0}".format(zIndex))
+                logger.error("    Structure:   %s", structure_name)
+                logger.error("    Slice index: %s", zIndex)
                 quit()
 
             if zIndex >= image.GetSize()[2]:
                 logger.warning("    Slice index greater than image size. Skipping slice.")
-                logger.warning("    Structure:   {0}".format(structure_name))
-                logger.warning("    Slice index: {0}".format(zIndex))
+                logger.warning("    Structure:   %s", structure_name)
+                logger.warning("    Slice index: %s", zIndex)
                 continue
 
             sliceArr = np.zeros(image.GetSize()[:2], dtype=np.uint8)
@@ -364,7 +365,7 @@ def process_dicom_file_list(dicom_file_list, parent_sorting_field="PatientName",
 
     for i, dicom_file in enumerate(sorted(dicom_file_list)):
         if verbose is True:
-            logger.debug(f"  Sorting file {i}")
+            logger.debug("  Sorting file %d", i)
 
         dicom_file = dicom_file.as_posix()
 
@@ -401,13 +402,13 @@ def process_dicom_series(
     initial_sop_class_name_default="UNKNOWN",
 ):
     if not individual_file:
-        logger.info(f"  Processing series UID: {series_uid}")
+        logger.info("  Processing series UID: %s", series_uid)
         dicom_file_list = dicom_series_dict[series_uid]
     else:
-        logger.info(f"  Processing individual file: {individual_file}")
+        logger.info("  Processing individual file: %s", individual_file)
         dicom_file_list = [individual_file]
 
-    logger.info(f"  Number of DICOM files: {len(dicom_file_list)}")
+    logger.info("  Number of DICOM files: %d", len(dicom_file_list))
 
     initial_dicom = pydicom.read_file(dicom_file_list[0])
 
@@ -418,7 +419,8 @@ def process_dicom_series(
 
     if parent_sorting_data == "":
         logger.error(
-            f"Could not find any data in {parent_sorting_field}. This is very bad, the data cannot be sorted properly."
+            "Could not find any data in %s. This is very bad, the data cannot be sorted properly.",
+            parent_sorting_field,
         )
         """
         ! TO DO
@@ -430,7 +432,7 @@ def process_dicom_series(
         initial_dicom_sop_class_name = initial_dicom.SOPClassUID.name
     except AttributeError:
         logger.warning(
-            f"Could not find DICOM SOP Class UID, using {initial_sop_class_name_default}."
+            "Could not find DICOM SOP Class UID, using %s.", initial_sop_class_name_default
         )
         initial_dicom_sop_class_name = initial_sop_class_name_default
 
@@ -491,7 +493,7 @@ def process_dicom_series(
 
             # !TO DO
             # Work on PET SUV conversion
-            None
+            pass
 
         """
         ! CHECKPOINT
@@ -619,7 +621,7 @@ def process_dicom_series(
         # Load as an RT structure set
         # This should be done individually for each file
 
-        logger.info(f"      Number of files: {len(dicom_file_list)}")
+        logger.info("      Number of files: %d", len(dicom_file_list))
         for index, dicom_file in enumerate(dicom_file_list):
             dicom_object = pydicom.read_file(dicom_file, force=True)
 
@@ -651,7 +653,7 @@ def process_dicom_series(
 
             # Get the appropriate series instance UID
             image_series_uid = rt_referenced_series_again_item.SeriesInstanceUID
-            logger.info(f"      Item {index}: Matched SeriesInstanceUID = {image_series_uid}")
+            logger.info("      Item %s: Matched SeriesInstanceUID = %s", index, image_series_uid)
 
             # Read in the corresponding image
             sorted_file_list = safe_sort_dicom_image_list(dicom_series_dict[image_series_uid])
@@ -676,7 +678,7 @@ def process_dicom_series(
         # Load as an RT Dose distribution
         # This should be done individually for each file
 
-        logger.info(f"      Number of files: {len(dicom_file_list)}")
+        logger.info("      Number of files: %d", len(dicom_file_list))
         for index, dicom_file in enumerate(dicom_file_list):
             dicom_object = pydicom.read_file(dicom_file, force=True)
 
@@ -698,7 +700,7 @@ def process_dicom_series(
 
             dose_grid_scaling = dicom_object.DoseGridScaling
 
-            logger.debug(f"  Dose grid scaling: {dose_grid_scaling} Gy")
+            logger.debug("  Dose grid scaling: %.5f Gy", dose_grid_scaling)
 
             scaled_dose_image = raw_dose_image * dose_grid_scaling
 
@@ -742,7 +744,7 @@ def write_output_data_to_disk(
     """
 
     for field in filename_fields:
-        logger.info(f"  Writing files for field: {field}")
+        logger.info("  Writing files for field: %s", field)
         p = pathlib.Path(output_directory) / parent_sorting_data / field
         p.mkdir(parents=True, exist_ok=True)
         files_written[field] = []
@@ -777,7 +779,7 @@ def write_output_data_to_disk(
                     files_written[field].append(output_name)
 
                     if output_name.is_file():
-                        logger.warning(f"  File exists: {output_name}")
+                        logger.warning("  File exists: %s", output_name)
 
                         if overwrite_existing_files:
                             logger.warning("  You have selected to overwrite existing files.")
@@ -815,7 +817,7 @@ def write_output_data_to_disk(
                 files_written[field].append(output_name)
 
                 if output_name.is_file():
-                    logger.warning(f"  File exists: {output_name}")
+                    logger.warning("  File exists: %s", output_name)
 
                     if overwrite_existing_files:
                         logger.warning("  You have selected to overwrite existing files.")
@@ -891,8 +893,8 @@ def process_dicom_directory(
     output = {}
 
     for parent_data, dicom_series_dict in dicom_series_dict_parent.items():
-        logger.info(f"Processing data for {parent_sorting_field} = {parent_data}.")
-        logger.info(f"  Number of DICOM series = {len(dicom_series_dict.keys())}")
+        logger.info("Processing data for %s = %s.", parent_sorting_field, parent_data)
+        logger.info("  Number of DICOM series = %d", len(dicom_series_dict.keys()))
 
         # Set up the output data
         # This stores the SimpleITK images and file names
@@ -904,9 +906,9 @@ def process_dicom_directory(
         study_uid_dict = {}
 
         # Give some user feedback
-        logger.debug(f"  Output image name format: {output_image_name_format}")
-        logger.debug(f"  Output structure name format: {output_structure_name_format}")
-        logger.debug(f"  Output dose name format: {output_dose_name_format}")
+        logger.debug("  Output image name format: %s", output_image_name_format)
+        logger.debug("  Output structure name format: %s", output_structure_name_format)
+        logger.debug("  Output dose name format: %s", output_dose_name_format)
 
         # For each unique series UID, process the DICOM files
         for series_uid in dicom_series_dict.keys():
@@ -944,16 +946,18 @@ def process_dicom_directory(
                 else:
                     if parent_sorting_data != output_data_dict["parent_sorting_data"]:
                         logger.error(
-                            f"A conflict was found for the parent sorting field "
-                            f"({parent_sorting_field}): {parent_sorting_data}"
+                            "A conflict was found for the parent sorting field " "(%s): %s}",
+                            parent_sorting_field,
+                            parent_sorting_data,
                         )
                         logger.error("Quitting now.")
                         print(dicom_series_dict_parent.keys())
                         sys.exit()
                     else:
                         logger.info(
-                            f"  Parent sorting field ({parent_sorting_field}) match found: "
-                            f"{parent_sorting_data}"
+                            "  Parent sorting field (%s) match found: %s",
+                            parent_sorting_field,
+                            parent_sorting_data,
                         )
 
                 # Step 2
@@ -970,13 +974,13 @@ def process_dicom_directory(
                     except ValueError:
                         study_uid_index = 0  # Study UID dict might be empty
 
-                    logger.info(f"  Setting study instance UID index: {study_uid_index}")
+                    logger.info("  Setting study instance UID index: %s", study_uid_index)
 
                     study_uid_dict[study_uid] = study_uid_index
 
                 else:
                     logger.info(
-                        f"  Study instance UID index already exists: {study_uid_dict[study_uid]}"
+                        "  Study instance UID index already exists: %s", study_uid_dict[study_uid]
                     )
 
                 # Step 3
@@ -1025,8 +1029,9 @@ def process_dicom_directory(
                         dicom_field_value = initial_dicom[dicom_field].value
                     except (AttributeError, KeyError):
                         logger.warning(
-                            f"  Could not find DICOM header {dicom_field}. Setting as 0 to "
-                            f"preserve naming convention."
+                            "  Could not find DICOM header %s. Setting as 0 to "
+                            "preserve naming convention.",
+                            dicom_field,
                         )
                         dicom_field_value = 0
                     naming_info_dict[dicom_field] = dicom_field_value

@@ -1,8 +1,0 @@
-flask >= 1.1.2, < 2.1
-flask-restful >= 0.3.8
-flask-sqlalchemy >= 2.4.4
-celery >= 5.2.3
-redis >= 3.5.3
-psutil >= 5.8.0
-gunicorn >= 20.0.4
-Jinja2 < 3.1

@@ -11,13 +11,21 @@ request](https://github.com/pyplati/platipy/compare) to merge your changes into 
 (**master**). At this point the automated tests will run and maintainers will review your
 submission before merging.
 
-## Example Installation
+## Poetry
 
-To install a development environment run the following within a virtual environment:
+platipy uses poetry to manage dependencies. Instructions for installing poetry are available 
+[here](https://python-poetry.org/docs/#installation). Once installed, you can easily install the
+libraries required to develop for platipy using the following command:
 
 ```bash
-pip install -r requirements.txt -r requirements-dev.txt -r requirements-backend.txt
-pip install -e .
+poetry install --with dev --all-extras
+```
+
+This will automatically create a virtual environment managed by poetry. To run a script within this
+environment, use the `poetry run` followed by what to run. For example, to run a test.py script:
+
+```bash
+poetry run python test.py
 ```
 
 ## Style Guide

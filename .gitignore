@@ -143,6 +143,7 @@ converted/
 **/working
 **/tcia
 **/nifti_output
+services/*/*.db
 
 # Don't include html docs in repo
 docs/site/

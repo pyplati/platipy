@@ -17,14 +17,13 @@
 import sys
 import click
 
-from loguru import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 from platipy.dicom.io.crawl import (
     process_dicom_directory,
 )
-
-logger.remove()
-logger.add(sys.stderr, level="DEBUG")
 
 
 @click.command()

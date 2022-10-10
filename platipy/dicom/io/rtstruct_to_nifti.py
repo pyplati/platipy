@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from pathlib import Path
 
 import pydicom
 import numpy as np
 import SimpleITK as sitk
 
-from loguru import logger
 from skimage.draw import polygon
 
 
+logger = logging.getLogger(__name__)
 def read_dicom_image(dicom_path):
     """Read a DICOM image series
 
@@ -121,7 +122,7 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
         )
         dicom_image.SetSpacing(new_spacing)
 
-    struct_point_sequence = dicom_struct.ROIContourSequence
+    struct_point_sequence = { cs.ReferencedROINumber:cs for cs in dicom_struct.ROIContourSequence }
     struct_name_sequence = [
         "_".join(i.ROIName.split()) for i in dicom_struct.StructureSetROISequence
     ]
@@ -129,12 +130,19 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
     struct_list = []
     final_struct_name_sequence = []
 
-    for struct_index, struct_name in enumerate(struct_name_sequence):
+    for struct_ds in dicom_struct.StructureSetROISequence:
         image_blank = np.zeros(dicom_image.GetSize()[::-1], dtype=np.uint8)
-        logger.debug("Converting structure {0} with name: {1}".format(struct_index, struct_name))
+
+        struct_name = "_".join(struct_ds.ROIName.split())
+        struct_index = struct_ds.ROINumber
+        logger.debug("Converting structure %s with name: %s", struct_index, struct_name)
+
+        if not struct_index in struct_point_sequence:
+            logger.debug("No ROIContourSequence found for this structure, skipping.")
+            continue
 
         if not hasattr(struct_point_sequence[struct_index], "ContourSequence"):
-            logger.debug("No contour sequence found for this structure, skipping.")
+            logger.debug("No ContourSequence found for this structure, skipping.")
             continue
 
         if len(struct_point_sequence[struct_index].ContourSequence) == 0:
@@ -152,6 +160,9 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
             logger.debug("This is not a closed planar structure, skipping.")
             continue
 
+
+        # Track in case something goes wrong in here we will skip the contour
+        skip_contour = False
         for sl in range(len(struct_point_sequence[struct_index].ContourSequence)):
 
             contour_data = fix_missing_data(
@@ -170,15 +181,16 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
             [x_vertex_arr_image, y_vertex_arr_image] = point_arr[[0, 1]]
             z_index = point_arr[2][0]
             if np.any(point_arr[2] != z_index):
-                logger.debug("Error: axial slice index varies in contour. Quitting now.")
-                logger.debug("Structure:   {0}".format(struct_name))
-                logger.debug("Slice index: {0}".format(z_index))
-                quit()
+                logger.debug("Error: axial slice index varies in contour. Skipping Contour.")
+                logger.debug("Structure:   %s", struct_name)
+                logger.debug("Slice index: %d", z_index)
+                skip_contour = True
+                break
 
             if z_index >= dicom_image.GetSize()[2]:
                 logger.debug("Warning: Slice index greater than image size. Skipping slice.")
-                logger.debug("Structure:   {0}".format(struct_name))
-                logger.debug("Slice index: {0}".format(z_index))
+                logger.debug("Structure:   %s", struct_name)
+                logger.debug("Slice index: %d", z_index)
                 continue
 
             slice_arr = np.zeros(image_blank.shape[-2:], dtype=np.uint8)
@@ -190,10 +202,11 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
 
             image_blank[z_index] += slice_arr
 
-        struct_image = sitk.GetImageFromArray(1 * (image_blank > 0))
-        struct_image.CopyInformation(dicom_image)
-        struct_list.append(sitk.Cast(struct_image, sitk.sitkUInt8))
-        final_struct_name_sequence.append(struct_name)
+        if not skip_contour:
+            struct_image = sitk.GetImageFromArray(1 * (image_blank > 0))
+            struct_image.CopyInformation(dicom_image)
+            struct_list.append(sitk.Cast(struct_image, sitk.sitkUInt8))
+            final_struct_name_sequence.append(struct_name)
 
     return struct_list, final_struct_name_sequence
 
@@ -220,10 +233,10 @@ def convert_rtstruct(
         spacing (list, optional): Values of image spacing to override. Defaults to None.
     """
 
-    logger.debug("Converting RTStruct: {0}".format(dcm_rt_file))
-    logger.debug("Using image series: {0}".format(dcm_img))
-    logger.debug("Output file prefix: {0}".format(prefix))
-    logger.debug("Output directory: {0}".format(output_dir))
+    logger.debug("Converting RTStruct: %s", dcm_rt_file)
+    logger.debug("Using image series: %s", dcm_img)
+    logger.debug("Output file prefix: %s", prefix)
+    logger.debug("Output directory: %s", output_dir)
 
     prefix = prefix + "{0}"
 
@@ -246,23 +259,23 @@ def convert_rtstruct(
 
         image_output_path = output_img
 
-        logger.debug("Image series to be converted to: {0}".format(image_output_path))
+        logger.debug("Image series to be converted to: %s", image_output_path)
 
     if spacing:
 
         if isinstance(spacing, str):
             spacing = [float(i) for i in spacing.split(",")]
 
-        logger.debug("Overriding image spacing with: {0}".format(spacing))
+        logger.debug("Overriding image spacing with: %s", spacing)
 
     struct_list, struct_name_sequence = transform_point_set_from_dicom_struct(
         dicom_image, dicom_struct, spacing
     )
     logger.debug("Converted all structures. Writing output.")
     for struct_index, struct_image in enumerate(struct_list):
-        out_name = "{0}.nii.gz".format(prefix.format(struct_name_sequence[struct_index]))
+        out_name = f"{prefix.format(struct_name_sequence[struct_index])}.nii.gz"
         out_name = output_dir.joinpath(out_name)
-        logger.debug(f"Writing file to: {output_dir}")
+        logger.debug("Writing file to: %s", output_dir)
         sitk.WriteImage(struct_image, str(out_name))
 
     if image_output_path is not None:

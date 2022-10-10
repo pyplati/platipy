@@ -16,7 +16,8 @@
 import os
 
 import SimpleITK as sitk
-from loguru import logger
+import logging
+logger = logging.getLogger(__name__)
 
 # import pydicom
 
@@ -37,11 +38,11 @@ def cardiac_service(data_objects, working_dir, settings):
     """
 
     logger.info("Running Cardiac Segmentation")
-    logger.info("Using settings: " + str(settings))
+    logger.info("Using settings: %s", settings)
 
     output_objects = []
     for data_object in data_objects:
-        logger.info("Running on data object: " + data_object.path)
+        logger.info("Running on data object: %s", data_object.path)
 
         # Read the image series
         load_path = data_object.path
@@ -92,11 +93,11 @@ def cardiac_structure_guided_service(data_objects, working_dir, settings):
     """Runs the structure guided cardiac segmentation service"""
 
     logger.info("Running Structure Guided Cardiac Segmentation")
-    logger.info("Using settings: " + str(settings))
+    logger.info("Using settings: %s", settings)
 
     output_objects = []
     for data_object in data_objects:
-        logger.info("Running on data object: " + data_object.path)
+        logger.info("Running on data object: %s", data_object.path)
 
         # Read the image series
         load_path = data_object.path
@@ -109,7 +110,7 @@ def cardiac_structure_guided_service(data_objects, working_dir, settings):
         if len(data_object.children) == 0:
             logger.error(
                 "Wholeheart structure needed for structure guided cardiac "
-                f"segmentation, skipping {data_object.id}"
+                "segmentation, skipping %s", data_object.id
             )
             continue
 

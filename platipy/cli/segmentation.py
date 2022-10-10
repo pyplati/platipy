@@ -16,10 +16,10 @@
 
 import os
 import sys
+import logging
 import json
 
 import click
-from loguru import logger
 
 import SimpleITK as sitk
 
@@ -27,24 +27,32 @@ from platipy.imaging.projects.bronchus.run import (
     run_bronchus_segmentation,
     BRONCHUS_SETTINGS_DEFAULTS,
 )
-from platipy.imaging.projects.cardiac.run import (
-    run_hybrid_segmentation,
-    HYBRID_SETTINGS_DEFAULTS,
-)
 
-segmentation_algorithms = {
-    "cardiac": {
+logger = logging.getLogger(__name__)
+
+segmentation_algorithms = {}
+
+try:
+    from platipy.imaging.projects.cardiac.run import (
+        run_hybrid_segmentation,
+        HYBRID_SETTINGS_DEFAULTS,
+    )
+
+    segmentation_algorithms["cardiac"] = {
         "algorithm": run_hybrid_segmentation,
-        "default_settings": HYBRID_SETTINGS_DEFAULTS
-    },
-    "bronchus": {
-        "algorithm": run_bronchus_segmentation,
-        "default_settings": BRONCHUS_SETTINGS_DEFAULTS,
-    },
+        "default_settings": HYBRID_SETTINGS_DEFAULTS,
+    }
+except ImportError:
+    logger.warning(
+        "Unable to provide cardiac segmentation. Be sure to install platipy with "
+        "cardiac extras: pip install 'platipy[cardiac]'"
+    )
+
+segmentation_algorithms["bronchus"] = {
+    "algorithm": run_bronchus_segmentation,
+    "default_settings": BRONCHUS_SETTINGS_DEFAULTS,
 }
 
-logger.remove()
-logger.add(sys.stderr, level="DEBUG")
 
 @click.command()
 @click.argument("algorithm", nargs=1, type=click.Choice(segmentation_algorithms.keys()))
@@ -118,6 +126,7 @@ def click_command(algorithm, input_path, config, default, output):
 
     for result in results:
         sitk.WriteImage(results[result], os.path.join(output, f"{result}.nii.gz"))
+
 
 if __name__ == "__main__":
 

@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import reduce
+import warnings
+
 import numpy as np
 import SimpleITK as sitk
 
-from functools import reduce
 from scipy.stats import pearsonr
 from skimage.util.shape import view_as_windows
 from platipy.imaging.registration.utils import smooth_and_resample
