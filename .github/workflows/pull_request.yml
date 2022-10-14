@@ -22,7 +22,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          curl -sSL https://install.python-poetry.org | python - --version 1.2.0rc1
+          curl -sSL https://install.python-poetry.org | python - --version 1.2.1
           poetry install --with dev,docs --all-extras
           echo "PYTHONPATH=`pwd`" >> $GITHUB_ENV
       - name: Build Docs
