@@ -25,6 +25,7 @@ PlatiPy documentation
     :hidden:
 
     _examples/visualise
+    _examples/atlas_segmentation
     _examples/dvh_analysis
     
 .. toctree::
