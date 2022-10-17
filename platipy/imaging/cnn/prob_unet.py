@@ -64,7 +64,7 @@ class AxisAlignedConvGaussian(torch.nn.Module):
         filters_per_layer=[64 * (2**x) for x in range(5)],
         latent_dim=2,
         ndims=2,
-        dropout_probability=None
+        dropout_probability=0.0
     ):
 
         super(AxisAlignedConvGaussian, self).__init__()
@@ -212,7 +212,7 @@ class ProbabilisticUnet(torch.nn.Module):
         loss_type="elbo",
         loss_params={"beta": 1},
         ndims=2,
-        dropout_probability=None,
+        dropout_probability=0.0,
     ):
         super(ProbabilisticUnet, self).__init__()
 
@@ -231,10 +231,10 @@ class ProbabilisticUnet(torch.nn.Module):
             ndims=ndims,
         )
         self.prior = AxisAlignedConvGaussian(
-            input_channels, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=None
+            input_channels, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=0.0
         )
         self.posterior = AxisAlignedConvGaussian(
-            input_channels + num_classes, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=None
+            input_channels + num_classes, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=0.0
         )
         self.fcomb = Fcomb(filters_per_layer, latent_dim, num_classes, no_convs_fcomb, ndims=ndims)
 
