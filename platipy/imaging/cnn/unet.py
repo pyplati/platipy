@@ -157,7 +157,7 @@ def resize_up_func(in_channels, out_channels, scale=2, ndims=2):
 
 class Conv(torch.nn.Module):
     def __init__(
-        self, input_channels, output_channels, up_down_sample=0, dropout_probability=None, ndims=2
+        self, input_channels, output_channels, up_down_sample=0, dropout_probability=0.0, ndims=2
     ):
 
         super(Conv, self).__init__()
@@ -182,8 +182,7 @@ class Conv(torch.nn.Module):
             )
         )
         layers.append(nn.ReLU(inplace=True))
-        if dropout_probability:
-            layers.append(dropout_nd(ndims=ndims, p=dropout_probability))
+        layers.append(dropout_nd(ndims=ndims, p=dropout_probability))
         layers.append(
             conv_nd(
                 ndims=ndims,
@@ -193,8 +192,7 @@ class Conv(torch.nn.Module):
                 padding=1,
             )
         )
-        if dropout_probability:
-            layers.append(dropout_nd(ndims=ndims, p=dropout_probability))
+        layers.append(dropout_nd(ndims=ndims, p=dropout_probability))
         layers.append(nn.ReLU(inplace=True))
         self.layers = nn.Sequential(*layers)
 
@@ -219,7 +217,7 @@ class UNet(nn.Module):
         filters_per_layer=[64 * (2 ** x) for x in range(5)],
         final_layer=True,
         ndims=2,
-        dropout_probability=None
+        dropout_probability=0.0
     ):
 
         super(UNet, self).__init__()
