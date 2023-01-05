@@ -428,6 +428,8 @@ class NiftiDataset(torch.utils.data.Dataset):
                             }
                         )
 
+                print(f"Loaded {len(self.slices)} slices")
+                print(self.slices)
                 continue
 
             logger.debug(f"Generating images for case: {case_id}")
@@ -454,7 +456,8 @@ class NiftiDataset(torch.utils.data.Dataset):
             for obs in case["observers"]:
                 observers[obs] = {}
                 for structure in case["observers"][obs]:
-                    structure_names.append(structure)
+                    if structure not in structure_names:
+                        structure_names.append(structure)
                     structure_path = case["observers"][obs][structure]
 
                     label = None
@@ -559,6 +562,8 @@ class NiftiDataset(torch.utils.data.Dataset):
                             "observer": obs,
                         }
                     )
+                print(f"Generated {len(self.slices)} slices")
+                print(self.slices)
 
     def __len__(self):
         return len(self.slices)
