@@ -171,8 +171,6 @@ class UNetDataModule(pl.LightningDataModule):
             for case in self.train_cases
         ]
 
-        print(train_data)
-
         # If a directory with augmented data is specified, use that for training as well
         if self.augmented_dir is not None:
 
@@ -229,6 +227,7 @@ class UNetDataModule(pl.LightningDataModule):
             }
             for case in self.validation_cases
         ]
+        print(self.validation_data)
 
         self.test_data = [
             {

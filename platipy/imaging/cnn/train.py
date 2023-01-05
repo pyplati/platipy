@@ -165,7 +165,8 @@ class ProbUNet(pl.LightningModule):
             "optimizer": optimizer,
             "lr_scheduler": {
                 "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
-                    optimizer, "max", patience=25, threshold=0.75, factor=0.5
+                    optimizer, "max", patience=25, threshold=0.1e-2, factor=0.75
+#                     optimizer, "max", patience=200, threshold=0.75, factor=0.5
                 ),
                 "monitor": "probabilisticDice",
             },
@@ -315,7 +316,7 @@ class ProbUNet(pl.LightningModule):
         metrics = {"DSC": "max", "HD": "min", "ASD": "min"}
         result = {}
 
-        contour_cmaps = ["RdPu", "YlOrRd", "GnBu"]
+        contour_cmaps = ["RdPu", "YlOrRd", "GnBu", "OrRd", "YlGn", "YlGnBu"]
         structures = self.hparams.structures
 
         try:
@@ -527,6 +528,8 @@ class ProbUNet(pl.LightningModule):
             y = y.int()
             y = y.to("cpu")
 
+
+            # TODO Make this work for multi class
             # Intersection over Union (also known as Jaccard Index)
             jaccard = JaccardIndex(num_classes=2)
             term_1 = 0
@@ -607,6 +610,8 @@ class ProbUNet(pl.LightningModule):
             **{f"probnet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
             **{f"unet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
         }
+
+        if len(cases) == 0: return
 
         prob_surface_dice = 0
         prob_dice = 0
@@ -701,13 +706,13 @@ class ProbUNet(pl.LightningModule):
                 for rk in samples:
                     sample_labels.append(samples[rk][structure])
 
-                # prob_surface_dice += probabilistic_surface_dice(gt_labels, sample_labels, tau=1)
                 prob_dice += probabilistic_dice(gt_labels, sample_labels, dsc_type="dsc")
                 prob_surface_dice += probabilistic_dice(
                     gt_labels, sample_labels, dsc_type="sdsc", tau=3
                 )
 
         prob_dice = prob_dice / len(cases)
+        if np.isnan(prob_dice): prob_dice = 0
         self.log(
             "probabilisticDice",
             prob_dice,
@@ -718,6 +723,7 @@ class ProbUNet(pl.LightningModule):
         )
 
         prob_surface_dice = prob_surface_dice / len(cases)
+        if np.isnan(prob_surface_dice): prob_surface_dice = 0
         self.log(
             "probabilisticSurfaceDice",
             prob_surface_dice,
@@ -809,22 +815,40 @@ def main(args, config_json_path=None):
     trainer.callbacks.append(lr_monitor)
 
     # Save the best model
-    checkpoint_callback = ModelCheckpoint(
-        monitor="probabilisticDice",
-        dirpath=args.default_root_dir,
-        filename="probunet-{epoch:02d}-{probabilisticSurfaceDice:.2f}",
-        save_top_k=1,
-        mode="max",
-    )
-    trainer.callbacks.append(checkpoint_callback)
+    if args.checkpoint_var:
+        checkpoint_callback = ModelCheckpoint(
+            monitor=args.checkpoint_var,
+            dirpath=args.default_root_dir,
+            filename="probunet-{epoch:02d}-{"+args.checkpoint_var+":.2f}",
+            save_top_k=1,
+            mode=args.checkpoint_mode,
+        )
+        trainer.callbacks.append(checkpoint_callback)
 
-    early_stop_callback = EarlyStopping(
-        monitor="probabilisticDice", min_delta=0.005, patience=50, verbose=False, mode="max"
-    )
-    trainer.callbacks.append(early_stop_callback)
+    if args.early_stopping_var:
+        early_stop_callback = EarlyStopping(
+            monitor=args.early_stopping_var, min_delta=args.early_stopping_min_delta, patience=args.early_stopping_patience, verbose=False, mode=args.early_stopping_mode
+        )
+        trainer.callbacks.append(early_stop_callback)
 
     trainer.fit(prob_unet, data_module)
 
+
+def parse_config_file(config_json_path, args):
+
+    with open(config_json_path, "r") as f:
+        params = json.load(f)
+        for key in params:
+            args.append(f"--{key}")
+
+            if isinstance(params[key], list):
+                for list_val in params[key]:
+                    args.append(str(list_val))
+            else:
+                args.append(str(params[key]))
+
+
+    return args
 
 if __name__ == "__main__":
 
@@ -834,17 +858,7 @@ if __name__ == "__main__":
         # Check if JSON file parsed, if so read arguments from there...
         if sys.argv[-1].endswith(".json"):
             config_json_path = sys.argv[-1]
-            with open(config_json_path, "r") as f:
-                params = json.load(f)
-                args = []
-                for key in params:
-                    args.append(f"--{key}")
-
-                    if isinstance(params[key], list):
-                        for list_val in params[key]:
-                            args.append(str(list_val))
-                    else:
-                        args.append(str(params[key]))
+            args = parse_config_file(config_json_path, [])
 
     arg_parser = ArgumentParser()
     arg_parser = ProbUNet.add_model_specific_args(arg_parser)
@@ -863,5 +877,19 @@ if __name__ == "__main__":
     arg_parser.add_argument("--comet_workspace", type=str, default=None)
     arg_parser.add_argument("--comet_project", type=str, default=None)
     arg_parser.add_argument("--resume_from", type=str, default=None)
+    arg_parser.add_argument("--early_stopping_var", type=str, default=None)
+    arg_parser.add_argument("--early_stopping_min_delta", type=float, default=0.01)
+    arg_parser.add_argument("--early_stopping_patience", type=int, default=50)
+    arg_parser.add_argument("--early_stopping_mode", type=str, default="max")
+    arg_parser.add_argument("--checkpoint_var", type=str, default=None)
+    arg_parser.add_argument("--checkpoint_mode", type=str, default="max")
 
-    main(arg_parser.parse_args(args), config_json_path=config_json_path)
+    parsed_args = arg_parser.parse_args(args)
+
+    # Check if config arg parsed, if so take over values and reparse
+    if parsed_args.config:
+        print("parseing args")
+        args = parse_config_file(parsed_args.config, sys.argv[1:])
+        parsed_args = arg_parser.parse_args(args)
+
+    main(parsed_args)

@@ -594,6 +594,7 @@ class NiftiDataset(torch.utils.data.Dataset):
         contour_mask = torch.FloatTensor(
             np.concatenate([np.expand_dims(l, 0) for l in contour_masks], 0)
         )
+        contour_mask = contour_mask.max(axis=0).values.unsqueeze(0)
         label_present = [label is not None for label in self.slices[index]["labels"]]
 
         return (

@@ -37,6 +37,7 @@ def main(args, config_json_path=None):
     args.working_dir = args.working_dir.joinpath(args.experiment)
     args.fold_dir = args.working_dir.joinpath(f"fold_{args.fold}")
     args.default_root_dir = str(args.fold_dir)
+    args.num_sanity_val_steps = 0
 
     comet_api_key = None
     comet_workspace = None

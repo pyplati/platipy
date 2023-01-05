@@ -285,7 +285,7 @@ def augment_data(args):
     data = {
         case: {
             "image": data_dir.joinpath(args.image_glob.format(case=case)),
-            "label": [p for p in data_dir.glob(args.label_glob.format(case=case))],
+            "label": [i for sl in [list(data_dir.glob(lg.format(case=case))) for lg in args.label_glob] for i in sl],
         }
         for case in cases
     }
@@ -412,7 +412,7 @@ if __name__ == "__main__":
     arg_parser.add_argument("--output_dir", type=str, default="./augment")
     arg_parser.add_argument("--case_glob", type=str, default="images/*.nii.gz")
     arg_parser.add_argument("--image_glob", type=str, default="images/{case}.nii.gz")
-    arg_parser.add_argument("--label_glob", type=str, default="labels/{case}_*.nii.gz")
+    arg_parser.add_argument("--label_glob", nargs="+", type=str, default="labels/{case}_*.nii.gz")
     arg_parser.add_argument(
         "--augmentations_per_case",
         type=int,
