@@ -428,8 +428,6 @@ class NiftiDataset(torch.utils.data.Dataset):
                             }
                         )
 
-                print(f"Loaded {len(self.slices)} slices")
-                print(self.slices)
                 continue
 
             logger.debug(f"Generating images for case: {case_id}")
@@ -562,8 +560,6 @@ class NiftiDataset(torch.utils.data.Dataset):
                             "observer": obs,
                         }
                     )
-                print(f"Generated {len(self.slices)} slices")
-                print(self.slices)
 
     def __len__(self):
         return len(self.slices)
