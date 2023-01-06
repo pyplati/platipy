@@ -165,7 +165,7 @@ class ProbUNet(pl.LightningModule):
             "optimizer": optimizer,
             "lr_scheduler": {
                 "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
-                    optimizer, "max", patience=25, threshold=0.1e-2, factor=0.75
+                    optimizer, "max", patience=20, threshold=0.1e-2, factor=0.75
 #                     optimizer, "max", patience=200, threshold=0.75, factor=0.5
                 ),
                 "monitor": "probabilisticDice",
