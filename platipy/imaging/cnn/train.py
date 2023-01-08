@@ -52,16 +52,17 @@ class GECOEarlyStopping(EarlyStopping):
         # Make sure the GECO lambda metrics are below 0.1 before stopping
         logs = trainer.callback_metrics
         should_consider_early_stop = True
-        if "lambda_rec" in logs and logs["lambda_rec"] >= 0.1:
+
+        if "lambda_rec" in logs and logs["lambda_rec"] >= 0.01:
             should_consider_early_stop = False
 
-        if "lambda_contour" in logs and logs["lambda_contour"] >= 0.1:
+        if "lambda_contour" in logs and logs["lambda_contour"] >= 0.01:
             should_consider_early_stop = False
 
         if should_consider_early_stop:
             self._run_early_stopping_check(trainer)
 
-    def on_train_end(self, trainer, pl_module):
+    def on_train_epoch_end(self, trainer, pl_module):
         pass
 
 class ProbUNet(pl.LightningModule):
@@ -170,14 +171,15 @@ class ProbUNet(pl.LightningModule):
         # scheduler = torch.optim.lr_scheduler.LambdaLR(
         #     optimizer, lr_lambda=[lambda epoch: self.hparams.lr_lambda ** (epoch)]
         # )
-        # scheduler = torch.optim.lr_scheduler.CyclicLR(
-        #     optimizer,
-        #     base_lr=self.hparams.learning_rate / 10,
-        #     max_lr=self.hparams.learning_rate,
-        #     step_size_up=1000,
-        # )
+        scheduler = torch.optim.lr_scheduler.CyclicLR(
+            optimizer,
+            base_lr=self.hparams.learning_rate / 100,
+            max_lr=self.hparams.learning_rate,
+            step_size_up=200,
+        )
 
-        # return [optimizer], [scheduler]
+        return [optimizer], [scheduler]
+
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
