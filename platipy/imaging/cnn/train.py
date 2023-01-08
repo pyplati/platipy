@@ -49,13 +49,13 @@ from platipy.imaging.label.utils import get_com, get_union_mask, get_intersectio
 class GECOEarlyStopping(EarlyStopping):
     def on_validation_end(self, trainer, pl_module):
 
-        # Make sure the GECO lambda metrics are below 1 before stopping
+        # Make sure the GECO lambda metrics are below 0.1 before stopping
         logs = trainer.callback_metrics
         should_consider_early_stop = True
-        if "lambda_rec" in logs and logs["lambda_rec"] >= 1:
+        if "lambda_rec" in logs and logs["lambda_rec"] >= 0.1:
             should_consider_early_stop = False
 
-        if "lambda_contour" in logs and logs["lambda_contour"] >= 1:
+        if "lambda_contour" in logs and logs["lambda_contour"] >= 0.1:
             should_consider_early_stop = False
 
         if should_consider_early_stop:
@@ -844,7 +844,7 @@ def main(args, config_json_path=None):
 
     if args.early_stopping_var:
         early_stop_callback = GECOEarlyStopping(
-            monitor=args.early_stopping_var, min_delta=args.early_stopping_min_delta, patience=args.early_stopping_patience, verbose=False, mode=args.early_stopping_mode
+            monitor=args.early_stopping_var, min_delta=args.early_stopping_min_delta, patience=args.early_stopping_patience, verbose=True, mode=args.early_stopping_mode
         )
         trainer.callbacks.append(early_stop_callback)
 
