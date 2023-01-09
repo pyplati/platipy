@@ -175,7 +175,7 @@ class ProbUNet(pl.LightningModule):
             optimizer,
             base_lr=self.hparams.learning_rate / 100,
             max_lr=self.hparams.learning_rate,
-            step_size_up=100,
+            step_size_up=25,
             cycle_momentum=False
         )
 
