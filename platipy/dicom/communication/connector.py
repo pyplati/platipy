@@ -58,7 +58,11 @@ class DicomConnector:
         self.recieved_callback = None
 
     def verify(self):
-        # Verify Connection
+        """Verify the DICOM connection
+
+        Returns:
+            bool: True if the connection was verified, otherwise False.
+        """
 
         ae = AE()
         ae.requested_contexts = VerificationPresentationContexts
@@ -292,11 +296,12 @@ class DicomConnector:
         except IOError:
             logger.warning("Could not write file to specified directory:")
             logger.warning("    %s", os.path.dirname(filename))
-            logger.warning("Directory may not exist or you may not have write " "permission")
+            logger.warning("Directory may not exist or you may not have write permission")
             # Failed - Out of Resources - IOError
             status_ds.Status = 0xA700
-        except Exception as exception:
-            logger.warning("Could not write file to specified directory:")
+        except Exception as exception: # pylint: disable=broad-except
+            logger.warning("Could not write file to specified directory as an unknown error "
+                           "occurred:")
             logger.warning("    %s", os.path.dirname(filename))
             logger.warning(exception)
             # Failed - Out of Resources - Miscellaneous error
@@ -341,7 +346,7 @@ class DicomConnector:
 
         return status
 
-    def on_c_echo(self, event):
+    def on_c_echo(self, _):
         """Respond to a C-ECHO service request.
 
         Parameters
@@ -362,10 +367,10 @@ class DicomConnector:
         logger.debug("C-ECHO!")
         return 0x0000
 
-    def on_association_accepted(self, event):
+    def on_association_accepted(self, _):
         self.current_dir = None
 
-    def on_association_released(self, event):
+    def on_association_released(self, _):
 
         if self.recieved_callback and self.current_dir:
             self.recieved_callback(self.current_dir)

@@ -17,15 +17,14 @@ import logging
 import re
 import sys
 
+from datetime import datetime
+
 import pathlib
 import pydicom
 import numpy as np
 import SimpleITK as sitk
 
 from skimage.draw import polygon
-
-from datetime import datetime
-
 
 logger = logging.getLogger(__name__)
 

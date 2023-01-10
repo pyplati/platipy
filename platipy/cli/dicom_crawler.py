@@ -14,16 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import click
-
 import logging
-
-logger = logging.getLogger(__name__)
+import click
 
 from platipy.dicom.io.crawl import (
     process_dicom_directory,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @click.command()

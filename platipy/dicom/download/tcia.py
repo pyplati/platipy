@@ -15,17 +15,17 @@
 import json
 import zipfile
 import os
+import logging
 
 from pathlib import Path
 
 import requests
-import logging
-
-logger = logging.getLogger(__name__)
 
 from platipy.dicom.io.crawl import (
     process_dicom_directory,
 )
+
+logger = logging.getLogger(__name__)
 
 API_URL = "https://services.cancerimagingarchive.net/services/v4/TCIA"
 

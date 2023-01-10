@@ -19,7 +19,6 @@ import logging
 
 import click
 
-
 from platipy.dicom.download.tcia import (
     get_collections,
     get_patients_in_collection,

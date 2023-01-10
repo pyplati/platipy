@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script was provided by Jason Dowling and written by Parnesh Raniga, CSIRO, Brisbane.
-
-
+import logging
 from pathlib import Path
+
 import SimpleITK as sitk
 import numpy as np
-import logging
 from matplotlib import cm
 
 from rt_utils import RTStructBuilder

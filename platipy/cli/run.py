@@ -18,8 +18,6 @@ import sys
 
 import logging
 
-logger = logging.getLogger(__name__)
-
 from platipy.cli import (
     dicom_crawler,
     segmentation,
@@ -28,6 +26,8 @@ from platipy.cli import (
     nifti_to_series,
     tcia_download,
 )
+
+logger = logging.getLogger(__name__)
 
 tools = {
     "dicom_crawler": dicom_crawler.click_command,

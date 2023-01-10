@@ -152,7 +152,7 @@ class PlatiPyClient:
             params["dataset"] = dataset["id"]
 
         res = requests.get(
-            "{0}/{1}".format(API_DATASET.format(self.base_url), params["dataset"]),
+            f"{API_DATASET.format(self.base_url)}/{params['dataset']}",
             headers={"API_KEY": self.api_key},
             verify=self.verify,
         )
@@ -182,7 +182,7 @@ class PlatiPyClient:
             params["dataset"] = dataset["id"]
 
         res = requests.get(
-            "{0}/{1}".format(API_DATASET_READY.format(self.base_url), params["dataset"]),
+            f"{API_DATASET_READY.format(self.base_url)}/{params['dataset']}",
             headers={"API_KEY": self.api_key},
             verify=self.verify,
         )
@@ -396,7 +396,7 @@ class PlatiPyClient:
 
         if res.status_code == 200:
             # Poll the URL given to determine the progress of the task
-            poll_url = "{0}{1}".format(self.base_url, res.json()["poll"])
+            poll_url = f"{self.base_url}{res.json()['poll']}"
 
             while True:
                 res = requests.get(poll_url, headers={"API_KEY": self.api_key}, verify=self.verify)
@@ -437,7 +437,7 @@ class PlatiPyClient:
             for data_obj in dataset["output_data_objects"]:
                 url = API_DOWNLOAD_OBJECT.format(self.base_url)
                 res = requests.get(
-                    "{0}/{1}".format(url, data_obj["id"]),
+                    f"{url}/{data_obj['id']}",
                     headers={"API_KEY": self.api_key},
                     verify=self.verify,
                 )
