@@ -23,12 +23,6 @@ date: 03 Jan 2023
 bibliography: paper.bib
 ---
 
-**Questions for Rob**
-
-- Casing of platipy? PlatiPy? PLATIPy?
-- Examples of published papers which have used PlatiPy features?
-- Updates affiliations
-
 # Summary
 
 PlatiPy provides a collection of tools and utilities to enable medical image analysis research using Python. This include functions to convert data to/from the commonly used DICOM format into more research friendly NIfTI format, functionality to assist image registration and atlas-based segmentation as well as tools to visualise images quickly and efficiently to enable rapid development of research. Auto-segmentation models developed within various research projects are also deployed as part of the library.
