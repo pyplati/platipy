@@ -26,6 +26,7 @@ PlatiPy documentation
 
     _examples/visualise
     _examples/atlas_segmentation
+    _examples/contour_comparison
     _examples/dvh_analysis
     
 .. toctree::
