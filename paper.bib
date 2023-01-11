@@ -1,0 +1,125 @@
+@article{Lowekamp2013,
+abstract = {SimpleITK is a new interface to the Insight Segmentation and Registration Toolkit (ITK) designed to facilitate rapid prototyping, education and scientific activities via high level programming languages. ITK is a templated C++ library of image processing algorithms and frameworks for biomedical and other applications, and it was designed to be generic, flexible and extensible. Initially, ITK provided a direct wrapping interface to languages such as Python and Tcl through the WrapITK system. Unlike WrapITK, which exposed ITK's complex templated interface, SimpleITK was designed to provide an easy to use and simplified interface to ITK's algorithms. It includes procedural methods, hides ITK's demand driven pipeline, and provides a template-less layer. Also SimpleITK provides practical conveniences such as binary distribution packages and overloaded operators. Our user-friendly design goals dictated a departure from the direct interface wrapping approach of WrapITK, toward a new facade class structure that only exposes the required functionality, hiding ITK's extensive template use. Internally SimpleITK utilizes a manual description of each filter with code-generation and advanced C++ meta-programming to provide the higher-level interface, bringing the capabilities of ITK to a wider audience. SimpleITK is licensed as open source software library under the Apache License Version 2.0 and more information about downloading it can be found at http://www.simpleitk.org. {\textcopyright} 2013 Lowek amp, Chen, Ib{\'{a}}{\~{n}}ez and Blezek.},
+author = {Lowekamp, Bradley C. and Chen, David T. and Ib{\'{a}}{\~{n}}ez, Luis and Blezek, Daniel},
+doi = {10.3389/fninf.2013.00045},
+issn = {16625196},
+journal = {Frontiers in Neuroinformatics},
+keywords = {Image processing and analysis,Image processing software,Insight toolkit,Segmentation,Software design,Software development},
+number = {DEC},
+pages = {1--14},
+title = {{The design of simpleITK}},
+volume = {7},
+year = {2013}
+}
+
+@article{Yaniv2018,
+abstract = {Modern scientific endeavors increasingly require team collaborations to construct and interpret complex computational workflows. This work describes an image-analysis environment that supports the use of computational tools that facilitate reproducible research and support scientists with varying levels of software development skills. The Jupyter notebook web application is the basis of an environment that enables flexible, well-documented, and reproducible workflows via literate programming. Image-analysis software development is made accessible to scientists with varying levels of programming experience via the use of the SimpleITK toolkit, a simplified interface to the Insight Segmentation and Registration Toolkit. Additional features of the development environment include user friendly data sharing using online data repositories and a testing framework that facilitates code maintenance. SimpleITK provides a large number of examples illustrating educational and research-oriented image analysis workflows for free download from GitHub under an Apache 2.0 license: github.com/InsightSoftwareConsortium/SimpleITK-Notebooks.},
+author = {Yaniv, Ziv and Lowekamp, Bradley C. and Johnson, Hans J. and Beare, Richard},
+doi = {10.1007/s10278-017-0037-8},
+issn = {1618727X},
+journal = {Journal of Digital Imaging},
+keywords = {Image analysis,Open-source software,Python,R,Registration,Segmentation},
+number = {3},
+pages = {290--303},
+pmid = {29181613},
+publisher = {Journal of Digital Imaging},
+title = {{SimpleITK Image-Analysis Notebooks: a Collaborative Environment for Education and Reproducible Research}},
+volume = {31},
+year = {2018}
+}
+
+@article{JMLR:v12:pedregosa11a,
+  author  = {Fabian Pedregosa and Ga{{\"e}}l Varoquaux and Alexandre Gramfort and Vincent Michel and Bertrand Thirion and Olivier Grisel and Mathieu Blondel and Peter Prettenhofer and Ron Weiss and Vincent Dubourg and Jake Vanderplas and Alexandre Passos and David Cournapeau and Matthieu Brucher and Matthieu Perrot and {{\'E}}douard Duchesnay},
+  title   = {Scikit-learn: Machine Learning in Python},
+  journal = {Journal of Machine Learning Research},
+  year    = {2011},
+  volume  = {12},
+  number  = {85},
+  pages   = {2825-2830},
+  url     = {http://jmlr.org/papers/v12/pedregosa11a.html}
+}
+
+@incollection{NEURIPS2019_9015,
+  title     = {PyTorch: An Imperative Style, High-Performance Deep Learning Library},
+  author    = {Paszke, Adam and Gross, Sam and Massa, Francisco and Lerer, Adam and Bradbury, James and Chanan, Gregory and Killeen, Trevor and Lin, Zeming and Gimelshein, Natalia and Antiga, Luca and Desmaison, Alban and Kopf, Andreas and Yang, Edward and DeVito, Zachary and Raison, Martin and Tejani, Alykhan and Chilamkurthy, Sasank and Steiner, Benoit and Fang, Lu and Bai, Junjie and Chintala, Soumith},
+  booktitle = {Advances in Neural Information Processing Systems 32},
+  pages     = {8024--8035},
+  year      = {2019},
+  publisher = {Curran Associates, Inc.},
+  url       = {http://papers.neurips.cc/paper/9015-pytorch-an-imperative-style-high-performance-deep-learning-library.pdf}
+}
+
+@article{Finnegan2021,
+abstract = {Incidental radiation exposure to the heart during lung cancer radiotherapy is associated with radiation-induced heart disease and increased rates of mortality. By considering the respiratory-induced motion of the heart it is possible to create a radiotherapy plan that results in a lower overall cardiac dose. This approach is challenging using current clinical practices: manual contouring of the heart is time consuming, and subject to inter- and intra-observer variability. In this work, we investigate the feasibility of our previously developed, atlas-based, automatic heart segmentation tool to delineate the heart in four-dimensional x-ray computed tomography (4D-CT) images. We used a dataset comprising 19 patients receiving radiotherapy for lung cancer, with 4D-CT imaging acquired at 10 respiratory phases and with a maximum intensity projection image generated from these. For each patient, one of four experienced radiation oncologists contoured the heart on each respiratory phase image and the maximum intensity image. Automatic segmentation of the heart on these same patient image sets was achieved using a leave-one-out approach, where for each patient the remaining 18 were used as an atlas set. The consistency of the automatic segmentation relative to manual contouring was evaluated using the Dice similarity coefficient (DSC) and mean absolute surface-to-surface distance (MASD). The DSC and MASD are comparable to inter-observer variability in clinically acceptable whole heart delineations (average DSC > 0.93 and average MASD < 2.0 mm in all the respiratory phases). The comparison between automatic and manual delineations on the maximum intensity images produced an overall mean DSC of 0.929 and a mean MASD of 2.07 mm. The automatic, atlas-based segmentation tool produces clinically consistent and robust heart delineations and is easy to implement in the routine care of lung cancer patients.},
+author = {Finnegan, Robert N. and Orlandini, Lucia and Liao, Xiongfei and Yin, Jun and Lang, Jinyi and Dowling, Jason and Fontanarosa, Davide},
+doi = {10.1371/journal.pone.0245364},
+isbn = {1111111111},
+issn = {19326203},
+journal = {PLoS ONE},
+number = {1 January},
+pages = {1--14},
+pmid = {33444379},
+title = {{Feasibility of using a novel automatic cardiac segmentation algorithm in the clinical routine of lung cancer patients}},
+url = {http://dx.doi.org/10.1371/journal.pone.0245364},
+volume = {16},
+year = {2021}
+}
+
+
+@article{Finnegan2022,
+abstract = {Background and purpose: Radiation therapy (RT) is commonly indicated for treatment of prostate cancer (PC). Biologicallyoptimised RT for PC may improve disease-free survival. This requires accurate spatial localisation and characterisation of tumour lesions. We aimed to generate a statistical, voxelised biological model to complement in vivomultiparametric MRI data to facilitate biologically-optimised RT. Material and methods: Ex vivo prostate MRI and histopathological imaging were acquired for 63 PC patients. These data were co-registered to derive three-dimensional distributions of graded tumour lesions and cell density. Novel registration processes were used to map these data to a common reference geometry. Voxelised statistical models of tumour probability and cell density were generated to create the PC biological atlas. Cell density models were analysed using the Kullback–Leibler divergence to compare normal vs. lognormal approximations to empirical data. Results: A reference geometry was constructed using ex vivo MRI space, patient data were deformably registered using a novel anatomy-guided process. Substructure correspondence was maintained using peripheral zone definitions to address spatial variability in prostate anatomy between patients. Three distinct approaches to interpolation were designed to map contours, tumour annotations and cell density maps from histology into ex vivo MRI space. Analysis suggests a log-normal model provides a more consistent representation of cell density when compared to a linear-normal model. Conclusion: A biological model has been created that combines spatial distributions of tumour characteristics from a population into three-dimensional, voxelised, statistical models. This tool will be used to aid the development of biologically-optimised RT for PC patients.},
+author = {Finnegan, Robert N. and Reynolds, Hayley M. and Ebert, Martin A. and Sun, Yu and Holloway, Lois and Sykes, Jonathan R. and Dowling, Jason and Mitchell, Catherine and Williams, Scott G. and Murphy, Declan G. and Haworth, Annette},
+doi = {10.1016/j.phro.2022.02.011},
+issn = {24056316},
+journal = {Physics and Imaging in Radiation Oncology},
+keywords = {Biological atlas,Prostate cancer,Radiobiology,Statistical atlas,Tumor biology},
+number = {February},
+pages = {136--145},
+publisher = {Elsevier B.V.},
+title = {{A statistical, voxelised model of prostate cancer for biologically optimised radiotherapy}},
+url = {https://doi.org/10.1016/j.phro.2022.02.011},
+volume = {21},
+year = {2022}
+}
+
+
+@article{Ghandourh2021,
+author = {Ghandourh, Wsam and Dowling, Jason and Chlap, Phillip and Oar, Andrew and Jacob, Susannah and Batumalai, Vikneswary and Holloway, Lois},
+doi = {10.1016/j.meddos.2020.09.004},
+file = {:Users/60126181/OneDrive - UNSW/Mendeley/Ghandourh et al/Ghandourh et al. - 2021 - Medical Dosimetry Assessing tumor centrality in lung stereotactic ablative body radiotherapy ( SABR ) the effe.pdf:pdf},
+keywords = {Automatic contouring,central tumors,contour variat,automatic contouring},
+pages = {94--101},
+publisher = {Elsevier Inc.},
+title = {{Medical Dosimetry Assessing tumor centrality in lung stereotactic ablative body radiotherapy ( SABR ): the effects of variations in bronchial tree delineation and potential for automated methods}},
+volume = {46},
+year = {2021}
+}
+
+@article{Biggs2022,
+author = {Biggs, Simon and Jennings, Matthew and Swerdloff, Stuart and Chlap, Phillip and Lane, Derek and Rembish, Jacob and McAloney, Jacob and King, Paul and Ayala, Rafael and Guan, Fada and Lambri, Nicola and Crewson, Cody and Sobolewski, Matthew},
+doi = {10.21105/joss.04555},
+issn = {2475-9066},
+journal = {Journal of Open Source Software},
+number = {78},
+pages = {4555},
+publisher = {Open Journals},
+title = {{PyMedPhys: A community effort to develop an open, Python-based standard library for medical physics applications}},
+volume = {7},
+year = {2022}
+}
+
+@article{Clark2013,
+abstract = {The National Institutes of Health have placed significant emphasis on sharing of research data to support secondary research. Investigators have been encouraged to publish their clinical and imaging data as part of fulfilling their grant obligations. Realizing it was not sufficient to merely ask investigators to publish their collection of imaging and clinical data, the National Cancer Institute (NCI) created the open source National Biomedical Image Archive software package as a mechanism for centralized hosting of cancer related imaging. NCI has contracted with Washington University in Saint Louis to create The Cancer Imaging Archive (TCIA) - an open-source, open-access information resource to support research, development, and educational initiatives utilizing advanced medical imaging of cancer. In its first year of operation, TCIA accumulated 23 collections (3.3 million images). Operating and maintaining a high-availability image archive is a complex challenge involving varied archive-specific resources and driven by the needs of both image submitters and image consumers. Quality archives of any type (traditional library, PubMed, refereed journals) require management and customer service. This paper describes the management tasks and user support model for TCIA. {\textcopyright} 2013 Society for Imaging Informatics in Medicine.},
+author = {Clark, Kenneth and Vendt, Bruce and Smith, Kirk and Freymann, John and Kirby, Justin and Koppel, Paul and Moore, Stephen and Phillips, Stanley and Maffitt, David and Pringle, Michael and Tarbox, Lawrence and Prior, Fred},
+doi = {10.1007/s10278-013-9622-7},
+issn = {08971889},
+journal = {Journal of Digital Imaging},
+keywords = {Biomedical image analysis,Cancer detection,Cancer imaging,Image archive,NBIA,TCIA},
+number = {6},
+pages = {1045--1057},
+pmid = {23884657},
+title = {{The cancer imaging archive (TCIA): Maintaining and operating a public information repository}},
+volume = {26},
+year = {2013}
+}
+
