@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from platipy.imaging.label.utils import get_com
-from platipy.imaging import ImageVisualiser
 
 import numpy as np
 
@@ -32,6 +30,9 @@ from platipy.imaging.label.comparison import (
     compute_metric_masd,
     compute_volume,
 )
+
+from platipy.imaging.label.utils import get_com
+from platipy.imaging import ImageVisualiser
 
 
 def contour_comparison(
@@ -190,7 +191,14 @@ def contour_comparison(
 
     # Compute some metrics
     df_metrics = pd.DataFrame(
-        columns=["STRUCTURE", "DSC", "MDA_mm", "HD_mm", f"VOL_{suffix_a}_cm3", f"VOL_{suffix_b}_cm3"]
+        columns=[
+            "STRUCTURE",
+            "DSC",
+            "MDA_mm",
+            "HD_mm",
+            f"VOL_{suffix_a}_cm3",
+            f"VOL_{suffix_b}_cm3",
+        ]
     )
     columns = ("DSC", "MDA\n[mm]", "HD\n[mm]", "Vol.\nRatio")
 
@@ -213,14 +221,18 @@ def contour_comparison(
         )
 
         # compute metrics and add to dataframe
-        row = pd.DataFrame([{
-                "STRUCTURE": s,
-                "DSC": dsc,
-                "MDA_mm": mda,
-                "HD_mm": hd,
-                f"VOL_{suffix_a}_cm3": vol_a,
-                f"VOL_{suffix_b}_cm3": vol_b,
-        }])
+        row = pd.DataFrame(
+            [
+                {
+                    "STRUCTURE": s,
+                    "DSC": dsc,
+                    "MDA_mm": mda,
+                    "HD_mm": hd,
+                    f"VOL_{suffix_a}_cm3": vol_a,
+                    f"VOL_{suffix_b}_cm3": vol_b,
+                }
+            ]
+        )
         df_metrics = pd.concat([df_metrics, row])
 
     # If there are no labels we can make the table bigger
