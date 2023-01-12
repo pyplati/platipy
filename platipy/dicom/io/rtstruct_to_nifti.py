@@ -23,6 +23,8 @@ from skimage.draw import polygon
 
 
 logger = logging.getLogger(__name__)
+
+
 def read_dicom_image(dicom_path):
     """Read a DICOM image series
 
@@ -122,10 +124,7 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
         )
         dicom_image.SetSpacing(new_spacing)
 
-    struct_point_sequence = { cs.ReferencedROINumber:cs for cs in dicom_struct.ROIContourSequence }
-    struct_name_sequence = [
-        "_".join(i.ROIName.split()) for i in dicom_struct.StructureSetROISequence
-    ]
+    struct_point_sequence = {cs.ReferencedROINumber: cs for cs in dicom_struct.ROIContourSequence}
 
     struct_list = []
     final_struct_name_sequence = []
@@ -155,7 +154,6 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
         ):
             logger.debug("This is not a closed planar structure, skipping.")
             continue
-
 
         # Track in case something goes wrong in here we will skip the contour
         skip_contour = False
@@ -214,6 +212,7 @@ def convert_rtstruct(
     output_dir=".",
     output_img=None,
     spacing=None,
+    replace_slashes_with="",
 ):
     """Convert a DICOM RTSTRUCT to NIFTI masks.
 
@@ -227,14 +226,14 @@ def convert_rtstruct(
         output_img (str|pathlib.Path, optional): If set, write the reference image to this file as
                                                  in NIFTI format. Defaults to None.
         spacing (list, optional): Values of image spacing to override. Defaults to None.
+        replace_slashes_with (str, optional): String to replace "/" and "\" with. Set to None
+            disable replacement of slashes. Defaults to "".
     """
 
     logger.debug("Converting RTStruct: %s", dcm_rt_file)
     logger.debug("Using image series: %s", dcm_img)
     logger.debug("Output file prefix: %s", prefix)
     logger.debug("Output directory: %s", output_dir)
-
-    prefix = prefix + "{0}"
 
     dicom_image = read_dicom_image(dcm_img)
     dicom_struct = read_dicom_struct_file(dcm_rt_file)
@@ -269,8 +268,15 @@ def convert_rtstruct(
     )
     logger.debug("Converted all structures. Writing output.")
     for struct_index, struct_image in enumerate(struct_list):
-        out_name = f"{prefix.format(struct_name_sequence[struct_index])}.nii.gz"
+        struct_name = struct_name_sequence[struct_index]
+
+        if replace_slashes_with is not None:
+            struct_name = struct_name.replace("/", replace_slashes_with)
+            struct_name = struct_name.replace("\\", replace_slashes_with)
+
+        out_name = f"{prefix}{struct_name}.nii.gz"
         out_name = output_dir.joinpath(out_name)
+
         logger.debug("Writing file to: %s", output_dir)
         sitk.WriteImage(struct_image, str(out_name))
 

@@ -46,7 +46,7 @@ def label_to_roi(label, expansion_mm=[0, 0, 0], return_as_list=False):
     bounding_box = np.array(label_stats_image_filter.GetBoundingBox(1))
 
     index = [bounding_box[x * 2] for x in range(3)]
-    size = [bounding_box[(x * 2) + 1] - bounding_box[x * 2] for x in range(3)]
+    size = [bounding_box[(x * 2) + 1] - bounding_box[x * 2] + 1 for x in range(3)]
 
     expansion_mm = np.array(expansion_mm)
     expansion = (expansion_mm / image_spacing).astype(int)

@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+title: "PlatiPy: Processing Library and Analysis Toolkit for Medical Imaging in Python"
+message: >-
+  If you find the PlatiPy library useful in your research, please consider citing it using these
+  metadata.
+abstract: >-
+  PlatiPy is a library of tools developed in Python for image processing and analysis of medical
+  images. A broad scope of functionality is provided including image conversion, registration
+  and segmentation is provided as well as computation of similarity and radiotherapy dosimtery
+  metrics and much more.
+type: software
+authors:
+  - given-names: Phillip
+    family-names: Chlap
+    email: phillip.chlap@unsw.edu.au
+    affiliation: University of New South Wales
+    orcid: "https://orcid.org/0000-0002-6517-8745"
+  - given-names: Robert
+    family-names: Finnegan
+    email: robert.finnegan@sydney.edu.au
+    affiliation: University of Sydney
+    orcid: "https://orcid.org/0000-0003-4728-8462"
+license: Apache-2.0
+repository-code: "https://github.com/pyplati/platipy"
+url: "https://pyplati.github.io/platipy/"
+keywords:
+  - "medical image analysis"
+  - "auto-segmentation"
+  - "image registration"
+references:
+  - authors:
+      - family-names: Lowekamp
+        given-names: Bradley C
+      - family-names: Chen
+        given-names: David T
+      - family-names: Ibáñez
+        given-names: Luis
+      - family-names: Blezek
+        given-names: Daniel
+    doi: 10.3389/fninf.2013.00045
+    issn: 16625196
+    journal: "Frontiers in Neuroinformatics"
+    title: "The design of simpleITK"
+    type: article
+    volume: 7
+    year: 2013
