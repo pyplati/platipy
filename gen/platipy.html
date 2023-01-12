@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
 
-    <meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
+    <meta name="generator" content="sphinx-5.3.0, furo 2022.09.29"/>
         <title>platipy package - PlatiPy documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -166,6 +166,8 @@
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../_examples/visualise.html">Visualise Images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_examples/atlas_segmentation.html">Atlas Segmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_examples/contour_comparison.html">Contour Comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../_examples/dvh_analysis.html">DVH Analysis</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
@@ -195,7 +197,8 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -219,199 +222,21 @@
 <li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="platipy.backend.sample.html">platipy.backend.sample package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="platipy.backend.sample.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.sample.html#module-platipy.backend.sample.sample">platipy.backend.sample.sample module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.sample.html#module-platipy.backend.sample">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="platipy.backend.sample.html#platipy-backend-sample-sample-module">platipy.backend.sample.sample module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="platipy.backend.sample.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#module-platipy.backend.api">platipy.backend.api module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.AlgorithmEndpoint"><code class="docutils literal notranslate"><span class="pre">AlgorithmEndpoint</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.AlgorithmEndpoint.endpoint"><code class="docutils literal notranslate"><span class="pre">AlgorithmEndpoint.endpoint</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.AlgorithmEndpoint.get"><code class="docutils literal notranslate"><span class="pre">AlgorithmEndpoint.get()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.AlgorithmEndpoint.mediatypes"><code class="docutils literal notranslate"><span class="pre">AlgorithmEndpoint.mediatypes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.AlgorithmEndpoint.methods"><code class="docutils literal notranslate"><span class="pre">AlgorithmEndpoint.methods</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.CustomConfig"><code class="docutils literal notranslate"><span class="pre">CustomConfig</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.CustomConfig.RESTFUL_JSON"><code class="docutils literal notranslate"><span class="pre">CustomConfig.RESTFUL_JSON</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectDownloadEndpoint"><code class="docutils literal notranslate"><span class="pre">DataObjectDownloadEndpoint</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectDownloadEndpoint.endpoint"><code class="docutils literal notranslate"><span class="pre">DataObjectDownloadEndpoint.endpoint</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectDownloadEndpoint.get"><code class="docutils literal notranslate"><span class="pre">DataObjectDownloadEndpoint.get()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectDownloadEndpoint.mediatypes"><code class="docutils literal notranslate"><span class="pre">DataObjectDownloadEndpoint.mediatypes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectDownloadEndpoint.methods"><code class="docutils literal notranslate"><span class="pre">DataObjectDownloadEndpoint.methods</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectDownloadEndpoint.parser"><code class="docutils literal notranslate"><span class="pre">DataObjectDownloadEndpoint.parser</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectEndpoint"><code class="docutils literal notranslate"><span class="pre">DataObjectEndpoint</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectEndpoint.delete"><code class="docutils literal notranslate"><span class="pre">DataObjectEndpoint.delete()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectEndpoint.endpoint"><code class="docutils literal notranslate"><span class="pre">DataObjectEndpoint.endpoint</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectEndpoint.get"><code class="docutils literal notranslate"><span class="pre">DataObjectEndpoint.get()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectEndpoint.mediatypes"><code class="docutils literal notranslate"><span class="pre">DataObjectEndpoint.mediatypes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectEndpoint.methods"><code class="docutils literal notranslate"><span class="pre">DataObjectEndpoint.methods</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectEndpoint.parser"><code class="docutils literal notranslate"><span class="pre">DataObjectEndpoint.parser</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectEndpoint.post"><code class="docutils literal notranslate"><span class="pre">DataObjectEndpoint.post()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectsEndpoint"><code class="docutils literal notranslate"><span class="pre">DataObjectsEndpoint</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectsEndpoint.endpoint"><code class="docutils literal notranslate"><span class="pre">DataObjectsEndpoint.endpoint</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectsEndpoint.get"><code class="docutils literal notranslate"><span class="pre">DataObjectsEndpoint.get()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectsEndpoint.mediatypes"><code class="docutils literal notranslate"><span class="pre">DataObjectsEndpoint.mediatypes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DataObjectsEndpoint.methods"><code class="docutils literal notranslate"><span class="pre">DataObjectsEndpoint.methods</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetEndpoint"><code class="docutils literal notranslate"><span class="pre">DatasetEndpoint</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetEndpoint.endpoint"><code class="docutils literal notranslate"><span class="pre">DatasetEndpoint.endpoint</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetEndpoint.get"><code class="docutils literal notranslate"><span class="pre">DatasetEndpoint.get()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetEndpoint.mediatypes"><code class="docutils literal notranslate"><span class="pre">DatasetEndpoint.mediatypes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetEndpoint.methods"><code class="docutils literal notranslate"><span class="pre">DatasetEndpoint.methods</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetEndpoint.parser"><code class="docutils literal notranslate"><span class="pre">DatasetEndpoint.parser</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetEndpoint.post"><code class="docutils literal notranslate"><span class="pre">DatasetEndpoint.post()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetReadyEndpoint"><code class="docutils literal notranslate"><span class="pre">DatasetReadyEndpoint</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetReadyEndpoint.endpoint"><code class="docutils literal notranslate"><span class="pre">DatasetReadyEndpoint.endpoint</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetReadyEndpoint.get"><code class="docutils literal notranslate"><span class="pre">DatasetReadyEndpoint.get()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetReadyEndpoint.mediatypes"><code class="docutils literal notranslate"><span class="pre">DatasetReadyEndpoint.mediatypes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetReadyEndpoint.methods"><code class="docutils literal notranslate"><span class="pre">DatasetReadyEndpoint.methods</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetReadyEndpoint.parser"><code class="docutils literal notranslate"><span class="pre">DatasetReadyEndpoint.parser</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetsEndpoint"><code class="docutils literal notranslate"><span class="pre">DatasetsEndpoint</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetsEndpoint.endpoint"><code class="docutils literal notranslate"><span class="pre">DatasetsEndpoint.endpoint</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetsEndpoint.get"><code class="docutils literal notranslate"><span class="pre">DatasetsEndpoint.get()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetsEndpoint.mediatypes"><code class="docutils literal notranslate"><span class="pre">DatasetsEndpoint.mediatypes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DatasetsEndpoint.methods"><code class="docutils literal notranslate"><span class="pre">DatasetsEndpoint.methods</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DicomLocationEndpoint"><code class="docutils literal notranslate"><span class="pre">DicomLocationEndpoint</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DicomLocationEndpoint.endpoint"><code class="docutils literal notranslate"><span class="pre">DicomLocationEndpoint.endpoint</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DicomLocationEndpoint.get"><code class="docutils literal notranslate"><span class="pre">DicomLocationEndpoint.get()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DicomLocationEndpoint.mediatypes"><code class="docutils literal notranslate"><span class="pre">DicomLocationEndpoint.mediatypes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DicomLocationEndpoint.methods"><code class="docutils literal notranslate"><span class="pre">DicomLocationEndpoint.methods</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DicomLocationEndpoint.parser"><code class="docutils literal notranslate"><span class="pre">DicomLocationEndpoint.parser</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.DicomLocationEndpoint.post"><code class="docutils literal notranslate"><span class="pre">DicomLocationEndpoint.post()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.Resource"><code class="docutils literal notranslate"><span class="pre">Resource</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.Resource.method_decorators"><code class="docutils literal notranslate"><span class="pre">Resource.method_decorators</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.TaskStatus"><code class="docutils literal notranslate"><span class="pre">TaskStatus</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.TaskStatus.endpoint"><code class="docutils literal notranslate"><span class="pre">TaskStatus.endpoint</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.TaskStatus.get"><code class="docutils literal notranslate"><span class="pre">TaskStatus.get()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.TaskStatus.mediatypes"><code class="docutils literal notranslate"><span class="pre">TaskStatus.mediatypes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.TaskStatus.methods"><code class="docutils literal notranslate"><span class="pre">TaskStatus.methods</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.TriggerEndpoint"><code class="docutils literal notranslate"><span class="pre">TriggerEndpoint</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.TriggerEndpoint.endpoint"><code class="docutils literal notranslate"><span class="pre">TriggerEndpoint.endpoint</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.TriggerEndpoint.mediatypes"><code class="docutils literal notranslate"><span class="pre">TriggerEndpoint.mediatypes()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.TriggerEndpoint.methods"><code class="docutils literal notranslate"><span class="pre">TriggerEndpoint.methods</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.TriggerEndpoint.parser"><code class="docutils literal notranslate"><span class="pre">TriggerEndpoint.parser</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.TriggerEndpoint.post"><code class="docutils literal notranslate"><span class="pre">TriggerEndpoint.post()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.api.authenticate"><code class="docutils literal notranslate"><span class="pre">authenticate()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#module-platipy.backend.application">platipy.backend.application module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.application.Algorithm"><code class="docutils literal notranslate"><span class="pre">Algorithm</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.application.Algorithm.settings_to_json"><code class="docutils literal notranslate"><span class="pre">Algorithm.settings_to_json()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.application.FlaskApp"><code class="docutils literal notranslate"><span class="pre">FlaskApp</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.application.FlaskApp.algorithms"><code class="docutils literal notranslate"><span class="pre">FlaskApp.algorithms</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.application.FlaskApp.api"><code class="docutils literal notranslate"><span class="pre">FlaskApp.api</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.application.FlaskApp.beat_started"><code class="docutils literal notranslate"><span class="pre">FlaskApp.beat_started</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.application.FlaskApp.celery_started"><code class="docutils literal notranslate"><span class="pre">FlaskApp.celery_started</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.application.FlaskApp.dicom_listener_aetitle"><code class="docutils literal notranslate"><span class="pre">FlaskApp.dicom_listener_aetitle</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.application.FlaskApp.dicom_listener_port"><code class="docutils literal notranslate"><span class="pre">FlaskApp.dicom_listener_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.application.FlaskApp.register"><code class="docutils literal notranslate"><span class="pre">FlaskApp.register()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.application.FlaskApp.run"><code class="docutils literal notranslate"><span class="pre">FlaskApp.run()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.application.FlaskApp.run_dicom_listener"><code class="docutils literal notranslate"><span class="pre">FlaskApp.run_dicom_listener()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#platipy-backend-api-module">platipy.backend.api module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#platipy-backend-application-module">platipy.backend.application module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#platipy-backend-client-module">platipy.backend.client module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#module-platipy.backend.manage">platipy.backend.manage module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.manage.add_api_key"><code class="docutils literal notranslate"><span class="pre">add_api_key()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.manage.create_db"><code class="docutils literal notranslate"><span class="pre">create_db()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.manage.run_celery"><code class="docutils literal notranslate"><span class="pre">run_celery()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#module-platipy.backend.models">platipy.backend.models module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.APIKey"><code class="docutils literal notranslate"><span class="pre">APIKey</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.APIKey.is_admin"><code class="docutils literal notranslate"><span class="pre">APIKey.is_admin</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.APIKey.key"><code class="docutils literal notranslate"><span class="pre">APIKey.key</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.APIKey.name"><code class="docutils literal notranslate"><span class="pre">APIKey.name</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.AlchemyEncoder"><code class="docutils literal notranslate"><span class="pre">AlchemyEncoder</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.AlchemyEncoder.default"><code class="docutils literal notranslate"><span class="pre">AlchemyEncoder.default()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject"><code class="docutils literal notranslate"><span class="pre">DataObject</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.children"><code class="docutils literal notranslate"><span class="pre">DataObject.children</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.dataset"><code class="docutils literal notranslate"><span class="pre">DataObject.dataset</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.dataset_id"><code class="docutils literal notranslate"><span class="pre">DataObject.dataset_id</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.id"><code class="docutils literal notranslate"><span class="pre">DataObject.id</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.is_fetched"><code class="docutils literal notranslate"><span class="pre">DataObject.is_fetched</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.is_input"><code class="docutils literal notranslate"><span class="pre">DataObject.is_input</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.is_sent"><code class="docutils literal notranslate"><span class="pre">DataObject.is_sent</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.meta_data"><code class="docutils literal notranslate"><span class="pre">DataObject.meta_data</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.parent"><code class="docutils literal notranslate"><span class="pre">DataObject.parent</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.parent_id"><code class="docutils literal notranslate"><span class="pre">DataObject.parent_id</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.path"><code class="docutils literal notranslate"><span class="pre">DataObject.path</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.series_instance_uid"><code class="docutils literal notranslate"><span class="pre">DataObject.series_instance_uid</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.status"><code class="docutils literal notranslate"><span class="pre">DataObject.status</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.timestamp"><code class="docutils literal notranslate"><span class="pre">DataObject.timestamp</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DataObject.type"><code class="docutils literal notranslate"><span class="pre">DataObject.type</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.Dataset"><code class="docutils literal notranslate"><span class="pre">Dataset</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.Dataset.from_dicom_location"><code class="docutils literal notranslate"><span class="pre">Dataset.from_dicom_location</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.Dataset.from_dicom_location_id"><code class="docutils literal notranslate"><span class="pre">Dataset.from_dicom_location_id</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.Dataset.id"><code class="docutils literal notranslate"><span class="pre">Dataset.id</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.Dataset.input_data_objects"><code class="docutils literal notranslate"><span class="pre">Dataset.input_data_objects</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.Dataset.output_data_objects"><code class="docutils literal notranslate"><span class="pre">Dataset.output_data_objects</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.Dataset.owner_key"><code class="docutils literal notranslate"><span class="pre">Dataset.owner_key</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.Dataset.timeout"><code class="docutils literal notranslate"><span class="pre">Dataset.timeout</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.Dataset.timestamp"><code class="docutils literal notranslate"><span class="pre">Dataset.timestamp</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.Dataset.to_dicom_location"><code class="docutils literal notranslate"><span class="pre">Dataset.to_dicom_location</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.Dataset.to_dicom_location_id"><code class="docutils literal notranslate"><span class="pre">Dataset.to_dicom_location_id</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DicomLocation"><code class="docutils literal notranslate"><span class="pre">DicomLocation</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DicomLocation.ae_title"><code class="docutils literal notranslate"><span class="pre">DicomLocation.ae_title</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DicomLocation.host"><code class="docutils literal notranslate"><span class="pre">DicomLocation.host</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DicomLocation.id"><code class="docutils literal notranslate"><span class="pre">DicomLocation.id</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DicomLocation.name"><code class="docutils literal notranslate"><span class="pre">DicomLocation.name</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DicomLocation.owner_key"><code class="docutils literal notranslate"><span class="pre">DicomLocation.owner_key</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.DicomLocation.port"><code class="docutils literal notranslate"><span class="pre">DicomLocation.port</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.models.default_timeout"><code class="docutils literal notranslate"><span class="pre">default_timeout()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#module-platipy.backend.tasks">platipy.backend.tasks module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#module-platipy.backend.views">platipy.backend.views module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.views.add_endpoint"><code class="docutils literal notranslate"><span class="pre">add_endpoint()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.views.dashboard"><code class="docutils literal notranslate"><span class="pre">dashboard()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.views.fetch_log"><code class="docutils literal notranslate"><span class="pre">fetch_log()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.views.fetch_status"><code class="docutils literal notranslate"><span class="pre">fetch_status()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.views.view_endpoint"><code class="docutils literal notranslate"><span class="pre">view_endpoint()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#module-platipy.backend">Module contents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.configure_logging"><code class="docutils literal notranslate"><span class="pre">configure_logging()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="platipy.backend.html#platipy.backend.on_celery_setup_logging"><code class="docutils literal notranslate"><span class="pre">on_celery_setup_logging()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#platipy-backend-manage-module">platipy.backend.manage module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#platipy-backend-models-module">platipy.backend.models module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#platipy-backend-tasks-module">platipy.backend.tasks module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#platipy-backend-views-module">platipy.backend.views module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="platipy.backend.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="platipy.cli.html">platipy.cli package</a><ul>
@@ -502,7 +327,7 @@
 <li class="toctree-l4"><a class="reference internal" href="platipy.imaging.tests.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="platipy.imaging.tests.html#module-platipy.imaging.tests.data">platipy.imaging.tests.data module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="platipy.imaging.tests.html#module-platipy.imaging.tests.test_bronchus">platipy.imaging.tests.test_bronchus module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.imaging.tests.html#module-platipy.imaging.tests.test_cardiac">platipy.imaging.tests.test_cardiac module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="platipy.imaging.tests.html#platipy-imaging-tests-test-cardiac-module">platipy.imaging.tests.test_cardiac module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="platipy.imaging.tests.html#module-platipy.imaging.tests.test_visualiser">platipy.imaging.tests.test_visualiser module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="platipy.imaging.tests.html#module-platipy.imaging.tests">Module contents</a></li>
 </ul>
@@ -512,7 +337,7 @@
 <li class="toctree-l4"><a class="reference internal" href="platipy.imaging.utils.html#module-platipy.imaging.utils.crop">platipy.imaging.utils.crop module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="platipy.imaging.utils.html#module-platipy.imaging.utils.lung">platipy.imaging.utils.lung module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="platipy.imaging.utils.html#module-platipy.imaging.utils.valve">platipy.imaging.utils.valve module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="platipy.imaging.utils.html#module-platipy.imaging.utils.vessel">platipy.imaging.utils.vessel module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="platipy.imaging.utils.html#platipy-imaging-utils-vessel-module">platipy.imaging.utils.vessel module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="platipy.imaging.utils.html#module-platipy.imaging.utils">Module contents</a></li>
 </ul>
 </li>
@@ -548,7 +373,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
+                Copyright &#169; 2023, Ingham Institute, University of New South Wales, University of Sydney
             </div>
             Made with 
             <a href="https://github.com/pradyunsg/furo">Furo</a>

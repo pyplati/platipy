@@ -3,12 +3,12 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="DVH Analysis" href="dvh_analysis.html" /><link rel="prev" title="Cardiac Segmentation" href="../cardiac.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Atlas Segmentation" href="atlas_segmentation.html" /><link rel="prev" title="Cardiac Segmentation" href="../cardiac.html" />
 
-    <meta name="generator" content="sphinx-5.2.2, furo 2022.09.15"/>
+    <meta name="generator" content="sphinx-5.3.0, furo 2022.09.29"/>
         <title>Visualise Images - PlatiPy documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -166,6 +166,8 @@
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Visualise Images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="atlas_segmentation.html">Atlas Segmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contour_comparison.html">Contour Comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dvh_analysis.html">DVH Analysis</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
@@ -195,7 +197,8 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -565,8 +568,8 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/home/runner/work/platipy/platipy/platipy/imaging/visualisation/visualiser.py:1139: UserWarning: No contour levels were found within the data range.
-  origin={&#34;normal&#34;: &#34;upper&#34;, &#34;reversed&#34;: &#34;lower&#34;}[self.__origin],
+/home/runner/work/platipy/platipy/platipy/imaging/visualisation/visualiser.py:1132: UserWarning: No contour levels were found within the data range.
+  ax_ax.contour(
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -821,12 +824,12 @@ Text(0.5, 0, &#39;Results&#39;)
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="dvh_analysis.html">
+          <a class="next-page" href="atlas_segmentation.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">DVH Analysis</div>
+                <div class="title">Atlas Segmentation</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -845,7 +848,7 @@ Text(0.5, 0, &#39;Results&#39;)
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2022, Ingham Institute, University of New South Wales, University of Sydney
+                Copyright &#169; 2023, Ingham Institute, University of New South Wales, University of Sydney
             </div>
             Made with 
             <a href="https://github.com/pradyunsg/furo">Furo</a>
