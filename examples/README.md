@@ -11,6 +11,10 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/data_cleaning_preparation.ipynb)
 
+### DICOM RTSTRUCT Conversion Example
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/rtstruct_to_nifti.ipynb)
+
 ### Download from TCIA Example
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/tcia.ipynb)
