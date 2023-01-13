@@ -175,7 +175,9 @@ class ProbUNet(pl.LightningModule):
             optimizer,
             base_lr=self.hparams.learning_rate / 100,
             max_lr=self.hparams.learning_rate,
-            step_size_up=25,
+            step_size_up=10,
+            mode="exp_range",
+            gamma=0.99,
             cycle_momentum=False
         )
 
@@ -785,7 +787,7 @@ def main(args, config_json_path=None):
     # args.default_root_dir = str(args.working_dir)
     args.fold_dir = args.working_dir.joinpath(f"fold_{args.fold}")
     args.default_root_dir = str(args.fold_dir)
-#    args.accumulate_grad_batches = {0: 1, 5: 10, 10: 20}
+    args.accumulate_grad_batches = {0: 10, 5: 15, 10: 20}
 #    args.precision = 16
 
     comet_api_key = None
