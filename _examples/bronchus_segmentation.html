@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Image Visualiser" href="../visualiser.html" /><link rel="prev" title="Contour Comparison" href="contour_comparison.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Visualise Images" href="visualise.html" /><link rel="prev" title="Cardiac Segmentation" href="../cardiac.html" />
 
     <meta name="generator" content="sphinx-5.3.0, furo 2022.09.29"/>
-        <title>DVH Analysis - PlatiPy documentation</title>
+        <title>Bronchus Segmentation - PlatiPy documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -160,16 +160,16 @@
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Projects</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../cardiac.html">Cardiac Segmentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="bronchus_segmentation.html">Bronchus Segmentation</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Bronchus Segmentation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="visualise.html">Visualise Images</a></li>
 <li class="toctree-l1"><a class="reference internal" href="atlas_segmentation.html">Atlas Segmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contour_comparison.html">Contour Comparison</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">DVH Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dvh_analysis.html">DVH Analysis</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -469,9 +469,10 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<section id="DVH-Analysis">
-<h1>DVH Analysis<a class="headerlink" href="#DVH-Analysis" title="Permalink to this heading">#</a></h1>
-<p>This notebook demonstrates how to compute and plot a DVH (Dose Volume Histogram).</p>
+<section id="Bronchus-Segmentation">
+<h1>Bronchus Segmentation<a class="headerlink" href="#Bronchus-Segmentation" title="Permalink to this heading">#</a></h1>
+<p>This example demonstrated how to use the bronchial tree segmentation algorithm used in:</p>
+<p><strong>W. Ghandourh, J. Dowling, P. Chlap et al., “Medical Dosimetry Assessing tumor centrality in lung stereotactic ablative body radiotherapy ( SABR ): the effects of variations in bronchial tree delineation and potential for automated methods,” vol. 46, pp. 94–101, 2021, doi:**`10.1016/j.meddos.2020.09.004 &lt;https://doi.org/10.1016/j.meddos.2020.09.004&gt;`__**.</strong></p>
 <section id="Import-Modules">
 <h2>Import Modules<a class="headerlink" href="#Import-Modules" title="Permalink to this heading">#</a></h2>
 <div class="nbinput nblast docutils container">
@@ -481,69 +482,220 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">platipy</span>
 <span class="k">except</span><span class="p">:</span>
-    <span class="o">!</span>pip install git+https://github.com/pyplati/platipy.git
+    <span class="o">!</span>pip install platipy
     <span class="kn">import</span> <span class="nn">platipy</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">SimpleITK</span> <span class="k">as</span> <span class="nn">sitk</span>
 
 <span class="o">%</span><span class="k">matplotlib</span> inline
 
-<span class="kn">from</span> <span class="nn">platipy.imaging.tests.data</span> <span class="kn">import</span> <span class="n">get_hn_nifti</span>
+<span class="kn">from</span> <span class="nn">platipy.imaging.tests.data</span> <span class="kn">import</span> <span class="n">get_lung_nifti</span>
+<span class="kn">from</span> <span class="nn">platipy.imaging.projects.bronchus.run</span> <span class="kn">import</span> <span class="n">run_bronchus_segmentation</span>
 <span class="kn">from</span> <span class="nn">platipy.imaging</span> <span class="kn">import</span> <span class="n">ImageVisualiser</span>
 <span class="kn">from</span> <span class="nn">platipy.imaging.label.utils</span> <span class="kn">import</span> <span class="n">get_com</span>
-<span class="kn">from</span> <span class="nn">platipy.imaging.dose.dvh</span> <span class="kn">import</span> <span class="n">calculate_dvh_for_labels</span><span class="p">,</span> <span class="n">calculate_d_x</span><span class="p">,</span> <span class="n">calculate_v_x</span>
 </pre></div>
 </div>
 </div>
 </section>
 <section id="Download-Test-Data">
 <h2>Download Test Data<a class="headerlink" href="#Download-Test-Data" title="Permalink to this heading">#</a></h2>
-<p>This will download some data from the TCIA TCGA-HNSC dataset. The data is for one patient and contains a CT, dose and some structures.</p>
+<p>This will download lung cancer patient CT scans, with contours of several structures. This only has to be done once - if it is ran again don’t worry, the same data will not be downloaded again!</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_path</span> <span class="o">=</span> <span class="n">get_hn_nifti</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_path</span> <span class="o">=</span> <span class="n">get_lung_nifti</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 </section>
-<section id="Load-data">
-<h2>Load data<a class="headerlink" href="#Load-data" title="Permalink to this heading">#</a></h2>
-<p>Let’s read in the data that we’ve downloaded</p>
+<section id="Load-Test-Image">
+<h2>Load Test Image<a class="headerlink" href="#Load-Test-Image" title="Permalink to this heading">#</a></h2>
+<p>Read in the image we want to automatically segment</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_pat_path</span> <span class="o">=</span> <span class="n">data_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;TCGA_CV_5977&quot;</span><span class="p">)</span>
-
-<span class="n">ct_image</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;IMAGES/TCGA_CV_5977_1_CT_ONC_NECK_NECK_4.nii.gz&quot;</span><span class="p">)))</span>
-
-<span class="n">dose</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;DOSES/TCGA_CV_5977_1_PLAN.nii.gz&quot;</span><span class="p">)))</span>
-
-<span class="n">dose</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">Resample</span><span class="p">(</span><span class="n">dose</span><span class="p">,</span> <span class="n">ct_image</span><span class="p">)</span>
-
-<span class="n">structure_names</span> <span class="o">=</span><span class="p">[</span><span class="s2">&quot;BRAINSTEM&quot;</span><span class="p">,</span> <span class="s2">&quot;MANDIBLE&quot;</span><span class="p">,</span> <span class="s2">&quot;CTV_60_GY&quot;</span><span class="p">,</span> <span class="s2">&quot;PTV60&quot;</span><span class="p">,</span> <span class="s2">&quot;CORD&quot;</span><span class="p">,</span> <span class="s2">&quot;L_PAROTID&quot;</span><span class="p">,</span> <span class="s2">&quot;R_PAROTID&quot;</span><span class="p">]</span>
-
-<span class="n">structures</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">s</span><span class="p">:</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;STRUCTURES&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;TCGA_CV_5977_1_RTSTRUCT_</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">.nii.gz&quot;</span><span class="p">)))</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">structure_names</span>
-<span class="p">}</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_pat_path</span> <span class="o">=</span> <span class="n">data_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;LCTSC-Test-S1-201&quot;</span><span class="p">)</span>
+<span class="n">test_image</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;IMAGES/LCTSC_TEST_S1_201_0_CT_0.nii.gz&quot;</span><span class="p">)))</span>
 </pre></div>
 </div>
 </div>
 </section>
-<section id="Visualise-data">
-<h2>Visualise data<a class="headerlink" href="#Visualise-data" title="Permalink to this heading">#</a></h2>
-<p>and now let’s visualise the data we’ve got</p>
+<section id="Run-Auto-segmentation">
+<h2>Run Auto-segmentation<a class="headerlink" href="#Run-Auto-segmentation" title="Permalink to this heading">#</a></h2>
+<p>This will take some time, and will print updates along the way</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">structures</span><span class="p">[</span><span class="s2">&quot;PTV60&quot;</span><span class="p">]))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">auto_structures</span> <span class="o">=</span> <span class="n">run_bronchus_segmentation</span><span class="p">(</span><span class="n">test_image</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Generating Lung Mask...
+Generating Lung Mask... Done
+-------------------------------
+summary of lung intensities.  Mean: -689.7705964524534 sd: 164.05080332949413 median: -729.79296875
+*Airway opening: [257, 196, 108]
+*Voxel HU at opening: 1
+--------------------------------------------
+Extracting airways.  Iteration: 0
+*Lung Mask HU: -750
+*Slices from sup for airway opening: 3
+No labels found in mask
+--------------------------------------------
+Extracting airways.  Iteration: 1
+*Lung Mask HU: -775
+*Slices from sup for airway opening: 3
+No labels found in mask
+--------------------------------------------
+Extracting airways.  Iteration: 2
+*Lung Mask HU: -800
+*Slices from sup for airway opening: 3
+No labels found in mask
+--------------------------------------------
+Extracting airways.  Iteration: 3
+*Lung Mask HU: -825
+*Slices from sup for airway opening: 3
+No labels found in mask
+--------------------------------------------
+Extracting airways.  Iteration: 4
+*Lung Mask HU: -850
+*Slices from sup for airway opening: 3
+No labels found in mask
+--------------------------------------------
+Extracting airways.  Iteration: 5
+*Lung Mask HU: -900
+*Slices from sup for airway opening: 3
+No labels found in mask
+--------------------------------------------
+Extracting airways.  Iteration: 6
+*Lung Mask HU: -700
+*Slices from sup for airway opening: 3
+No labels found in mask
+--------------------------------------------
+Extracting airways.  Iteration: 7
+*Lung Mask HU: -950
+*Slices from sup for airway opening: 3
+No labels found in mask
+--------------------------------------------
+Extracting airways.  Iteration: 8
+*Lung Mask HU: -650
+*Slices from sup for airway opening: 3
+No labels found in mask
+*Airway opening: [259, 201, 102]
+*Voxel HU at opening: 1
+--------------------------------------------
+Extracting airways.  Iteration: 9
+*Lung Mask HU: -750
+*Slices from sup for airway opening: 10
+ Airway Mask size passed: 90033
+ Roundness: 0.518584427381907
+ Elongation: 3.314440100646848
+--------------------------------------------
+Extracting airways.  Iteration: 10
+*Lung Mask HU: -775
+*Slices from sup for airway opening: 10
+ Airway Mask size passed: 87987
+ Roundness: 0.5206611338884475
+ Elongation: 3.3711273033085107
+--------------------------------------------
+Extracting airways.  Iteration: 11
+*Lung Mask HU: -800
+*Slices from sup for airway opening: 10
+ Airway Mask size passed: 86620
+ Roundness: 0.5190044294760688
+ Elongation: 3.3937056078327137
+--------------------------------------------
+Extracting airways.  Iteration: 12
+*Lung Mask HU: -825
+*Slices from sup for airway opening: 10
+ Airway Mask size passed: 84374
+ Roundness: 0.5232948774582152
+ Elongation: 3.4940802535337427
+--------------------------------------------
+Extracting airways.  Iteration: 13
+*Lung Mask HU: -850
+*Slices from sup for airway opening: 10
+ Airway Mask size passed: 81954
+ Roundness: 0.5269199707802875
+ Elongation: 3.5721722733604353
+--------------------------------------------
+Extracting airways.  Iteration: 14
+*Lung Mask HU: -900
+*Slices from sup for airway opening: 10
+ Airway Mask size passed: 76060
+ Roundness: 0.537612318167935
+ Elongation: 3.944671084976228
+--------------------------------------------
+Extracting airways.  Iteration: 15
+*Lung Mask HU: -700
+*Slices from sup for airway opening: 10
+ Airway Mask size failed (&gt; 150000): 1659413
+ Roundness: 0.5537332413709152
+ Elongation: 1.2750023134566382
+--------------------------------------------
+Extracting airways.  Iteration: 16
+*Lung Mask HU: -950
+*Slices from sup for airway opening: 10
+ Airway Mask size passed: 59652
+ Roundness: 0.6014459998871523
+ Elongation: 6.3515641371955995
+--------------------------------------------
+Extracting airways.  Iteration: 17
+*Lung Mask HU: -650
+*Slices from sup for airway opening: 10
+ Airway Mask size failed (&gt; 150000): 2933049
+ Roundness: 0.4764602838161556
+ Elongation: 1.4176602059683505
+Selected Lung Mask HU: -750
+ Cropping from slice: 63 + 13 slices
+</pre></div></div>
+</div>
+</section>
+<section id="Save-segmentations">
+<h2>Save segmentations<a class="headerlink" href="#Save-segmentations" title="Permalink to this heading">#</a></h2>
+<p>Optionally write the automatic segmentations to disk</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_directory</span> <span class="o">=</span> <span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;SEGMENTATIONS&quot;</span><span class="p">)</span>
+<span class="n">output_directory</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="n">vis</span><span class="o">.</span><span class="n">add_scalar_overlay</span><span class="p">(</span><span class="n">dose</span><span class="p">,</span> <span class="n">discrete_levels</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;inferno&quot;</span><span class="p">))</span>
-<span class="n">vis</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">structures</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">struct_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">auto_structures</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+    <span class="n">sitk</span><span class="o">.</span><span class="n">WriteImage</span><span class="p">(</span><span class="n">auto_structures</span><span class="p">[</span><span class="n">struct_name</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_directory</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">struct_name</span><span class="si">}</span><span class="s2">.nii.gz&quot;</span><span class="p">)))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Segmentations saved to: </span><span class="si">{</span><span class="n">output_directory</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<br/><br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Segmentations saved to: data/nifti/lung/LCTSC-Test-S1-201/SEGMENTATIONS
+</pre></div></div>
+</div>
+</section>
+<section id="Visualise-Segmentations">
+<h2>Visualise Segmentations<a class="headerlink" href="#Visualise-Segmentations" title="Permalink to this heading">#</a></h2>
+<p>Next, we can generate a nice figure to check what the segmentation looks like</p>
+<p>The first step here is to convert SimpleITK images to NumPy arrays</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">test_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">auto_structures</span><span class="p">[</span><span class="s2">&quot;Auto_Bronchus&quot;</span><span class="p">]))</span>
+
+<span class="n">vis</span><span class="o">.</span><span class="n">add_contour</span><span class="p">({</span><span class="n">struct</span><span class="p">:</span> <span class="n">auto_structures</span><span class="p">[</span><span class="n">struct</span><span class="p">]</span> <span class="k">for</span> <span class="n">struct</span> <span class="ow">in</span> <span class="n">auto_structures</span><span class="o">.</span><span class="n">keys</span><span class="p">()})</span>
 
 <span class="n">fig</span> <span class="o">=</span> <span class="n">vis</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -562,214 +714,16 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_dvh_analysis_7_1.png" src="../_images/_examples_dvh_analysis_7_1.png" />
+<img alt="../_images/_examples_bronchus_segmentation_11_1.png" src="../_images/_examples_bronchus_segmentation_11_1.png" />
 </div>
 </div>
-</section>
-<section id="Compute-DVH">
-<h2>Compute DVH<a class="headerlink" href="#Compute-DVH" title="Permalink to this heading">#</a></h2>
-<p>here we compute the DVH using the dose and structures loaded. We get the DVH back in a pandas DataFrame object.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dvh</span> <span class="o">=</span> <span class="n">calculate_dvh_for_labels</span><span class="p">(</span><span class="n">dose</span><span class="p">,</span> <span class="n">structures</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
-</div>
-</section>
-<section id="Plot-DVH">
-<h2>Plot DVH<a class="headerlink" href="#Plot-DVH" title="Permalink to this heading">#</a></h2>
-<p>using the pandas DataFrame, we plot the DVH here</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt_dvh</span> <span class="o">=</span> <span class="n">dvh</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;cc&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;bin&quot;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s2">&quot;dose&quot;</span><span class="p">)</span>
-<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-
-<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">grp</span> <span class="ow">in</span> <span class="n">plt_dvh</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;label&#39;</span><span class="p">]):</span>
-    <span class="n">ax</span> <span class="o">=</span> <span class="n">grp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;line&#39;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;bin&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;dose&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Dose (Gy)&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Frequency&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Dose Volume Histogram (DVH)&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/tmp/ipykernel_8864/1046574561.py:4: FutureWarning: In a future version of pandas, a length 1 tuple will be returned when iterating over a groupby with a grouper equal to a list of length 1. Don&#39;t supply a list with a single grouper to avoid this warning.
-  for key, grp in plt_dvh.groupby([&#39;label&#39;]):
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/_examples_dvh_analysis_11_1.png" src="../_images/_examples_dvh_analysis_11_1.png" />
-</div>
-</div>
-</section>
-<section id="DVH-Metrics">
-<h2>DVH Metrics<a class="headerlink" href="#DVH-Metrics" title="Permalink to this heading">#</a></h2>
-<p>Finally, we extract commonly used metrics from the DVH, such as D95 or V40.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_metrics_d</span> <span class="o">=</span> <span class="n">calculate_d_x</span><span class="p">(</span><span class="n">dvh</span><span class="p">,</span> <span class="mi">95</span><span class="p">)</span>
-<span class="n">df_metrics_d</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
-</pre></div>
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>label</th>
-      <th>D95</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>BRAINSTEM</td>
-      <td>0.035205</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>MANDIBLE</td>
-      <td>36.565625</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>CTV_60_GY</td>
-      <td>60.255060</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>PTV60</td>
-      <td>58.903234</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>CORD</td>
-      <td>6.558704</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>L_PAROTID</td>
-      <td>9.182000</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>R_PAROTID</td>
-      <td>7.333571</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_metrics_v</span> <span class="o">=</span> <span class="n">calculate_v_x</span><span class="p">(</span><span class="n">dvh</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
-<span class="n">df_metrics_v</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
-</pre></div>
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>label</th>
-      <th>V40</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>BRAINSTEM</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>MANDIBLE</td>
-      <td>59.137344</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>CTV_60_GY</td>
-      <td>190.980434</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>PTV60</td>
-      <td>280.184746</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>CORD</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>L_PAROTID</td>
-      <td>0.946522</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>R_PAROTID</td>
-      <td>1.392365</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
 </div>
 </section>
 </section>
@@ -779,23 +733,23 @@ div.rendered_html tbody tr:hover {
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../visualiser.html">
+          <a class="next-page" href="visualise.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Image Visualiser</div>
+                <div class="title">Visualise Images</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="contour_comparison.html">
+          <a class="prev-page" href="../cardiac.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Contour Comparison</div>
+                <div class="title">Cardiac Segmentation</div>
                 
               </div>
             </a>
@@ -830,14 +784,13 @@ div.rendered_html tbody tr:hover {
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">DVH Analysis</a><ul>
+<li><a class="reference internal" href="#">Bronchus Segmentation</a><ul>
 <li><a class="reference internal" href="#Import-Modules">Import Modules</a></li>
 <li><a class="reference internal" href="#Download-Test-Data">Download Test Data</a></li>
-<li><a class="reference internal" href="#Load-data">Load data</a></li>
-<li><a class="reference internal" href="#Visualise-data">Visualise data</a></li>
-<li><a class="reference internal" href="#Compute-DVH">Compute DVH</a></li>
-<li><a class="reference internal" href="#Plot-DVH">Plot DVH</a></li>
-<li><a class="reference internal" href="#DVH-Metrics">DVH Metrics</a></li>
+<li><a class="reference internal" href="#Load-Test-Image">Load Test Image</a></li>
+<li><a class="reference internal" href="#Run-Auto-segmentation">Run Auto-segmentation</a></li>
+<li><a class="reference internal" href="#Save-segmentations">Save segmentations</a></li>
+<li><a class="reference internal" href="#Visualise-Segmentations">Visualise Segmentations</a></li>
 </ul>
 </li>
 </ul>
