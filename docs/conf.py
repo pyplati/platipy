@@ -59,6 +59,11 @@ html_static_path = ["_static"]
 
 html_show_sphinx = False
 
+
+def setup(app):
+    app.add_css_file("css/custom.css")  # may also be an URL
+
+
 shutil.rmtree("_examples", ignore_errors=True)
 os.mkdir("_examples")
 shutil.copy("../examples/visualise.ipynb", "_examples/visualise.ipynb")
