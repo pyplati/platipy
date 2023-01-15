@@ -65,6 +65,7 @@ shutil.copy("../examples/visualise.ipynb", "_examples/visualise.ipynb")
 shutil.copy("../examples/dvh_analysis.ipynb", "_examples/dvh_analysis.ipynb")
 shutil.copy("../examples/atlas_segmentation.ipynb", "_examples/atlas_segmentation.ipynb")
 shutil.copy("../examples/contour_comparison.ipynb", "_examples/contour_comparison.ipynb")
+shutil.copy("../examples/bronchus_segmentation.ipynb", "_examples/bronchus_segmentation.ipynb")
 
 shutil.rmtree("site/assets", ignore_errors=True)
 os.makedirs("site", exist_ok=True)
