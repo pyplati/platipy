@@ -5,10 +5,11 @@
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
 
-    <meta name="generator" content="sphinx-5.3.0, furo 2022.09.29"/>
+    <!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
         <title>Algorithm Deployment Service - PlatiPy documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="_static/_static/custom.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -149,7 +150,7 @@
   <span class="sidebar-brand-text">PlatiPy  documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
-  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
@@ -230,17 +231,17 @@ recommended to use this tool on the WWW without further security considerations 
 <p>This guide assumes you are developing on a Ubuntu Operating System. If you don’t have Ubuntu
 consider using the <a class="reference external" href="https://hub.docker.com/r/platipy/platipy">PlatiPy docker image</a></p>
 <p>Make sure you have platipy installed:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install platipy
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>platipy
 </pre></div>
 </div>
 <p>You will also need to install the requirements listed <a class="reference external" href="https://github.com/pyplati/platipy/blob/master/requirements-backend.txt">here</a>.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget https://raw.githubusercontent.com/pyplati/platipy/master/requirements-backend.txt
-pip install -r requirements-backend.txt
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget<span class="w"> </span>https://raw.githubusercontent.com/pyplati/platipy/master/requirements-backend.txt
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-backend.txt
 </pre></div>
 </div>
 <p>Create a directory to develop your service in. In this guide this will be refered to as
 <code class="docutils literal notranslate"><span class="pre">[working_dir]</span></code>. Make sure you are working from within this path:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> <span class="o">[</span>working_dir<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span><span class="o">[</span>working_dir<span class="o">]</span>
 </pre></div>
 </div>
 </section>
@@ -339,26 +340,26 @@ can add a call to your function providing some algorithm. Save it in a file name
 <section id="initialise-the-database">
 <h4>Initialise the database<a class="headerlink" href="#initialise-the-database" title="Permalink to this heading">#</a></h4>
 <p>Before running the service, you must initialise the database:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy manage initdb
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy<span class="w"> </span>manage<span class="w"> </span>initdb
 </pre></div>
 </div>
 </section>
 <section id="add-an-api-key">
 <h4>Add an API Key<a class="headerlink" href="#add-an-api-key" title="Permalink to this heading">#</a></h4>
 <p>And add an API key for use by a client</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy manage key --add <span class="nb">test</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy<span class="w"> </span>manage<span class="w"> </span>key<span class="w"> </span>--add<span class="w"> </span><span class="nb">test</span>
 </pre></div>
 </div>
 <p>Note down the API key for use in the client later on. If you want to list the API keys again you
 can use the command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy manage key --list
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy<span class="w"> </span>manage<span class="w"> </span>key<span class="w"> </span>--list
 </pre></div>
 </div>
 </section>
 <section id="run-the-service">
 <h4>Run the service<a class="headerlink" href="#run-the-service" title="Permalink to this heading">#</a></h4>
 <p>You can run the service for development and testing purposes using the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy manage run
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>platipy<span class="w"> </span>manage<span class="w"> </span>run
 </pre></div>
 </div>
 <blockquote>
@@ -409,7 +410,7 @@ generated above in the code below.</p>
 </pre></div>
 </div>
 <p>Run the client script with:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python client.py
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>client.py
 </pre></div>
 </div>
 </section>
@@ -447,9 +448,7 @@ generated above in the code below.</p>
             
           </div>
           <div class="right-details">
-            <div class="icons">
-              
-            </div>
+            
           </div>
         </div>
         

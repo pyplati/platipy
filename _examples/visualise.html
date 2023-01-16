@@ -5,10 +5,11 @@
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Atlas Segmentation" href="atlas_segmentation.html" /><link rel="prev" title="Bronchus Segmentation" href="bronchus_segmentation.html" />
 
-    <meta name="generator" content="sphinx-5.3.0, furo 2022.09.29"/>
+    <!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
         <title>Visualise Images - PlatiPy documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../_static/_static/custom.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -149,7 +150,7 @@
   <span class="sidebar-brand-text">PlatiPy  documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
-  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
@@ -323,10 +324,11 @@ div.nboutput.container div.prompt > div {
     }
 }
 
-/* disable scrollbars on prompts */
+/* disable scrollbars and line breaks on prompts */
 div.nbinput.container div.prompt pre,
 div.nboutput.container div.prompt pre {
     overflow: hidden;
+    white-space: pre;
 }
 
 /* input/output area */
@@ -483,7 +485,7 @@ div.rendered_html tbody tr:hover {
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">platipy</span>
 <span class="k">except</span><span class="p">:</span>
-    <span class="o">!</span>pip install platipy
+    <span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>platipy
     <span class="kn">import</span> <span class="nn">platipy</span>
 
 <span class="c1"># The ImageVisualiser clas</span>
@@ -564,20 +566,11 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/home/runner/work/platipy/platipy/platipy/imaging/visualisation/visualiser.py:1132: UserWarning: No contour levels were found within the data range.
-  ax_ax.contour(
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_visualise_7_1.png" src="../_images/_examples_visualise_7_1.png" />
+<img alt="../_images/_examples_visualise_7_0.png" src="../_images/_examples_visualise_7_0.png" />
 </div>
 </div>
 </section>
@@ -617,7 +610,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.8</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_bounding_box</span><span class="p">(</span><span class="n">label_to_roi</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;HEART&quot;</span><span class="p">],</span> <span class="n">return_as_list</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;HEART BOUNDING BOX&quot;</span><span class="p">)</span>
 
@@ -658,14 +651,6 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <img alt="../_images/_examples_visualise_13_0.png" src="../_images/_examples_visualise_13_0.png" />
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
-</pre></div>
 </div>
 </div>
 </section>
@@ -711,7 +696,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_visualise_17_0.png" src="../_images/_examples_visualise_17_0.png" />
+<img alt="../_images/_examples_visualise_16_0.png" src="../_images/_examples_visualise_16_0.png" />
 </div>
 </div>
 </section>
@@ -745,7 +730,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_visualise_19_0.png" src="../_images/_examples_visualise_19_0.png" />
+<img alt="../_images/_examples_visualise_18_0.png" src="../_images/_examples_visualise_18_0.png" />
 </div>
 </div>
 </section>
@@ -806,7 +791,7 @@ Text(0.5, 0, &#39;Results&#39;)
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_visualise_21_1.png" src="../_images/_examples_visualise_21_1.png" />
+<img alt="../_images/_examples_visualise_20_1.png" src="../_images/_examples_visualise_20_1.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -856,9 +841,7 @@ Text(0.5, 0, &#39;Results&#39;)
             
           </div>
           <div class="right-details">
-            <div class="icons">
-              
-            </div>
+            
           </div>
         </div>
         

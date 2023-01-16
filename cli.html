@@ -5,10 +5,11 @@
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Registration" href="registration.html" /><link rel="prev" title="Dose" href="dose.html" />
 
-    <meta name="generator" content="sphinx-5.3.0, furo 2022.09.29"/>
+    <!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
         <title>Command Line Tools - PlatiPy documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="_static/_static/custom.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -149,7 +150,7 @@
   <span class="sidebar-brand-text">PlatiPy  documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
-  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
@@ -234,7 +235,7 @@ patient.</p>
 This would typically be PatientName, or PatientID, although any DICOM header tag is allowed.</p>
 <p>I hope you find this tool useful!</p>
 <p>If you have any feedback, let us know on github.com/pyplati/platipy</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dicom_crawler <span class="o">[</span>OPTIONS<span class="o">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dicom_crawler<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
@@ -250,7 +251,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <dd><p>Output directory. A folder structure will be created at this location.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p>./</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">./</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -261,7 +262,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <dd><p>DICOM tag to sort at the highest level.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p>PatientName</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">PatientName</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -272,7 +273,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <dd><p>Format for output images. There are three special options that can be used: parent_sorting_data (same as sort_by option), study_uid_index (a counter for distinct DICOM studies), image_desc (info from DICOM header, more nicely formatted). Additionally, any DICOM header tag can be used (e.g. Modality, SeriesNumber, AcquisitionData). Any DICOM header tag that doesn’t exist will return a 0.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p>{parent_sorting_data}_{study_uid_index}_{Modality}_{image_desc}_{SeriesNumber}</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">{parent_sorting_data}_{study_uid_index}_{Modality}_{image_desc}_{SeriesNumber}</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -283,7 +284,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <dd><p>Format for output structures. Any of the options for images can be used, as well as: structure_name</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p>{parent_sorting_data}_{study_uid_index}_{Modality}_{structure_name}</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">{parent_sorting_data}_{study_uid_index}_{Modality}_{structure_name}</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -294,7 +295,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <dd><p>Format for output radiotherapy dose distributions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p>{parent_sorting_data}_{study_uid_index}_{DoseSummationType}</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">{parent_sorting_data}_{study_uid_index}_{DoseSummationType}</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -305,7 +306,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <dd><p>Overwrite files if they exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p>False</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -316,7 +317,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <dd><p>Output file suffix. Defines the file type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p>.nii.gz</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">.nii.gz</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -327,7 +328,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <dd><p>Use less verbose descriptions for DICOM images.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p>False</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -338,7 +339,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 <dd><p>Print more information while running.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p>False</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -350,7 +351,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 the Nitfti input image OR a directory containing a DICOM series.</p>
 <p>Optionally, pass in a configuration file for the segmentation algorithm. Output the default
 configuration for an algorithm using the –default flag.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>segmentation <span class="o">[</span>OPTIONS<span class="o">]</span> <span class="o">{</span>bronchus<span class="o">}</span> <span class="o">[</span>INPUT_PATH<span class="o">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>segmentation<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">{</span>bronchus<span class="o">}</span><span class="w"> </span><span class="o">[</span>INPUT_PATH<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
@@ -389,7 +390,7 @@ configuration for an algorithm using the –default flag.</p>
 <section id="nifti-to-rtstruct">
 <h2>nifti_to_rtstruct<a class="headerlink" href="#nifti-to-rtstruct" title="Permalink to this heading">#</a></h2>
 <p>Convert Nifti masks to Dicom RTStruct</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>nifti_to_rtstruct <span class="o">[</span>OPTIONS<span class="o">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>nifti_to_rtstruct<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
@@ -415,7 +416,7 @@ configuration for an algorithm using the –default flag.</p>
 <section id="nifti-to-series">
 <h2>nifti_to_series<a class="headerlink" href="#nifti-to-series" title="Permalink to this heading">#</a></h2>
 <p>Convert a Nifti image to a Dicom image series</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>nifti_to_series <span class="o">[</span>OPTIONS<span class="o">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>nifti_to_series<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
@@ -443,7 +444,7 @@ configuration for an algorithm using the –default flag.</p>
 <dd><p>Directory in which Dicom series files will be generated</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p>.</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">.</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -452,7 +453,7 @@ configuration for an algorithm using the –default flag.</p>
 <section id="rtstruct-to-nifti">
 <h2>rtstruct_to_nifti<a class="headerlink" href="#rtstruct-to-nifti" title="Permalink to this heading">#</a></h2>
 <p>Convert a DICOM RTSTRUCT file to Nifti format.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rtstruct_to_nifti <span class="o">[</span>OPTIONS<span class="o">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rtstruct_to_nifti<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>
@@ -480,7 +481,7 @@ configuration for an algorithm using the –default flag.</p>
 <dd><p>Directory in which to place converted files</p>
 <dl class="field-list simple">
 <dt class="field-odd">Default<span class="colon">:</span></dt>
-<dd class="field-odd"><p>.</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">.</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -536,9 +537,7 @@ configuration for an algorithm using the –default flag.</p>
             
           </div>
           <div class="right-details">
-            <div class="icons">
-              
-            </div>
+            
           </div>
         </div>
         
