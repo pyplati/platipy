@@ -61,6 +61,7 @@ html_show_sphinx = False
 
 
 def setup(app):
+    print("Adding custom css...")
     app.add_css_file("css/custom.css")  # may also be an URL
 
 
