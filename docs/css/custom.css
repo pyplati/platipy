@@ -1,0 +1,15 @@
+table.dataframe {
+    color: var(--color-foreground-primary);
+}
+
+table.dataframe thead {
+    background-color: var(--color-card-marginals-background);
+}
+
+table.dataframe tr:nth-child(odd) {
+    background: var(--color-background-border);
+}
+
+table.dataframe tr:nth-child(even) {
+    background: var(--color-card-marginals-background);
+}
