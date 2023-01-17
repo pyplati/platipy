@@ -9,16 +9,16 @@ tags:
 authors:
   - name: Phillip Chlap
     orcid: 0000-0002-6517-8745
-    affiliation: "1, 2"
+    affiliation: "1, 3"
   - name: Robert N. Finnegan
     orcid: 0000-0003-4728-8462
-    affiliation: "1, 3"
+    affiliation: "2, 3"
 affiliations:
- - name: Ingham Institute for Applied Medical Research, Australia
-   index: 1
  - name: South Western Sydney Clinical School, University of New South Wales, Australia
-   index: 2
+   index: 1
  - name: University of Sydney, Australia
+   index: 2
+ - name: Ingham Institute for Applied Medical Research, Australia
    index: 3
 date: 03 Jan 2023
 bibliography: paper.bib
@@ -30,7 +30,7 @@ PlatiPy offers a comprehensive suite of tools and utilities for conducting medic
 
 # Statement of need
 
-Python has gained significant popularity in the field of medical image analysis research in recent years, due in part to its open-source nature and the support of a large community of third-party libraries. Libraries such as SimpleITK [@Lowekamp2013; @Yaniv2018] and scikit-learn [@JMLR:v12:pedregosa11a] offer a wide range of functionality for developing deep learning and atlas-based medical image analysis tools. However, researchers often face the challenge of writing code to prepare data, create wrapper functions for common procedures, and visualize images throughout the analysis pipeline. PlatiPy addresses these challenges by providing many of these functions, eliminating the need for researchers to reinvent the wheel.
+Python has gained significant popularity in the field of medical image analysis research in recent years, due in part to its open-source nature and the support of a large community of third-party libraries. Libraries such as SimpleITK [@Lowekamp2013; @Yaniv2018] and scikit-learn [@JMLR:v12:pedregosa11a] offer a wide range of functionality for developing deep learning and atlas-based medical image analysis tools. However, researchers often face the challenge of writing code to prepare data, create wrapper functions for common procedures, and visualise images throughout the analysis pipeline. PlatiPy addresses these challenges by providing many of these functions, eliminating the need for researchers to reinvent the wheel.
 
 Additionally, tools resulting from medical image analysis research projects are not always easily reusable outside of the original project context. Researchers may provide a GitHub repository with their tool, but it may lack documentation and require installation of various dependencies, making the process difficult and time-consuming. By incorporating these tools into PlatiPy and adhering to good software design principles, they can be more easily reused in future research projects.
 
@@ -50,15 +50,15 @@ Additionally, PlatiPy also provides functionality for converting data back to th
 
 ### Image Registration
 
-PlatiPy offers several functions that make it easy to perform linear (rigid) and non-linear (deformable) registration, as well as apply these transformations to images ***Figure with image registration example***. These registration tools are put to use in the atlas-based segmentation projects allowing users to easily start performing this kind of segmentation using their own data.
+PlatiPy offers several functions that make it easy to perform linear (rigid) and non-linear (deformable) registration, as well as apply these transformations to images [\autoref{fig:reg_example}]. These registration tools are put to use in the atlas-based segmentation projects allowing users to easily start performing this kind of segmentation using their own data.
 
-![Registration between two CT images produced by PlatiPy and visualised with the ImageVisualiser to compare the registered images (magenta/green) as well an overlay of the deformation vector field.\label{fig:contour_comp_example}](figure_2.png)
+![Registration between two CT images produced by PlatiPy and visualised with the ImageVisualiser to compare the registered images (magenta/green) as well an overlay of the deformation vector field.\label{fig:reg_example}](figure_2.png)
 
 ### Auto-segmentation
 
-PlatiPy provides a variety of tools and functionality that have been utilized in several research projects aimed at developing auto-segmentation models. These include models based on thresholding, atlases, and deep learning. The library includes various tools for performing pre- and post-processing, image registration, and deep learning inference, making it a valuable resource for researchers working on auto-segmentation projects.
+PlatiPy provides a variety of tools and functionality that have been utilised in several research projects aimed at developing auto-segmentation models. These include models based on thresholding, atlases, and deep learning. The library includes various tools for performing pre- and post-processing, image registration, and deep learning inference, making it a valuable resource for researchers working on auto-segmentation projects.
 
-To date, two auto-segmentation models developed using PlatiPy have been deployed and made available through the library for direct use by researchers. The first is a cardiac sub-structure auto-segmentation model, which utilizes a deep learning component to segment the whole heart, followed by an atlas-based segmentation and geometric definitions to segment 17 cardiac sub-structures on radiotherapy CT images [refs Rob]. The second is a bronchial tree segmentation algorithm that employs threshold techniques to segment the lungs, followed by the airways in radiotherapy lung CT images [@Ghandourh2021].
+To date, two auto-segmentation models developed using PlatiPy have been deployed and made available through the library for direct use by researchers. The first is a cardiac sub-structure auto-segmentation model, which utilises a deep learning component to segment the whole heart, followed by an atlas-based segmentation and geometric definitions to segment 17 cardiac sub-structures on radiotherapy CT images [refs Rob]. The second is a bronchial tree segmentation algorithm that employs threshold techniques to segment the lungs, followed by the airways in radiotherapy lung CT images [@Ghandourh2021].
 
 The availability of these auto-segmentation models in PlatiPy allows researchers to easily apply these techniques to their own data.
 
