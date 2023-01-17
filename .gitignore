@@ -146,3 +146,7 @@ services/*/*.db
 
 # Don't include html docs in repo
 docs/site/
+docs/_examples
+
+media/*
+
