@@ -38,7 +38,7 @@ Additionally, tools resulting from medical image analysis research projects are 
 
 In medical image analysis, the ability to produce visualizations of images at various stages of the analysis pipeline, from initial inspection of the dataset to presentation of final results, is crucial for effective analysis. However, researchers often avoid visually inspecting their output due to the significant amount of boilerplate code required to produce these visualizations using the matplotlib library directly. The Image Visualiser included in PlatiPy wraps this functionality within an easy-to-use class which can display the cross sections of medical images as well as overlay structures, scalar volumes and deformation vector fields. An example of such a visualisation is provided in \autoref{fig:vis_example}.
 
-![Visualisation produced using PlatiPy.\label{fig:vis_example}](figure_1.png)
+![Visualisation of planned radiotherapy dose overlaid on a patient's CT image produced using PlatiPy.\label{fig:vis_example}](figure_1.png)
 
 This tool has proven useful across many projects and is capable of producing visualisations of results fit for publication, such as those in [@Finnegan2021; @Finnegan2022] *Ad Vicky C's paper once accepted, find out if anyone else has published using PlatiPy vis tools*.
 
