@@ -173,11 +173,11 @@ class ProbUNet(pl.LightningModule):
         # )
         scheduler = torch.optim.lr_scheduler.CyclicLR(
             optimizer,
-            base_lr=self.hparams.learning_rate / 100,
+            base_lr=self.hparams.learning_rate / 10,
             max_lr=self.hparams.learning_rate,
-            step_size_up=10,
+            step_size_up=20,
             mode="exp_range",
-            gamma=0.99,
+            gamma=0.999,
             cycle_momentum=False
         )
 
