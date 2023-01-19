@@ -26,7 +26,7 @@ bibliography: paper.bib
 
 # Summary
 
-PlatiPy offers a comprehensive suite of tools and utilities for conducting medical image analysis research utilizing Python. These tools include functions for converting data between the widely-used DICOM format and the research-friendly NIfTI format, capabilities for image registration and atlas-based segmentation, and efficient image visualization tools to facilitate rapid development in research. Additionally, the library includes auto-segmentation models developed through various research projects.
+PlatiPy offers a comprehensive suite of tools and utilities for conducting medical image analysis research utilising Python. These tools include functions for converting data between the widely-used DICOM format and the research-friendly NIfTI format, capabilities for image registration and atlas-based segmentation, and efficient image visualsation tools to facilitate rapid development in research. Additionally, the library includes auto-segmentation models developed through various research projects enabling their streamlined deployment for use in future projects by the research community.
 
 # Statement of need
 
@@ -36,11 +36,11 @@ Additionally, tools resulting from medical image analysis research projects are 
 
 ### Image Visualiser
 
-In medical image analysis, the ability to produce visualizations of images at various stages of the analysis pipeline, from initial inspection of the dataset to presentation of final results, is crucial for effective analysis. However, researchers often avoid visually inspecting their output due to the significant amount of boilerplate code required to produce these visualizations using the matplotlib library directly. The Image Visualiser included in PlatiPy wraps this functionality within an easy-to-use class which can display the cross sections of medical images as well as overlay structures, scalar volumes and deformation vector fields. An example of such a visualisation is provided in \autoref{fig:vis_example}.
+In medical image analysis, the ability to produce visualisations of images at various stages of the analysis pipeline, from initial inspection of the dataset to presentation of final results, is crucial for effective analysis. However, researchers often avoid visually inspecting their output due to the significant amount of boilerplate code required to produce these visualisations using the matplotlib library directly. The Image Visualiser included in PlatiPy wraps this functionality within an easy-to-use class which can display the cross sections of medical images as well as overlay contours, scalar volumes and deformation vector fields. An example of such a visualisation is provided in \autoref{fig:vis_example}.
 
-![Visualisation of planned radiotherapy dose overlaid on a patient's CT image produced using PlatiPy.\label{fig:vis_example}](figure_1.png)
+![Visualisation of a patient's planned radiotherapy dose overlaid on the corresponding CT image produced using PlatiPy.\label{fig:vis_example}](figure_1.png)
 
-This tool has proven useful across many projects and is capable of producing visualisations of results fit for publication, such as those in [@Finnegan2021; @Finnegan2022].
+This tool has proven useful across many projects and is capable of producing visualisations fit for publication, such as those in [@Finnegan2021; @Finnegan2022].
 
 ### DICOM Conversion
 
@@ -60,13 +60,11 @@ PlatiPy provides a variety of tools and functionality that have been utilised in
 
 To date, two auto-segmentation models developed using PlatiPy have been deployed and made available through the library for direct use by researchers. The first is a cardiac sub-structure auto-segmentation model, which utilises a deep learning component to segment the whole heart, followed by an atlas-based segmentation and geometric definitions to segment 17 cardiac sub-structures on radiotherapy CT images [ref Rob PESM]. The second is a bronchial tree segmentation algorithm that employs threshold techniques to segment the lungs, followed by the airways in radiotherapy lung CT images [@Ghandourh2021].
 
-The availability of these auto-segmentation models in PlatiPy allows researchers to easily apply these techniques to their own data.
-
 ### Metric computation
 
-Computing similarity metrics between an auto-segmentation and a reference segmentation is a common task when working in the medical image analysis space. Some libraries, such as SimpleITK, provide implementations for some common metrics. PlatiPy aims to provide a comprehensive collection of metrics to avoid the need to researchers to implement their own metrics or piece together function from a range of other implementations. In additional PlatiPy supplies functionality to compute several metrics at one and produce a visualisation of the results [\autoref{fig:contour_comp_example}] enabling rapid development of medical image analysis research tools.
+Computing similarity metrics between an auto-segmentation and a reference segmentation is a common task when working in the medical image analysis space. PlatiPy aims to provide a comprehensive collection of metrics to avoid the need to researchers to implement their own metrics or piece together functions from a range of other implementations. In addition, PlatiPy supplies functionality to compute several metrics at once and produce a visualisation of the results [\autoref{fig:contour_comp_example}] which enables rapid development of medical image analysis research tools.
 
-![Example of visualisation produced by the contour comparison tool.\label{fig:contour_comp_example}](figure_3.png)
+![Example of visualisation produced by PlatiPy's contour comparison tool.\label{fig:contour_comp_example}](figure_3.png)
 
 # Acknowledgements
 
