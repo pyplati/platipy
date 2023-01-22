@@ -91,6 +91,10 @@ def visualise_dose(
             Defaults to None.
         img_vis_kw (dict, optional): Dictionary of keyword arguments to pass to ImageVisualiser.
             Defaults to None.
+
+    Returns:
+        matplotlib.figure: The figure, can be saved as usual (fig.savefig(...)).
+        pd.DataFrame: The dose metrics computed for display in the table.
     """
 
     if img_vis_kw is None:
@@ -243,3 +247,6 @@ def visualise_dose(
         wrap=True,
         weight="bold",
     )
+
+    # Return the figure
+    return fig, df_metrics
