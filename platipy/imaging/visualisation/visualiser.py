@@ -17,13 +17,11 @@ import logging
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-#from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
 
 import numpy as np
 import SimpleITK as sitk
 
 from platipy.imaging.utils.crop import label_to_roi
-
 from platipy.imaging.visualisation.utils import (
     VisualiseBoundingBox,
     VisualiseContour,
@@ -485,8 +483,8 @@ class ImageVisualiser:
                 window = (lower, upper - lower)
         try:
             logger.info(
-                "Found a (z,y,x,%s) dimensional array - assuming this is an RGB"
-                "image.", nda.shape[3]
+                "Found a (z,y,x,%s) dimensional array - assuming this is an RGB" "image.",
+                nda.shape[3],
             )
             nda /= nda.max()
         except ValueError:
@@ -1028,46 +1026,121 @@ class ImageVisualiser:
             "y": (0, size_sag, 0, size_ax),
             "z": (0, size_sag, 0, size_cor),
         }
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore", message="No contour levels were found within the data range."
+            )
 
-        if self.__axis in ["x", "y", "z"]:
-            ax = axes[0]
-            s = return_slice(self.__axis, self.__cut)
+            if self.__axis in ["x", "y", "z"]:
+                ax = axes[0]
+                s = return_slice(self.__axis, self.__cut)
 
-            for c_name in plot_dict:
-                if not self.__projection:
-                    contour_disp = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s)
+                for c_name, mask in plot_dict.items():
+                    if not self.__projection:
+                        contour_disp = sitk.GetArrayFromImage(mask).__getitem__(s)
 
-                    # Force a single pixel to 1 to display all contours
-                    # even if they aren't defined on a particular slice
-                    if contour_disp.sum() == 0:
-                        contour_disp[0, 0] = 1
+                        # Force a single pixel to 1 to display all contours
+                        # even if they aren't defined on a particular slice
+                        if contour_disp.sum() == 0:
+                            contour_disp[0, 0] = 1
 
-                else:
-                    contour_disp_proj = project_onto_arbitrary_plane(
-                        plot_dict[c_name],
-                        projection_axis={"x": 0, "y": 1, "z": 2}[self.__axis],
-                        projection_name="max",
-                        default_value=0,
-                    )
-                    contour_disp = sitk.GetArrayFromImage(contour_disp_proj)
+                    else:
+                        contour_disp_proj = project_onto_arbitrary_plane(
+                            plot_dict[c_name],
+                            projection_axis={"x": 0, "y": 1, "z": 2}[self.__axis],
+                            projection_name="max",
+                            default_value=0,
+                        )
+                        contour_disp = sitk.GetArrayFromImage(contour_disp_proj)
 
-                if self.__axis == "z":
-                    origin = {"normal": "upper", "reversed": "lower"}[self.__origin]
-                else:
-                    origin = "lower"
+                    if self.__axis == "z":
+                        origin = {"normal": "upper", "reversed": "lower"}[self.__origin]
+                    else:
+                        origin = "lower"
 
-                try:
-                    ax.contour(
-                        contour_disp,
-                        colors=[color_dict[c_name]],
-                        levels=[0.5],
-                        # alpha=0.8,
+                    try:
+                        ax.contour(
+                            contour_disp,
+                            colors=[color_dict[c_name]],
+                            levels=[0.5],
+                            # alpha=0.8,
+                            linewidths=lw_dict[c_name],
+                            linestyles=ls_dict[c_name],
+                            extent=extent_dict[self.__axis],
+                            origin=origin,
+                        )
+                        ax.plot(
+                            [0],
+                            [0],
+                            lw=lw_dict[c_name],
+                            ls=ls_dict[c_name],
+                            c=color_dict[c_name],
+                            label=c_name,
+                        )
+                    except AttributeError:
+                        pass
+
+            elif self.__axis == "ortho":
+                ax_ax, _, ax_cor, ax_sag = axes
+
+                ax = ax_ax
+
+                s_ax = return_slice("z", self.__cut[0])
+                s_cor = return_slice("y", self.__cut[1])
+                s_sag = return_slice("x", self.__cut[2])
+
+                for _, c_name in enumerate(plot_dict.keys()):
+
+                    if not self.__projection:
+
+                        contour_ax = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_ax)
+                        contour_cor = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_cor)
+                        contour_sag = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_sag)
+
+                        # Force a single pixel to 1 to display all contours
+                        # even if they aren't defined on a particular slice
+                        if contour_ax.sum() == 0:
+                            contour_ax[0, 0] = 1
+                        if contour_cor.sum() == 0:
+                            contour_cor[0, 0] = 1
+                        if contour_sag.sum() == 0:
+                            contour_sag[0, 0] = 1
+
+                    else:
+                        contour_ax_proj = project_onto_arbitrary_plane(
+                            plot_dict[c_name],
+                            projection_axis=2,
+                            projection_name="max",
+                            default_value=0,
+                        )
+                        contour_ax = sitk.GetArrayFromImage(contour_ax_proj)
+
+                        contour_cor_proj = project_onto_arbitrary_plane(
+                            plot_dict[c_name],
+                            projection_axis=1,
+                            projection_name="max",
+                            default_value=0,
+                        )
+                        contour_cor = sitk.GetArrayFromImage(contour_cor_proj)
+
+                        contour_sag_proj = project_onto_arbitrary_plane(
+                            plot_dict[c_name],
+                            projection_axis=0,
+                            projection_name="max",
+                            default_value=0,
+                        )
+                        contour_sag = sitk.GetArrayFromImage(contour_sag_proj)
+
+                    ax_ax.contour(
+                        contour_ax,
+                        levels=[0],
                         linewidths=lw_dict[c_name],
                         linestyles=ls_dict[c_name],
-                        extent=extent_dict[self.__axis],
-                        origin=origin,
+                        colors=[color_dict[c_name]],
+                        extent=extent_dict["z"],
+                        origin={"normal": "upper", "reversed": "lower"}[self.__origin],
                     )
-                    ax.plot(
+                    ax_ax.plot(
                         [0],
                         [0],
                         lw=lw_dict[c_name],
@@ -1075,99 +1148,28 @@ class ImageVisualiser:
                         c=color_dict[c_name],
                         label=c_name,
                     )
-                except AttributeError:
-                    pass
 
-        elif self.__axis == "ortho":
-            ax_ax, _, ax_cor, ax_sag = axes
-
-            ax = ax_ax
-
-            s_ax = return_slice("z", self.__cut[0])
-            s_cor = return_slice("y", self.__cut[1])
-            s_sag = return_slice("x", self.__cut[2])
-
-            for _, c_name in enumerate(plot_dict.keys()):
-
-                if not self.__projection:
-
-                    contour_ax = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_ax)
-                    contour_cor = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_cor)
-                    contour_sag = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_sag)
-
-                    # Force a single pixel to 1 to display all contours
-                    # even if they aren't defined on a particular slice
-                    if contour_ax.sum() == 0:
-                        contour_ax[0, 0] = 1
-                    if contour_cor.sum() == 0:
-                        contour_cor[0, 0] = 1
-                    if contour_sag.sum() == 0:
-                        contour_sag[0, 0] = 1
-
-                else:
-                    contour_ax_proj = project_onto_arbitrary_plane(
-                        plot_dict[c_name],
-                        projection_axis=2,
-                        projection_name="max",
-                        default_value=0,
+                    ax_cor.contour(
+                        contour_cor,
+                        levels=[0.5],
+                        linewidths=lw_dict[c_name],
+                        linestyles=ls_dict[c_name],
+                        colors=[color_dict[c_name]],
+                        extent=extent_dict["y"],
+                        origin="lower",
                     )
-                    contour_ax = sitk.GetArrayFromImage(contour_ax_proj)
-
-                    contour_cor_proj = project_onto_arbitrary_plane(
-                        plot_dict[c_name],
-                        projection_axis=1,
-                        projection_name="max",
-                        default_value=0,
+                    ax_sag.contour(
+                        contour_sag,
+                        levels=[0.5],
+                        linewidths=lw_dict[c_name],
+                        linestyles=ls_dict[c_name],
+                        colors=[color_dict[c_name]],
+                        extent=extent_dict["x"],
+                        origin="lower",
                     )
-                    contour_cor = sitk.GetArrayFromImage(contour_cor_proj)
 
-                    contour_sag_proj = project_onto_arbitrary_plane(
-                        plot_dict[c_name],
-                        projection_axis=0,
-                        projection_name="max",
-                        default_value=0,
-                    )
-                    contour_sag = sitk.GetArrayFromImage(contour_sag_proj)
-
-                ax_ax.contour(
-                    contour_ax,
-                    levels=[0],
-                    linewidths=lw_dict[c_name],
-                    linestyles=ls_dict[c_name],
-                    colors=[color_dict[c_name]],
-                    extent=extent_dict["z"],
-                    origin={"normal": "upper", "reversed": "lower"}[self.__origin],
-                )
-                ax_ax.plot(
-                    [0],
-                    [0],
-                    lw=lw_dict[c_name],
-                    ls=ls_dict[c_name],
-                    c=color_dict[c_name],
-                    label=c_name,
-                )
-
-                ax_cor.contour(
-                    contour_cor,
-                    levels=[0.5],
-                    linewidths=lw_dict[c_name],
-                    linestyles=ls_dict[c_name],
-                    colors=[color_dict[c_name]],
-                    extent=extent_dict["y"],
-                    origin="lower",
-                )
-                ax_sag.contour(
-                    contour_sag,
-                    levels=[0.5],
-                    linewidths=lw_dict[c_name],
-                    linestyles=ls_dict[c_name],
-                    colors=[color_dict[c_name]],
-                    extent=extent_dict["x"],
-                    origin="lower",
-                )
-
-        else:
-            raise ValueError('Axis is must be one of "x","y","z","ortho".')
+            else:
+                raise ValueError('Axis is must be one of "x","y","z","ortho".')
 
     def _overlay_scalar_field(self):
         """Overlay the scalar image onto the existing figure"""
@@ -1482,7 +1484,7 @@ class ImageVisualiser:
                     vector_color = vector_plot_z
                 elif color_function == "magnitude":
                     vector_color = np.sqrt(
-                        vector_plot_x ** 2 + vector_plot_y ** 2 + vector_plot_z ** 2
+                        vector_plot_x**2 + vector_plot_y**2 + vector_plot_z**2
                     )
 
                 if max_value is False:
@@ -1553,7 +1555,7 @@ class ImageVisualiser:
                         vector_color = vector_plot_z
                     elif color_function == "magnitude":
                         vector_color = np.sqrt(
-                            vector_plot_x ** 2 + vector_plot_y ** 2 + vector_plot_z ** 2
+                            vector_plot_x**2 + vector_plot_y**2 + vector_plot_z**2
                         )
 
                     if max_value is False:
@@ -1742,7 +1744,7 @@ class ImageVisualiser:
                         len(self.__contours) + len(self.__bounding_boxes)
                     )
 
-                    leg = plt.figlegend(
+                    plt.figlegend(
                         loc="center left",
                         bbox_to_anchor=(x_pos_legend, y_pos_legend),
                         fontsize=min([10, 16 * approx_font_scaling]),

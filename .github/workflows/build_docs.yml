@@ -3,7 +3,7 @@ name: Build Docs
 on: workflow_dispatch
 
 jobs:
-  build:
+  docs:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,7 +17,7 @@ jobs:
           curl -sSL https://install.python-poetry.org | python - --version 1.3.2
           poetry install --with docs
           echo "PYTHONPATH=`pwd`" >> $GITHUB_ENV
-          sudo apt-get update -y && sudo apt-get install -y pandoc
+          sudo apt-get update -y && sudo apt-get install -y pandoc python3-pkg-resources python3-setuptools
           poetry run sphinx-build -b html -a docs docs/site
       - name: Deploy docs
         uses: peaceiris/actions-gh-pages@v3

@@ -18,6 +18,7 @@ PlatiPy documentation
     :hidden:
 
     cardiac
+    _examples/bronchus_segmentation
 
 .. toctree::
     :caption: Examples
