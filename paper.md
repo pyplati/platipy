@@ -58,7 +58,7 @@ PlatiPy offers several functions that make it easy to perform linear (rigid) and
 
 PlatiPy provides a variety of tools and functionality that have been utilised in several research projects aimed at developing auto-segmentation models. These include models based on thresholding, atlases, and deep learning. The library includes various tools for performing pre- and post-processing, image registration, and deep learning inference, making it a valuable resource for researchers working on auto-segmentation projects.
 
-To date, two auto-segmentation models developed using PlatiPy have been deployed and made available through the library for direct use by researchers. The first is a cardiac sub-structure auto-segmentation model, which utilises a deep learning component to segment the whole heart, followed by an atlas-based segmentation and geometric definitions to segment 17 cardiac sub-structures on radiotherapy CT images [ref Rob PESM]. The second is a bronchial tree segmentation algorithm that employs threshold techniques to segment the lungs, followed by the airways in radiotherapy lung CT images [@Ghandourh2021].
+To date, two auto-segmentation models developed using PlatiPy have been deployed and made available through the library for direct use by researchers. The first is a cardiac sub-structure auto-segmentation model, which utilises a deep learning component to segment the whole heart, followed by an atlas-based segmentation and geometric definitions to segment 17 cardiac sub-structures on radiotherapy CT images [@Finnegan2023]. The second is a bronchial tree segmentation algorithm that employs threshold techniques to segment the lungs, followed by the airways in radiotherapy lung CT images [@Ghandourh2021].
 
 ### Metric computation
 
