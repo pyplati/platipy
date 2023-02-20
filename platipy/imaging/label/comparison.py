@@ -31,6 +31,7 @@ def compute_volume(label):
 
     return sitk.GetArrayFromImage(label).sum() * np.product(label.GetSpacing()) / 1000
 
+
 def compute_surface_dsc(label_a, label_b, tau=3.0):
     """Compute Surface Dice
 
@@ -64,7 +65,8 @@ def compute_surface_dsc(label_a, label_b, tau=3.0):
     a_intersection = sitk.GetArrayFromImage(a_contour * (dist_to_b <= tau)).sum()
 
     surface_sum = (
-        sitk.GetArrayFromImage(a_contour).sum() + sitk.GetArrayFromImage(b_contour).sum()
+        sitk.GetArrayFromImage(a_contour).sum()
+        + sitk.GetArrayFromImage(b_contour).sum()
     )
 
     return (b_intersection + a_intersection) / surface_sum
@@ -97,7 +99,9 @@ def compute_surface_metrics(label_a, label_b, verbose=False):
 
         label_intensity_stat = sitk.LabelIntensityStatisticsImageFilter()
         reference_distance_map = sitk.Abs(
-            sitk.SignedMaurerDistanceMap(la, squaredDistance=False, useImageSpacing=True)
+            sitk.SignedMaurerDistanceMap(
+                la, squaredDistance=False, useImageSpacing=True
+            )
         )
         moving_label_contour = sitk.LabelContour(lb)
         label_intensity_stat.Execute(moving_label_contour, reference_distance_map)
@@ -117,7 +121,10 @@ def compute_surface_metrics(label_a, label_b, verbose=False):
     std_surf_dist = np.sqrt(
         np.dot(
             num_points,
-            np.add(np.square(std_sd_list), np.square(np.subtract(mean_sd_list, mean_surf_dist))),
+            np.add(
+                np.square(std_sd_list),
+                np.square(np.subtract(mean_sd_list, mean_surf_dist)),
+            ),
         )
     )
     median_surf_dist = np.mean(median_sd_list)
@@ -291,7 +298,9 @@ def compute_metric_masd(label_a, label_b, auto_crop=True):
 
         label_intensity_stat = sitk.LabelIntensityStatisticsImageFilter()
         reference_distance_map = sitk.Abs(
-            sitk.SignedMaurerDistanceMap(la, squaredDistance=False, useImageSpacing=True)
+            sitk.SignedMaurerDistanceMap(
+                la, squaredDistance=False, useImageSpacing=True
+            )
         )
         moving_label_contour = sitk.LabelContour(lb)
         label_intensity_stat.Execute(moving_label_contour, reference_distance_map)
@@ -367,10 +376,10 @@ def compute_apl(label_ref, label_test, distance_threshold_mm=3):
 
         if distance_threshold_mm > 0:
             kernel = [int(distance) for k in range(2)]
-            label_ref_contour = sitk.BinaryDilate(label_ref_contour, kernel)
+            label_test_contour = sitk.BinaryDilate(label_test_contour, kernel)
 
         # mask out the locations in agreement
-        added_path = sitk.MaskNegated(label_test_contour, label_ref_contour)
+        added_path = sitk.MaskNegated(label_ref_contour, label_test_contour)
 
         # add up the voxels on the added path
         added_path_length = sitk.GetArrayViewFromImage(added_path).sum()
