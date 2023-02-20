@@ -18,6 +18,7 @@ PlatiPy documentation
     :hidden:
 
     cardiac
+    _examples/bronchus_segmentation
 
 .. toctree::
     :caption: Examples
@@ -25,6 +26,8 @@ PlatiPy documentation
     :hidden:
 
     _examples/visualise
+    _examples/atlas_segmentation
+    _examples/contour_comparison
     _examples/dvh_analysis
     
 .. toctree::

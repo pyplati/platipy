@@ -589,7 +589,7 @@ def process_dicom_series(
 
                     sequence_names = sorted(sequence_dict.keys())
 
-            if np.alen(sequence_names) > 1:
+            if len(sequence_names) > 1:
                 logger.warning("  Two MR sequences were found under a single series UID.")
                 logger.warning("  These will be split into separate images.")
 

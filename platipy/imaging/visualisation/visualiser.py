@@ -25,7 +25,6 @@ import numpy as np
 import SimpleITK as sitk
 
 from platipy.imaging.utils.crop import label_to_roi
-
 from platipy.imaging.visualisation.utils import (
     VisualiseBoundingBox,
     VisualiseContour,
@@ -170,7 +169,9 @@ class ImageVisualiser:
         if isinstance(contour, dict):
 
             if not all(map(lambda i: isinstance(i, sitk.Image), contour.values())):
-                raise ValueError("When passing dict, all values must be of type SimpleITK.Image")
+                raise ValueError(
+                    "When passing dict, all values must be of type SimpleITK.Image"
+                )
 
             for contour_name in contour:
 
@@ -248,7 +249,9 @@ class ImageVisualiser:
         if isinstance(scalar_image, dict):
 
             if not all(map(lambda i: isinstance(i, sitk.Image), scalar_image.values())):
-                raise ValueError("When passing dict, all values must be of type SimpleITK.Image")
+                raise ValueError(
+                    "When passing dict, all values must be of type SimpleITK.Image"
+                )
 
             for name in scalar_image:
                 visualise_scalar = VisualiseScalarOverlay(
@@ -415,7 +418,9 @@ class ImageVisualiser:
                     bounding_box.values(),
                 )
             ):
-                raise ValueError("All values must be of type list or tuple with length 6")
+                raise ValueError(
+                    "All values must be of type list or tuple with length 6"
+                )
 
             for name in bounding_box:
                 visualise_bounding_box = VisualiseBoundingBox(
@@ -490,7 +495,8 @@ class ImageVisualiser:
                 window = (lower, upper - lower)
         try:
             logger.info(
-                "Found a (z,y,x,%s) dimensional array - assuming this is an RGB" "image.",
+                "Found a (z,y,x,%s) dimensional array - assuming this is an RGB"
+                "image.",
                 nda.shape[3],
             )
             nda /= nda.max()
@@ -518,7 +524,9 @@ class ImageVisualiser:
         if self.__axis == "ortho":
             figure_size = (
                 self.__figure_size,
-                self.__figure_size * (asp * ax_size + cor_size) / (1.0 * sag_size + cor_size),
+                self.__figure_size
+                * (asp * ax_size + cor_size)
+                / (1.0 * sag_size + cor_size),
             )
 
             self.__figure, ((ax_ax, blank), (ax_cor, ax_sag)) = plt.subplots(
@@ -742,7 +750,9 @@ class ImageVisualiser:
         if self.__axis == "ortho":
             figure_size = (
                 self.__figure_size,
-                self.__figure_size * (asp * ax_size + cor_size) / (1.0 * sag_size + cor_size),
+                self.__figure_size
+                * (asp * ax_size + cor_size)
+                / (1.0 * sag_size + cor_size),
             )
 
             self.__figure, ((ax_ax, blank), (ax_cor, ax_sag)) = plt.subplots(
@@ -863,7 +873,10 @@ class ImageVisualiser:
             s = return_slice(self.__axis, self.__cut)
 
             nda_colormix = generate_comparison_colormix(
-                [nda_original, nda_new], arr_slice=s, window=window, color_rotation=color_rotation
+                [nda_original, nda_new],
+                arr_slice=s,
+                window=window,
+                color_rotation=color_rotation,
             )
 
             ax.imshow(
@@ -982,7 +995,10 @@ class ImageVisualiser:
                 y_0, y_1 = sorted([y_0, y_1])
 
                 if self.__axis == "z" and self.__origin == "normal":
-                    y_1, y_0 = self.__image.GetSize()[0] - y_0, self.__image.GetSize()[0] - y_1
+                    y_1, y_0 = (
+                        self.__image.GetSize()[0] - y_0,
+                        self.__image.GetSize()[0] - y_1,
+                    )
                 # I don't know why I put this in
 
                 ratio_x = np.abs(x_1 - x_0) / np.abs(x_orig_1 - x_orig_0)
@@ -1016,7 +1032,9 @@ class ImageVisualiser:
             if contour.color is not None:
                 color_dict[contour.name] = contour.color
             else:
-                color_map = self.__contour_colormap(np.linspace(0, 1, len(self.__contours)))
+                color_map = self.__contour_colormap(
+                    np.linspace(0, 1, len(self.__contours))
+                )
 
                 color_dict[contour.name] = color_map[color_gen_index % 255]
                 color_gen_index += 1
@@ -1034,33 +1052,37 @@ class ImageVisualiser:
             "y": (0, size_sag, 0, size_ax),
             "z": (0, size_sag, 0, size_cor),
         }
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore", message="No contour levels were found within the data range."
+            )
 
-        if self.__axis in ["x", "y", "z"]:
-            ax = axes[0]
-            s = return_slice(self.__axis, self.__cut)
+            if self.__axis in ["x", "y", "z"]:
+                ax = axes[0]
+                s = return_slice(self.__axis, self.__cut)
 
-            for c_name in plot_dict:
-                if not self.__projection:
-                    contour_disp = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s)
+                for c_name, mask in plot_dict.items():
+                    if not self.__projection:
+                        contour_disp = sitk.GetArrayFromImage(mask).__getitem__(s)
 
-                    # Force a single pixel to 1 to display all contours
-                    # even if they aren't defined on a particular slice
-                    if contour_disp.sum() == 0:
-                        contour_disp[0, 0] = 1
+                        # Force a single pixel to 1 to display all contours
+                        # even if they aren't defined on a particular slice
+                        if contour_disp.sum() == 0:
+                            contour_disp[0, 0] = 1
 
-                else:
-                    contour_disp_proj = project_onto_arbitrary_plane(
-                        plot_dict[c_name],
-                        projection_axis={"x": 0, "y": 1, "z": 2}[self.__axis],
-                        projection_name="max",
-                        default_value=0,
-                    )
-                    contour_disp = sitk.GetArrayFromImage(contour_disp_proj)
+                    else:
+                        contour_disp_proj = project_onto_arbitrary_plane(
+                            plot_dict[c_name],
+                            projection_axis={"x": 0, "y": 1, "z": 2}[self.__axis],
+                            projection_name="max",
+                            default_value=0,
+                        )
+                        contour_disp = sitk.GetArrayFromImage(contour_disp_proj)
 
-                if self.__axis == "z":
-                    origin = {"normal": "upper", "reversed": "lower"}[self.__origin]
-                else:
-                    origin = "lower"
+                    if self.__axis == "z":
+                        origin = {"normal": "upper", "reversed": "lower"}[self.__origin]
+                    else:
+                        origin = "lower"
 
                 try:
                     ax.contour(
@@ -1085,96 +1107,102 @@ class ImageVisualiser:
                 except AttributeError:
                     pass
 
-        elif self.__axis == "ortho":
-            ax_ax, _, ax_cor, ax_sag = axes
+            elif self.__axis == "ortho":
+                ax_ax, _, ax_cor, ax_sag = axes
 
-            ax = ax_ax
+                ax = ax_ax
 
-            s_ax = return_slice("z", self.__cut[0])
-            s_cor = return_slice("y", self.__cut[1])
-            s_sag = return_slice("x", self.__cut[2])
+                s_ax = return_slice("z", self.__cut[0])
+                s_cor = return_slice("y", self.__cut[1])
+                s_sag = return_slice("x", self.__cut[2])
 
-            for _, c_name in enumerate(plot_dict.keys()):
+                for _, c_name in enumerate(plot_dict.keys()):
 
-                if not self.__projection:
+                    if not self.__projection:
 
-                    contour_ax = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_ax)
-                    contour_cor = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_cor)
-                    contour_sag = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_sag)
+                        contour_ax = sitk.GetArrayFromImage(
+                            plot_dict[c_name]
+                        ).__getitem__(s_ax)
+                        contour_cor = sitk.GetArrayFromImage(
+                            plot_dict[c_name]
+                        ).__getitem__(s_cor)
+                        contour_sag = sitk.GetArrayFromImage(
+                            plot_dict[c_name]
+                        ).__getitem__(s_sag)
 
-                    # Force a single pixel to 1 to display all contours
-                    # even if they aren't defined on a particular slice
-                    if contour_ax.sum() == 0:
-                        contour_ax[0, 0] = 1
-                    if contour_cor.sum() == 0:
-                        contour_cor[0, 0] = 1
-                    if contour_sag.sum() == 0:
-                        contour_sag[0, 0] = 1
+                        # Force a single pixel to 1 to display all contours
+                        # even if they aren't defined on a particular slice
+                        if contour_ax.sum() == 0:
+                            contour_ax[0, 0] = 1
+                        if contour_cor.sum() == 0:
+                            contour_cor[0, 0] = 1
+                        if contour_sag.sum() == 0:
+                            contour_sag[0, 0] = 1
 
-                else:
-                    contour_ax_proj = project_onto_arbitrary_plane(
-                        plot_dict[c_name],
-                        projection_axis=2,
-                        projection_name="max",
-                        default_value=0,
+                    else:
+                        contour_ax_proj = project_onto_arbitrary_plane(
+                            plot_dict[c_name],
+                            projection_axis=2,
+                            projection_name="max",
+                            default_value=0,
+                        )
+                        contour_ax = sitk.GetArrayFromImage(contour_ax_proj)
+
+                        contour_cor_proj = project_onto_arbitrary_plane(
+                            plot_dict[c_name],
+                            projection_axis=1,
+                            projection_name="max",
+                            default_value=0,
+                        )
+                        contour_cor = sitk.GetArrayFromImage(contour_cor_proj)
+
+                        contour_sag_proj = project_onto_arbitrary_plane(
+                            plot_dict[c_name],
+                            projection_axis=0,
+                            projection_name="max",
+                            default_value=0,
+                        )
+                        contour_sag = sitk.GetArrayFromImage(contour_sag_proj)
+
+                    ax_ax.contour(
+                        contour_ax,
+                        levels=[0],
+                        linewidths=lw_dict[c_name],
+                        linestyles=ls_dict[c_name],
+                        colors=[color_dict[c_name]],
+                        extent=extent_dict["z"],
+                        origin={"normal": "upper", "reversed": "lower"}[self.__origin],
                     )
-                    contour_ax = sitk.GetArrayFromImage(contour_ax_proj)
-
-                    contour_cor_proj = project_onto_arbitrary_plane(
-                        plot_dict[c_name],
-                        projection_axis=1,
-                        projection_name="max",
-                        default_value=0,
+                    ax_ax.plot(
+                        [0],
+                        [0],
+                        lw=lw_dict[c_name],
+                        ls=ls_dict[c_name],
+                        c=color_dict[c_name],
+                        label=c_name,
                     )
-                    contour_cor = sitk.GetArrayFromImage(contour_cor_proj)
 
-                    contour_sag_proj = project_onto_arbitrary_plane(
-                        plot_dict[c_name],
-                        projection_axis=0,
-                        projection_name="max",
-                        default_value=0,
+                    ax_cor.contour(
+                        contour_cor,
+                        levels=[0.5],
+                        linewidths=lw_dict[c_name],
+                        linestyles=ls_dict[c_name],
+                        colors=[color_dict[c_name]],
+                        extent=extent_dict["y"],
+                        origin="lower",
                     )
-                    contour_sag = sitk.GetArrayFromImage(contour_sag_proj)
+                    ax_sag.contour(
+                        contour_sag,
+                        levels=[0.5],
+                        linewidths=lw_dict[c_name],
+                        linestyles=ls_dict[c_name],
+                        colors=[color_dict[c_name]],
+                        extent=extent_dict["x"],
+                        origin="lower",
+                    )
 
-                ax_ax.contour(
-                    contour_ax,
-                    levels=[0],
-                    linewidths=lw_dict[c_name],
-                    linestyles=ls_dict[c_name],
-                    colors=[color_dict[c_name]],
-                    extent=extent_dict["z"],
-                    origin={"normal": "upper", "reversed": "lower"}[self.__origin],
-                )
-                ax_ax.plot(
-                    [0],
-                    [0],
-                    lw=lw_dict[c_name],
-                    ls=ls_dict[c_name],
-                    c=color_dict[c_name],
-                    label=c_name,
-                )
-
-                ax_cor.contour(
-                    contour_cor,
-                    levels=[0.5],
-                    linewidths=lw_dict[c_name],
-                    linestyles=ls_dict[c_name],
-                    colors=[color_dict[c_name]],
-                    extent=extent_dict["y"],
-                    origin="lower",
-                )
-                ax_sag.contour(
-                    contour_sag,
-                    levels=[0.5],
-                    linewidths=lw_dict[c_name],
-                    linestyles=ls_dict[c_name],
-                    colors=[color_dict[c_name]],
-                    extent=extent_dict["x"],
-                    origin="lower",
-                )
-
-        else:
-            raise ValueError('Axis is must be one of "x","y","z","ortho".')
+            else:
+                raise ValueError('Axis is must be one of "x","y","z","ortho".')
 
     def _overlay_scalar_field(self):
         """Overlay the scalar image onto the existing figure"""
@@ -1292,7 +1320,9 @@ class ImageVisualiser:
 
                     # we can't plot colorbars with contour plots
                     # so we create an equivalent scalar mappable
-                    norm = colors.Normalize(vmin=ax_view.cvalues.min(), vmax=ax_view.cvalues.max())
+                    norm = colors.Normalize(
+                        vmin=ax_view.cvalues.min(), vmax=ax_view.cvalues.max()
+                    )
 
                     ax_view = plt.cm.ScalarMappable(norm=norm, cmap=ax_view.cmap)
                     ax_view.set_array([])
@@ -1498,7 +1528,9 @@ class ImageVisualiser:
                                 scalar.discrete_levels,
                             )
                         )
-                        cbar.set_ticklabels(np.linspace(s_min, s_max, scalar.discrete_levels))
+                        cbar.set_ticklabels(
+                            np.linspace(s_min, s_max, scalar.discrete_levels)
+                        )
 
                     else:
                         cbar.set_ticks(
@@ -1545,7 +1577,8 @@ class ImageVisualiser:
                     subsample = (subsample,) * 3
 
                 subsample_img = [
-                    int(np.ceil((i / j))) for i, j in zip(subsample, image.GetSpacing()[::-1])
+                    int(np.ceil((i / j)))
+                    for i, j in zip(subsample, image.GetSpacing()[::-1])
                 ]
 
                 slicer = subsample_vector_field(self.__axis, self.__cut, subsample_img)
@@ -1555,7 +1588,11 @@ class ImageVisualiser:
                 vector_cor = vector_nda_slice[:, :, 1].T
                 vector_sag = vector_nda_slice[:, :, 0].T
 
-                (vector_plot_x, vector_plot_y, vector_plot_z,) = reorientate_vector_field(
+                (
+                    vector_plot_x,
+                    vector_plot_y,
+                    vector_plot_z,
+                ) = reorientate_vector_field(
                     self.__axis,
                     vector_ax,
                     vector_cor,
@@ -1563,7 +1600,9 @@ class ImageVisualiser:
                     invert_field=invert_field,
                 )
 
-                plot_x_loc, plot_y_loc = vector_image_grid(self.__axis, vector_nda, subsample_img)
+                plot_x_loc, plot_y_loc = vector_image_grid(
+                    self.__axis, vector_nda, subsample_img
+                )
 
                 if self.__origin == "normal" and self.__axis == "z":
                     plot_y_loc = np.flip(plot_y_loc, 1)
@@ -1622,7 +1661,8 @@ class ImageVisualiser:
                         subsample = (subsample,) * 3
 
                     subsample_img = [
-                        int(np.ceil((i / j))) for i, j in zip(subsample, image.GetSpacing()[::-1])
+                        int(np.ceil((i / j)))
+                        for i, j in zip(subsample, image.GetSpacing()[::-1])
                     ]
 
                     slicer = subsample_vector_field(im_axis, im_cut, subsample_img)
@@ -1636,9 +1676,13 @@ class ImageVisualiser:
                         vector_plot_x,
                         vector_plot_y,
                         vector_plot_z,
-                    ) = reorientate_vector_field(im_axis, vector_ax, vector_cor, vector_sag)
+                    ) = reorientate_vector_field(
+                        im_axis, vector_ax, vector_cor, vector_sag
+                    )
 
-                    plot_x_loc, plot_y_loc = vector_image_grid(im_axis, vector_nda, subsample_img)
+                    plot_x_loc, plot_y_loc = vector_image_grid(
+                        im_axis, vector_nda, subsample_img
+                    )
 
                     if color_function == "perpendicular":
                         vector_color = vector_plot_z
@@ -1705,7 +1749,9 @@ class ImageVisualiser:
                         # background is dark
                         cbar_color = "white"
 
-                cbar = self.__figure.colorbar(sp_vector, cax=cax, orientation="vertical")
+                cbar = self.__figure.colorbar(
+                    sp_vector, cax=cax, orientation="vertical"
+                )
 
                 # set color
                 cbar.outline.set_edgecolor(color=cbar_color)
@@ -1837,7 +1883,7 @@ class ImageVisualiser:
                         len(self.__contours) + len(self.__bounding_boxes)
                     )
 
-                    leg = plt.figlegend(
+                    plt.figlegend(
                         loc="center left",
                         bbox_to_anchor=(x_pos_legend, y_pos_legend),
                         fontsize=min([10, 16 * approx_font_scaling]),

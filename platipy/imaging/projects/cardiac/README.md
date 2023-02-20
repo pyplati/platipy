@@ -1,6 +1,6 @@
 # Cardiac Segmentation
 
-This project consists of an algorithm to automatically segment the heart plus 17 cardiac 
+This project consists of an algorithm to automatically segment the heart plus 17 cardiac
 sub-structures in typical Radiotherapy CT scans. The hybrid algorithm [[1]](#references) first segments the whole
 heart using a deep learning model (nnUNet [[2]](#references)) followed by a multi-atlas based mapping of the
 cardiac sub-structures [[3]](#references) and finally geometric modelling of smaller cardiac structures. The following
@@ -40,6 +40,7 @@ Windows operating system at this time (contributions are welcome).
 ### System Requirements
 
 On a system with the following specifications, one case takes approximately 5 minutes process:
+
 - 24 core Intel i9 processor
 - 64GB RAM
 - NVIDIA 3090 GPU
@@ -121,8 +122,8 @@ is available containing an example.
 
 ### Problem: I get an error message indicating a `CUDA error: no kernel image is available for execution on the device`
 
-Solution: The pytorch version installed via the usual pip command above isn't always necessarily 
-the correct version needed for your operating system and CUDA version. Follow instructions 
+Solution: The pytorch version installed via the usual pip command above isn't always necessarily
+the correct version needed for your operating system and CUDA version. Follow instructions
 [here](https://pytorch.org/get-started/locally/) to install the correct version of pytorch.
 
 ### Problem: Installing PlatiPy hangs or indicates a dependency error
@@ -132,7 +133,7 @@ Solution: Upgrade your version of pip and try again: `pip install --upgrade pip`
 ### Problem: I'm unable to run the example Jupyter Notebook on Google Colab
 
 Solution: Create a new code cell and upgrade the version of pip. Then reinstall the platipy
-library: 
+library:
 
 ```python
 !pip install --upgrade pip
@@ -143,12 +144,11 @@ If you continue to experience issues, restart the Colab runtime (Runtime->Restar
 again.
 
 > If you are experiencing other issues, please consider reporting these in the [PlatiPy GitHub
-issue tracker](https://github.com/pyplati/platipy/issues/new). Any contributions to the code via 
+issue tracker](https://github.com/pyplati/platipy/issues/new). Any contributions to the code via
 [pull requests](https://github.com/pyplati/platipy/pulls) would be appreciated.
 
 ## References
 
-1. Finnegan R, Chin V, Chlap P, et al. Open-source, fully-automated hybrid cardiac substructure
-segmentation: development and optimisation. Physics in Medicine and Biology. 2022. (Under Review)
-1. Isensee F, Jaeger PF, Kohl SAA, Petersen J, Maier-Hein KH. nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nat Methods. 2021;18(2):203-211. doi:10.1038/s41592-020-01008-z
-2. Finnegan R, Dowling J, Koh E-S, et al. Feasibility of multi-atlas cardiac segmentation from thoracic planning CT in a probabilistic framework. Phys Med Biol. 2019;64(8):085006. doi:10.1088/1361-6560/ab0ea6
+1. Finnegan, RN, Chin, V, Chlap, P, et al. Open-source, fully-automated hybrid cardiac substructure segmentation: development and optimisation. Phys Eng Sci Med. 2023. [doi:10.1007/s13246-023-01231-w](https://doi.org/10.1007/s13246-023-01231-w)
+2. Isensee F, Jaeger PF, Kohl SAA, Petersen J, Maier-Hein KH. nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. Nat Methods. 2021;18(2):203-211. [doi:10.1038/s41592-020-01008-z](https://doi.org/10.1038/s41592-020-01008-z)
+3. Finnegan R, Dowling J, Koh E-S, et al. Feasibility of multi-atlas cardiac segmentation from thoracic planning CT in a probabilistic framework. Phys Med Biol. 2019;64(8):085006. [doi:10.1088/1361-6560/ab0ea6](https://doi.org/10.1088/1361-6560/ab0ea6)
