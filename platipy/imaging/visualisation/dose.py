@@ -58,7 +58,8 @@ def visualise_dose(
     structure_for_limits=None,
     expansion_for_limits=10,
     title="",
-    contour_cmap=plt.cm.get_cmap("inferno"),
+    contour_cmap=plt.cm.get_cmap("rainbow"),
+    dose_cmap=plt.cm.get_cmap("inferno"),
     structure_name_dict=None,
     img_vis_kw=None,
 ):
@@ -86,6 +87,8 @@ def visualise_dose(
             to 10.
         title (str, optional): Title to display on visualisation. Defaults to "".
         contour_cmap (plt.cm.colormap, optional): Matplotlib color map to use for contour colors.
+            Defaults to plt.cm.get_cmap("rainbow").
+        dose_cmap (plt.cm.colormap, optional): Matplotlib color map to use for dose colors.
             Defaults to plt.cm.get_cmap("inferno").
         structure_name_dict (dict, optional): Dictionary to map alternative structure names.
             Defaults to None.
@@ -158,12 +161,12 @@ def visualise_dose(
     vis.add_scalar_overlay(
         dose,
         discrete_levels=int(max_val / round_to_nearest),
-        colormap=contour_cmap,
+        colormap=dose_cmap,
         alpha=0.5,
         max_value=max_val,
         name="Dose (Gy)",
     )
-    vis.add_contour(structures, show_legend=False)
+    vis.add_contour(structures, show_legend=False, colormap=contour_cmap)
 
     if structure_for_limits is not None:
         vis.set_limits_from_label(structure_for_limits, expansion=expansion_for_limits)
