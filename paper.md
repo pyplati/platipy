@@ -62,7 +62,7 @@ To date, two auto-segmentation models developed using PlatiPy have been deployed
 
 ### Metric computation
 
-Computing similarity metrics between an auto-segmentation and a reference segmentation is a common task when working in the medical image analysis space. PlatiPy aims to provide a comprehensive collection of metrics to avoid the need to researchers to implement their own metrics or piece together functions from a range of other implementations. In addition, PlatiPy supplies functionality to compute several metrics at once and produce a visualisation of the results [\autoref{fig:contour_comp_example}] which enables rapid development of medical image analysis research tools.
+Computing similarity metrics between an auto-segmentation and a reference segmentation is a common task when working in the medical image analysis space. PlatiPy aims to provide a comprehensive collection of metrics to avoid the need for researchers to implement their own metrics or piece together functions from a range of other implementations. In addition, PlatiPy supplies functionality to compute several metrics at once and produce a visualisation of the results [\autoref{fig:contour_comp_example}] which enables rapid development of medical image analysis research tools.
 
 ![Example of visualisation produced by PlatiPy's contour comparison tool.\label{fig:contour_comp_example}](figure_3.png)
 
