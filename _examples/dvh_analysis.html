@@ -483,7 +483,7 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">platipy</span>
 <span class="k">except</span><span class="p">:</span>
-    <span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/pyplati/platipy.git
+    <span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>platipy
     <span class="kn">import</span> <span class="nn">platipy</span>
 
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -495,6 +495,7 @@ div.rendered_html tbody tr:hover {
 <span class="kn">from</span> <span class="nn">platipy.imaging</span> <span class="kn">import</span> <span class="n">ImageVisualiser</span>
 <span class="kn">from</span> <span class="nn">platipy.imaging.label.utils</span> <span class="kn">import</span> <span class="n">get_com</span>
 <span class="kn">from</span> <span class="nn">platipy.imaging.dose.dvh</span> <span class="kn">import</span> <span class="n">calculate_dvh_for_labels</span><span class="p">,</span> <span class="n">calculate_d_x</span><span class="p">,</span> <span class="n">calculate_v_x</span>
+<span class="kn">from</span> <span class="nn">platipy.imaging.visualisation.dose</span> <span class="kn">import</span> <span class="n">visualise_dose</span>
 </pre></div>
 </div>
 </div>
@@ -544,7 +545,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">structures</span><span class="p">[</span><span class="s2">&quot;PTV60&quot;</span><span class="p">]))</span>
 
-<span class="n">vis</span><span class="o">.</span><span class="n">add_scalar_overlay</span><span class="p">(</span><span class="n">dose</span><span class="p">,</span> <span class="n">discrete_levels</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;inferno&quot;</span><span class="p">))</span>
+<span class="n">vis</span><span class="o">.</span><span class="n">add_scalar_overlay</span><span class="p">(</span><span class="n">dose</span><span class="p">,</span> <span class="n">discrete_levels</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;inferno&quot;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Dose (Gy)&quot;</span><span class="p">)</span>
 <span class="n">vis</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">structures</span><span class="p">)</span>
 
 <span class="n">fig</span> <span class="o">=</span> <span class="n">vis</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -570,20 +571,252 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-</section>
-<section id="Plot-DVH">
-<h2>Plot DVH<a class="headerlink" href="#Plot-DVH" title="Permalink to this heading">#</a></h2>
-<p>using the pandas DataFrame, we plot the DVH here</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt_dvh</span> <span class="o">=</span> <span class="n">dvh</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;cc&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;bin&quot;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s2">&quot;dose&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dvh</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>label</th>
+      <th>cc</th>
+      <th>mean</th>
+      <th>0.0</th>
+      <th>0.1</th>
+      <th>0.2</th>
+      <th>0.3</th>
+      <th>0.4</th>
+      <th>0.5</th>
+      <th>0.6</th>
+      <th>...</th>
+      <th>65.7</th>
+      <th>65.8</th>
+      <th>65.9</th>
+      <th>66.0</th>
+      <th>66.1</th>
+      <th>66.2</th>
+      <th>66.3</th>
+      <th>66.4</th>
+      <th>66.5</th>
+      <th>66.6</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>BRAINSTEM</td>
+      <td>11.885166</td>
+      <td>9.360401</td>
+      <td>1.0</td>
+      <td>0.857974</td>
+      <td>0.857974</td>
+      <td>0.857974</td>
+      <td>0.857974</td>
+      <td>0.857974</td>
+      <td>0.857974</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>MANDIBLE</td>
+      <td>62.763691</td>
+      <td>54.402473</td>
+      <td>1.0</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>...</td>
+      <td>0.000418</td>
+      <td>0.000342</td>
+      <td>0.000266</td>
+      <td>0.000228</td>
+      <td>0.000152</td>
+      <td>0.000076</td>
+      <td>0.000076</td>
+      <td>0.000038</td>
+      <td>0.000038</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>CTV_60_GY</td>
+      <td>190.980434</td>
+      <td>61.534935</td>
+      <td>1.0</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>...</td>
+      <td>0.000300</td>
+      <td>0.000250</td>
+      <td>0.000162</td>
+      <td>0.000125</td>
+      <td>0.000112</td>
+      <td>0.000062</td>
+      <td>0.000037</td>
+      <td>0.000025</td>
+      <td>0.000012</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>PTV60</td>
+      <td>280.199051</td>
+      <td>61.134624</td>
+      <td>1.0</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>...</td>
+      <td>0.000332</td>
+      <td>0.000281</td>
+      <td>0.000221</td>
+      <td>0.000179</td>
+      <td>0.000145</td>
+      <td>0.000085</td>
+      <td>0.000068</td>
+      <td>0.000051</td>
+      <td>0.000034</td>
+      <td>0.000017</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>CORD</td>
+      <td>24.590492</td>
+      <td>26.596514</td>
+      <td>1.0</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>L_PAROTID</td>
+      <td>7.548332</td>
+      <td>22.993076</td>
+      <td>1.0</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>R_PAROTID</td>
+      <td>12.702942</td>
+      <td>21.784250</td>
+      <td>1.0</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>1.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+  </tbody>
+</table>
+<p>7 rows × 670 columns</p>
+</div></div>
+</div>
+</section>
+<section id="Plot-DVH">
+<h2>Plot DVH<a class="headerlink" href="#Plot-DVH" title="Permalink to this heading">#</a></h2>
+<p>using the pandas DataFrame, we plot the DVH here. The DVH first needs to be reshaped to prepare it for plotting.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reshape the DVH</span>
+<span class="n">plt_dvh</span> <span class="o">=</span> <span class="n">dvh</span>
+<span class="n">plt_dvh</span> <span class="o">=</span> <span class="n">plt_dvh</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">)</span>
+<span class="n">plt_dvh</span> <span class="o">=</span> <span class="n">plt_dvh</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">3</span><span class="p">:]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+<span class="c1"># Plot the DVH</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">plt_dvh</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;rainbow&quot;</span><span class="p">),</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">grp</span> <span class="ow">in</span> <span class="n">plt_dvh</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;label&#39;</span><span class="p">]):</span>
-    <span class="n">ax</span> <span class="o">=</span> <span class="n">grp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;line&#39;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;bin&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;dose&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
-
+<span class="c1"># Add labels and show plot</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Dose (Gy)&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Frequency&quot;</span><span class="p">)</span>
@@ -592,37 +825,28 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/tmp/ipykernel_8586/1046574561.py:4: FutureWarning: In a future version of pandas, a length 1 tuple will be returned when iterating over a groupby with a grouper equal to a list of length 1. Don&#39;t supply a list with a single grouper to avoid this warning.
-  for key, grp in plt_dvh.groupby([&#39;label&#39;]):
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_dvh_analysis_11_1.png" src="../_images/_examples_dvh_analysis_11_1.png" />
+<img alt="../_images/_examples_dvh_analysis_12_0.png" src="../_images/_examples_dvh_analysis_12_0.png" />
 </div>
 </div>
 </section>
 <section id="DVH-Metrics">
 <h2>DVH Metrics<a class="headerlink" href="#DVH-Metrics" title="Permalink to this heading">#</a></h2>
-<p>Finally, we extract commonly used metrics from the DVH, such as D95 or V40.</p>
+<p>Finally, we extract commonly used metrics from the DVH. In the following cells we extract the D0 and D95 as well as the V5 and V20.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_metrics_d</span> <span class="o">=</span> <span class="n">calculate_d_x</span><span class="p">(</span><span class="n">dvh</span><span class="p">,</span> <span class="mi">95</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_metrics_d</span> <span class="o">=</span> <span class="n">calculate_d_x</span><span class="p">(</span><span class="n">dvh</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">95</span><span class="p">])</span>
 <span class="n">df_metrics_d</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -645,6 +869,7 @@ div.rendered_html tbody tr:hover {
     <tr style="text-align: right;">
       <th></th>
       <th>label</th>
+      <th>D0</th>
       <th>D95</th>
     </tr>
   </thead>
@@ -652,36 +877,43 @@ div.rendered_html tbody tr:hover {
     <tr>
       <th>0</th>
       <td>BRAINSTEM</td>
+      <td>37.1</td>
       <td>0.035205</td>
     </tr>
     <tr>
       <th>1</th>
       <td>MANDIBLE</td>
+      <td>66.6</td>
       <td>36.565625</td>
     </tr>
     <tr>
       <th>2</th>
       <td>CTV_60_GY</td>
+      <td>66.6</td>
       <td>60.255060</td>
     </tr>
     <tr>
       <th>3</th>
       <td>PTV60</td>
+      <td>66.6</td>
       <td>58.903234</td>
     </tr>
     <tr>
       <th>4</th>
       <td>CORD</td>
+      <td>37.7</td>
       <td>6.558704</td>
     </tr>
     <tr>
       <th>5</th>
       <td>L_PAROTID</td>
+      <td>60.2</td>
       <td>9.182000</td>
     </tr>
     <tr>
       <th>6</th>
       <td>R_PAROTID</td>
+      <td>58.7</td>
       <td>7.333571</td>
     </tr>
   </tbody>
@@ -689,16 +921,16 @@ div.rendered_html tbody tr:hover {
 </div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_metrics_v</span> <span class="o">=</span> <span class="n">calculate_v_x</span><span class="p">(</span><span class="n">dvh</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_metrics_v</span> <span class="o">=</span> <span class="n">calculate_v_x</span><span class="p">(</span><span class="n">dvh</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
 <span class="n">df_metrics_v</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -721,48 +953,95 @@ div.rendered_html tbody tr:hover {
     <tr style="text-align: right;">
       <th></th>
       <th>label</th>
-      <th>V40</th>
+      <th>V5</th>
+      <th>V20</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
       <td>BRAINSTEM</td>
-      <td>0.000000</td>
+      <td>6.253719</td>
+      <td>1.780987</td>
     </tr>
     <tr>
       <th>1</th>
       <td>MANDIBLE</td>
-      <td>59.137344</td>
+      <td>62.763691</td>
+      <td>61.063766</td>
     </tr>
     <tr>
       <th>2</th>
       <td>CTV_60_GY</td>
       <td>190.980434</td>
+      <td>190.980434</td>
     </tr>
     <tr>
       <th>3</th>
       <td>PTV60</td>
-      <td>280.184746</td>
+      <td>280.199051</td>
+      <td>280.199051</td>
     </tr>
     <tr>
       <th>4</th>
       <td>CORD</td>
-      <td>0.000000</td>
+      <td>24.590492</td>
+      <td>20.592213</td>
     </tr>
     <tr>
       <th>5</th>
       <td>L_PAROTID</td>
-      <td>0.946522</td>
+      <td>7.548332</td>
+      <td>3.736019</td>
     </tr>
     <tr>
       <th>6</th>
       <td>R_PAROTID</td>
-      <td>1.392365</td>
+      <td>12.681484</td>
+      <td>5.893707</td>
     </tr>
   </tbody>
 </table>
 </div></div>
+</div>
+</section>
+<section id="Dose-and-DVH-visualisation">
+<h2>Dose and DVH visualisation<a class="headerlink" href="#Dose-and-DVH-visualisation" title="Permalink to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">visualise_dose</span></code> function can produce a visualisation including the DVH and dose metrics.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">df_metrics</span> <span class="o">=</span> <span class="n">visualise_dose</span><span class="p">(</span>
+    <span class="n">ct_image</span><span class="p">,</span>
+    <span class="n">dose</span><span class="p">,</span>
+    <span class="n">structures</span><span class="p">,</span>
+    <span class="n">dvh</span><span class="o">=</span><span class="n">dvh</span><span class="p">,</span>
+    <span class="n">d_points</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">95</span><span class="p">],</span>
+    <span class="n">v_points</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span>
+    <span class="n">d_cc_points</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span>
+    <span class="n">structure_for_limits</span><span class="o">=</span><span class="n">dose</span><span class="o">&gt;</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">expansion_for_limits</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+    <span class="n">contour_cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;rainbow&quot;</span><span class="p">),</span>
+    <span class="n">dose_cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;inferno&quot;</span><span class="p">),</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;TCGA_CV_5977 Dose Metrics&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/_examples_dvh_analysis_17_0.png" src="../_images/_examples_dvh_analysis_17_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
 </div>
 </section>
 </section>
@@ -829,6 +1108,7 @@ div.rendered_html tbody tr:hover {
 <li><a class="reference internal" href="#Compute-DVH">Compute DVH</a></li>
 <li><a class="reference internal" href="#Plot-DVH">Plot DVH</a></li>
 <li><a class="reference internal" href="#DVH-Metrics">DVH Metrics</a></li>
+<li><a class="reference internal" href="#Dose-and-DVH-visualisation">Dose and DVH visualisation</a></li>
 </ul>
 </li>
 </ul>
