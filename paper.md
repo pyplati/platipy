@@ -12,7 +12,7 @@ authors:
     affiliation: "1, 3"
   - name: Robert N. Finnegan
     orcid: 0000-0003-4728-8462
-    affiliation: "2, 3"
+    affiliation: "2, 3, 4"
 affiliations:
  - name: South Western Sydney Clinical School, University of New South Wales, Australia
    index: 1
@@ -20,6 +20,8 @@ affiliations:
    index: 2
  - name: Ingham Institute for Applied Medical Research, Australia
    index: 3
+ - name: Northern Sydney Cancer Centre, Royal North Shore Hospital, Australia
+   index: 4
 date: 19 Jan 2023
 bibliography: paper.bib
 ---
