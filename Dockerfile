@@ -8,7 +8,7 @@ RUN pip install --upgrade pip
 COPY poetry.lock /platipy/poetry.lock
 COPY pyproject.toml /platipy/pyproject.toml
 
-RUN curl -sSL https://install.python-poetry.org | python -  --version 1.2.1
+RUN curl -sSL https://install.python-poetry.org | python -  --version 1.3.2
 RUN echo 'export PATH="/root/.local/bin:$PATH"' >> ~/.bashrc
 RUN echo "/usr/lib/python3.8/site-packages" >> /usr/local/lib/python3.8/dist-packages/site-packages.pth
 
