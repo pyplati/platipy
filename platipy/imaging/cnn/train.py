@@ -162,23 +162,42 @@ class ProbUNet(pl.LightningModule):
         return x
 
     def configure_optimizers(self):
+
+        params = [{
+            'params': self.prob_unet.unet.parameters(),
+            'weight_decay': self.hparams.weight_decay,
+            'lr': 1e-4
+        }]
+        for m in [self.prob_unet.prior.parameters(), self.prob_unet.posterior.parameters(), self.prob_unet.fcomb.parameters()]:
+            params += [{'params': m, 'weight_decay': self.hparams.weight_decay, 'lr': 1e-5}]
+
         optimizer = torch.optim.Adam(
-            self.parameters(),
-            lr=self.hparams.learning_rate,
-            weight_decay=self.hparams.weight_decay,
+            params
         )
 
-        # scheduler = torch.optim.lr_scheduler.LambdaLR(
-        #     optimizer, lr_lambda=[lambda epoch: self.hparams.lr_lambda ** (epoch)]
+        lr_lambda_unet = lambda epoch: self.hparams.lr_lambda ** (epoch)
+        lr_lambda_prob = lambda epoch: 0.99 ** (epoch)
+
+#        max_epochs = self.hparams.max_epochs
+#        lr_lambda = lambda x: np.interp(((np.sin(x/(max_epochs/8)) * np.sin(x/(max_epochs/4)))), np.array([-1,0,1]), np.array([0.1,1,10]))
+
+        #scheduler = torch.optim.lr_scheduler.LambdaLR(
+        #    optimizer, lr_lambda=[lr_lambda_unet, lr_lambda_prob, lr_lambda_prob, lr_lambda_prob]
+        #)
+        #scheduler = torch.optim.lr_scheduler.CyclicLR(
+        #    optimizer,
+        #    base_lr=self.hparams.learning_rate / 10,
+        #    max_lr=self.hparams.learning_rate,
+        #   step_size_up=20,
+        #   mode="exp_range",
+        #   gamma=0.999,
+        #   cycle_momentum=False
         # )
-        scheduler = torch.optim.lr_scheduler.CyclicLR(
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
-            base_lr=self.hparams.learning_rate / 10,
-            max_lr=self.hparams.learning_rate,
-            step_size_up=20,
-            mode="exp_range",
-            gamma=0.999,
-            cycle_momentum=False
+            50,
+            eta_min=1e-6,
+            verbose=True
         )
 
         return [optimizer], [scheduler]
@@ -662,8 +681,8 @@ class ProbUNet(pl.LightningModule):
                 samples = self.infer(
                     img,
                     sample_strategy="spaced",
-                    num_samples=7,
-                    spaced_range=[-3, 3],
+                    num_samples=5,
+                    spaced_range=[-2, 2],
                     preprocess=False,
                 )
             except Exception as e:
