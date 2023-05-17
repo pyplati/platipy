@@ -74,10 +74,10 @@ def extract(
 
 def generate_left_ventricle_segments(
     contours,
-    label_left_ventricle="LEFTVENTRICLE",
-    label_left_atrium="LEFTATRIUM",
-    label_right_ventricle="RIGHTVENTRICLE",
-    label_heart="WHOLEHEART",
+    label_left_ventricle="Ventricle_L",
+    label_left_atrium="Atrium_L",
+    label_right_ventricle="Ventricle_R",
+    label_heart="Heart",
     myocardium_thickness_mm=10,
     hole_fill_mm=3,
     optimiser_tol_degrees=1,
@@ -102,10 +102,13 @@ def generate_left_ventricle_segments(
     Args:
         contours (dict): A dictionary containing strings (label names) as keys and SimpleITK.Image
             (masks) as values. Must contain at least the LV, RV, MV, and whole heart.
-        label_left_ventricle (str): The name for the left ventricle mask (contour)
-        label_left_atrium (str): The name for the left atrium mask (contour)
-        label_right_ventricle (str): The name for the right ventricle mask (contour)
-        label_heart (str): The name for the heart mask (contour)
+        label_left_ventricle (str, optional): The name for the left ventricle mask (contour).
+            Defaults to Ventricle_L.
+        label_left_atrium (str, optional): The name for the left atrium mask (contour). Defaults to
+            Atrium_L.
+        label_right_ventricle (str, optional): The name for the right ventricle mask (contour).
+            Defaults to Ventricle_R.
+        label_heart (str, optional): The name for the heart mask (contour). Defaults to Heart.
         myocardium_thickness_mm (float, optional): Moycardial thickness, in millimetres.
             Defaults to 10.
         hole_fill_mm (float, optional): Holes smaller than this get filled in. Defaults to 3.
@@ -125,12 +128,7 @@ def generate_left_ventricle_segments(
     # Initial set up
     label_mitral_valve = "MITRALVALVE"
 
-    label_list = [
-        label_left_ventricle,
-        label_left_atrium,
-        label_right_ventricle,
-        label_heart
-    ]
+    label_list = [label_left_ventricle, label_left_atrium, label_right_ventricle, label_heart]
     working_contours = copy.deepcopy({s: contours[s] for s in label_list})
 
     label_list.append(label_mitral_valve)
@@ -230,7 +228,6 @@ def generate_left_ventricle_segments(
         print("  Beginning alignment process")
 
     while n < optimiser_max_iter and np.abs(rotation_angle) > optimiser_tol_radians:
-
         n += 1
 
         # Find the LV apex
@@ -418,7 +415,6 @@ def generate_left_ventricle_segments(
     # We are now going to compute the segments in cylindical sections
     # First up - apical slices
     for n in range(inf_limit_lv, apical_extent):
-
         label_lv_myo_slice = label_lv_myo[:, :, n]
 
         # We will need numpy arrays here
@@ -483,7 +479,6 @@ def generate_left_ventricle_segments(
         print("  Computing mid segments")
     # Second up - mid slices
     for n in range(apical_extent, mid_extent):
-
         label_lv_myo_slice = label_lv_myo[:, :, n]
 
         # We will need numpy arrays here
@@ -560,7 +555,6 @@ def generate_left_ventricle_segments(
         print("  Computing basal segments")
     # Third up - basal slices
     for n in range(mid_extent, basal_extent):
-
         label_lv_myo_slice = label_lv_myo[:, :, n]
 
         # We will need numpy arrays here
@@ -682,7 +676,7 @@ def generate_left_ventricle_segments(
             cb_index,
         )
 
-        output_contours[segment + 1] = new_structure
+        output_contours[f"Ventricle_L_Segment{segment + 1}"] = new_structure
 
     if verbose:
         print("Complete!")

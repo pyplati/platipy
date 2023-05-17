@@ -29,6 +29,7 @@ PlatiPy documentation
     _examples/atlas_segmentation
     _examples/contour_comparison
     _examples/dvh_analysis
+    _examples/left_ventricle_17_segments
     
 .. toctree::
     :caption: Reference

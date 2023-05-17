@@ -26,6 +26,12 @@ Geometry
 .. automodule:: platipy.imaging.utils.geometry
     :members:
 
+Left Ventricle
+==============
+
+.. automodule:: platipy.imaging.utils.ventricle
+    :members:
+
 IO
 ==
 

@@ -31,6 +31,10 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/cardiac_segmentation.ipynb)
 
+### Example to Perform Cardiac Left Ventricle 17-segment model Segmentation
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/left_ventricle_17_segments.ipynb)
+
 ### Example to Perform Automatic Bronchial Tree Segmentation
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/bronchus_segmentation.ipynb)
