@@ -171,6 +171,7 @@
 <li class="toctree-l1"><a class="reference internal" href="_examples/atlas_segmentation.html">Atlas Segmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="_examples/contour_comparison.html">Contour Comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_examples/left_ventricle_17_segments.html">Cardiac LV 17-segment model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current">
@@ -351,7 +352,7 @@ This would typically be PatientName, or PatientID, although any DICOM header tag
 the Nitfti input image OR a directory containing a DICOM series.</p>
 <p>Optionally, pass in a configuration file for the segmentation algorithm. Output the default
 configuration for an algorithm using the –default flag.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>segmentation<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">{</span>bronchus<span class="o">}</span><span class="w"> </span><span class="o">[</span>INPUT_PATH<span class="o">]</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>segmentation<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">{</span>cardiac<span class="p">|</span>bronchus<span class="o">}</span><span class="w"> </span><span class="o">[</span>INPUT_PATH<span class="o">]</span>
 </pre></div>
 </div>
 <p class="rubric">Options</p>

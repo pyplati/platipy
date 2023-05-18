@@ -171,6 +171,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../_examples/atlas_segmentation.html">Atlas Segmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../_examples/contour_comparison.html">Contour Comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../_examples/dvh_analysis.html">DVH Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_examples/left_ventricle_17_segments.html">Cardiac LV 17-segment model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -414,8 +415,114 @@ Defaults to 10.</p></li>
 </dd></dl>
 
 </section>
-<section id="platipy-imaging-utils-vessel-module">
-<h2>platipy.imaging.utils.vessel module<a class="headerlink" href="#platipy-imaging-utils-vessel-module" title="Permalink to this heading">#</a></h2>
+<section id="module-platipy.imaging.utils.vessel">
+<span id="platipy-imaging-utils-vessel-module"></span><h2>platipy.imaging.utils.vessel module<a class="headerlink" href="#module-platipy.imaging.utils.vessel" title="Permalink to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.utils.vessel.com_from_image_list">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></span><span class="sig-name descname"><span class="pre">com_from_image_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sitk_image_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'count'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'z'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.com_from_image_list" title="Permalink to this definition">#</a></dt>
+<dd><dl class="simple">
+<dt>Input: list of SimpleITK images</dt><dd><p>minimum total slice area required for the tube to be inserted at that slice
+scan direction: x = sagittal, y=coronal, z=axial</p>
+</dd>
+</dl>
+<p>Output: mean centre of mass positions, with shape (NumSlices, 2)
+Note: positions are converted into image space by default</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.utils.vessel.convert_simpleitk_to_vtk">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></span><span class="sig-name descname"><span class="pre">convert_simpleitk_to_vtk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.convert_simpleitk_to_vtk" title="Permalink to this definition">#</a></dt>
+<dd><p>Converts from SimpleITK to VTK representation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>img</strong> (<em>SimpleITK.Image</em>) – The input image.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The VTK image.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.utils.vessel.simpleitk_image_from_vtk_tube">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></span><span class="sig-name descname"><span class="pre">simpleitk_image_from_vtk_tube</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sitk_reference_image</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.simpleitk_image_from_vtk_tube" title="Permalink to this definition">#</a></dt>
+<dd><p>Input: VTK tube, referenceImage (used for spacing, etc.)
+Output: SimpleITK image
+Note: Uses binary output (background 0, foreground 1)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.utils.vessel.tube_from_com_list">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></span><span class="sig-name descname"><span class="pre">tube_from_com_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">com_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.tube_from_com_list" title="Permalink to this definition">#</a></dt>
+<dd><p>Input: image-space positions along the tube centreline.
+Output: VTK tube
+Note: positions do not have to be continuous - the tube is interpolated in real space</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.utils.vessel.vessel_spline_generation">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></span><span class="sig-name descname"><span class="pre">vessel_spline_generation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atlas_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vessel_name_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vessel_radius_mm_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_condition_type_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_condition_value_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_direction_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atlas_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DIR'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.vessel_spline_generation" title="Permalink to this definition">#</a></dt>
+<dd><p>Generates a splined vessel from a list of binary masks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_image</strong> (<em>SimpleITK.Image</em>) – The reference image to copy information from.</p></li>
+<li><p><strong>atlas_set</strong> (<em>dict</em>) – <p>A dictionary conforming to the following format:
+{ atlas_id:</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>LABEL:</dt><dd><dl class="simple">
+<dt>{</dt><dd><p>structure_a: SimpleITK.Image,
+structure_b: SimpleITK.Image,
+structure_c: SimpleITK.Image,
+…</p>
+</dd>
+</dl>
+<p>}</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p>}
+where LABEL should be passed as the atlas_label argument, and atlas_id is some label
+for each atlas.</p>
+</p></li>
+<li><p><strong>vessel_name_list</strong> (<em>list</em>) – The list of vessels to generate splines for.</p></li>
+<li><p><strong>vessel_radius_mm_dict</strong> (<em>list</em>) – A dictionary specifying the radius for each vessel.</p></li>
+<li><p><strong>stop_condition_type_dict</strong> (<em>dict</em>) – A dictionary specifying the stopping condition for each
+vessel. Available options are “count” - stopping at a particular number of atlases, or
+“area” - stopping at a particular total area (in square pixels). Recommendation is to
+use “count” with a stop_condition_value (see below) of ~1/3 the number of atlases.</p></li>
+<li><p><strong>stop_condition_value_dict</strong> (<em>dict</em>) – A dictionary specifying the stopping value for each
+vessel.</p></li>
+<li><p><strong>scan_direction_dict</strong> (<em>dict</em>) – A dictionary specifying the direction to spline each vessel.
+“x”: sagittal, “y”: coronal, “z”: axial.</p></li>
+<li><p><strong>atlas_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The atlas label. Defaults to “DIR”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>The output dictionary, with keys as the vessel names and values as the binary labels</dt><dd><p>defining the splined vessels</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.utils.vessel.write_vtk_tube_to_file">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.vessel.</span></span><span class="sig-name descname"><span class="pre">write_vtk_tube_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.vessel.write_vtk_tube_to_file" title="Permalink to this definition">#</a></dt>
+<dd><p>Input: VTK tube
+Output: exit success
+Note: format is XML VTP</p>
+</dd></dl>
+
 </section>
 <section id="module-platipy.imaging.utils">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-platipy.imaging.utils" title="Permalink to this heading">#</a></h2>
@@ -478,7 +585,15 @@ Defaults to 10.</p></li>
 <li><a class="reference internal" href="#platipy.imaging.utils.valve.generate_valve_using_cylinder"><code class="docutils literal notranslate"><span class="pre">generate_valve_using_cylinder()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#platipy-imaging-utils-vessel-module">platipy.imaging.utils.vessel module</a></li>
+<li><a class="reference internal" href="#module-platipy.imaging.utils.vessel">platipy.imaging.utils.vessel module</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.utils.vessel.com_from_image_list"><code class="docutils literal notranslate"><span class="pre">com_from_image_list()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.vessel.convert_simpleitk_to_vtk"><code class="docutils literal notranslate"><span class="pre">convert_simpleitk_to_vtk()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.vessel.simpleitk_image_from_vtk_tube"><code class="docutils literal notranslate"><span class="pre">simpleitk_image_from_vtk_tube()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.vessel.tube_from_com_list"><code class="docutils literal notranslate"><span class="pre">tube_from_com_list()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.vessel.vessel_spline_generation"><code class="docutils literal notranslate"><span class="pre">vessel_spline_generation()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.vessel.write_vtk_tube_to_file"><code class="docutils literal notranslate"><span class="pre">write_vtk_tube_to_file()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-platipy.imaging.utils">Module contents</a></li>
 </ul>
 </li>

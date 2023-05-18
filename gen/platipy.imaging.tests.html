@@ -171,6 +171,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../_examples/atlas_segmentation.html">Atlas Segmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../_examples/contour_comparison.html">Contour Comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../_examples/dvh_analysis.html">DVH Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_examples/left_ventricle_17_segments.html">Cardiac LV 17-segment model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -319,8 +320,31 @@ data will be fetched.</p>
 </dd></dl>
 
 </section>
-<section id="platipy-imaging-tests-test-cardiac-module">
-<h2>platipy.imaging.tests.test_cardiac module<a class="headerlink" href="#platipy-imaging-tests-test-cardiac-module" title="Permalink to this heading">#</a></h2>
+<section id="module-platipy.imaging.tests.test_cardiac">
+<span id="platipy-imaging-tests-test-cardiac-module"></span><h2>platipy.imaging.tests.test_cardiac module<a class="headerlink" href="#module-platipy.imaging.tests.test_cardiac" title="Permalink to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.tests.test_cardiac.cardiac_data">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.tests.test_cardiac.</span></span><span class="sig-name descname"><span class="pre">cardiac_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.test_cardiac.cardiac_data" title="Permalink to this definition">#</a></dt>
+<dd><p>Generates the data needed for the cardiac tests</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict – Data for cardiac test</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.tests.test_cardiac.test_cardiac_service">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.tests.test_cardiac.</span></span><span class="sig-name descname"><span class="pre">test_cardiac_service</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cardiac_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.test_cardiac.test_cardiac_service" title="Permalink to this definition">#</a></dt>
+<dd><p>An end-to-end test to check that the cardiac service is running as expected</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.tests.test_cardiac.test_cardiac_structure_guided_service">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.tests.test_cardiac.</span></span><span class="sig-name descname"><span class="pre">test_cardiac_structure_guided_service</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cardiac_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.tests.test_cardiac.test_cardiac_structure_guided_service" title="Permalink to this definition">#</a></dt>
+<dd><p>An end-to-end test to check that the cardiac structure guided service is running as expected</p>
+</dd></dl>
+
 </section>
 <section id="module-platipy.imaging.tests.test_visualiser">
 <span id="platipy-imaging-tests-test-visualiser-module"></span><h2>platipy.imaging.tests.test_visualiser module<a class="headerlink" href="#module-platipy.imaging.tests.test_visualiser" title="Permalink to this heading">#</a></h2>
@@ -402,7 +426,12 @@ data will be fetched.</p>
 <li><a class="reference internal" href="#platipy.imaging.tests.test_bronchus.test_lung_segmentation"><code class="docutils literal notranslate"><span class="pre">test_lung_segmentation()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#platipy-imaging-tests-test-cardiac-module">platipy.imaging.tests.test_cardiac module</a></li>
+<li><a class="reference internal" href="#module-platipy.imaging.tests.test_cardiac">platipy.imaging.tests.test_cardiac module</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.tests.test_cardiac.cardiac_data"><code class="docutils literal notranslate"><span class="pre">cardiac_data()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.tests.test_cardiac.test_cardiac_service"><code class="docutils literal notranslate"><span class="pre">test_cardiac_service()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.tests.test_cardiac.test_cardiac_structure_guided_service"><code class="docutils literal notranslate"><span class="pre">test_cardiac_structure_guided_service()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-platipy.imaging.tests.test_visualiser">platipy.imaging.tests.test_visualiser module</a><ul>
 <li><a class="reference internal" href="#platipy.imaging.tests.test_visualiser.nifti_data"><code class="docutils literal notranslate"><span class="pre">nifti_data()</span></code></a></li>
 <li><a class="reference internal" href="#platipy.imaging.tests.test_visualiser.test_comparison_overlay_visualisation"><code class="docutils literal notranslate"><span class="pre">test_comparison_overlay_visualisation()</span></code></a></li>

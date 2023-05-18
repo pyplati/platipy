@@ -171,6 +171,7 @@
 <li class="toctree-l1"><a class="reference internal" href="_examples/atlas_segmentation.html">Atlas Segmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="_examples/contour_comparison.html">Contour Comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="_examples/dvh_analysis.html">DVH Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_examples/left_ventricle_17_segments.html">Cardiac LV 17-segment model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current">
@@ -701,6 +702,64 @@ If False, direction is taken into account, so angle can be obtuse. Defaults to T
 </dd></dl>
 
 </section>
+<section id="module-platipy.imaging.utils.ventricle">
+<span id="left-ventricle"></span><h2>Left Ventricle<a class="headerlink" href="#module-platipy.imaging.utils.ventricle" title="Permalink to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.utils.ventricle.extract">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.ventricle.</span></span><span class="sig-name descname"><span class="pre">extract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_max</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_area_mm2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.ventricle.extract" title="Permalink to this definition">#</a></dt>
+<dd><p>Utility function to extract relevant voxels from a mask based on polar coordinates</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="platipy.imaging.utils.ventricle.generate_left_ventricle_segments">
+<span class="sig-prename descclassname"><span class="pre">platipy.imaging.utils.ventricle.</span></span><span class="sig-name descname"><span class="pre">generate_left_ventricle_segments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contours</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_left_ventricle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Ventricle_L'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_left_atrium</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Atrium_L'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_right_ventricle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Ventricle_R'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_heart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Heart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">myocardium_thickness_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hole_fill_mm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimiser_tol_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimiser_max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_area_mm2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.utils.ventricle.generate_left_ventricle_segments" title="Permalink to this definition">#</a></dt>
+<dd><p>Generates the 17 segments of the left vetricle</p>
+<dl class="simple">
+<dt>This functions works as follows:</dt><dd><ol class="arabic simple">
+<li><p>Heart volume is rotated to align the long axis to the z Cartesian (physical) space.
+Usually means it aligns with the axial axis (for normal simulation CT)</p></li>
+<li><p>An optimiser adjusts the orientation to refine this alignment to the vector defined by
+MV COM - LV apex axis (long axis)</p></li>
+<li><p>Left ventricle is divided into thirds along the long axis</p></li>
+<li><p>Myocardium is defined as the outer 10mm</p></li>
+<li><p>Geometric operations are used to define the segments</p></li>
+<li><p>Everything is rotated back to the normal orientation</p></li>
+<li><p>Some post-processing <em>magic</em></p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contours</strong> (<em>dict</em>) – A dictionary containing strings (label names) as keys and SimpleITK.Image
+(masks) as values. Must contain at least the LV, RV, MV, and whole heart.</p></li>
+<li><p><strong>label_left_ventricle</strong> (<em>str</em><em>, </em><em>optional</em>) – The name for the left ventricle mask (contour).
+Defaults to Ventricle_L.</p></li>
+<li><p><strong>label_left_atrium</strong> (<em>str</em><em>, </em><em>optional</em>) – The name for the left atrium mask (contour). Defaults to
+Atrium_L.</p></li>
+<li><p><strong>label_right_ventricle</strong> (<em>str</em><em>, </em><em>optional</em>) – The name for the right ventricle mask (contour).
+Defaults to Ventricle_R.</p></li>
+<li><p><strong>label_heart</strong> (<em>str</em><em>, </em><em>optional</em>) – The name for the heart mask (contour). Defaults to Heart.</p></li>
+<li><p><strong>myocardium_thickness_mm</strong> (<em>float</em><em>, </em><em>optional</em>) – Moycardial thickness, in millimetres.
+Defaults to 10.</p></li>
+<li><p><strong>hole_fill_mm</strong> (<em>float</em><em>, </em><em>optional</em>) – Holes smaller than this get filled in. Defaults to 3.</p></li>
+<li><p><strong>optimiser_tol_degrees</strong> (<em>float</em><em>, </em><em>optional</em>) – Optimiser tolerance (change in angle per iter).
+Defaults to 1, which typically requires 3-4 iterations.</p></li>
+<li><p><strong>optimiser_max_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum optimiser iterations. Defaults to 10</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Print of information for debugging. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The left ventricle segment dictionary, with labels (int) as keys and the binary
+label defining the segment (SimpleITK.Image) as values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="module-platipy.imaging.utils.io">
 <span id="io"></span><h2>IO<a class="headerlink" href="#module-platipy.imaging.utils.io" title="Permalink to this heading">#</a></h2>
 <dl class="py function">
@@ -817,6 +876,11 @@ much compression to use. Should be an integer between 0-9. Defaults to 9.</p></l
 <li><a class="reference internal" href="#module-platipy.imaging.utils.geometry">Geometry</a><ul>
 <li><a class="reference internal" href="#platipy.imaging.utils.geometry.rotate_image"><code class="docutils literal notranslate"><span class="pre">rotate_image()</span></code></a></li>
 <li><a class="reference internal" href="#platipy.imaging.utils.geometry.vector_angle"><code class="docutils literal notranslate"><span class="pre">vector_angle()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-platipy.imaging.utils.ventricle">Left Ventricle</a><ul>
+<li><a class="reference internal" href="#platipy.imaging.utils.ventricle.extract"><code class="docutils literal notranslate"><span class="pre">extract()</span></code></a></li>
+<li><a class="reference internal" href="#platipy.imaging.utils.ventricle.generate_left_ventricle_segments"><code class="docutils literal notranslate"><span class="pre">generate_left_ventricle_segments()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-platipy.imaging.utils.io">IO</a><ul>

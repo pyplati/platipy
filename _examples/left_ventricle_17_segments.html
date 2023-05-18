@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Visualise Images" href="visualise.html" /><link rel="prev" title="Cardiac Segmentation" href="../cardiac.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Image Visualiser" href="../visualiser.html" /><link rel="prev" title="DVH Analysis" href="dvh_analysis.html" />
 
     <!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>Bronchus Segmentation - PlatiPy documentation</title>
+        <title>Cardiac LV 17-segment model - PlatiPy documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
@@ -161,17 +161,17 @@
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Projects</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../cardiac.html">Cardiac Segmentation</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Bronchus Segmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bronchus_segmentation.html">Bronchus Segmentation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="visualise.html">Visualise Images</a></li>
 <li class="toctree-l1"><a class="reference internal" href="atlas_segmentation.html">Atlas Segmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contour_comparison.html">Contour Comparison</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dvh_analysis.html">DVH Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="left_ventricle_17_segments.html">Cardiac LV 17-segment model</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Cardiac LV 17-segment model</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -472,12 +472,9 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<section id="Bronchus-Segmentation">
-<h1>Bronchus Segmentation<a class="headerlink" href="#Bronchus-Segmentation" title="Permalink to this heading">#</a></h1>
-<p>This example demonstrated how to use the bronchial tree segmentation algorithm used in:</p>
-<p><strong>W. Ghandourh, J. Dowling, P. Chlap et al., “Medical Dosimetry Assessing tumor centrality in lung stereotactic ablative body radiotherapy ( SABR ): the effects of variations in bronchial tree delineation and potential for automated methods,” vol. 46, pp. 94–101, 2021, doi:**`10.1016/j.meddos.2020.09.004 &lt;https://doi.org/10.1016/j.meddos.2020.09.004&gt;`__**.</strong></p>
-<section id="Import-Modules">
-<h2>Import Modules<a class="headerlink" href="#Import-Modules" title="Permalink to this heading">#</a></h2>
+<section id="Cardiac-LV-17-segment-model">
+<h1>Cardiac LV 17-segment model<a class="headerlink" href="#Cardiac-LV-17-segment-model" title="Permalink to this heading">#</a></h1>
+<p>This notebook demonstrates how to use the geometric algorithm to automatically segment the 17-segment Left Ventricle myocardium model defined by the AHA: <a class="reference external" href="https://www.ahajournals.org/doi/pdf/10.1161/hc0402.102975">https://www.ahajournals.org/doi/pdf/10.1161/hc0402.102975</a></p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -485,54 +482,78 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">platipy</span>
 <span class="k">except</span><span class="p">:</span>
-    <span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>platipy
+    <span class="c1"># Install platipy with the &#39;cardiac&#39; extra since that contains some extra libraries we need.</span>
+    <span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>platipy<span class="o">[</span>cardiac<span class="o">]</span>
     <span class="kn">import</span> <span class="nn">platipy</span>
 
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
 <span class="kn">import</span> <span class="nn">SimpleITK</span> <span class="k">as</span> <span class="nn">sitk</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="o">%</span><span class="k">matplotlib</span> inline
-
-<span class="kn">from</span> <span class="nn">platipy.imaging.tests.data</span> <span class="kn">import</span> <span class="n">get_lung_nifti</span>
-<span class="kn">from</span> <span class="nn">platipy.imaging.projects.bronchus.run</span> <span class="kn">import</span> <span class="n">run_bronchus_segmentation</span>
 <span class="kn">from</span> <span class="nn">platipy.imaging</span> <span class="kn">import</span> <span class="n">ImageVisualiser</span>
 <span class="kn">from</span> <span class="nn">platipy.imaging.label.utils</span> <span class="kn">import</span> <span class="n">get_com</span>
-</pre></div>
+<span class="kn">from</span> <span class="nn">platipy.imaging.utils.io</span> <span class="kn">import</span> <span class="n">write_nrrd_structure_set</span>
+<span class="kn">from</span> <span class="nn">platipy.imaging.utils.ventricle</span> <span class="kn">import</span> <span class="n">generate_left_ventricle_segments</span>
+
+<span class="kn">from</span> <span class="nn">platipy.imaging.projects.cardiac.run</span> <span class="kn">import</span> <span class="n">install_open_atlas</span>
+<br/></pre></div>
 </div>
 </div>
-</section>
-<section id="Download-Test-Data">
-<h2>Download Test Data<a class="headerlink" href="#Download-Test-Data" title="Permalink to this heading">#</a></h2>
-<p>This will download lung cancer patient CT scans, with contours of several structures. This only has to be done once - if it is ran again don’t worry, the same data will not be downloaded again!</p>
+<section id="Download-Sample-Data">
+<h2>Download Sample Data<a class="headerlink" href="#Download-Sample-Data" title="Permalink to this heading">#</a></h2>
+<p>PlatiPy’s cardiac segmentation tool uses an atlas as part of that segmentation. For this example we download that atlas to demonstrate the 17-segment auto-segmentation.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_path</span> <span class="o">=</span> <span class="n">get_lung_nifti</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atlas_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;data/atlas&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">atlas_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="n">install_open_atlas</span><span class="p">(</span><span class="n">atlas_path</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </section>
-<section id="Load-Test-Image">
-<h2>Load Test Image<a class="headerlink" href="#Load-Test-Image" title="Permalink to this heading">#</a></h2>
-<p>Read in the image we want to automatically segment</p>
+<section id="Read-Data">
+<h2>Read Data<a class="headerlink" href="#Read-Data" title="Permalink to this heading">#</a></h2>
+<p>We read in some of the data we downloaded. The required structures are: Left Ventricle, Left Atrium, Right Ventricle and the whole heart. The CT image is loaded but is only needed for visualisation purposes.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_pat_path</span> <span class="o">=</span> <span class="n">data_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;LCTSC-Test-S1-201&quot;</span><span class="p">)</span>
-<span class="n">test_image</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;IMAGES/LCTSC_TEST_S1_201_0_CT_0.nii.gz&quot;</span><span class="p">)))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">patid</span> <span class="o">=</span> <span class="s2">&quot;LUNG1-002&quot;</span>
+
+<span class="n">image_path</span> <span class="o">=</span> <span class="n">atlas_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">patid</span><span class="p">,</span> <span class="s2">&quot;IMAGES&quot;</span><span class="p">,</span> <span class="s2">&quot;CT.nii.gz&quot;</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">image_path</span><span class="p">))</span> <span class="c1"># onyl used for visualisation</span>
+
+<span class="n">contours</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">lv_path</span> <span class="o">=</span> <span class="n">atlas_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">patid</span><span class="p">,</span> <span class="s2">&quot;STRUCTURES&quot;</span><span class="p">,</span> <span class="s2">&quot;Ventricle_L.nii.gz&quot;</span><span class="p">)</span>
+<span class="n">contours</span><span class="p">[</span><span class="s2">&quot;Ventricle_L&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">lv_path</span><span class="p">))</span>
+
+<span class="n">la_path</span> <span class="o">=</span> <span class="n">atlas_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">patid</span><span class="p">,</span> <span class="s2">&quot;STRUCTURES&quot;</span><span class="p">,</span> <span class="s2">&quot;Atrium_L.nii.gz&quot;</span><span class="p">)</span>
+<span class="n">contours</span><span class="p">[</span><span class="s2">&quot;Atrium_L&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">la_path</span><span class="p">))</span>
+
+<span class="n">rv_path</span> <span class="o">=</span> <span class="n">atlas_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">patid</span><span class="p">,</span> <span class="s2">&quot;STRUCTURES&quot;</span><span class="p">,</span> <span class="s2">&quot;Ventricle_R.nii.gz&quot;</span><span class="p">)</span>
+<span class="n">contours</span><span class="p">[</span><span class="s2">&quot;Ventricle_R&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">rv_path</span><span class="p">))</span>
+
+<span class="n">heart_path</span> <span class="o">=</span> <span class="n">atlas_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">patid</span><span class="p">,</span> <span class="s2">&quot;STRUCTURES&quot;</span><span class="p">,</span> <span class="s2">&quot;Heart.nii.gz&quot;</span><span class="p">)</span>
+<span class="n">contours</span><span class="p">[</span><span class="s2">&quot;Heart&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">ReadImage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">heart_path</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 </section>
-<section id="Run-Auto-segmentation">
-<h2>Run Auto-segmentation<a class="headerlink" href="#Run-Auto-segmentation" title="Permalink to this heading">#</a></h2>
-<p>This will take some time, and will print updates along the way</p>
+<section id="Generate-17-LV-Segments">
+<h2>Generate 17 LV Segments<a class="headerlink" href="#Generate-17-LV-Segments" title="Permalink to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">generate_left_ventricle_segments</span></code> function is run which returns a dictionary where the key is the segment ID (i.e. Ventricle_L_Segment1, Ventricle_L_Segment2, …) and the value is the segment auto-contour (as a SimpleITK.Image).</p>
+<p>See the <a class="reference external" href="https://pyplati.github.io/platipy/utils.html#module-platipy.imaging.utils.ventricle">documentation</a> for additional options you can specify.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">auto_structures</span> <span class="o">=</span> <span class="n">run_bronchus_segmentation</span><span class="p">(</span><span class="n">test_image</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lv_segments</span> <span class="o">=</span> <span class="n">generate_left_ventricle_segments</span><span class="p">(</span><span class="n">contours</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -541,165 +562,75 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Generating Lung Mask...
-Generating Lung Mask... Done
--------------------------------
-summary of lung intensities.  Mean: -689.7705964524534 sd: 164.05080332949413 median: -729.79296875
-*Airway opening: [257, 196, 108]
-*Voxel HU at opening: 1
---------------------------------------------
-Extracting airways.  Iteration: 0
-*Lung Mask HU: -750
-*Slices from sup for airway opening: 3
-No labels found in mask
---------------------------------------------
-Extracting airways.  Iteration: 1
-*Lung Mask HU: -775
-*Slices from sup for airway opening: 3
-No labels found in mask
---------------------------------------------
-Extracting airways.  Iteration: 2
-*Lung Mask HU: -800
-*Slices from sup for airway opening: 3
-No labels found in mask
---------------------------------------------
-Extracting airways.  Iteration: 3
-*Lung Mask HU: -825
-*Slices from sup for airway opening: 3
-No labels found in mask
---------------------------------------------
-Extracting airways.  Iteration: 4
-*Lung Mask HU: -850
-*Slices from sup for airway opening: 3
-No labels found in mask
---------------------------------------------
-Extracting airways.  Iteration: 5
-*Lung Mask HU: -900
-*Slices from sup for airway opening: 3
-No labels found in mask
---------------------------------------------
-Extracting airways.  Iteration: 6
-*Lung Mask HU: -700
-*Slices from sup for airway opening: 3
-No labels found in mask
---------------------------------------------
-Extracting airways.  Iteration: 7
-*Lung Mask HU: -950
-*Slices from sup for airway opening: 3
-No labels found in mask
---------------------------------------------
-Extracting airways.  Iteration: 8
-*Lung Mask HU: -650
-*Slices from sup for airway opening: 3
-No labels found in mask
-*Airway opening: [259, 201, 102]
-*Voxel HU at opening: 1
---------------------------------------------
-Extracting airways.  Iteration: 9
-*Lung Mask HU: -750
-*Slices from sup for airway opening: 10
- Airway Mask size passed: 90033
- Roundness: 0.518584427381907
- Elongation: 3.314440100646848
---------------------------------------------
-Extracting airways.  Iteration: 10
-*Lung Mask HU: -775
-*Slices from sup for airway opening: 10
- Airway Mask size passed: 87987
- Roundness: 0.5206611338884475
- Elongation: 3.3711273033085107
---------------------------------------------
-Extracting airways.  Iteration: 11
-*Lung Mask HU: -800
-*Slices from sup for airway opening: 10
- Airway Mask size passed: 86620
- Roundness: 0.5190044294760688
- Elongation: 3.3937056078327137
---------------------------------------------
-Extracting airways.  Iteration: 12
-*Lung Mask HU: -825
-*Slices from sup for airway opening: 10
- Airway Mask size passed: 84374
- Roundness: 0.5232948774582152
- Elongation: 3.4940802535337427
---------------------------------------------
-Extracting airways.  Iteration: 13
-*Lung Mask HU: -850
-*Slices from sup for airway opening: 10
- Airway Mask size passed: 81954
- Roundness: 0.5269199707802875
- Elongation: 3.5721722733604353
---------------------------------------------
-Extracting airways.  Iteration: 14
-*Lung Mask HU: -900
-*Slices from sup for airway opening: 10
- Airway Mask size passed: 76060
- Roundness: 0.537612318167935
- Elongation: 3.944671084976228
---------------------------------------------
-Extracting airways.  Iteration: 15
-*Lung Mask HU: -700
-*Slices from sup for airway opening: 10
- Airway Mask size failed (&gt; 150000): 1659413
- Roundness: 0.5537332413709152
- Elongation: 1.2750023134566382
---------------------------------------------
-Extracting airways.  Iteration: 16
-*Lung Mask HU: -950
-*Slices from sup for airway opening: 10
- Airway Mask size passed: 59652
- Roundness: 0.6014459998871523
- Elongation: 6.3515641371955995
---------------------------------------------
-Extracting airways.  Iteration: 17
-*Lung Mask HU: -650
-*Slices from sup for airway opening: 10
- Airway Mask size failed (&gt; 150000): 2933049
- Roundness: 0.4764602838161556
- Elongation: 1.4176602059683505
-Selected Lung Mask HU: -750
- Cropping from slice: 63 + 13 slices
+Beginning LV segmentation algorithm.
+Module 1: Cropping and initial alignment.
+  Images cropped. Volume reduction: 1.000
+  Alignment computed.
+    Cardiac axis:     [-0.51538678 -0.8567381   0.01939842]
+    Rotation axis:    [-0.8567381  -0.01939842  0.        ]
+    Rotation angle:   1.029337402528849
+    Rotation centre:  (53.54705757769439, -33.01797661455572, -33.16549199516518)
+Module 2: LV orientation alignment.
+  Optimiser tolerance (degrees) = 1
+  Beginning alignment process
+    N:                1
+    LV apex:          [  92.12689862  -29.34676304 -100.3999939 ]
+    MV COM:           [ 38.60792831 -34.98956324 -14.50176381]
+    LV axis:          [ 53.51897031   5.6428002  -85.89823009]
+    Rotation axis:    [  5.6428002  -53.51897031   0.        ]
+    Rotation centre:  [ 65.36741347 -32.16816314 -57.45087885]
+    Rotation angle:   0.5596804399185753
+    N:                2
+    LV apex:          [  74.15895319  -25.37873232 -112.3999939 ]
+    MV COM:           [ 65.39114152 -32.17008994  -6.80293245]
+    LV axis:          [   8.76781167    6.79135762 -105.59706144]
+    Rotation axis:    [ 6.79135762 -8.76781167  0.        ]
+    Rotation centre:  [ 69.77504736 -28.77441113 -59.60146318]
+    Rotation angle:   0.10464206469597664
+    N:                3
+    LV apex:          [  71.08173551  -27.39587178 -112.3999939 ]
+    MV COM:           [ 69.79644172 -28.76506973  -6.63819614]
+    LV axis:          [   1.28529379    1.36919795 -105.76179775]
+    Rotation axis:    [ 1.36919795 -1.28529379  0.        ]
+    Rotation centre:  [ 70.43908861 -28.08047075 -59.51909502]
+    Rotation angle:   0.01775451288290292
+    N:                4
+    LV apex:          [  70.10473551  -28.37287177 -112.3999939 ]
+    MV COM:           [ 70.77344171 -27.78806973  -6.63819614]
+    LV axis:          [  -0.6687062    -0.58480204 -105.76179775]
+    Rotation axis:    [-0.58480204  0.6687062   0.        ]
+    Rotation centre:  [ 70.43908861 -28.08047075 -59.51909502]
+    Rotation angle:   0.008399315304762168
+Module 3: Myocardium generation.
+  Apex (long axis) slice:       9
+  Apical section extent slice:  19
+  Mid section extent slice:     29
+  Basal section extent slice:   40
+    DeltaCut (DC):  10
+    Extent:         31
+Module 4: Segment generation.
+  RV basal slices:  [29 30 31 32 33]
+  RV insertion angle (basal section):  1.5480729659532555
+ Apical LV-RV COM angle:  3.0408420431762195
+  Computing apical segments
+  Computing mid segments
+  Computing basal segments
+  Module 5: Re-orientation.
+Complete!
 </pre></div></div>
 </div>
 </section>
-<section id="Save-segmentations">
-<h2>Save segmentations<a class="headerlink" href="#Save-segmentations" title="Permalink to this heading">#</a></h2>
-<p>Optionally write the automatic segmentations to disk</p>
+<section id="Visualise-Segments">
+<h2>Visualise Segments<a class="headerlink" href="#Visualise-Segments" title="Permalink to this heading">#</a></h2>
+<p>Here we generate a figure using the CT loaded to visualise the results.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_directory</span> <span class="o">=</span> <span class="n">test_pat_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;SEGMENTATIONS&quot;</span><span class="p">)</span>
-<span class="n">output_directory</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">struct_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">auto_structures</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-    <span class="n">sitk</span><span class="o">.</span><span class="n">WriteImage</span><span class="p">(</span><span class="n">auto_structures</span><span class="p">[</span><span class="n">struct_name</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_directory</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">struct_name</span><span class="si">}</span><span class="s2">.nii.gz&quot;</span><span class="p">)))</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Segmentations saved to: </span><span class="si">{</span><span class="n">output_directory</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<br/><br/></pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Segmentations saved to: data/nifti/lung/LCTSC-Test-S1-201/SEGMENTATIONS
-</pre></div></div>
-</div>
-</section>
-<section id="Visualise-Segmentations">
-<h2>Visualise Segmentations<a class="headerlink" href="#Visualise-Segmentations" title="Permalink to this heading">#</a></h2>
-<p>Next, we can generate a nice figure to check what the segmentation looks like</p>
-<p>The first step here is to convert SimpleITK images to NumPy arrays</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">test_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">auto_structures</span><span class="p">[</span><span class="s2">&quot;Auto_Bronchus&quot;</span><span class="p">]))</span>
-
-<span class="n">vis</span><span class="o">.</span><span class="n">add_contour</span><span class="p">({</span><span class="n">struct</span><span class="p">:</span> <span class="n">auto_structures</span><span class="p">[</span><span class="n">struct</span><span class="p">]</span> <span class="k">for</span> <span class="n">struct</span> <span class="ow">in</span> <span class="n">auto_structures</span><span class="o">.</span><span class="n">keys</span><span class="p">()})</span>
-
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;Ventricle_L&quot;</span><span class="p">]),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">vis</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">contours</span><span class="p">)</span>
+<span class="n">vis</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">lv_segments</span><span class="p">)</span>
+<span class="n">vis</span><span class="o">.</span><span class="n">set_limits_from_label</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;Heart&quot;</span><span class="p">],</span> <span class="n">expansion</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">vis</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -708,7 +639,16 @@ Segmentations saved to: data/nifti/lung/LCTSC-Test-S1-201/SEGMENTATIONS
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_bronchus_segmentation_11_0.png" src="../_images/_examples_bronchus_segmentation_11_0.png" />
+<img alt="../_images/_examples_left_ventricle_17_segments_9_0.png" src="../_images/_examples_left_ventricle_17_segments_9_0.png" />
+</div>
+</div>
+<p>Optionally save a NRRD file containing all LV segments. This is useful for loading into Slicer (for example).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">write_nrrd_structure_set</span><span class="p">(</span><span class="n">lv_segments</span><span class="p">,</span> <span class="n">atlas_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">patid</span><span class="p">,</span> <span class="s2">&quot;STRUCTURES&quot;</span><span class="p">,</span> <span class="s2">&quot;LV_Segments.nrrd&quot;</span><span class="p">),</span> <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">rainbow</span><span class="p">)</span>
+</pre></div>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -727,23 +667,23 @@ Segmentations saved to: data/nifti/lung/LCTSC-Test-S1-201/SEGMENTATIONS
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="visualise.html">
+          <a class="next-page" href="../visualiser.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Visualise Images</div>
+                <div class="title">Image Visualiser</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../cardiac.html">
+          <a class="prev-page" href="dvh_analysis.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Cardiac Segmentation</div>
+                <div class="title">DVH Analysis</div>
                 
               </div>
             </a>
@@ -776,13 +716,11 @@ Segmentations saved to: data/nifti/lung/LCTSC-Test-S1-201/SEGMENTATIONS
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Bronchus Segmentation</a><ul>
-<li><a class="reference internal" href="#Import-Modules">Import Modules</a></li>
-<li><a class="reference internal" href="#Download-Test-Data">Download Test Data</a></li>
-<li><a class="reference internal" href="#Load-Test-Image">Load Test Image</a></li>
-<li><a class="reference internal" href="#Run-Auto-segmentation">Run Auto-segmentation</a></li>
-<li><a class="reference internal" href="#Save-segmentations">Save segmentations</a></li>
-<li><a class="reference internal" href="#Visualise-Segmentations">Visualise Segmentations</a></li>
+<li><a class="reference internal" href="#">Cardiac LV 17-segment model</a><ul>
+<li><a class="reference internal" href="#Download-Sample-Data">Download Sample Data</a></li>
+<li><a class="reference internal" href="#Read-Data">Read Data</a></li>
+<li><a class="reference internal" href="#Generate-17-LV-Segments">Generate 17 LV Segments</a></li>
+<li><a class="reference internal" href="#Visualise-Segments">Visualise Segments</a></li>
 </ul>
 </li>
 </ul>
