@@ -22,7 +22,7 @@ A lot! A good place to start is by looking in the
 Some examples of what PlatiPy can do:
  - DICOM organising and converting:
     * Bulk convert from multiple series and studies with a single function
-    * Convert DICOM-RT structure and dose filesto NIfTI images
+    * Convert DICOM-RT structure and dose files to NIfTI images
     * Create DICOM-RT structure files from binary masks e.g. from automatic contouring algorithms
  - Image registration
     * Register images and transform labels with a few lines of code
