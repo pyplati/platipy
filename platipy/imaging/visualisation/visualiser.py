@@ -1173,7 +1173,8 @@ class ImageVisualiser:
 
             if scalar.discrete_levels:
                 colormap_name = scalar.colormap.name
-                colormap = matplotlib.colormaps.get_cmap(colormap_name, scalar.discrete_levels)
+                colormap = matplotlib.colormaps.get_cmap(colormap_name)
+                colormap = colormap.resampled(scalar.discrete_levels)
 
             else:
                 colormap = scalar.colormap
