@@ -1,0 +1,4 @@
+TotalSegmentator
+torch
+torchvision
+torchaudio
