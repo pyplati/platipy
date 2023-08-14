@@ -29,7 +29,7 @@ def compute_volume(label):
         float: The volume (in cubic centimetres)
     """
 
-    return sitk.GetArrayFromImage(label).sum() * np.product(label.GetSpacing()) / 1000
+    return sitk.GetArrayFromImage(label).sum() * np.prod(label.GetSpacing()) / 1000
 
 
 def compute_surface_dsc(label_a, label_b, tau=3.0):
@@ -159,7 +159,7 @@ def compute_volume_metrics(label_a, label_b):
     arr_intersection = arr_a & arr_b
     arr_union = arr_a | arr_b
 
-    voxel_volume = np.product(label_a.GetSpacing()) / 1000.0  # Conversion to cm^3
+    voxel_volume = np.prod(label_a.GetSpacing()) / 1000.0  # Conversion to cm^3
 
     # 2|A & B|/(|A|+|B|)
     dsc = (2.0 * arr_intersection.sum()) / (arr_a.sum() + arr_b.sum())

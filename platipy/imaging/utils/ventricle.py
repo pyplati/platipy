@@ -65,7 +65,7 @@ def extract(
     segment_img.CopyInformation(template_img)
 
     # Make sure area exceeds lower bound
-    area = segment_arr.sum() * np.product(segment_img.GetSpacing())
+    area = segment_arr.sum() * np.prod(segment_img.GetSpacing())
     if area < min_area_mm2:
         segment_img *= 0
 
@@ -167,8 +167,8 @@ def generate_left_ventricle_segments(
 
     if verbose:
         print("Module 1: Cropping and initial alignment.")
-        vol_before = np.product(contours[label_heart].GetSize())
-        vol_after = np.product(working_contours[label_heart].GetSize())
+        vol_before = np.prod(contours[label_heart].GetSize())
+        vol_after = np.prod(working_contours[label_heart].GetSize())
         print(f"  Images cropped. Volume reduction: {vol_before/vol_after:.3f}")
 
     # Initially we should reorient based on the cardiac axis

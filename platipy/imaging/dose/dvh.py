@@ -87,7 +87,7 @@ def calculate_dvh_for_labels(dose_grid, labels, bin_width=0.1, max_dose=None):
         mask_array = sitk.GetArrayFromImage(mask)
 
         # Compute cubic centimetre volume of structure
-        cc = mask_array.sum() * np.product([a / 10 for a in mask.GetSpacing()])
+        cc = mask_array.sum() * np.prod([a / 10 for a in mask.GetSpacing()])
 
         bins, values = calculate_dvh(
             dose_grid, labels[k], bins=np.arange(-bin_width / 2, max_dose + bin_width, bin_width)
