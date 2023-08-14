@@ -1,8 +1,6 @@
 FROM platipy/platipy:service
 
-RUN env -C /platipy /root/.local/bin/poetry install -E backend
-
-COPY . /home/service
+COPY requirements-totalseg.txt requirements-totalseg.txt
 
 ENV FLASK_APP service.py
 
@@ -10,5 +8,6 @@ RUN pip install -r requirements-totalseg.txt
 
 COPY . .
 
-RUN download_pretrained_weights
+ENV TOTALSEG_DISABLE_HTTP1=1
 
+RUN totalseg_download_weights
