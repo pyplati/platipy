@@ -27,6 +27,7 @@ from platipy.backend import app, DataObject, celery  # pylint: disable=unused-im
 logger = logging.getLogger(__name__)
 
 TOTALSEG_SETTINGS_DEFAULTS = {
+    "output_prefix": "TS_",
     "fast": False,
     "body_seg": False,
 }
@@ -52,25 +53,45 @@ def totalsegmentator_service(data_objects, working_dir, settings):
 
     for data_object in data_objects:
         # Create a symbolic link for each image to auto-segment using the nnUNet
-        do_path = Path(data_object.path)
         io_path = input_path.joinpath("image_0000.nii.gz")
         load_path = data_object.path
         if data_object.type == "DICOM":
-            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(do_path)
+            load_path = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(load_path)
 
         img = sitk.ReadImage(load_path)
         sitk.WriteImage(img, str(io_path))
 
-        logger.info("Running TotalSegmentator on input path: %s", input_path)
-        totalsegmentator(
-            input_path,
-            output_path,
-            fast=default_settings["fast"],
-            body_seg=default_settings["body_seg"],
-        )
+        logger.info("Running TotalSegmentator on input path: %s", str(io_path))
+
+        command = [
+            "TotalSegmentator",
+            "-i",
+            str(io_path),
+            "-o",
+            str(output_path),
+        ]
+
+        if settings["fast"]:
+            command += ["--fast"]
+
+        if settings["body_seg"]:
+            command += ["--body_seg"]
+
+        logger.info("Running command: %s", command)
+        subprocess.call(command)
 
         for op in output_path.glob("*.nii.gz"):
+            # Check its not empty
+            mask = sitk.ReadImage(str(op))
+            if sitk.GetArrayFromImage(mask).sum() == 0:
+                logger.info("Skipping empty segmentation: %s", op.name)
+                continue
+
+            # Rename the file with the prefix
+            new_name = f"{settings['output_prefix']}{op.name}"
+            op = op.rename(op.parent.joinpath(new_name))
             output_data_object = DataObject(type="FILE", path=str(op), parent=data_object)
+            logger.info("Found segmentation file: %s", op.name)
             output_objects.append(output_data_object)
 
         os.remove(io_path)
