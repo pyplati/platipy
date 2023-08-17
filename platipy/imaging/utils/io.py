@@ -4,6 +4,10 @@ import SimpleITK as sitk
 
 import matplotlib.colors as mcolors
 
+import pydicom
+
+from struct import unpack
+
 
 def write_nrrd_structure_set(
     masks,
@@ -125,3 +129,323 @@ def write_nrrd_structure_set(
         useCompression=use_compression,
         compressionLevel=compression_level,
     )
+
+
+def read_eclipse_rigid_registration(dcm_filename):
+    """
+    !TODO
+    """
+
+    dcm_re = pydicom.read_file(dcm_filename)
+
+    # extract the sequence of registrations
+    # each of these will be a 4x4 matrix
+    f_mat = lambda reg: reg["MatrixRegistrationSequence"][0]["MatrixSequence"][0][
+        "FrameOfReferenceTransformationMatrix"
+    ].value
+    reg_mats = [np.array(f_mat(reg)).reshape((4, 4)) for reg in dcm_re["RegistrationSequence"]]
+
+    # define the final sequence as the matrix product of these matrices
+    reg_re = np.matmul(*reg_mats)
+    reg_re_mat = reg_re[:3, :3]
+    reg_re_trans = reg_re[:3, 3]
+
+    # get relevant params
+    # see: https://dicom.innolitics.com/ciods/spatial-registration/spatial-registration/00700308/00700309/0070030a/300600c6
+
+    # create a SimpleITK transform
+    # Varian only performs RIGID registration
+    tfm = sitk.VersorRigid3DTransform()
+    tfm.SetMatrix(reg_re_mat.flatten())
+    tfm.SetTranslation(reg_re_trans)
+
+    return tfm
+
+
+def read_eclipse_deformable_registration(
+    dcm_filename, reference_image, apply_rigid_component=True
+):
+    """
+    !TODO
+    """
+
+    dcm_dr = pydicom.read_file(dcm_filename)
+
+    # util
+    f_mat = lambda reg: reg["FrameOfReferenceTransformationMatrix"].value
+
+    # extract the registration section of the DICOM
+    # this must only contain one item
+    # (for conformance to the DICOM standard)
+    def_reg = dcm_dr["DeformableRegistrationSequence"][0]
+
+    # we need to first define the pre-/post-deformation matrices
+    # first: PRE
+    re_pre = def_reg["PreDeformationMatrixRegistrationSequence"]
+    reg_pre_mats = [np.array(f_mat(reg)).reshape((4, 4)) for reg in re_pre]
+
+    # DICOM standard specifies this must be of length 1
+    # so we can safely take the first element
+    reg_pre_params = np.array(reg_pre_mats[0])
+
+    reg_pre_params_mat = reg_pre_params[:3, :3]
+    reg_pre_params_trans = reg_pre_params[:3, 3]
+
+    # create a SimpleITK transform
+    # Varian only performs RIGID registration
+    tfm_pre = sitk.VersorRigid3DTransform()
+    tfm_pre.SetMatrix(reg_pre_params_mat.flatten())
+    tfm_pre.SetTranslation(reg_pre_params_trans)
+
+    # from this we create a deformation field
+    dvf_pre = sitk.TransformToDisplacementField(
+        tfm_pre,
+        sitk.sitkVectorFloat64,
+        reference_image.GetSize(),
+        reference_image.GetOrigin(),
+        reference_image.GetSpacing(),
+        reference_image.GetDirection(),
+    )
+
+    # second: POST
+    re_post = def_reg["PostDeformationMatrixRegistrationSequence"]
+    reg_post_mats = [np.array(f_mat(reg)).reshape((4, 4)) for reg in re_post]
+
+    # DICOM standard specifies this must be of length 1
+    # so we can safely take the first element
+    reg_post_params = np.array(reg_post_mats[0])
+
+    reg_post_params_mat = reg_post_params[:3, :3]
+    reg_post_params_trans = reg_post_params[:3, 3]
+
+    # create a SimpleITK transform
+    # Varian only performs RIGID registration
+    tfm_post = sitk.VersorRigid3DTransform()
+    tfm_post.SetMatrix(reg_post_params_mat.flatten())
+    tfm_post.SetTranslation(reg_post_params_trans)
+
+    # from this we create a deformation field
+    dvf_post = sitk.TransformToDisplacementField(
+        tfm_post,
+        sitk.sitkVectorFloat64,
+        reference_image.GetSize(),
+        reference_image.GetOrigin(),
+        reference_image.GetSpacing(),
+        reference_image.GetDirection(),
+    )
+
+    # now we process the deformable component
+    # extract the deformation field
+    reg_grid = def_reg["DeformableRegistrationGridSequence"][0]
+    dvf_str = reg_grid["VectorGridData"].value
+
+    # unpack data stream
+    dvf_list = unpack(f"<{len(dvf_str) // 4}f", dvf_str)
+
+    # get geometry information
+    dvf_grid_size = reg_grid["GridDimensions"].value
+    dvf_grid_res = reg_grid["GridResolution"].value
+    dvf_grid_origin = reg_grid["ImagePositionPatient"].value
+
+    # create the dvf
+    dvf_arr = np.reshape(
+        dvf_list,
+        dvf_grid_size[::-1]
+        + [
+            3,
+        ],
+    )
+    dvf_def = sitk.GetImageFromArray(dvf_arr)
+    dvf_def.SetSpacing(dvf_grid_res)
+    dvf_def.SetOrigin(dvf_grid_origin)
+
+    dvf_def = sitk.Resample(dvf_def, reference_image, sitk.Transform(), 2, 0)
+
+    # now combine the pre, def, post deformation fields
+    # if the option is selection
+    if apply_rigid_component:
+        dvf_def = dvf_pre + dvf_def + dvf_post
+
+    # generate a transform
+    tfm_def = sitk.DisplacementFieldTransform(dvf_def + 0)
+
+    return dvf_def, tfm_def
+
+
+def combine_transforms(tfm_list, reference_image):
+
+    # create a composite transform
+    tfm_composite = sitk.CompositeTransform(tfm_list)
+
+    # convert to a displacement field
+    dvf_composite = sitk.TransformToDisplacementField(
+        tfm_composite,
+        sitk.sitkVectorFloat32,
+        reference_image.GetSize(),
+        reference_image.GetOrigin(),
+        reference_image.GetSpacing(),
+        reference_image.GetDirection(),
+    )
+
+    return dvf_composite
+
+
+def convert_bdf_deformation_field(bdf_filename, reference_image, compress_threshold_mm=0.1):
+    """!TODO
+
+    Args:
+        bdf_filename (_type_): _description_
+        reference_image (_type_): _description_
+        compre (_type_): _description_
+    """
+    with open(bdf_filename, "rb") as f:
+        bdf = f.read()
+
+    # we don't really need these if we have the reference image
+    # but should at least check they match expected values
+    img_origin = unpack("<3f", bdf[0:12])
+    img_spacing = unpack("<3f", bdf[12:24])
+
+    assert np.all(np.isclose(img_origin, (0, 0, 0)))
+    assert np.all(np.isclose(img_spacing, reference_image.GetSpacing()))
+
+    # now extract the actual DVF values
+    dvf_list = unpack(f"<{(len(bdf)-24)//4}f", bdf[24:])
+
+    # reshape to the appropriate dimensions
+    dvf_arr = np.reshape(
+        dvf_list,
+        list(reference_image.GetSize())[::-1]
+        + [
+            3,
+        ],
+    )
+
+    # compress (if requested)
+    if compress_threshold_mm is not False:
+        dvf_arr[np.linalg.norm(dvf_arr, axis=3) <= compress_threshold_mm] = [0, 0, 0]
+
+    # create a SimpleITK image
+    dvf = sitk.GetImageFromArray(dvf_arr)
+    dvf.CopyInformation(reference_image)
+
+    return dvf
+
+
+def read_velocity_deformable_registration(
+    dcm_filename, reference_image, apply_rigid_component=True
+):
+    """
+    !TODO
+    This is similar to eclipse, but data is stored slightly differently
+    THIS IS NOT READY FOR USE
+    """
+
+    dcm_dr = pydicom.read_file(dcm_filename)
+
+    # util
+    f_mat = lambda reg: reg["FrameOfReferenceTransformationMatrix"].value
+
+    # extract the registration section of the DICOM
+    # this is a sequence:
+    # 0: Source frame of reference UID
+    # 1: Pre-deformation matrix sequence
+    # 2: Post-deformation matrix sequence
+    # 3: Deformation matrix
+    def_reg = dcm_dr["DeformableRegistrationSequence"]
+
+    # we need to first define the pre-/post-deformation matrices
+    # first: PRE
+    # DICOM standard specifies this must be of length 1
+    # so we can safely take the first element
+    re_pre = def_reg[1]["PreDeformationMatrixRegistrationSequence"][0]
+    reg_pre_mat = np.array(f_mat(re_pre)).reshape((4, 4))
+    reg_pre_matrix = reg_pre_mat[:3, :3]
+    reg_pre_trans = reg_pre_mat[:3, 3:]
+
+    # Velocity can perform different types of linear registration
+    reg_pre_type = re_pre["FrameOfReferenceTransformationMatrixType"].value
+
+    # create a SimpleITK transform
+    if reg_pre_type == "RIGID_SCALE":
+        tfm_pre = sitk.Similarity3DTransform()
+        tfm_pre.SetMatrix(reg_pre_matrix.flatten())
+        tfm_pre.SetTranslation(reg_pre_trans.flatten())
+    else:
+        raise ValueError(f"Transformation is of type {reg_pre_type}")
+
+    # from this we create a deformation field
+    dvf_pre = sitk.TransformToDisplacementField(
+        tfm_pre,
+        sitk.sitkVectorFloat64,
+        reference_image.GetSize(),
+        reference_image.GetOrigin(),
+        reference_image.GetSpacing(),
+        reference_image.GetDirection(),
+    )
+
+    # second: POST
+    # DICOM standard specifies this must be of length 1
+    # so we can safely take the first element
+    re_post = def_reg[2]["PostDeformationMatrixRegistrationSequence"][0]
+    reg_post_mat = np.array(f_mat(re_post)).reshape((4, 4))
+    reg_post_matrix = reg_post_mat[:3, :3]
+    reg_post_trans = reg_post_mat[:3, 3:]
+
+    # Velocity can perform different types of linear registration
+    reg_post_type = re_post["FrameOfReferenceTransformationMatrixType"].value
+
+    # create a SimpleITK transform
+    if reg_post_type == "RIGID_SCALE":
+        tfm_post = sitk.Similarity3DTransform()
+        tfm_post.SetMatrix(reg_post_matrix.flatten())
+        tfm_post.SetTranslation(reg_post_trans.flatten())
+    else:
+        raise ValueError(f"Transformation is of type {reg_post_type}")
+
+    # from this we create a deformation field
+    dvf_post = sitk.TransformToDisplacementField(
+        tfm_post,
+        sitk.sitkVectorFloat64,
+        reference_image.GetSize(),
+        reference_image.GetOrigin(),
+        reference_image.GetSpacing(),
+        reference_image.GetDirection(),
+    )
+
+    # now we process the deformable component
+    # extract the deformation field
+    reg_grid = def_reg[3]["DeformableRegistrationGridSequence"][0]
+    dvf_str = reg_grid["VectorGridData"].value
+
+    # unpack data stream
+    dvf_list = unpack(f"<{len(dvf_str) // 4}f", dvf_str)
+
+    # get geometry information
+    dvf_grid_size = reg_grid["GridDimensions"].value
+    dvf_grid_res = reg_grid["GridResolution"].value
+    dvf_grid_origin = reg_grid["ImagePositionPatient"].value
+
+    # create the dvf
+    dvf_arr = np.reshape(
+        dvf_list,
+        dvf_grid_size[::-1]
+        + [
+            3,
+        ],
+    )
+    dvf_def = sitk.GetImageFromArray(dvf_arr)
+    dvf_def.SetSpacing(dvf_grid_res)
+    dvf_def.SetOrigin(dvf_grid_origin)
+
+    dvf_def = sitk.Resample(dvf_def, reference_image, sitk.Transform(), 2, 0)
+
+    # now combine the pre, def, post deformation fields
+    # if the option is selection
+    if apply_rigid_component:
+        dvf_def = dvf_pre + dvf_def + dvf_post
+
+    # generate a transform
+    tfm_def = sitk.DisplacementFieldTransform(dvf_def + 0)
+
+    return dvf_def, tfm_def

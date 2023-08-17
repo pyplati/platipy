@@ -16,6 +16,7 @@ import numpy as np
 import SimpleITK as sitk
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,14 +25,20 @@ def registration_command_iteration(method):
     Utility function to print information during (rigid, similarity, translation, B-splines)
     registration
     """
-    print("{0:3} = {1:10.5f}".format(method.GetOptimizerIteration(), method.GetMetricValue()))
+    print(
+        "{0:3} = {1:10.5f}".format(
+            method.GetOptimizerIteration(), method.GetMetricValue()
+        )
+    )
 
 
 def stage_iteration(method):
     """
     Utility function to print information during stage change in registration
     """
-    print(f"Number of parameters = {method.GetInitialTransform().GetNumberOfParameters()}")
+    print(
+        f"Number of parameters = {method.GetInitialTransform().GetNumberOfParameters()}"
+    )
 
 
 def deformable_registration_command_iteration(method):
@@ -236,13 +243,20 @@ def smooth_and_resample(
 
     elif isotropic_voxel_size_mm:
         scale_factor = (
-            isotropic_voxel_size_mm * np.ones_like(image.GetSize()) / np.array(image.GetSpacing())
+            isotropic_voxel_size_mm
+            * np.ones_like(image.GetSize())
+            / np.array(image.GetSpacing())
         )
-        new_size = [int(sz / float(sf) + 0.5) for sz, sf in zip(original_size, scale_factor)]
+        new_size = [
+            int(sz / float(sf) + 0.5) for sz, sf in zip(original_size, scale_factor)
+        ]
 
     elif shrink_factor:
         if isinstance(shrink_factor, list):
-            new_size = [int(sz / float(sf) + 0.5) for sz, sf in zip(original_size, shrink_factor)]
+            new_size = [
+                int(sz / float(sf) + 0.5)
+                for sz, sf in zip(original_size, shrink_factor)
+            ]
         else:
             new_size = [int(sz / float(shrink_factor) + 0.5) for sz in original_size]
 
@@ -251,7 +265,9 @@ def smooth_and_resample(
 
     new_spacing = [
         ((size_o_i - 1) * spacing_o_i) / (size_n_i - 1)
-        for size_o_i, spacing_o_i, size_n_i in zip(original_size, original_spacing, new_size)
+        for size_o_i, spacing_o_i, size_n_i in zip(
+            original_size, original_spacing, new_size
+        )
     ]
 
     return sitk.Resample(
@@ -339,6 +355,8 @@ def convert_mask_to_reg_structure(mask, expansion=(0, 0, 0), scale=lambda x: x):
         mask,
     )
 
-    scaled_distance_map = distance_map / (sitk.GetArrayViewFromImage(distance_map).max())
+    scaled_distance_map = distance_map / (
+        sitk.GetArrayViewFromImage(distance_map).max()
+    )
 
     return scale(scaled_distance_map)

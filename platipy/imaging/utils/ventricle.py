@@ -78,6 +78,7 @@ def generate_left_ventricle_segments(
     label_left_atrium="LEFTATRIUM",
     label_right_ventricle="RIGHTVENTRICLE",
     label_heart="WHOLEHEART",
+    label_myocardium=None,
     myocardium_thickness_mm=10,
     hole_fill_mm=3,
     optimiser_tol_degrees=1,
@@ -97,7 +98,7 @@ def generate_left_ventricle_segments(
         4.  Myocardium is defined as the outer 10mm
         5.  Geometric operations are used to define the segments
         6.  Everything is rotated back to the normal orientation
-        7.  Some post-processing *magic*
+        7.  Some post-processing hole-filling
 
     Args:
         contours (dict): A dictionary containing strings (label names) as keys and SimpleITK.Image
@@ -105,9 +106,13 @@ def generate_left_ventricle_segments(
         label_left_ventricle (str): The name for the left ventricle mask (contour)
         label_left_atrium (str): The name for the left atrium mask (contour)
         label_right_ventricle (str): The name for the right ventricle mask (contour)
-        label_heart (str): The name for the heart mask (contour)
+        label_heart (str): The name for the heart mask (contour).
+            This is used to define a bounding box used for cropping (to speed up transformations).
+            If WH contours is not available, use sitk.BinaryDilate(ventricle_contour, (30,30,30)).
+        label_myocardium (str): If this label is available the myocardium will be used directly,
+            rather than defined from the LV.
         myocardium_thickness_mm (float, optional): Moycardial thickness, in millimetres.
-            Defaults to 10.
+            Defaults to 10 following Duane (2017) atlas
         hole_fill_mm (float, optional): Holes smaller than this get filled in. Defaults to 3.
         optimiser_tol_degrees (float, optional): Optimiser tolerance (change in angle per iter).
             Defaults to 1, which typically requires 3-4 iterations.
@@ -125,12 +130,9 @@ def generate_left_ventricle_segments(
     # Initial set up
     label_mitral_valve = "MITRALVALVE"
 
-    label_list = [
-        label_left_ventricle,
-        label_left_atrium,
-        label_right_ventricle,
-        label_heart
-    ]
+    label_list = [label_left_ventricle, label_left_atrium, label_right_ventricle, label_heart]
+    if label_myocardium is not None:
+        label_list.append(label_myocardium)
     working_contours = copy.deepcopy({s: contours[s] for s in label_list})
 
     label_list.append(label_mitral_valve)
@@ -295,10 +297,14 @@ def generate_left_ventricle_segments(
     label_lv_inner = sitk.BinaryErode(working_contours[label_left_ventricle], erode_img)
     label_lv_myo = working_contours[label_left_ventricle] - label_lv_inner
 
-    # Mask the myo to a dilation of the blood pool
-    # This helps improve shape consistency
-    label_lv_myo_mask = sitk.BinaryDilate(label_lv_inner, erode_img)
-    label_lv_myo = sitk.Mask(label_lv_myo, label_lv_myo_mask)
+    if label_myocardium is None:
+        # Mask the myo to a dilation of the blood pool
+        # This helps improve shape consistency
+        label_lv_myo_mask = sitk.BinaryDilate(label_lv_inner, erode_img)
+        label_lv_myo = sitk.Mask(label_lv_myo, label_lv_myo_mask)
+
+    else:
+        label_lv_myo = working_contours[label_myocardium]
 
     # Computing limits for division into thirds
     # [xstart, ystart, zstart, xsize, ysize, zsize]
