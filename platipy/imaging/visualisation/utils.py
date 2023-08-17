@@ -93,8 +93,8 @@ class VisualiseVectorOverlay:
         arrow_scale=0.25,
         arrow_width=1,
         subsample=4,
-        color_function="perpendicular",
-        invert_field=True,
+        color_function="magnitude",
+        invert_field=False,
         show_colorbar=True,
         name="input",
     ):
@@ -212,7 +212,8 @@ def vector_image_grid(axis, vector_field_array, subsample=1):
         subsample_ax, subsample_cor, subsample_sag = (subsample,) * 3
 
     # we display the vector field with arrows pointing from the centre of a pixel
-    # this is why you will see the 0.5 terms
+    # (rather than the corner)
+    # this is why you will see 0.5 added/subtracted
 
     if axis == "x":
         return (
@@ -231,13 +232,14 @@ def vector_image_grid(axis, vector_field_array, subsample=1):
             + 0.5
         )
     if axis == "z":
-        return (
+        x_g, y_g = (
             np.mgrid[
                 0 : vector_field_array.shape[2] - 0.5 : subsample_sag,
                 0 : vector_field_array.shape[1] - 0.5 : subsample_cor,
             ]
             + 0.5
         )
+        return x_g, y_g[:, ::-1]
     return None
 
 
@@ -256,16 +258,16 @@ def reorientate_vector_field(axis, vector_ax, vector_cor, vector_sag, invert_fie
     """
 
     if invert_field:
-        vector_ax = vector_ax
-        vector_cor = vector_cor
-        vector_sag = vector_sag
+        vector_ax = -vector_ax
+        vector_cor = -vector_cor
+        vector_sag = -vector_sag
 
     if axis == "x":  # sagittal projection
-        return vector_cor, vector_ax, vector_sag
+        return -vector_cor, -vector_ax, vector_sag
     if axis == "y":  # coronal projection
-        return vector_sag, vector_ax, vector_cor
+        return -vector_sag, -vector_ax, vector_cor
     if axis == "z":  # axial projection
-        return vector_sag, vector_cor, vector_ax
+        return -vector_sag, vector_cor, vector_ax
 
     return None
 
