@@ -95,7 +95,7 @@ def get_external_mask(
 
     convex_hull_slices = np.zeros_like(arr)
 
-    for index in np.arange(0, np.alen(arr)):
+    for index in np.arange(0, arr.shape[0]):
         convex_hull_slices[index] = convex_hull_image(arr[index])
 
     body_mask_hull = sitk.GetImageFromArray(convex_hull_slices)
