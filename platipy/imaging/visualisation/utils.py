@@ -18,6 +18,9 @@ import numpy as np
 import SimpleITK as sitk
 
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
+
+import seaborn as sns
 
 from platipy.imaging.utils.crop import label_to_roi
 
@@ -365,3 +368,46 @@ def project_onto_arbitrary_plane(
     }
 
     return image_slice[projection_axis]
+
+
+def color_picker(contour, colormap):
+    """adds colormap end-points back to a palette
+
+    Args:
+        contour: dictionary {"name":sitk.Image, ...}
+        colormap: the colormap
+
+    Returns:
+        sns.color_palette: palette with end-points
+    """
+    if colormap is None:
+        colormap = plt.cm.viridis
+
+    # create palette with N-2
+    if isinstance(colormap, (colors.Colormap, str)):
+        palette = sns.color_palette(colormap.name, n_colors=max((0, len(contour) - 2)))
+        palette = (
+            [
+                colormap(0),
+            ]
+            + palette
+            + [
+                colormap(255),
+            ]
+        )
+        return dict(zip(contour.keys(), palette))
+
+    elif isinstance(colormap, dict):
+        color_dict = {}
+        for name in contour:
+            try:
+                color_dict[name] = colormap[name]
+            except AttributeError:
+                color_dict[name] = "red"
+
+        return color_dict
+
+    # keep default behaviour for sns-defined colormaps
+    # or pass on for error handling elsewhere
+    else:
+        return dict(zip(contour.keys(), colormap))

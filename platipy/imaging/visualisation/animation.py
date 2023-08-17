@@ -70,6 +70,7 @@ def generate_animation_from_image_sequence(
     scalar_max=None,
     scalar_alpha=0.5,
     image_origin="lower",
+    show_contour_names=True,
     contour_kwargs={},
 ):
     """Generates an animation from a list of images, with optional scalar overlay and contours.
@@ -156,7 +157,7 @@ def generate_animation_from_image_sequence(
 
             display_contours.collections[0].set_label(ctr_key)
 
-        if contour_labels:
+        if contour_labels and show_contour_names:
             approx_scaling = figure_size_in / (len(plot_dict.keys()))
             ax.legend(
                 loc="upper left",

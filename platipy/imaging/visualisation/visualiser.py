@@ -17,6 +17,9 @@ import logging
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import matplotlib.colors as colors
+
+import seaborn as sns
 
 import numpy as np
 import SimpleITK as sitk
@@ -34,6 +37,7 @@ from platipy.imaging.visualisation.utils import (
     reorientate_vector_field,
     generate_comparison_colormix,
     project_onto_arbitrary_plane,
+    color_picker,
 )
 
 logger = logging.getLogger(__name__)
@@ -81,7 +85,6 @@ class ImageVisualiser:
         self.__projection = projection
         self.__image_view = None
         self.__scalar_view = None
-        self.__contour_colormap = None
 
         self.clear()
 
@@ -141,8 +144,7 @@ class ImageVisualiser:
         self,
         contour,
         name=None,
-        color=None,
-        colormap=plt.cm.get_cmap("rainbow"),
+        colormap=None,
         linewidth=2,
         linestyle="solid",
         show_legend=True,
@@ -153,8 +155,8 @@ class ImageVisualiser:
             contour (sitk.Image|dict): Contour mask or dict containing contour masks.
             name (str, optional): Name to give the contour (only used if passing sitk.Image as
                                   contour). Defaults to None.
-            color (str|tuple|list, optional): The color to use when drawing the contour(s).
-                                              Defaults to None.
+            colormap (str|tuple|dict|matplotlib/seaborn colormap, optional): The color to use when
+                drawing the contour(s). Defaults to None.
 
         Raises:
             ValueError: Contour must be dict of sitk.Image.
@@ -168,20 +170,25 @@ class ImageVisualiser:
             if not all(map(lambda i: isinstance(i, sitk.Image), contour.values())):
                 raise ValueError("When passing dict, all values must be of type SimpleITK.Image")
 
-            for contour_name in contour:
+            color_dict = {}
 
-                if isinstance(color, dict):
-                    try:
-                        contour_color = color[contour_name]
-                    except AttributeError:
-                        contour_color = None
-                else:
-                    contour_color = color
+            """
+            a rant about seaborn color_palette...
+            this function discretises a colormap (e.g. from matplotlib.colors)
+            BUT the bins do not include the end-points of the colormap
+            this is "by design" (according to the authors or seaborn)
+            I don't like it - so we add these end-points in manually
+            this is what the `color_picker` function used below does
+            """
+
+            color_dict = color_picker(contour, colormap)
+
+            for contour_name in contour:
 
                 visualise_contour = VisualiseContour(
                     contour[contour_name],
                     contour_name,
-                    color=contour_color,
+                    color=color_dict[contour_name],
                     linewidth=linewidth,
                     linestyle=linestyle,
                 )
@@ -194,8 +201,15 @@ class ImageVisualiser:
                 name = "contour"
                 self.__show_legend = False
 
+            if colormap is None:
+                color = "red"
+
             visualise_contour = VisualiseContour(
-                contour, name, color=color, linewidth=linewidth, linestyle=linestyle
+                contour,
+                name,
+                color="red",
+                linewidth=linewidth,
+                linestyle=linestyle,
             )
             self.__contours.append(visualise_contour)
         else:
@@ -204,8 +218,6 @@ class ImageVisualiser:
                 "Contours should be represented as a dict with contour name as key "
                 "and sitk.Image as value, or as an sitk.Image and passing the contour_name"
             )
-
-        self.__contour_colormap = colormap
 
     def add_scalar_overlay(
         self,
@@ -398,7 +410,7 @@ class ImageVisualiser:
             ValueError: Raised if input is not a list or tuple of length 6 or and sitk.Image.
         """
 
-        self.__show_legend = True
+        # self.__show_legend = True
 
         if isinstance(bounding_box, dict):
 
@@ -981,7 +993,8 @@ class ImageVisualiser:
                 ratio_y = np.abs(y_1 - y_0) / np.abs(y_orig_1 - y_orig_0)
 
                 ax.set_xlim(x_0, x_1)
-                ax.set_ylim(y_0, y_1)
+                ax.set_ylim(y_1, y_0)
+                print(y_0, y_1)
 
                 fig_size_x, fig_size_y = self.__figure.get_size_inches()
                 fig_size_y = fig_size_y * ratio_y / ratio_x
@@ -999,19 +1012,12 @@ class ImageVisualiser:
         lw_dict = {}
         ls_dict = {}
 
-        color_gen_index = 0
+        # if contour.color is not None:
 
         for contour in self.__contours:
             contour_image_resampled = sitk.Resample(contour.image, self.__image)
             plot_dict[contour.name] = contour_image_resampled
-
-            if contour.color is not None:
-                color_dict[contour.name] = contour.color
-            else:
-                color_map = self.__contour_colormap(np.linspace(0, 1, len(self.__contours)))
-
-                color_dict[contour.name] = color_map[color_gen_index % 255]
-                color_gen_index += 1
+            color_dict[contour.name] = contour.color
 
             lw_dict[contour.name] = contour.linewidth
             ls_dict[contour.name] = contour.linestyle
@@ -1484,7 +1490,7 @@ class ImageVisualiser:
                     vector_color = vector_plot_z
                 elif color_function == "magnitude":
                     vector_color = np.sqrt(
-                        vector_plot_x**2 + vector_plot_y**2 + vector_plot_z**2
+                        vector_plot_x ** 2 + vector_plot_y ** 2 + vector_plot_z ** 2
                     )
 
                 if max_value is False:
@@ -1555,7 +1561,7 @@ class ImageVisualiser:
                         vector_color = vector_plot_z
                     elif color_function == "magnitude":
                         vector_color = np.sqrt(
-                            vector_plot_x**2 + vector_plot_y**2 + vector_plot_z**2
+                            vector_plot_x ** 2 + vector_plot_y ** 2 + vector_plot_z ** 2
                         )
 
                     if max_value is False:
@@ -1656,6 +1662,9 @@ class ImageVisualiser:
         to_points = None
 
         if view == "z" or view == "ax":
+            from_points = [sag_0, sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0]
+            to_points = [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0]
+
             from_points = [sag_0, sag_0, sag_0 + sag_d, sag_0 + sag_d, sag_0]
             to_points = [cor_0, cor_0 + cor_d, cor_0 + cor_d, cor_0, cor_0]
 

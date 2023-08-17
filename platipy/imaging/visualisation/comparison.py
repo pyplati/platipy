@@ -154,14 +154,14 @@ def contour_comparison(
     vis.add_contour(
         {s + "a": contour_dict_a[s] for s in s_select},
         show_legend=False,
-        color=colors_a,
+        colormap=colors_a,
     )
 
     # Add contour set B
     vis.add_contour(
         {s + "b": contour_dict_b[s] for s in s_select},
         show_legend=False,
-        color=colors_b,
+        colormap=colors_b,
         linestyle="dashed",
     )
 

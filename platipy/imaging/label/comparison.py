@@ -17,6 +17,7 @@ import numpy as np
 import SimpleITK as sitk
 
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
+from platipy.imaging.label.utils import get_com
 
 
 def compute_volume(label):
@@ -30,6 +31,23 @@ def compute_volume(label):
     """
 
     return sitk.GetArrayFromImage(label).sum() * np.product(label.GetSpacing()) / 1000
+
+
+def compute_centroid_distance(label_a, label_b):
+    """Computes the centroid-to-centroid distance in millimeters
+
+    Args:
+        label_a (sitk.Image): A mask to compare
+        label_b (sitk.Image): Another mask to compare
+
+    Returns:
+        float: The distance (in millimeters)
+    """
+
+    com_a = np.array(get_com(label_a, real_coords=True))
+    com_b = np.array(get_com(label_b, real_coords=True))
+
+    return np.linalg.norm(com_a - com_b)
 
 
 def compute_surface_dsc(label_a, label_b, tau=3.0):
@@ -64,10 +82,7 @@ def compute_surface_dsc(label_a, label_b, tau=3.0):
     b_intersection = sitk.GetArrayFromImage(b_contour * (dist_to_a <= tau)).sum()
     a_intersection = sitk.GetArrayFromImage(a_contour * (dist_to_b <= tau)).sum()
 
-    surface_sum = (
-        sitk.GetArrayFromImage(a_contour).sum()
-        + sitk.GetArrayFromImage(b_contour).sum()
-    )
+    surface_sum = sitk.GetArrayFromImage(a_contour).sum() + sitk.GetArrayFromImage(b_contour).sum()
 
     return (b_intersection + a_intersection) / surface_sum
 
@@ -99,9 +114,7 @@ def compute_surface_metrics(label_a, label_b, verbose=False):
 
         label_intensity_stat = sitk.LabelIntensityStatisticsImageFilter()
         reference_distance_map = sitk.Abs(
-            sitk.SignedMaurerDistanceMap(
-                la, squaredDistance=False, useImageSpacing=True
-            )
+            sitk.SignedMaurerDistanceMap(la, squaredDistance=False, useImageSpacing=True)
         )
         moving_label_contour = sitk.LabelContour(lb)
         label_intensity_stat.Execute(moving_label_contour, reference_distance_map)
@@ -298,9 +311,7 @@ def compute_metric_masd(label_a, label_b, auto_crop=True):
 
         label_intensity_stat = sitk.LabelIntensityStatisticsImageFilter()
         reference_distance_map = sitk.Abs(
-            sitk.SignedMaurerDistanceMap(
-                la, squaredDistance=False, useImageSpacing=True
-            )
+            sitk.SignedMaurerDistanceMap(la, squaredDistance=False, useImageSpacing=True)
         )
         moving_label_contour = sitk.LabelContour(lb)
         label_intensity_stat.Execute(moving_label_contour, reference_distance_map)
