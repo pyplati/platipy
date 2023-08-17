@@ -1451,7 +1451,9 @@ class ImageVisualiser:
             min_value = vector.min_value
             max_value = vector.max_value
 
-            inverse_vector_image = image  # sitk.InvertDisplacementField(image)
+            # We invert the "DVF" used to define the transform
+            # which is actually the opposite of how the image was deformed
+            inverse_vector_image = sitk.InvertDisplacementField(image)
             vector_nda = sitk.GetArrayFromImage(inverse_vector_image)
 
             if vector.discrete_levels:
