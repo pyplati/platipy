@@ -124,3 +124,13 @@ jobs:
           tags: |
             platipy/platipy:nnunet
             ghcr.io/pyplati/platipy:nnunet
+
+      - name: Build and Push TotalSegmentator Image
+        uses: docker/build-push-action@v2
+        with:
+          context: services/totalsegmentator
+          platforms: linux/amd64
+          push: true
+          tags: |
+            platipy/platipy:totalsegmentator
+            ghcr.io/pyplati/platipy:totalsegmentator
