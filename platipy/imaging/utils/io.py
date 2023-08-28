@@ -2,13 +2,14 @@ from matplotlib import cm
 import numpy as np
 import SimpleITK as sitk
 
+import matplotlib
 import matplotlib.colors as mcolors
 
 
 def write_nrrd_structure_set(
     masks,
     output_file="structure_set.nrrd",
-    colormap=cm.get_cmap("rainbow"),
+    colormap=matplotlib.colormaps.get_cmap("rainbow"),
     use_compression=True,
     compression_level=9,
 ):
@@ -20,7 +21,7 @@ def write_nrrd_structure_set(
             "structure_set.nrrd".
         colormap (matplotlib.colors.Colormap | dict, optional): Colormap to use for output.
             Can also use a dictionary with keys as structure names and values as colors.
-            Defaults to cm.get_cmap("rainbow").
+            Defaults to matplotlib.colormaps.get_cmap("rainbow").
         use_compression (bool, optional): Used by SimpleITK's WriteImage function to enable
             compression when writing output file. Defaults to True.
         compression_level (int, optional): Used by SimpleITK's WriteImage function to specify how
@@ -52,7 +53,6 @@ def write_nrrd_structure_set(
         structure_value = 1
         dim = 0
         if len(all_arr) > 0:
-
             # Check if this structure has space in the current dim
             # Append a new dim if not
             struct_added = False
