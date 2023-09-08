@@ -149,7 +149,7 @@ def linear_registration(
     # to do: add the rest
 
     registration.SetInterpolator(sitk.sitkLinear)  # Perhaps a small gain in improvement
-    registration.SetMetricSamplingPercentage(sampling_rate)
+    registration.SetMetricSamplingPercentage(sampling_rate, seed=42)
     registration.SetMetricSamplingStrategy(sitk.ImageRegistrationMethod.REGULAR)
 
     # This is only necessary if using a transform comprising changes with different units
