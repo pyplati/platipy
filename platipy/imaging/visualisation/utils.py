@@ -58,6 +58,7 @@ class VisualiseScalarOverlay:
         min_value=False,
         max_value=False,
         discrete_levels=False,
+        show_as_contours=False,
         mid_ticks=False,
         show_colorbar=True,
         norm=None,
@@ -70,6 +71,7 @@ class VisualiseScalarOverlay:
         self.min_value = min_value
         self.max_value = max_value
         self.discrete_levels = discrete_levels
+        self.show_as_contours = show_as_contours
         self.mid_ticks = mid_ticks
         self.show_colorbar = show_colorbar
         self.norm = norm
@@ -250,7 +252,7 @@ def reorientate_vector_field(axis, vector_ax, vector_cor, vector_sag, invert_fie
     if axis == "y":  # coronal projection
         return vector_sag, vector_ax, vector_cor
     if axis == "z":  # axial projection
-        return vector_sag, -vector_cor, vector_ax
+        return -vector_sag, -vector_cor, vector_ax
 
     return None
 

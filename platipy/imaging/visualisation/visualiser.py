@@ -18,6 +18,9 @@ import logging
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import matplotlib.colors as colors
+
+# from mpl_toolkits.axes_grid1 import make_axes_locatable  # , AxesGrid, ImageGrid
 
 import numpy as np
 import SimpleITK as sitk
@@ -165,7 +168,9 @@ class ImageVisualiser:
 
         if isinstance(contour, dict):
             if not all(map(lambda i: isinstance(i, sitk.Image), contour.values())):
-                raise ValueError("When passing dict, all values must be of type SimpleITK.Image")
+                raise ValueError(
+                    "When passing dict, all values must be of type SimpleITK.Image"
+                )
 
             for contour_name in contour:
                 if isinstance(color, dict):
@@ -212,6 +217,7 @@ class ImageVisualiser:
         min_value=False,
         max_value=False,
         discrete_levels=False,
+        show_as_contours=False,
         mid_ticks=False,
         show_colorbar=True,
         norm=None,
@@ -238,7 +244,9 @@ class ImageVisualiser:
 
         if isinstance(scalar_image, dict):
             if not all(map(lambda i: isinstance(i, sitk.Image), scalar_image.values())):
-                raise ValueError("When passing dict, all values must be of type SimpleITK.Image")
+                raise ValueError(
+                    "When passing dict, all values must be of type SimpleITK.Image"
+                )
 
             for name in scalar_image:
                 visualise_scalar = VisualiseScalarOverlay(
@@ -249,6 +257,7 @@ class ImageVisualiser:
                     min_value=min_value,
                     max_value=max_value,
                     discrete_levels=discrete_levels,
+                    show_as_contours=show_as_contours,
                     mid_ticks=mid_ticks,
                     show_colorbar=show_colorbar,
                     norm=norm,
@@ -270,6 +279,7 @@ class ImageVisualiser:
                 min_value=min_value,
                 max_value=max_value,
                 discrete_levels=discrete_levels,
+                show_as_contours=show_as_contours,
                 mid_ticks=mid_ticks,
                 show_colorbar=show_colorbar,
                 norm=norm,
@@ -395,7 +405,9 @@ class ImageVisualiser:
                     bounding_box.values(),
                 )
             ):
-                raise ValueError("All values must be of type list or tuple with length 6")
+                raise ValueError(
+                    "All values must be of type list or tuple with length 6"
+                )
 
             for name in bounding_box:
                 visualise_bounding_box = VisualiseBoundingBox(
@@ -427,9 +439,9 @@ class ImageVisualiser:
             self._overlay_comparison()
 
         self._overlay_scalar_field()
-        self._overlay_vector_field()
         self._overlay_contours()
         self._overlay_bounding_boxes()
+        self._overlay_vector_field()
 
         self._adjust_view()
 
@@ -469,7 +481,8 @@ class ImageVisualiser:
                 window = (lower, upper - lower)
         try:
             logger.info(
-                "Found a (z,y,x,%s) dimensional array - assuming this is an RGB" "image.",
+                "Found a (z,y,x,%s) dimensional array - assuming this is an RGB"
+                "image.",
                 nda.shape[3],
             )
             nda /= nda.max()
@@ -497,7 +510,9 @@ class ImageVisualiser:
         if self.__axis == "ortho":
             figure_size = (
                 self.__figure_size,
-                self.__figure_size * (asp * ax_size + cor_size) / (1.0 * sag_size + cor_size),
+                self.__figure_size
+                * (asp * ax_size + cor_size)
+                / (1.0 * sag_size + cor_size),
             )
 
             self.__figure, ((ax_ax, blank), (ax_cor, ax_sag)) = plt.subplots(
@@ -720,7 +735,9 @@ class ImageVisualiser:
         if self.__axis == "ortho":
             figure_size = (
                 self.__figure_size,
-                self.__figure_size * (asp * ax_size + cor_size) / (1.0 * sag_size + cor_size),
+                self.__figure_size
+                * (asp * ax_size + cor_size)
+                / (1.0 * sag_size + cor_size),
             )
 
             self.__figure, ((ax_ax, blank), (ax_cor, ax_sag)) = plt.subplots(
@@ -840,7 +857,10 @@ class ImageVisualiser:
             s = return_slice(self.__axis, self.__cut)
 
             nda_colormix = generate_comparison_colormix(
-                [nda_original, nda_new], arr_slice=s, window=window, color_rotation=color_rotation
+                [nda_original, nda_new],
+                arr_slice=s,
+                window=window,
+                color_rotation=color_rotation,
             )
 
             ax.imshow(
@@ -958,7 +978,11 @@ class ImageVisualiser:
                 y_0, y_1 = sorted([y_0, y_1])
 
                 if self.__axis == "z" and self.__origin == "normal":
-                    y_0, y_1 = y_1, y_0
+                    y_1, y_0 = (
+                        self.__image.GetSize()[0] - y_0,
+                        self.__image.GetSize()[0] - y_1,
+                    )
+                # I don't know why I put this in
 
                 ratio_x = np.abs(x_1 - x_0) / np.abs(x_orig_1 - x_orig_0)
                 ratio_y = np.abs(y_1 - y_0) / np.abs(y_orig_1 - y_orig_0)
@@ -991,7 +1015,9 @@ class ImageVisualiser:
             if contour.color is not None:
                 color_dict[contour.name] = contour.color
             else:
-                color_map = self.__contour_colormap(np.linspace(0, 1, len(self.__contours)))
+                color_map = self.__contour_colormap(
+                    np.linspace(0, 1, len(self.__contours))
+                )
 
                 color_dict[contour.name] = color_map[color_gen_index % 255]
                 color_gen_index += 1
@@ -1041,27 +1067,28 @@ class ImageVisualiser:
                     else:
                         origin = "lower"
 
-                    try:
-                        ax.contour(
-                            contour_disp,
-                            colors=[color_dict[c_name]],
-                            levels=[0.5],
-                            # alpha=0.8,
-                            linewidths=lw_dict[c_name],
-                            linestyles=ls_dict[c_name],
-                            extent=extent_dict[self.__axis],
-                            origin=origin,
-                        )
-                        ax.plot(
-                            [0],
-                            [0],
-                            lw=lw_dict[c_name],
-                            ls=ls_dict[c_name],
-                            c=color_dict[c_name],
-                            label=c_name,
-                        )
-                    except AttributeError:
-                        pass
+                try:
+                    ax.contour(
+                        contour_disp,
+                        colors=[color_dict[c_name]],
+                        levels=[0.5],
+                        # alpha=0.8,
+                        linewidths=lw_dict[c_name],
+                        linestyles=ls_dict[c_name],
+                        extent=extent_dict[self.__axis],
+                        origin=origin,
+                        zorder=0,
+                    )
+                    ax.plot(
+                        [0],
+                        [0],
+                        lw=lw_dict[c_name],
+                        ls=ls_dict[c_name],
+                        c=color_dict[c_name],
+                        label=c_name,
+                    )
+                except AttributeError:
+                    pass
 
             elif self.__axis == "ortho":
                 ax_ax, _, ax_cor, ax_sag = axes
@@ -1074,6 +1101,7 @@ class ImageVisualiser:
 
                 for _, c_name in enumerate(plot_dict.keys()):
                     if not self.__projection:
+
                         contour_ax = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_ax)
                         contour_cor = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_cor)
                         contour_sag = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_sag)
@@ -1171,13 +1199,18 @@ class ImageVisualiser:
             else:
                 s_min = nda.min()
 
+            colormap_name = scalar.colormap.name
+            colormap = plt.cm.get_cmap(colormap_name)
+
             if scalar.discrete_levels:
-                colormap_name = scalar.colormap.name
-                colormap = matplotlib.colormaps.get_cmap(colormap_name)
                 colormap = colormap.resampled(scalar.discrete_levels)
 
-            else:
-                colormap = scalar.colormap
+            if scalar.discrete_levels or scalar.show_as_contours:
+                if not scalar.discrete_levels:
+                    scalar.discrete_levels = 10
+
+                colormap = plt.cm.get_cmap(colormap_name, scalar.discrete_levels)
+                contour_levels = scalar.discrete_levels
 
             if scalar.norm:
                 norm = scalar.norm
@@ -1247,54 +1280,105 @@ class ImageVisualiser:
                 cor_img = np.ma.masked_less_equal(cor_img, s_min)
                 sag_img = np.ma.masked_less_equal(sag_img, s_min)
 
-                ax_view = ax_ax.imshow(
-                    ax_img,
-                    interpolation="none",
-                    cmap=colormap,
-                    clim=(s_min, s_max),
-                    aspect=1,
-                    origin={"normal": "upper", "reversed": "lower"}[self.__origin],
-                    vmin=s_min,
-                    vmax=s_max,
-                    alpha=alpha,
-                    norm=norm,
-                    extent=extent_dict["z"],
-                )
+                if scalar.show_as_contours:
 
-                cor_view = ax_cor.imshow(
-                    cor_img,
-                    interpolation="none",
-                    cmap=colormap,
-                    clim=(s_min, s_max),
-                    origin="lower",
-                    aspect=asp,
-                    vmin=s_min,
-                    vmax=s_max,
-                    alpha=alpha,
-                    norm=norm,
-                    extent=extent_dict["y"],
-                )
+                    ax_view = ax_ax.contour(
+                        ax_img,
+                        levels=contour_levels,
+                        cmap=colormap,
+                        linewidths=[1],
+                        origin={"normal": "upper", "reversed": "lower"}[self.__origin],
+                        vmin=s_min,
+                        vmax=s_max,
+                        alpha=alpha,
+                        norm=norm,
+                        extent=extent_dict["z"],
+                    )
 
-                sag_view = ax_sag.imshow(
-                    sag_img,
-                    interpolation="none",
-                    cmap=colormap,
-                    clim=(s_min, s_max),
-                    origin="lower",
-                    aspect=asp,
-                    vmin=s_min,
-                    vmax=s_max,
-                    alpha=alpha,
-                    norm=norm,
-                    extent=extent_dict["x"],
-                )
+                    # we can't plot colorbars with contour plots
+                    # so we create an equivalent scalar mappable
+                    norm = colors.Normalize(
+                        vmin=ax_view.cvalues.min(), vmax=ax_view.cvalues.max()
+                    )
 
-                # this is for (work-in-progress) dynamic visualisation
-                self.__scalar_view = {
-                    "ax_view": ax_view,
-                    "cor_view": cor_view,
-                    "sag_view": sag_view,
-                }
+                    ax_view = plt.cm.ScalarMappable(norm=norm, cmap=ax_view.cmap)
+                    ax_view.set_array([])
+
+                    _ = ax_cor.contour(
+                        cor_img,
+                        levels=contour_levels,
+                        cmap=colormap,
+                        linewidths=[1],
+                        origin="lower",
+                        vmin=s_min,
+                        vmax=s_max,
+                        alpha=alpha,
+                        norm=norm,
+                        extent=extent_dict["y"],
+                    )
+
+                    _ = ax_sag.contour(
+                        sag_img,
+                        levels=contour_levels,
+                        cmap=colormap,
+                        linewidths=[1],
+                        origin="lower",
+                        vmin=s_min,
+                        vmax=s_max,
+                        alpha=alpha,
+                        norm=norm,
+                        extent=extent_dict["x"],
+                    )
+
+                else:
+                    ax_view = ax_ax.imshow(
+                        ax_img,
+                        interpolation="none",
+                        cmap=colormap,
+                        clim=(s_min, s_max),
+                        aspect=1,
+                        origin={"normal": "upper", "reversed": "lower"}[self.__origin],
+                        vmin=s_min,
+                        vmax=s_max,
+                        alpha=alpha,
+                        norm=norm,
+                        extent=extent_dict["z"],
+                    )
+
+                    cor_view = ax_cor.imshow(
+                        cor_img,
+                        interpolation="none",
+                        cmap=colormap,
+                        clim=(s_min, s_max),
+                        origin="lower",
+                        aspect=asp,
+                        vmin=s_min,
+                        vmax=s_max,
+                        alpha=alpha,
+                        norm=norm,
+                        extent=extent_dict["y"],
+                    )
+
+                    sag_view = ax_sag.imshow(
+                        sag_img,
+                        interpolation="none",
+                        cmap=colormap,
+                        clim=(s_min, s_max),
+                        origin="lower",
+                        aspect=asp,
+                        vmin=s_min,
+                        vmax=s_max,
+                        alpha=alpha,
+                        norm=norm,
+                        extent=extent_dict["x"],
+                    )
+
+                    # this is for (work-in-progress) dynamic visualisation
+                    self.__scalar_view = {
+                        "ax_view": ax_view,
+                        "cor_view": cor_view,
+                        "sag_view": sag_view,
+                    }
 
             else:
                 ax = self.__figure.axes[0]
@@ -1322,19 +1406,46 @@ class ImageVisualiser:
                     origin = "lower"
 
                 s = return_slice(self.__axis, self.__cut)
-                ax_view = ax.imshow(
-                    disp_img,
-                    interpolation="none",
-                    cmap=colormap,
-                    clim=(s_min, s_max),
-                    origin=origin,
-                    aspect=asp,
-                    vmin=s_min,
-                    vmax=s_max,
-                    alpha=alpha,
-                    norm=norm,
-                    extent=extent_dict[self.__axis],
-                )
+
+                if scalar.show_as_contours:
+
+                    _ = ax.contour(
+                        disp_img,
+                        levels=contour_levels,
+                        cmap=colormap,
+                        linewidths=[1],
+                        origin=origin,
+                        vmin=s_min,
+                        vmax=s_max,
+                        alpha=alpha,
+                        norm=norm,
+                        extent=extent_dict[self.__axis],
+                    )
+
+                    # create a scalar mappable for the colorbar
+                    if scalar.norm:
+                        contour_norm = scalar.norm(vmin=s_min, vmax=s_max)
+                    else:
+                        contour_norm = colors.Normalize(vmin=s_min, vmax=s_max)
+
+                    ax_view = plt.cm.ScalarMappable(cmap=colormap, norm=contour_norm)
+                    ax_view.set_array([])
+
+                else:
+
+                    ax_view = ax.imshow(
+                        disp_img,
+                        interpolation="none",
+                        cmap=colormap,
+                        clim=(s_min, s_max),
+                        origin=origin,
+                        aspect=asp,
+                        vmin=s_min,
+                        vmax=s_max,
+                        alpha=alpha,
+                        norm=norm,
+                        extent=extent_dict[self.__axis],
+                    )
 
             if scalar.show_colorbar:
                 # divider = make_axes_locatable(ax_view)
@@ -1365,7 +1476,7 @@ class ImageVisualiser:
                     )
 
                     # check background values
-                    if np.linalg.norm(colormap(0)[:3]) < 0.1:
+                    if np.linalg.norm(self.__colormap(0)[:3]) < 0.1:
                         # background is dark
                         cbar_color = "white"
 
@@ -1390,7 +1501,9 @@ class ImageVisualiser:
                                 scalar.discrete_levels,
                             )
                         )
-                        cbar.set_ticklabels(np.linspace(s_min, s_max, scalar.discrete_levels))
+                        cbar.set_ticklabels(
+                            np.linspace(s_min, s_max, scalar.discrete_levels)
+                        )
 
                     else:
                         cbar.set_ticks(
@@ -1432,13 +1545,15 @@ class ImageVisualiser:
             if len(axes[:4]) < 4:
                 ax = axes[0]
 
-                if hasattr(subsample, "__iter__"):
-                    raise ValueError(
-                        "You have selected an iterable subsampling factor for a\
-                                      single axis. Behaviour undefined in this situation."
-                    )
+                if not hasattr(subsample, "__iter__"):
+                    subsample = (subsample,) * 3
 
-                slicer = subsample_vector_field(self.__axis, self.__cut, subsample)
+                subsample_img = [
+                    int(np.ceil((i / j)))
+                    for i, j in zip(subsample, image.GetSpacing()[::-1])
+                ]
+
+                slicer = subsample_vector_field(self.__axis, self.__cut, subsample_img)
                 vector_nda_slice = vector_nda.__getitem__(slicer)
 
                 vector_ax = vector_nda_slice[:, :, 2].T
@@ -1457,13 +1572,19 @@ class ImageVisualiser:
                     invert_field=invert_field,
                 )
 
-                plot_x_loc, plot_y_loc = vector_image_grid(self.__axis, vector_nda, subsample)
+                plot_x_loc, plot_y_loc = vector_image_grid(
+                    self.__axis, vector_nda, subsample_img
+                )
+
+                if self.__origin == "normal" and self.__axis == "z":
+                    plot_y_loc = np.flip(plot_y_loc, 1)
+                    vector_plot_x = -1.0 * vector_plot_x
 
                 if color_function == "perpendicular":
                     vector_color = vector_plot_z
                 elif color_function == "magnitude":
                     vector_color = np.sqrt(
-                        vector_plot_x**2 + vector_plot_y**2 + vector_plot_z**2
+                        vector_plot_x ** 2 + vector_plot_y ** 2 + vector_plot_z ** 2
                     )
 
                 if max_value is False:
@@ -1511,7 +1632,8 @@ class ImageVisualiser:
                         subsample = (subsample,) * 3
 
                     subsample_img = [
-                        int(np.ceil((i / j))) for i, j in zip(subsample, image.GetSpacing()[::-1])
+                        int(np.ceil((i / j)))
+                        for i, j in zip(subsample, image.GetSpacing()[::-1])
                     ]
 
                     slicer = subsample_vector_field(im_axis, im_cut, subsample_img)
@@ -1525,21 +1647,29 @@ class ImageVisualiser:
                         vector_plot_x,
                         vector_plot_y,
                         vector_plot_z,
-                    ) = reorientate_vector_field(im_axis, vector_ax, vector_cor, vector_sag)
+                    ) = reorientate_vector_field(
+                        im_axis, vector_ax, vector_cor, vector_sag
+                    )
 
-                    plot_x_loc, plot_y_loc = vector_image_grid(im_axis, vector_nda, subsample_img)
+                    plot_x_loc, plot_y_loc = vector_image_grid(
+                        im_axis, vector_nda, subsample_img
+                    )
 
                     if color_function == "perpendicular":
                         vector_color = vector_plot_z
                     elif color_function == "magnitude":
                         vector_color = np.sqrt(
-                            vector_plot_x**2 + vector_plot_y**2 + vector_plot_z**2
+                            vector_plot_x ** 2 + vector_plot_y ** 2 + vector_plot_z ** 2
                         )
 
                     if max_value is False:
                         max_value = vector_color.max()
                     if min_value is False:
                         min_value = vector_color.min()
+
+                    if self.__origin == "normal" and im_axis == "z":
+                        plot_y_loc = np.flip(plot_y_loc, 1)
+                        vector_plot_x = -1.0 * vector_plot_x
 
                     sp_vector = plot_axes.quiver(
                         plot_x_loc,
@@ -1585,11 +1715,13 @@ class ImageVisualiser:
                     )
 
                     # check background values
-                    if np.linalg.norm(colormap(0)[:3]) < 0.1:
+                    if np.linalg.norm(self.__colormap(0)[:3]) < 0.1:
                         # background is dark
                         cbar_color = "white"
 
-                cbar = self.__figure.colorbar(sp_vector, cax=cax, orientation="vertical")
+                cbar = self.__figure.colorbar(
+                    sp_vector, cax=cax, orientation="vertical"
+                )
 
                 # set color
                 cbar.outline.set_edgecolor(color=cbar_color)
