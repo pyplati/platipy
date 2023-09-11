@@ -15,6 +15,7 @@
 import os
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 import SimpleITK as sitk
@@ -98,10 +99,8 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
     results = None
     meta_data_cols = [("", "Contour")]
     for data_obj in data_objects:
-
         try:
             if len(data_obj.children) > 0:
-
                 logger.info("Running on data object: %s", data_obj.path)
 
                 # Read the image series
@@ -112,7 +111,6 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
                 # Children of Image Data Object are masks, compute PyRadiomics for all of them!
                 output_frame = pd.DataFrame()
                 for child_obj in data_obj.children:
-
                     contour_name = child_obj.path.split("/")[-1].split(".")[0]
                     if len(settings["contours"]) > 0 and not contour_name in settings["contours"]:
                         # If a contour list is provided and this contour isn't in the list then
@@ -152,7 +150,6 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
                     logger.info("Computing Radiomics for contour: %s", contour_name)
 
                     for rad in settings["radiomics"].keys():
-
                         logger.info("Computing %s radiomics", rad)
 
                         if rad not in AVAILABLE_RADIOMICS.keys():
@@ -192,7 +189,6 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
                     # Add the meta data for this contour if there is any
                     if child_obj.meta_data:
                         for key in child_obj.meta_data:
-
                             col_key = ("", key)
 
                             output_frame[col_key] = child_obj.meta_data[key]
@@ -203,7 +199,6 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
                 # Add Image Series Data Object's Meta Data to the table
                 if data_obj.meta_data:
                     for key in data_obj.meta_data.keys():
-
                         col_key = ("", key)
 
                         output_frame[col_key] = pd.Series(
@@ -243,7 +238,6 @@ def pyradiomics_extractor(data_objects, working_dir, settings):
 
 class RadiomicsEndpoint(Resource):
     def get(self):
-
         logger.info(firstorder.RadiomicsFirstOrder.getFeatureNames())
 
         result = {}
@@ -257,7 +251,6 @@ class RadiomicsEndpoint(Resource):
 api.add_resource(RadiomicsEndpoint, "/api/radiomics")
 
 if __name__ == "__main__":
-
     # Run app by calling "python service.py" from the command line
 
     DICOM_LISTENER_PORT = 7777

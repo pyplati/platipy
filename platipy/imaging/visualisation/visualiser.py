@@ -15,6 +15,7 @@
 import warnings
 import logging
 
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.colors as colors
@@ -61,7 +62,7 @@ class ImageVisualiser:
         window=None,
         figure_size_in=10,
         limits=None,
-        colormap=plt.cm.get_cmap("Greys_r"),
+        colormap=matplotlib.colormaps.get_cmap("Greys_r"),
         origin="normal",
         projection=False,
     ):
@@ -92,7 +93,6 @@ class ImageVisualiser:
         self.__image = image
 
     def __set_labelmap(self, labelmap, labels=None):
-
         # TODO: Convert label map to binary masks for display
 
         raise NotImplementedError
@@ -145,7 +145,7 @@ class ImageVisualiser:
         contour,
         name=None,
         color=None,
-        colormap=plt.cm.get_cmap("rainbow"),
+        colormap=matplotlib.colormaps.get_cmap("rainbow"),
         linewidth=2,
         linestyle="solid",
         show_legend=True,
@@ -167,14 +167,12 @@ class ImageVisualiser:
         self.__show_legend = show_legend
 
         if isinstance(contour, dict):
-
             if not all(map(lambda i: isinstance(i, sitk.Image), contour.values())):
                 raise ValueError(
                     "When passing dict, all values must be of type SimpleITK.Image"
                 )
 
             for contour_name in contour:
-
                 if isinstance(color, dict):
                     try:
                         contour_color = color[contour_name]
@@ -193,7 +191,6 @@ class ImageVisualiser:
                 self.__contours.append(visualise_contour)
 
         elif isinstance(contour, sitk.Image):
-
             # Use a default name if not specified
             if name is None:
                 name = "contour"
@@ -204,7 +201,6 @@ class ImageVisualiser:
             )
             self.__contours.append(visualise_contour)
         else:
-
             raise ValueError(
                 "Contours should be represented as a dict with contour name as key "
                 "and sitk.Image as value, or as an sitk.Image and passing the contour_name"
@@ -216,7 +212,7 @@ class ImageVisualiser:
         self,
         scalar_image,
         name=None,
-        colormap=plt.cm.get_cmap("cubehelix"),
+        colormap=matplotlib.colormaps.get_cmap("cubehelix"),
         alpha=0.75,
         min_value=False,
         max_value=False,
@@ -234,8 +230,8 @@ class ImageVisualiser:
             name (str, optional): Name to give the scalar image (only used if passing sitk.Image as
                                   scalar image). Defaults to None.
             colormap (matplotlib.colors.Colormap, optional): The colormap to be used when
-                                                             overlaying this scalar image. Defaults
-                                                             to plt.cm.get_cmap("cubehelix").
+                overlaying this scalar image. Defaults to
+                matplotlib.colormaps.get_cmap("cubehelix").
             alpha (float, optional): Alpha to apply to overlay. Defaults to 0.75.
             min_value (float, optional): Values below this value aren't rendered. Defaults to 0.1.
 
@@ -247,7 +243,6 @@ class ImageVisualiser:
         self.__show_colorbar = True
 
         if isinstance(scalar_image, dict):
-
             if not all(map(lambda i: isinstance(i, sitk.Image), scalar_image.values())):
                 raise ValueError(
                     "When passing dict, all values must be of type SimpleITK.Image"
@@ -271,7 +266,6 @@ class ImageVisualiser:
                 self.__scalar_overlays.append(visualise_scalar)
 
         elif isinstance(scalar_image, sitk.Image):
-
             # Use a default name if not specified
             if not name:
                 name = "Value"
@@ -293,7 +287,6 @@ class ImageVisualiser:
             )
             self.__scalar_overlays.append(visualise_scalar)
         else:
-
             raise ValueError(
                 "Contours should be represented as a dict with contour name as key "
                 "and sitk.Image as value, or as an sitk.Image and passing the contour_name"
@@ -304,7 +297,7 @@ class ImageVisualiser:
         vector_image,
         min_value=False,
         max_value=False,
-        colormap=plt.cm.get_cmap("inferno"),
+        colormap=matplotlib.colormaps.get_cmap("inferno"),
         discrete_levels=False,
         mid_ticks=False,
         alpha=0.75,
@@ -322,8 +315,7 @@ class ImageVisualiser:
             name (str, optional): Name to give the vector field (only used if passing
                                   sitk.Image as vector field). Defaults to None.
             colormap (matplotlib.colors.Colormap, optional): The colormap to be used when
-                                                             overlaying this vector field. Defaults
-                                                             to plt.cm.get_cmap("inferno").
+                overlaying this vector field. Defaults to matplotlib.colormaps.get_cmap("inferno").
             alpha (float, optional): Alpha to apply to overlay vectors. Defaults to 0.75.
             arrow_scale (float, optional): Relative scaling of vectors. Defaults to 1.
             arrow_width (float, optional): Width of vector field arrow. Defaults to 1.
@@ -342,7 +334,6 @@ class ImageVisualiser:
             isinstance(vector_image, sitk.Image)
             and vector_image.GetNumberOfComponentsPerPixel() > 1
         ):
-
             # Use a default name if not specified
             if not name:
                 name = "Vector Field [mm]"
@@ -365,7 +356,6 @@ class ImageVisualiser:
             )
             self.__vector_overlays.append(visualise_vector_field)
         else:
-
             raise ValueError("Vector field should be sitk.Image (of vector type).")
 
     def add_comparison_overlay(self, image, name=None, color_rotation=0.35):
@@ -381,13 +371,11 @@ class ImageVisualiser:
         """
 
         if isinstance(image, sitk.Image):
-
             visualise_comparison = VisualiseComparisonOverlay(
                 image, name, color_rotation=color_rotation
             )
             self.__comparison_overlays.append(visualise_comparison)
         else:
-
             raise ValueError("Image should be sitk.Image.")
 
     def add_bounding_box(self, bounding_box, name=None, color="r", linewidth=2):
@@ -411,7 +399,6 @@ class ImageVisualiser:
         self.__show_legend = True
 
         if isinstance(bounding_box, dict):
-
             if not all(
                 map(
                     lambda i: isinstance(i, (list, tuple, sitk.Image)) and len(i) == 6,
@@ -429,7 +416,6 @@ class ImageVisualiser:
                 self.__bounding_boxes.append(visualise_bounding_box)
 
         elif isinstance(bounding_box, (list, tuple, sitk.Image)):
-
             # Use a default name if not specified
             if name is None:
                 name = "Bounding box"
@@ -627,7 +613,6 @@ class ImageVisualiser:
             }
 
         else:
-
             if hasattr(self.__cut, "__iter__"):
                 warnings.warn(
                     "You have selected a single axis and multiple slice locations, attempting to "
@@ -831,7 +816,6 @@ class ImageVisualiser:
             )
 
         else:
-
             if hasattr(self.__cut, "__iter__"):
                 warnings.warn(
                     "You have selected a single axis and multiple slice locations, attempting to "
@@ -970,7 +954,6 @@ class ImageVisualiser:
                 ax_ax_bbox = gs[0].get_position(self.__figure)
 
                 for cax_index, cax in enumerate(cax_list):
-
                     cbar_width = ax_ax_bbox.width * 0.05
 
                     cax.set_position(
@@ -1117,18 +1100,11 @@ class ImageVisualiser:
                 s_sag = return_slice("x", self.__cut[2])
 
                 for _, c_name in enumerate(plot_dict.keys()):
-
                     if not self.__projection:
 
-                        contour_ax = sitk.GetArrayFromImage(
-                            plot_dict[c_name]
-                        ).__getitem__(s_ax)
-                        contour_cor = sitk.GetArrayFromImage(
-                            plot_dict[c_name]
-                        ).__getitem__(s_cor)
-                        contour_sag = sitk.GetArrayFromImage(
-                            plot_dict[c_name]
-                        ).__getitem__(s_sag)
+                        contour_ax = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_ax)
+                        contour_cor = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_cor)
+                        contour_sag = sitk.GetArrayFromImage(plot_dict[c_name]).__getitem__(s_sag)
 
                         # Force a single pixel to 1 to display all contours
                         # even if they aren't defined on a particular slice
@@ -1208,7 +1184,6 @@ class ImageVisualiser:
         """Overlay the scalar image onto the existing figure"""
 
         for scalar_index, scalar in enumerate(self.__scalar_overlays):
-
             scalar_image = scalar.image
             nda = sitk.GetArrayFromImage(scalar_image)
 
@@ -1226,6 +1201,9 @@ class ImageVisualiser:
 
             colormap_name = scalar.colormap.name
             colormap = plt.cm.get_cmap(colormap_name)
+
+            if scalar.discrete_levels:
+                colormap = colormap.resampled(scalar.discrete_levels)
 
             if scalar.discrete_levels or scalar.show_as_contours:
                 if not scalar.discrete_levels:
@@ -1260,7 +1238,6 @@ class ImageVisualiser:
                 projection = self.__projection
 
             if self.__axis == "ortho":
-
                 ax_ax, _, ax_cor, ax_sag = self.__figure.axes[:4]
                 ax = ax_ax
 
@@ -1404,7 +1381,6 @@ class ImageVisualiser:
                     }
 
             else:
-
                 ax = self.__figure.axes[0]
 
                 if not projection:
@@ -1472,7 +1448,6 @@ class ImageVisualiser:
                     )
 
             if scalar.show_colorbar:
-
                 # divider = make_axes_locatable(ax_view)
                 # cax = divider.append_axes("right", size="5%", pad=0.05)
 
@@ -1517,9 +1492,7 @@ class ImageVisualiser:
                 cbar.solids.set_alpha(1)
 
                 if scalar.discrete_levels:
-
                     if scalar.mid_ticks:
-
                         delta_tick = (s_max - s_min) / scalar.discrete_levels
                         cbar.set_ticks(
                             np.linspace(
@@ -1548,7 +1521,6 @@ class ImageVisualiser:
             raise Warning("Vector overlay is not implemented in projection mode.")
 
         for vector_index, vector in enumerate(self.__vector_overlays):
-
             image = vector.image
             colormap = vector.colormap
             alpha = vector.alpha
@@ -1566,7 +1538,7 @@ class ImageVisualiser:
 
             if vector.discrete_levels:
                 colormap_name = vector.colormap.name
-                colormap = plt.cm.get_cmap(colormap_name, vector.discrete_levels)
+                colormap = matplotlib.colormaps.get_cmap(colormap_name, vector.discrete_levels)
 
             # Test types of axes
             axes = self.__figure.axes
@@ -1656,7 +1628,6 @@ class ImageVisualiser:
                 for plot_axes, im_axis, im_cut in zip(
                     (ax_ax, ax_cor, ax_sag), ("z", "y", "x"), self.__cut
                 ):
-
                     if not hasattr(subsample, "__iter__"):
                         subsample = (subsample,) * 3
 
@@ -1716,7 +1687,6 @@ class ImageVisualiser:
                     )
 
             if vector.show_colorbar:
-
                 # divider = make_axes_locatable(ax_view)
                 # cax = divider.append_axes("right", size="5%", pad=0.05)
 
@@ -1763,9 +1733,7 @@ class ImageVisualiser:
                 cbar.solids.set_alpha(1)
 
                 if vector.discrete_levels:
-
                     if vector.mid_ticks:
-
                         delta_tick = (max_value - min_value) / vector.discrete_levels
                         cbar.set_ticks(
                             np.linspace(
@@ -1788,7 +1756,6 @@ class ImageVisualiser:
                         )
 
     def draw_bounding_box_on_axes(self, ax, view, box, add_label=True):
-
         sag_0, cor_0, ax_0, sag_d, cor_d, ax_d = box.bounding_box
 
         from_points = None
@@ -1826,7 +1793,6 @@ class ImageVisualiser:
         """
 
         for box in self.__bounding_boxes:
-
             # Test types of axes
             axes = self.__figure.axes[:4]
             if len(axes) < 4:
@@ -1843,7 +1809,6 @@ class ImageVisualiser:
         """Add a legend to the visualisation"""
 
         if len(self.__figure.axes) >= 4:
-
             ax_ax = self.__figure.axes[0]
             ax_ax_position = ax_ax.get_position()
             y_pos_legend = (ax_ax_position.ymax + ax_ax_position.ymin) / 2
@@ -1882,11 +1847,12 @@ class ImageVisualiser:
                     approx_font_scaling = self.__figure_size / (
                         len(self.__contours) + len(self.__bounding_boxes)
                     )
+                    fontsize = min([10, 16 * approx_font_scaling])
 
                     plt.figlegend(
                         loc="center left",
                         bbox_to_anchor=(x_pos_legend, y_pos_legend),
-                        fontsize=min([10, 16 * approx_font_scaling]),
+                        fontsize=fontsize,
                         ncol=1,  #!TODO modify this for large numbers of contours
                     )
 

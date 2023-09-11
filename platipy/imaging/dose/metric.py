@@ -72,7 +72,7 @@ def calculate_d_to_volume(dose_grid, label, volume, volume_in_cc=False):
     mask_array = sitk.GetArrayFromImage(label)
 
     if volume_in_cc:
-        volume = (volume * 1000 / ((mask_array > 0).sum() * np.product(label.GetSpacing()))) * 100
+        volume = (volume * 1000 / ((mask_array > 0).sum() * np.prod(label.GetSpacing()))) * 100
 
     if volume > 100:
         volume = 100
@@ -106,7 +106,7 @@ def calculate_v_receiving_dose(dose_grid, label, dose_threshold, relative=True):
     if relative:
         return relative_volume
 
-    total_volume = (mask_array > 0).sum() * np.product(label.GetSpacing()) / 1000
+    total_volume = (mask_array > 0).sum() * np.prod(label.GetSpacing()) / 1000
 
     return relative_volume * total_volume
 

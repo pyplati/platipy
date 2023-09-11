@@ -19,6 +19,7 @@ import SimpleITK as sitk
 
 import pandas as pd
 
+import matplotlib
 import matplotlib.lines as mlines
 import matplotlib as plt
 import matplotlib.colors as mcolors
@@ -47,7 +48,7 @@ def contour_comparison(
     title="",
     subtitle="",
     subsubtitle="",
-    contour_cmap=plt.cm.get_cmap("rainbow"),
+    contour_cmap=matplotlib.colormaps.get_cmap("rainbow"),
     structure_name_dict=None,
     img_vis_kw=None,
 ):
@@ -75,7 +76,7 @@ def contour_comparison(
         subsubtitle (str, optional): Subsubtitle of the plot, set to "" to remove.
             Defaults to "SUBSUBTITLE TEXT".
         contour_cmap (plt.cm.colormap, optional): Contour colormap.
-            Defaults to plt.cm.get_cmap("rainbow").
+            Defaults to matplotlib.colormaps.get_cmap("rainbow").
         structure_name_dict (dict, optional): A "translation" dictionary used to overwrite the
             names of contours in the metric table. Defaults to using the names in the contour_dict.
         img_vis_kw (dict, optional): Passed to the ImageVisualiser class. Defaults to {}.
@@ -92,7 +93,6 @@ def contour_comparison(
         img_vis_kw = {}
 
     if "cut" not in img_vis_kw:
-
         cut = None
 
         # first check if the user has specified a structure
@@ -132,14 +132,16 @@ def contour_comparison(
         colors_a = {
             s + "a": c
             for s, c in zip(
-                s_select, plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select)))
+                s_select,
+                matplotlib.colormaps.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select))),
             )
         }
 
         colors_b = {
             s + "b": c
             for s, c in zip(
-                s_select, plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select)))
+                s_select,
+                matplotlib.colormaps.get_cmap(contour_cmap)(np.linspace(0, 1, len(s_select))),
             )
         }
 
@@ -264,7 +266,6 @@ def contour_comparison(
 
     # Geometry fixes
     for row in range(len(rows) + 1):
-
         table[row, 0].set_width(0.1)
         table[row, 1].set_width(0.1)
         table[row, 2].set_width(0.1)

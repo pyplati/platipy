@@ -118,6 +118,14 @@ is available containing an example.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/cardiac_segmentation.ipynb)
 
+## Left Ventricle 17 Segment Model
+
+PlatiPy provides a tool for automatically segmenting the 17 Left Ventricle segments as defined in: <https://www.ahajournals.org/doi/pdf/10.1161/hc0402.102975>
+
+A [Jupyter Notebook](https://github.com/pyplati/platipy/blob/master/examples/left_ventricle_17_segments.ipynb) is provided containing an example to segment the 17 segments. This can be combined with the output of the Cardiac auto-segmentation example above.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pyplati/platipy/blob/master/examples/left_ventricle_17_segments.ipynb)
+
 ## Troubleshooting
 
 ### Problem: I get an error message indicating a `CUDA error: no kernel image is available for execution on the device`

@@ -567,7 +567,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
         if crop_atlas_to_structures:
             logger.info("Automatically cropping atlas: %s", atlas_id)
 
-            original_volume = np.product(image.GetSize())
+            original_volume = np.prod(image.GetSize())
 
             crop_box_size, crop_box_index = label_to_roi(
                 structures.values(), expansion_mm=crop_atlas_expansion_mm
@@ -575,7 +575,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
 
             image = crop_to_roi(image, size=crop_box_size, index=crop_box_index)
 
-            final_volume = np.product(image.GetSize())
+            final_volume = np.prod(image.GetSize())
 
             logger.info("  > Volume reduced by factor %.2f", original_volume / final_volume)
 
@@ -654,7 +654,7 @@ def run_cardiac_segmentation(img, guide_structure=None, settings=CARDIAC_SETTING
     logger.info("Calculated crop box:")
     logger.info("  > %s", crop_box_index)
     logger.info("  > %s", crop_box_size)
-    logger.info("  > Vol reduction = %.2f", np.product(img.GetSize()) / np.product(crop_box_size))
+    logger.info("  > Vol reduction = %.2f", np.prod(img.GetSize()) / np.prod(crop_box_size))
 
     """
     Step 2 - Rigid registration of target images

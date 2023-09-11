@@ -19,6 +19,7 @@ from pathlib import Path
 import SimpleITK as sitk
 import numpy as np
 import logging
+import matplotlib
 from matplotlib import cm
 
 from rt_utils import RTStructBuilder
@@ -26,7 +27,9 @@ from rt_utils import RTStructBuilder
 logger = logging.getLogger(__name__)
 
 
-def convert_nifti(dcm_path, mask_input, output_file, color_map=cm.get_cmap("rainbow")):
+def convert_nifti(
+    dcm_path, mask_input, output_file, color_map=matplotlib.colormaps.get_cmap("rainbow")
+):
     """Convert a set of masks to a DICOM RTStruct object.
 
     This function now utilises the rt-utils package: https://github.com/qurit/rt-utils
@@ -37,8 +40,8 @@ def convert_nifti(dcm_path, mask_input, output_file, color_map=cm.get_cmap("rain
         mask_input (dict|list): A dictionary containing the name as key and image as value. Or a
                                 list of string with comma separated name and mask paths (name,path)
         output_file (str|pathlib.Path): The path to the file to write the RTStruct
-         color_map (matplotlib.colors.Colormap, optional): Colormap to use for output. Defaults to
-                                                           cm.get_cmap("rainbow").
+        color_map (matplotlib.colors.Colormap, optional): Colormap to use for output. Defaults to
+            matplotlib.colormaps.get_cmap("rainbow").
     """
 
     logger.info("Will convert the following Nifti masks to RTStruct:")
@@ -65,7 +68,6 @@ def convert_nifti(dcm_path, mask_input, output_file, color_map=cm.get_cmap("rain
     rtstruct = RTStructBuilder.create_new(dicom_series_path=str(dcm_series_path))
 
     for mask_name in masks:
-
         # Use a hash of the name to get the color from the supplied color map
         color = color_map(hash(mask_name) % 256)
         color = color[:3]
