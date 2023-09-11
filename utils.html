@@ -774,7 +774,7 @@ label defining the segment (SimpleITK.Image) as values.</p>
 “structure_set.nrrd”.</p></li>
 <li><p><strong>colormap</strong> (<em>matplotlib.colors.Colormap</em><em> | </em><em>dict</em><em>, </em><em>optional</em>) – Colormap to use for output.
 Can also use a dictionary with keys as structure names and values as colors.
-Defaults to cm.get_cmap(“rainbow”).</p></li>
+Defaults to matplotlib.colormaps.get_cmap(“rainbow”).</p></li>
 <li><p><strong>use_compression</strong> (<em>bool</em><em>, </em><em>optional</em>) – Used by SimpleITK’s WriteImage function to enable
 compression when writing output file. Defaults to True.</p></li>
 <li><p><strong>compression_level</strong> (<em>int</em><em>, </em><em>optional</em>) – Used by SimpleITK’s WriteImage function to specify how

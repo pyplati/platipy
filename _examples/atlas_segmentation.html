@@ -661,11 +661,19 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+regularisation_kernel_vox [1.536 1.536 0.5  ]
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/_examples_atlas_segmentation_14_0.png" src="../_images/_examples_atlas_segmentation_14_0.png" />
+<img alt="../_images/_examples_atlas_segmentation_14_1.png" src="../_images/_examples_atlas_segmentation_14_1.png" />
 </div>
 </div>
 </section>
@@ -746,48 +754,48 @@ div.rendered_html tbody tr:hover {
   <tbody>
     <tr>
       <th>0</th>
-      <td>LUNG_R</td>
-      <td>0.921106</td>
-      <td>1.845724</td>
-      <td>17.026807</td>
-      <td>1424.428940</td>
-      <td>1432.954788</td>
+      <td>ESOPHAGUS</td>
+      <td>0.430517</td>
+      <td>2.906840</td>
+      <td>13.706708</td>
+      <td>27.577400</td>
+      <td>24.510384</td>
     </tr>
     <tr>
       <th>0</th>
       <td>SPINALCORD</td>
-      <td>0.628473</td>
-      <td>3.879632</td>
-      <td>40.874703</td>
+      <td>0.639930</td>
+      <td>3.858865</td>
+      <td>41.614619</td>
       <td>54.210663</td>
-      <td>33.831596</td>
-    </tr>
-    <tr>
-      <th>0</th>
-      <td>ESOPHAGUS</td>
-      <td>0.443277</td>
-      <td>2.831636</td>
-      <td>12.695312</td>
-      <td>27.577400</td>
-      <td>24.172783</td>
-    </tr>
-    <tr>
-      <th>0</th>
-      <td>HEART</td>
-      <td>0.846907</td>
-      <td>4.656747</td>
-      <td>15.804921</td>
-      <td>759.281158</td>
-      <td>574.676514</td>
+      <td>33.891678</td>
     </tr>
     <tr>
       <th>0</th>
       <td>LUNG_L</td>
-      <td>0.891189</td>
-      <td>1.956033</td>
-      <td>18.058081</td>
+      <td>0.897254</td>
+      <td>1.832565</td>
+      <td>19.976306</td>
       <td>1015.133858</td>
-      <td>1078.113556</td>
+      <td>1070.743561</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>LUNG_R</td>
+      <td>0.925970</td>
+      <td>1.686255</td>
+      <td>17.872285</td>
+      <td>1424.428940</td>
+      <td>1425.149918</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>HEART</td>
+      <td>0.849119</td>
+      <td>4.545751</td>
+      <td>15.283582</td>
+      <td>759.281158</td>
+      <td>578.930855</td>
     </tr>
   </tbody>
 </table>
@@ -805,7 +813,7 @@ div.rendered_html tbody tr:hover {
 <section id="Multi-atlas-Segmentation">
 <h2>Multi-atlas Segmentation<a class="headerlink" href="#Multi-atlas-Segmentation" title="Permalink to this heading">#</a></h2>
 <p>We can often improve the quality of atlas-based segmentation by using multiple atlas cases. PlatiPy has built-in functionality to perform multi-atlas segmentation. The following example uses 4 atlas cases to auto-segment our test case.</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
@@ -866,6 +874,17 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+regularisation_kernel_vox [1.536 1.536 0.5  ]
+regularisation_kernel_vox [1.536 1.536 0.5  ]
+regularisation_kernel_vox [1.536 1.536 0.5  ]
+regularisation_kernel_vox [1.536 1.536 0.5  ]
+</pre></div></div>
+</div>
 <section id="id1">
 <h3>Contour Comparison<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
 <p>Now let’s analyse the performance of the multi-atlas segmentation.</p>
@@ -922,48 +941,48 @@ div.rendered_html tbody tr:hover {
   <tbody>
     <tr>
       <th>0</th>
-      <td>LUNG_R</td>
-      <td>0.910120</td>
-      <td>2.182951</td>
-      <td>17.332126</td>
-      <td>1424.428940</td>
-      <td>1505.355835</td>
+      <td>ESOPHAGUS</td>
+      <td>0.395965</td>
+      <td>20.715123</td>
+      <td>88.456873</td>
+      <td>27.577400</td>
+      <td>11.844635</td>
     </tr>
     <tr>
       <th>0</th>
       <td>SPINALCORD</td>
-      <td>0.704981</td>
-      <td>1.726202</td>
-      <td>15.829615</td>
+      <td>0.697273</td>
+      <td>1.675756</td>
+      <td>13.706708</td>
       <td>54.210663</td>
-      <td>40.672302</td>
-    </tr>
-    <tr>
-      <th>0</th>
-      <td>ESOPHAGUS</td>
-      <td>0.386122</td>
-      <td>20.035201</td>
-      <td>86.355608</td>
-      <td>27.577400</td>
-      <td>12.004852</td>
-    </tr>
-    <tr>
-      <th>0</th>
-      <td>HEART</td>
-      <td>0.900131</td>
-      <td>2.512320</td>
-      <td>21.857002</td>
-      <td>759.281158</td>
-      <td>746.294975</td>
+      <td>42.320251</td>
     </tr>
     <tr>
       <th>0</th>
       <td>LUNG_L</td>
-      <td>0.907358</td>
-      <td>1.684676</td>
-      <td>14.648438</td>
+      <td>0.912965</td>
+      <td>1.515161</td>
+      <td>13.671875</td>
       <td>1015.133858</td>
-      <td>1117.944717</td>
+      <td>1120.937347</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>LUNG_R</td>
+      <td>0.917044</td>
+      <td>1.973885</td>
+      <td>22.395767</td>
+      <td>1424.428940</td>
+      <td>1508.425713</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>HEART</td>
+      <td>0.903792</td>
+      <td>3.413853</td>
+      <td>21.593620</td>
+      <td>759.281158</td>
+      <td>757.493019</td>
     </tr>
   </tbody>
 </table>
@@ -1027,33 +1046,33 @@ div.rendered_html tbody tr:hover {
   <tbody>
     <tr>
       <th>0</th>
-      <td>LUNG_R</td>
-      <td>0.921106</td>
-      <td>0.910120</td>
+      <td>ESOPHAGUS</td>
+      <td>0.430517</td>
+      <td>0.395965</td>
     </tr>
     <tr>
       <th>1</th>
       <td>SPINALCORD</td>
-      <td>0.628473</td>
-      <td>0.704981</td>
+      <td>0.639930</td>
+      <td>0.697273</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>ESOPHAGUS</td>
-      <td>0.443277</td>
-      <td>0.386122</td>
+      <td>LUNG_L</td>
+      <td>0.897254</td>
+      <td>0.912965</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>HEART</td>
-      <td>0.846907</td>
-      <td>0.900131</td>
+      <td>LUNG_R</td>
+      <td>0.925970</td>
+      <td>0.917044</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>LUNG_L</td>
-      <td>0.891189</td>
-      <td>0.907358</td>
+      <td>HEART</td>
+      <td>0.849119</td>
+      <td>0.903792</td>
     </tr>
   </tbody>
 </table>

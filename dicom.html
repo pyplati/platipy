@@ -231,12 +231,9 @@ We keep this function in here for compatibility</p>
 <li><p><strong>dcm_path</strong> (<em>str</em><em>|</em><em>pathlib.Path</em>) – Path to the reference DICOM series</p></li>
 <li><p><strong>mask_input</strong> (<em>dict</em><em>|</em><em>list</em>) – A dictionary containing the name as key and image as value. Or a
 list of string with comma separated name and mask paths (name,path)</p></li>
-<li><p><strong>output_file</strong> (<em>str</em><em>|</em><em>pathlib.Path</em>) – <p>The path to the file to write the RTStruct
-color_map (matplotlib.colors.Colormap, optional): Colormap to use for output. Defaults to</p>
-<blockquote>
-<div><p>cm.get_cmap(“rainbow”).</p>
-</div></blockquote>
-</p></li>
+<li><p><strong>output_file</strong> (<em>str</em><em>|</em><em>pathlib.Path</em>) – The path to the file to write the RTStruct</p></li>
+<li><p><strong>color_map</strong> (<em>matplotlib.colors.Colormap</em><em>, </em><em>optional</em>) – Colormap to use for output. Defaults to
+matplotlib.colormaps.get_cmap(“rainbow”).</p></li>
 </ul>
 </dd>
 </dl>

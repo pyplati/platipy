@@ -487,6 +487,7 @@ div.rendered_html tbody tr:hover {
     <span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>platipy
     <span class="kn">import</span> <span class="nn">platipy</span>
 
+<span class="kn">import</span> <span class="nn">matplotlib</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">SimpleITK</span> <span class="k">as</span> <span class="nn">sitk</span>
 
@@ -546,7 +547,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vis</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="n">get_com</span><span class="p">(</span><span class="n">structures</span><span class="p">[</span><span class="s2">&quot;PTV60&quot;</span><span class="p">]))</span>
 
-<span class="n">vis</span><span class="o">.</span><span class="n">add_scalar_overlay</span><span class="p">(</span><span class="n">dose</span><span class="p">,</span> <span class="n">discrete_levels</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;inferno&quot;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Dose (Gy)&quot;</span><span class="p">)</span>
+<span class="n">vis</span><span class="o">.</span><span class="n">add_scalar_overlay</span><span class="p">(</span><span class="n">dose</span><span class="p">,</span> <span class="n">discrete_levels</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colormaps</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;inferno&quot;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Dose (Gy)&quot;</span><span class="p">)</span>
 <span class="n">vis</span><span class="o">.</span><span class="n">add_contour</span><span class="p">(</span><span class="n">structures</span><span class="p">)</span>
 
 <span class="n">fig</span> <span class="o">=</span> <span class="n">vis</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -815,7 +816,7 @@ div.rendered_html tbody tr:hover {
 
 <span class="c1"># Plot the DVH</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="n">plt_dvh</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;rainbow&quot;</span><span class="p">),</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">plt_dvh</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colormaps</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;rainbow&quot;</span><span class="p">),</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="c1"># Add labels and show plot</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
@@ -1023,8 +1024,8 @@ div.rendered_html tbody tr:hover {
     <span class="n">d_cc_points</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span>
     <span class="n">structure_for_limits</span><span class="o">=</span><span class="n">dose</span><span class="o">&gt;</span><span class="mi">5</span><span class="p">,</span>
     <span class="n">expansion_for_limits</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
-    <span class="n">contour_cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;rainbow&quot;</span><span class="p">),</span>
-    <span class="n">dose_cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;inferno&quot;</span><span class="p">),</span>
+    <span class="n">contour_cmap</span><span class="o">=</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colormaps</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;rainbow&quot;</span><span class="p">),</span>
+    <span class="n">dose_cmap</span><span class="o">=</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colormaps</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;inferno&quot;</span><span class="p">),</span>
     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;TCGA_CV_5977 Dose Metrics&quot;</span><span class="p">)</span>
 </pre></div>
 </div>

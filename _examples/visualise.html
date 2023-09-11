@@ -495,10 +495,11 @@ div.rendered_html tbody tr:hover {
 <span class="c1"># Function to grab some test data</span>
 <span class="kn">from</span> <span class="nn">platipy.imaging.tests.data</span> <span class="kn">import</span> <span class="n">get_lung_nifti</span>
 
-<span class="c1"># Usual suspects</span>
+<span class="c1"># Import some common libraries which we need</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">SimpleITK</span> <span class="k">as</span> <span class="nn">sitk</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1"># Some utilities we use for generating interesting data</span>
@@ -588,7 +589,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">900</span><span class="p">,</span> <span class="mi">1100</span><span class="p">),</span> <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;terrain&quot;</span><span class="p">),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">image_visualiser</span> <span class="o">=</span> <span class="n">ImageVisualiser</span><span class="p">(</span><span class="n">ct_image</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">900</span><span class="p">,</span> <span class="mi">1100</span><span class="p">),</span> <span class="n">colormap</span><span class="o">=</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colormaps</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;terrain&quot;</span><span class="p">),</span> <span class="n">figure_size_in</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 
 <span class="n">image_visualiser</span><span class="o">.</span><span class="n">set_limits_from_label</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="s2">&quot;LUNG_L&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">contours</span><span class="p">[</span><span class="s2">&quot;LUNG_R&quot;</span><span class="p">])</span>
 
@@ -675,7 +676,7 @@ div.rendered_html tbody tr:hover {
 <span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_vector_overlay</span><span class="p">(</span>
     <span class="n">dvf_expansion</span><span class="p">,</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DVF magnitude [mm]&quot;</span><span class="p">,</span>
-    <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;gnuplot2&quot;</span><span class="p">),</span>
+    <span class="n">colormap</span><span class="o">=</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colormaps</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;gnuplot2&quot;</span><span class="p">),</span>
     <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span>
     <span class="n">arrow_scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">arrow_width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -752,7 +753,7 @@ div.rendered_html tbody tr:hover {
 <span class="n">image_visualiser</span><span class="o">.</span><span class="n">add_vector_overlay</span><span class="p">(</span>
     <span class="n">dvf_expansion</span><span class="p">,</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DVF magnitude [mm]&quot;</span><span class="p">,</span>
-    <span class="n">colormap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;gnuplot2&quot;</span><span class="p">),</span>
+    <span class="n">colormap</span><span class="o">=</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colormaps</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;gnuplot2&quot;</span><span class="p">),</span>
     <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
     <span class="n">arrow_scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">arrow_width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
