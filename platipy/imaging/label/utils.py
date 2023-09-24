@@ -168,7 +168,13 @@ def prime_encode_structure_list(structure_list):
 
         # Multiply with the encoded image
         prime_encoded_image = (
-            sitk.MaskNegated(prime_encoded_image, s_img_int)
+            sitk.Cast(
+                sitk.MaskNegated(
+                    sitk.Cast(prime_encoded_image, sitk.sitkUInt8),
+                    sitk.Cast(s_img_int, sitk.sitkUInt8),
+                ),
+                sitk.sitkUInt64,
+            )
             + sitk.Mask(prime_encoded_image, s_img_int) * prime * s_img_int
         )
 
@@ -262,7 +268,6 @@ def binary_decode_image(binary_encoded_img):
     num_nonzero_voxels = 1
 
     for power in range(32):
-
         # Calculate the region originally defined with this prime
         s_arr = np.bitwise_and(binary_encoded_arr, 2 ** (power + 1))
 
