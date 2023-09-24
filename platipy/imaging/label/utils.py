@@ -175,7 +175,9 @@ def prime_encode_structure_list(structure_list):
                 ),
                 sitk.sitkUInt64,
             )
-            + sitk.Mask(prime_encoded_image, s_img_int) * prime * s_img_int
+            + sitk.Mask(prime_encoded_image, sitk.Cast(s_img_int, sitk.sitkUInt8))
+            * prime
+            * s_img_int
         )
 
     return prime_encoded_image
