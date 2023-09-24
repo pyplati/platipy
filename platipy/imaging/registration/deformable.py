@@ -65,7 +65,6 @@ def multiscale_demons(
     moving_images = []
 
     for resolution, smoothing_sigma in zip(resolution_staging, smoothing_sigmas):
-
         isotropic_voxel_size_mm = None
         shrink_factor = None
 
@@ -123,9 +122,7 @@ def multiscale_demons(
                 )
             initial_displacement_field.CopyInformation(fixed_image)
     else:
-        initial_displacement_field = sitk.Resample(
-            initial_displacement_field, fixed_image
-        )
+        initial_displacement_field = sitk.Resample(initial_displacement_field, fixed_image)
 
     # Run the registration.
     # Start at the top of the pyramid and work our way down.
@@ -139,9 +136,7 @@ def multiscale_demons(
         # we now apply the (total) transform to the moving image
         dvf_total = sitk.Resample(dvf_total, f_image)
 
-        tfm_total = sitk.DisplacementFieldTransform(
-            sitk.Cast(dvf_total, sitk.sitkVectorFloat64)
-        )
+        tfm_total = sitk.DisplacementFieldTransform(sitk.Cast(dvf_total, sitk.sitkVectorFloat64))
         m_image = sitk.Resample(m_image, tfm_total, interp_order)
 
         # set up iteration staging
@@ -258,7 +253,7 @@ def fast_symmetric_forces_demons_registration(
     regularisation_kernel_vox = np.array(regularisation_kernel_mm) / np.array(
         fixed_image.GetSpacing()
     )
-    print("regularisation_kernel_vox", regularisation_kernel_vox)
+
     registration_method.SetStandardDeviations(regularisation_kernel_vox.tolist())
 
     # This allows monitoring of the progress
