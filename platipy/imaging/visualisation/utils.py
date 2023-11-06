@@ -309,7 +309,7 @@ def project_onto_arbitrary_plane(
     rotation_axis=[1, 0, 0],
     rotation_angle=0,
     default_value=-1000,
-    resample_interpolation=2,
+    resample_interpolation=sitk.sitkLinear,
 ):
     """[summary]
 

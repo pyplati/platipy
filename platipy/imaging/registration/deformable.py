@@ -199,7 +199,7 @@ def fast_symmetric_forces_demons_registration(
     smoothing_sigmas=False,
     default_value=None,
     ncores=1,
-    interp_order=2,
+    interp_order=sitk.sitkLinear,
     verbose=False,
 ):
     """
@@ -318,7 +318,7 @@ def bspline_registration(
     metric="mean_squares",
     initial_grid_spacing=64,
     grid_scale_factors=[1, 2, 4],
-    interp_order=3,
+    interp_order=sitk.sitkBSpline,
     default_value=-1000,
     number_of_iterations=20,
     isotropic_resample=False,
@@ -370,7 +370,7 @@ def bspline_registration(
                                              multiresolution stage.
                                              Defaults to [1, 2, 4].
         interp_order (int, optional): Interpolation order of final resampling.
-                                      Defaults to 3 (cubic).
+                                      Defaults to sitk.sitkBSpline (cubic).
         default_value (int, optional): Default image value. Defaults to -1000.
         number_of_iterations (int, optional): Number of iterations at each resolution stage.
                                               Defaults to 20.
