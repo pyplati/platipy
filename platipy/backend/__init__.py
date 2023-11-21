@@ -65,6 +65,8 @@ configure_logging()
 app = FlaskApp(__name__)
 app.config["SECRET_KEY"] = uuid.uuid4().hex
 
+app.app_context().push()
+
 # Configure SQL Alchemy
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{env_work}/{os.path.basename(os.getcwd())}.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
