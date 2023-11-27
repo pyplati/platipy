@@ -1,8 +1,7 @@
 import random
 import math
+import logging
 from pathlib import Path
-
-from loguru import logger
 
 import torch
 
@@ -11,6 +10,7 @@ import pytorch_lightning as pl
 from platipy.imaging.cnn.dataset import NiftiDataset
 from platipy.imaging.cnn.sampler import ObserverSampler
 
+logger = logging.getLogger(__name__)
 
 class UNetDataModule(pl.LightningDataModule):
     """PyTorch data module to training UNets"""

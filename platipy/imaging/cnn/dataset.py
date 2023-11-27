@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import re
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -24,8 +25,6 @@ import SimpleITK as sitk
 from imgaug import augmenters as iaa
 from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 
-from loguru import logger
-
 import math
 import random
 from scipy.ndimage import affine_transform
@@ -36,6 +35,7 @@ from platipy.imaging.label.utils import get_union_mask, get_intersection_mask
 from platipy.imaging.cnn.localise_net import LocaliseUNet
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
+logger = logging.getLogger(__name__)
 
 class GaussianNoise:
     def __init__(self, mu=0.0, sigma=0.0, probability=1.0):

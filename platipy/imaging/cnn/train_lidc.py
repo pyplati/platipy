@@ -16,6 +16,7 @@ import sys
 import os
 import tempfile
 import json
+import logging
 
 from pathlib import Path
 import SimpleITK as sitk
@@ -48,14 +49,14 @@ import random
 import math
 from pathlib import Path
 
-from loguru import logger
-
 import torch
 
 import pytorch_lightning as pl
 
 from platipy.imaging.cnn.lidc_dataset import LIDCDataset
 from platipy.imaging.cnn.sampler import ObserverSampler
+
+logger = logging.getLogger(__name__)
 
 LIDC_PAT_IDS = [
  '100036212881370097961774473021',

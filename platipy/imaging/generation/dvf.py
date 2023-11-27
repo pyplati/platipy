@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 
 import numpy as np
 import SimpleITK as sitk
-
-from loguru import logger
 
 from platipy.imaging.registration.utils import (
     apply_transform,
@@ -30,6 +29,7 @@ from platipy.imaging.registration.deformable import (
 from platipy.imaging.label.utils import get_com
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
+logger = logging.getLogger(__name__)
 
 def generate_field_shift(mask, vector_shift=(10, 10, 10), gaussian_smooth=5):
     """

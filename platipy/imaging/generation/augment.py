@@ -15,6 +15,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 import random
+import logging
 
 from pathlib import Path
 
@@ -22,8 +23,6 @@ from argparse import ArgumentParser
 
 import SimpleITK as sitk
 import numpy as np
-
-from loguru import logger
 
 import matplotlib.pyplot as plt
 from platipy.imaging import ImageVisualiser
@@ -43,6 +42,7 @@ from platipy.imaging.utils.lung import detect_holes
 from platipy.imaging.label.utils import get_union_mask
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
+logger = logging.getLogger(__name__)
 
 def apply_augmentation(image, augmentation, masks=[]):
 
