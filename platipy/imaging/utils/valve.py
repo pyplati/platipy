@@ -120,7 +120,7 @@ def generate_valve_using_cylinder(
         overlap = sitk.BinaryDilate(label_atrium, dilation_img) & sitk.BinaryDilate(
             label_ventricle, dilation_img
         )
-        overlap_vol = np.sum(sitk.GetArrayFromImage(overlap) * np.product(overlap.GetSpacing()))
+        overlap_vol = np.sum(sitk.GetArrayFromImage(overlap) * np.prod(overlap.GetSpacing()))
         dilation += 1
 
     # Now we can calculate the location of the valve

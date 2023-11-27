@@ -109,7 +109,7 @@ def compute_weight_map(
         view_mask = view_as_windows(arr_mask, window_box_im)
 
         # Flatten to have a list of patches (that are also flattened)
-        new_shape = (np.product(view_target.shape[:3]), np.product(view_target.shape[3:]))
+        new_shape = (np.prod(view_target.shape[:3]), np.prod(view_target.shape[3:]))
         view_target_flat = np.reshape(view_target, new_shape)
         view_moving_flat = np.reshape(view_moving, new_shape)
         view_mask_flat = np.reshape(view_mask, new_shape)

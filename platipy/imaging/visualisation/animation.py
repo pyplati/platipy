@@ -47,7 +47,6 @@ class FileWriter(FileMovieWriter):
         self.temp_prefix, self.frame_format = self.outfile.split(".")
 
     def grab_frame(self, **savefig_kwargs):
-
         with self._frame_sink() as myframesink:
             self.fig.savefig(myframesink, format="png", dpi=self.dpi, **savefig_kwargs)
 
@@ -62,9 +61,9 @@ def generate_animation_from_image_sequence(
     contour_list=None,
     scalar_list=None,
     figure_size_in=6,
-    image_cmap=plt.cm.get_cmap("Greys_r"),
-    contour_cmap=plt.cm.get_cmap("jet"),
-    scalar_cmap=plt.cm.get_cmap("magma"),
+    image_cmap=matplotlib.colormaps.get_cmap("Greys_r"),
+    contour_cmap=matplotlib.colormaps.get_cmap("jet"),
+    scalar_cmap=matplotlib.colormaps.get_cmap("magma"),
     image_window=[-1000, 800],
     scalar_min=None,
     scalar_max=None,
@@ -84,11 +83,11 @@ def generate_animation_from_image_sequence(
             (overlay as contours). Defaults to False.
         figure_size_in (int, optional): Size of the figure. Defaults to 6.
         image_cmap (matplotlib.colors.ListedColormap, optional): Colormap to use for the image.
-            Defaults to plt.cm.get_cmap("Greys_r").
+            Defaults to matplotlib.colormaps.get_cmap("Greys_r").
         contour_cmap (matplotlib.colors.ListedColormap, optional): Colormap to use for contours.
-            Defaults to plt.cm.get_cmap("jet").
+            Defaults to matplotlib.colormaps.get_cmap("jet").
         scalar_cmap (matplotlib.colors.ListedColormap, optional): Colormap to use for scalar field.
-            Defaults to plt.cm.get_cmap("magma").
+            Defaults to matplotlib.colormaps.get_cmap("magma").
         image_window (list, optional): Image intensity window (mininmum, range).
             Defaults to [-1000, 800].
         scalar_min (bool, optional): Minimum scalar value to show. Defaults to False.
@@ -131,7 +130,6 @@ def generate_animation_from_image_sequence(
     # We now deal with the contours
     # These can be given as a list of sitk.Image objects or a list of dicts {"name":sitk.Image}
     if contour_list:
-
         if isinstance(contour_list[0], sitk.Image):
             plot_dict = {"_": contour_list[0]}
             contour_labels = False
@@ -146,7 +144,6 @@ def generate_animation_from_image_sequence(
             color_list = [color_map[i] for i in range(len(plot_dict.values()))]
 
         for ctr_key, color in zip(plot_dict.keys(), color_list):
-
             display_contours = ax.contour(
                 sitk.GetArrayFromImage(plot_dict[ctr_key]),
                 colors=[color],
@@ -165,7 +162,6 @@ def generate_animation_from_image_sequence(
             )
 
     if scalar_list:
-
         if not scalar_min:
             scalar_min = np.min([sitk.GetArrayFromImage(i) for i in scalar_list])
         if not scalar_max:
@@ -188,7 +184,6 @@ def generate_animation_from_image_sequence(
 
     # The animate function does (you guessed it) the animation
     def animate(i):
-
         # Update the imaging data
         nda = sitk.GetArrayFromImage(image_list[i])
         display_image.set_data(nda)
@@ -212,7 +207,6 @@ def generate_animation_from_image_sequence(
                 color_list = [color_map[i] for i in range(len(plot_dict.values()))]
 
             for contour, color in zip(plot_dict.values(), color_list):
-
                 ax.contour(
                     sitk.GetArrayFromImage(contour),
                     colors=[color],

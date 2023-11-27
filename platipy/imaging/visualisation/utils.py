@@ -17,6 +17,7 @@ from skimage.color import hsv2rgb
 import numpy as np
 import SimpleITK as sitk
 
+import matplotlib
 import matplotlib.pyplot as plt
 
 from platipy.imaging.utils.crop import label_to_roi
@@ -52,11 +53,12 @@ class VisualiseScalarOverlay:
         self,
         image,
         name,
-        colormap=plt.cm.get_cmap("Spectral"),
+        colormap=matplotlib.colormaps.get_cmap("Spectral"),
         alpha=0.75,
         min_value=False,
         max_value=False,
         discrete_levels=False,
+        show_as_contours=False,
         mid_ticks=False,
         show_colorbar=True,
         norm=None,
@@ -69,6 +71,7 @@ class VisualiseScalarOverlay:
         self.min_value = min_value
         self.max_value = max_value
         self.discrete_levels = discrete_levels
+        self.show_as_contours = show_as_contours
         self.mid_ticks = mid_ticks
         self.show_colorbar = show_colorbar
         self.norm = norm
@@ -83,7 +86,7 @@ class VisualiseVectorOverlay:
         image,
         min_value=False,
         max_value=False,
-        colormap=plt.cm.get_cmap("Spectral"),
+        colormap=matplotlib.colormaps.get_cmap("Spectral"),
         discrete_levels=False,
         mid_ticks=False,
         alpha=0.75,
@@ -124,7 +127,6 @@ class VisualiseBoundingBox:
     """Class to represent the visualiation of a bounding box"""
 
     def __init__(self, bounding_box, name, color="r", linewidth=2):
-
         if isinstance(bounding_box, sitk.Image):
             bounding_box = label_to_roi(bounding_box, return_as_list=True)
 
@@ -250,7 +252,7 @@ def reorientate_vector_field(axis, vector_ax, vector_cor, vector_sag, invert_fie
     if axis == "y":  # coronal projection
         return vector_sag, vector_ax, vector_cor
     if axis == "z":  # axial projection
-        return vector_sag, -vector_cor, vector_ax
+        return -vector_sag, -vector_cor, vector_ax
 
     return None
 
@@ -258,7 +260,6 @@ def reorientate_vector_field(axis, vector_ax, vector_cor, vector_sag, invert_fie
 def generate_comparison_colormix(
     image_list, arr_slice=None, window=(-250, 500), color_rotation=0.35
 ):
-
     #! TO DO - make this function take in more than two images
     # Will need to use polar coordinates for HSV colorspace addition
 
@@ -308,7 +309,7 @@ def project_onto_arbitrary_plane(
     rotation_axis=[1, 0, 0],
     rotation_angle=0,
     default_value=-1000,
-    resample_interpolation=2,
+    resample_interpolation=sitk.sitkLinear,
 ):
     """[summary]
 

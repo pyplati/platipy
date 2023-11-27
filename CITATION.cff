@@ -1,46 +1,34 @@
-cff-version: 1.2.0
-title: "PlatiPy: Processing Library and Analysis Toolkit for Medical Imaging in Python"
-message: >-
-  If you find the PlatiPy library useful in your research, please consider citing it using these
-  metadata.
-abstract: >-
-  PlatiPy is a library of tools developed in Python for image processing and analysis of medical
-  images. A broad scope of functionality is provided including image conversion, registration
-  and segmentation is provided as well as computation of similarity and radiotherapy dosimtery
-  metrics and much more.
-type: software
+cff-version: "1.2.0"
 authors:
-  - given-names: Phillip
-    family-names: Chlap
-    email: phillip.chlap@unsw.edu.au
-    affiliation: University of New South Wales
+- family-names: Chlap
+  given-names: Phillip
+  orcid: "https://orcid.org/0000-0002-6517-8745"
+- family-names: Finnegan
+  given-names: Robert N.
+  orcid: "https://orcid.org/0000-0003-4728-8462"
+doi: 10.5281/zenodo.8032858
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Chlap
+    given-names: Phillip
     orcid: "https://orcid.org/0000-0002-6517-8745"
-  - given-names: Robert
-    family-names: Finnegan
-    email: robert.finnegan@sydney.edu.au
-    affiliation: University of Sydney
+  - family-names: Finnegan
+    given-names: Robert N.
     orcid: "https://orcid.org/0000-0003-4728-8462"
-license: Apache-2.0
-repository-code: "https://github.com/pyplati/platipy"
-url: "https://pyplati.github.io/platipy/"
-keywords:
-  - "medical image analysis"
-  - "auto-segmentation"
-  - "image registration"
-references:
-  - authors:
-      - family-names: Lowekamp
-        given-names: Bradley C
-      - family-names: Chen
-        given-names: David T
-      - family-names: Ibáñez
-        given-names: Luis
-      - family-names: Blezek
-        given-names: Daniel
-    doi: 10.3389/fninf.2013.00045
-    issn: 16625196
-    journal: "Frontiers in Neuroinformatics"
-    title: "The design of simpleITK"
-    type: article
-    volume: 7
-    year: 2013
+  date-published: 2023-06-26
+  doi: 10.21105/joss.05374
+  issn: 2475-9066
+  issue: 86
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 5374
+  title: "PlatiPy: Processing Library and Analysis Toolkit for Medical
+    Imaging in Python"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.05374"
+  volume: 8
+title: "PlatiPy: Processing Library and Analysis Toolkit for Medical
+  Imaging in Python"

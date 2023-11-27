@@ -2,6 +2,7 @@ import math
 
 import numpy as np
 import SimpleITK as sitk
+import matplotlib
 import matplotlib.pyplot as plt
 from platipy.imaging.label.utils import get_com
 
@@ -58,8 +59,8 @@ def visualise_dose(
     structure_for_limits=None,
     expansion_for_limits=10,
     title="",
-    contour_cmap=plt.cm.get_cmap("rainbow"),
-    dose_cmap=plt.cm.get_cmap("inferno"),
+    contour_cmap=matplotlib.colormaps.get_cmap("rainbow"),
+    dose_cmap=matplotlib.colormaps.get_cmap("inferno"),
     structure_name_dict=None,
     img_vis_kw=None,
 ):
@@ -87,9 +88,9 @@ def visualise_dose(
             to 10.
         title (str, optional): Title to display on visualisation. Defaults to "".
         contour_cmap (plt.cm.colormap, optional): Matplotlib color map to use for contour colors.
-            Defaults to plt.cm.get_cmap("rainbow").
+            Defaults to matplotlib.colormaps.get_cmap("rainbow").
         dose_cmap (plt.cm.colormap, optional): Matplotlib color map to use for dose colors.
-            Defaults to plt.cm.get_cmap("inferno").
+            Defaults to matplotlib.colormaps.get_cmap("inferno").
         structure_name_dict (dict, optional): Dictionary to map alternative structure names.
             Defaults to None.
         img_vis_kw (dict, optional): Dictionary of keyword arguments to pass to ImageVisualiser.
@@ -111,17 +112,14 @@ def visualise_dose(
     df_metrics = dvh[["label", "mean"]]
 
     if d_points is not None:
-
         df_metrics_d = calculate_d_x(dvh, d_points)
         df_metrics = df_metrics.merge(df_metrics_d)
 
     if v_points is not None:
-
         df_metrics_v = calculate_v_x(dvh, v_points)
         df_metrics = df_metrics.merge(df_metrics_v)
 
     if d_cc_points is not None:
-
         df_metrics_d_cc = calculate_d_cc_x(dvh, d_cc_points)
         df_metrics = df_metrics.merge(df_metrics_d_cc)
 
@@ -198,7 +196,7 @@ def visualise_dose(
     for _, row in df_metrics.iterrows():
         cell_text.append([f"{s:.2f}" for s in row.values])
 
-    colors = list(plt.cm.get_cmap(contour_cmap)(np.linspace(0, 1, len(rows))))
+    colors = list(matplotlib.colormaps.get_cmap(contour_cmap)(np.linspace(0, 1, len(rows))))
 
     # Create the table
     table = ax.table(
@@ -221,7 +219,6 @@ def visualise_dose(
 
     # Geometry fixes
     for row in range(len(rows) + 1):
-
         for c in range(len(columns)):
             table[row, c].set_width(0.1)
         if row > 0:
