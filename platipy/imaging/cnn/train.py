@@ -46,9 +46,9 @@ from platipy.imaging.cnn.metrics import probabilistic_dice
 from platipy.imaging import ImageVisualiser
 from platipy.imaging.label.utils import get_com, get_union_mask, get_intersection_mask
 
+
 class GECOEarlyStopping(EarlyStopping):
     def on_validation_end(self, trainer, pl_module):
-
         # Make sure the GECO lambda metrics are below 0.1 before stopping
         logs = trainer.callback_metrics
         should_consider_early_stop = True
@@ -64,6 +64,7 @@ class GECOEarlyStopping(EarlyStopping):
 
     def on_train_epoch_end(self, trainer, pl_module):
         pass
+
 
 class ProbUNet(pl.LightningModule):
     def __init__(
@@ -91,20 +92,23 @@ class ProbUNet(pl.LightningModule):
             }
 
         loss_params["top_k_percentage"] = self.hparams.top_k_percentage
-        loss_params["contour_loss_lambda_threshold"] = self.hparams.contour_loss_lambda_threshold
+        loss_params[
+            "contour_loss_lambda_threshold"
+        ] = self.hparams.contour_loss_lambda_threshold
         loss_params["contour_loss_weight"] = self.hparams.contour_loss_weight
 
         if self.hparams.prob_type == "prob":
             self.prob_unet = ProbabilisticUnet(
                 self.hparams.input_channels,
-                len(self.hparams.structures) + 1,  # Add 1 to num classes for background class
+                len(self.hparams.structures)
+                + 1,  # Add 1 to num classes for background class
                 self.hparams.filters_per_layer,
                 self.hparams.latent_dim,
                 self.hparams.no_convs_fcomb,
                 self.hparams.loss_type,
                 loss_params,
                 self.hparams.ndims,
-                dropout_probability=self.hparams.dropout_probability
+                dropout_probability=self.hparams.dropout_probability,
             )
         elif self.hparams.prob_type == "hierarchical":
             raise NotImplementedError("Hierarchical Prob UNet current not working...")
@@ -134,9 +138,14 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--lr_lambda", type=float, default=0.99)
         parser.add_argument("--input_channels", type=int, default=1)
         parser.add_argument(
-            "--filters_per_layer", nargs="+", type=int, default=[64 * (2**x) for x in range(5)]
+            "--filters_per_layer",
+            nargs="+",
+            type=int,
+            default=[64 * (2**x) for x in range(5)],
         )
-        parser.add_argument("--down_channels_per_block", nargs="+", type=int, default=None)
+        parser.add_argument(
+            "--down_channels_per_block", nargs="+", type=int, default=None
+        )
         parser.add_argument("--latent_dim", type=int, default=6)
         parser.add_argument("--no_convs_fcomb", type=int, default=4)
         parser.add_argument("--convs_per_block", type=int, default=2)
@@ -148,10 +157,14 @@ class ProbUNet(pl.LightningModule):
         parser.add_argument("--rec_geco_step_size", type=float, default=1e-2)
         parser.add_argument("--weight_decay", type=float, default=1e-2)
         parser.add_argument("--clamp_rec", nargs="+", type=float, default=[1e-5, 1e5])
-        parser.add_argument("--clamp_contour", nargs="+", type=float, default=[1e-3, 1e3])
+        parser.add_argument(
+            "--clamp_contour", nargs="+", type=float, default=[1e-3, 1e3]
+        )
         parser.add_argument("--top_k_percentage", type=float, default=None)
         parser.add_argument("--contour_loss_lambda_threshold", type=float, default=None)
-        parser.add_argument("--contour_loss_weight", type=float, default=0.0)  # no longer used
+        parser.add_argument(
+            "--contour_loss_weight", type=float, default=0.0
+        )  # no longer used
         parser.add_argument("--epochs_all_rec", type=int, default=0)  # no longer used
         parser.add_argument("--dropout_probability", type=float, default=0.0)
 
@@ -162,29 +175,34 @@ class ProbUNet(pl.LightningModule):
         return x
 
     def configure_optimizers(self):
+        params = [
+            {
+                "params": self.prob_unet.unet.parameters(),
+                "weight_decay": self.hparams.weight_decay,
+                "lr": 1e-4,
+            }
+        ]
+        for m in [
+            self.prob_unet.prior.parameters(),
+            self.prob_unet.posterior.parameters(),
+            self.prob_unet.fcomb.parameters(),
+        ]:
+            params += [
+                {"params": m, "weight_decay": self.hparams.weight_decay, "lr": 1e-5}
+            ]
 
-        params = [{
-            'params': self.prob_unet.unet.parameters(),
-            'weight_decay': self.hparams.weight_decay,
-            'lr': 1e-4
-        }]
-        for m in [self.prob_unet.prior.parameters(), self.prob_unet.posterior.parameters(), self.prob_unet.fcomb.parameters()]:
-            params += [{'params': m, 'weight_decay': self.hparams.weight_decay, 'lr': 1e-5}]
-
-        optimizer = torch.optim.Adam(
-            params
-        )
+        optimizer = torch.optim.Adam(params)
 
         lr_lambda_unet = lambda epoch: self.hparams.lr_lambda ** (epoch)
         lr_lambda_prob = lambda epoch: 0.99 ** (epoch)
 
-#        max_epochs = self.hparams.max_epochs
-#        lr_lambda = lambda x: np.interp(((np.sin(x/(max_epochs/8)) * np.sin(x/(max_epochs/4)))), np.array([-1,0,1]), np.array([0.1,1,10]))
+        #        max_epochs = self.hparams.max_epochs
+        #        lr_lambda = lambda x: np.interp(((np.sin(x/(max_epochs/8)) * np.sin(x/(max_epochs/4)))), np.array([-1,0,1]), np.array([0.1,1,10]))
 
-        #scheduler = torch.optim.lr_scheduler.LambdaLR(
+        # scheduler = torch.optim.lr_scheduler.LambdaLR(
         #    optimizer, lr_lambda=[lr_lambda_unet, lr_lambda_prob, lr_lambda_prob, lr_lambda_prob]
-        #)
-        #scheduler = torch.optim.lr_scheduler.CyclicLR(
+        # )
+        # scheduler = torch.optim.lr_scheduler.CyclicLR(
         #    optimizer,
         #    base_lr=self.hparams.learning_rate / 10,
         #    max_lr=self.hparams.learning_rate,
@@ -194,10 +212,7 @@ class ProbUNet(pl.LightningModule):
         #   cycle_momentum=False
         # )
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer,
-            50,
-            eta_min=1e-6,
-            verbose=True
+            optimizer, 50, eta_min=1e-6, verbose=True
         )
 
         return [optimizer], [scheduler]
@@ -206,8 +221,12 @@ class ProbUNet(pl.LightningModule):
             "optimizer": optimizer,
             "lr_scheduler": {
                 "scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
-                    optimizer, "max", patience=20, threshold=0.1e-2, factor=0.75
-#                     optimizer, "max", patience=200, threshold=0.75, factor=0.5
+                    optimizer,
+                    "max",
+                    patience=20,
+                    threshold=0.1e-2,
+                    factor=0.75
+                    #                     optimizer, "max", patience=200, threshold=0.75, factor=0.5
                 ),
                 "monitor": "probabilisticDice",
             },
@@ -216,6 +235,7 @@ class ProbUNet(pl.LightningModule):
     def infer(
         self,
         img,
+        context_map=None,
         num_samples=1,
         sample_strategy="mean",
         latent_dim=True,
@@ -233,7 +253,9 @@ class ProbUNet(pl.LightningModule):
             samples = [
                 {
                     "name": "mean",
-                    "std_dev_from_mean": torch.Tensor([0.0] * len(latent_dim)).to(self.device),
+                    "std_dev_from_mean": torch.Tensor([0.0] * len(latent_dim)).to(
+                        self.device
+                    ),
                     "preds": [],
                 }
             ]
@@ -242,7 +264,10 @@ class ProbUNet(pl.LightningModule):
                 {
                     "name": f"random_{i}",
                     "std_dev_from_mean": torch.Tensor(
-                        [np.random.normal(0, 1.0, 1)[0] if d else 0.0 for d in latent_dim]
+                        [
+                            np.random.normal(0, 1.0, 1)[0] if d else 0.0
+                            for d in latent_dim
+                        ]
                     ).to(self.device),
                     "preds": [],
                 }
@@ -254,16 +279,15 @@ class ProbUNet(pl.LightningModule):
             samples = [
                 {
                     "name": f"spaced_{s:.2f}",
-                    "std_dev_from_mean": torch.Tensor([s if d else 0.0 for d in latent_dim]).to(
-                        self.device
-                    ),
+                    "std_dev_from_mean": torch.Tensor(
+                        [s if d else 0.0 for d in latent_dim]
+                    ).to(self.device),
                     "preds": [],
                 }
                 for s in np.linspace(spaced_range[0], spaced_range[1], num_samples)
             ]
 
         with torch.no_grad():
-
             if preprocess:
                 if self.hparams.crop_using_localise_model:
                     localise_path = self.hparams.crop_using_localise_model.format(
@@ -286,21 +310,36 @@ class ProbUNet(pl.LightningModule):
 
             img_arr = sitk.GetArrayFromImage(img)
 
+            if context_map is not None:
+                context_map = resample_mask_to_image(img, context_map)
+                cmap_arr = sitk.GetArrayFromImage(img)
+
             if self.hparams.ndims == 2:
                 slices = [img_arr[z, :, :] for z in range(img_arr.shape[0])]
+
+                if context_map is not None:
+                    cmap_slices = [cmap_arr[z, :, :] for z in range(cmap_arr.shape[0])]
             else:
                 slices = [img_arr]
-            for i in slices:
+                if context_map is not None:
+                    cmap_slices = [cmap_arr]
 
+            for idx, i in enumerate(slices):
                 x = torch.Tensor(i).to(self.device)
                 x = x.unsqueeze(0)
                 x = x.unsqueeze(0)
+
+                if context_map is not None:
+                    c = torch.Tensor(cmap_slices[idx]).to(self.device)
+                    c = c.unsqueeze(0)
+                    c = c.unsqueeze(0)
+
+                    x = torch.cat((x, c), dim=1)
 
                 if self.hparams.prob_type == "prob":
                     self.prob_unet.forward(x)
 
                 for sample in samples:
-
                     if self.hparams.prob_type == "prob":
                         if sample["name"] == "mean":
                             y = self.prob_unet.sample(testing=True, use_mean=True)
@@ -327,7 +366,6 @@ class ProbUNet(pl.LightningModule):
 
         result = {}
         for sample in samples:
-
             pred_arr = sample["preds"][0]
 
             if self.hparams.ndims == 2:
@@ -344,16 +382,23 @@ class ProbUNet(pl.LightningModule):
 
                 pred.CopyInformation(img)
                 pred = postprocess_mask(pred)
-                pred = sitk.Resample(pred, img, sitk.Transform(), sitk.sitkNearestNeighbor)
+                pred = sitk.Resample(
+                    pred, img, sitk.Transform(), sitk.sitkNearestNeighbor
+                )
 
                 result[sample["name"]][structure] = pred
 
         return result
 
     def validate(
-        self, img, manual_observers, samples, mean, matching_type="best", window=[-0.5, 1.0]
+        self,
+        img,
+        manual_observers,
+        samples,
+        mean,
+        matching_type="best",
+        window=[-0.5, 1.0],
     ):
-
         metrics = {"DSC": "max", "HD": "min", "ASD": "min"}
         result = {}
 
@@ -369,11 +414,12 @@ class ProbUNet(pl.LightningModule):
 
         mean_contours = {}
         for idx, structure in enumerate(structures):
-
             color_map = plt.cm.get_cmap(contour_cmaps[idx % len(structures)])
             mean_contours[f"mean_{structure}"] = mean["mean"][structure]
 
-            vis.add_contour(mean_contours, color=color_map(0.35), linewidth=3, show_legend=False)
+            vis.add_contour(
+                mean_contours, color=color_map(0.35), linewidth=3, show_legend=False
+            )
 
             manual_color = color_map(0.9)
 
@@ -383,7 +429,10 @@ class ProbUNet(pl.LightningModule):
             }
 
             vis.add_contour(
-                manual_observers_struct, color=manual_color, linewidth=0.5, show_legend=False
+                manual_observers_struct,
+                color=manual_color,
+                linewidth=0.5,
+                show_legend=False,
             )
 
             intersection_mask = get_intersection_mask(manual_observers_struct)
@@ -395,7 +444,9 @@ class ProbUNet(pl.LightningModule):
                 color=manual_color,
                 linewidth=3,
             )
-            vis.add_contour(union_mask, name=f"union_{structure}", color=manual_color, linewidth=3)
+            vis.add_contour(
+                union_mask, name=f"union_{structure}", color=manual_color, linewidth=3
+            )
 
             samples_struct = {
                 f"{sample_struct}_{structure}": samples[sample_struct][structure]
@@ -407,7 +458,8 @@ class ProbUNet(pl.LightningModule):
                 color={
                     s: c
                     for s, c in zip(
-                        samples_struct, color_map(np.linspace(0.1, 0.7, len(samples_struct)))
+                        samples_struct,
+                        color_map(np.linspace(0.1, 0.7, len(samples_struct))),
                     )
                 },
             )
@@ -415,10 +467,12 @@ class ProbUNet(pl.LightningModule):
             # vis.set_limits_from_label(union_mask, expansion=30)
 
             sim = {
-                k: np.zeros((len(samples_struct), len(manual_observers_struct))) for k in metrics
+                k: np.zeros((len(samples_struct), len(manual_observers_struct)))
+                for k in metrics
             }
             msim = {
-                k: np.zeros((len(samples_struct), len(manual_observers_struct))) for k in metrics
+                k: np.zeros((len(samples_struct), len(manual_observers_struct)))
+                for k in metrics
             }
             for sid, samp in enumerate(samples_struct):
                 for oid, obs in enumerate(manual_observers_struct):
@@ -436,7 +490,6 @@ class ProbUNet(pl.LightningModule):
             result[f"probnet_{structure}"] = {k: [] for k in metrics}
             result[f"unet_{structure}"] = {k: [] for k in metrics}
             for k in sim:
-
                 val = sim[k]
                 if matching_type == "hungarian":
                     if metrics[k] == "max":
@@ -468,13 +521,16 @@ class ProbUNet(pl.LightningModule):
         return result, fig
 
     def training_step(self, batch, _):
-
-        x, y, m, _ = batch
+        x, c, y, m, _ = batch
 
         # Add background layer for one-hot encoding
         not_y = 1 - y.max(axis=1).values
         not_y = torch.unsqueeze(not_y, dim=1)
         y = torch.cat((not_y, y), dim=1).float()
+
+        # Concat context map to image if we have one
+        if c is not None:
+            x = torch.cat((x, c), dim=1)
 
         # self.prob_unet.forward(x, y, training=True)
         if self.hparams.prob_type == "prob":
@@ -522,7 +578,6 @@ class ProbUNet(pl.LightningModule):
         return training_loss
 
     def validation_step(self, batch, _):
-
         if self.validation_directory is None:
             self.validation_directory = Path(tempfile.mkdtemp())
 
@@ -530,15 +585,20 @@ class ProbUNet(pl.LightningModule):
         m = self.hparams.num_observers
 
         with torch.set_grad_enabled(False):
-            x, y, _, info = batch
+            x, c, y, _, info = batch
 
             # Save off slices/volumes for analysis of entire structure in end of validation step
             for s in range(y.shape[0]):
-
                 img_file = self.validation_directory.joinpath(
                     f"img_{info['case'][s]}_{info['z'][s]}.npy"
                 )
                 np.save(img_file, x[s].squeeze(0).cpu().numpy())
+
+                if c is not None:
+                    cmap_file = self.validation_directory.joinpath(
+                        f"cmap_{info['case'][s]}_{info['z'][s]}.npy"
+                    )
+                    np.save(cmap_file, c[s].squeeze(0).cpu().numpy())
 
                 mask_file = self.validation_directory.joinpath(
                     f"mask_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"
@@ -554,8 +614,18 @@ class ProbUNet(pl.LightningModule):
 
             if self.hparams.ndims == 2:
                 x = x.repeat(m, 1, 1, 1)
+
+                if c is not None:
+                    c = c.repeat(m, 1, 1, 1)
             else:
                 x = x.repeat(m, 1, 1, 1, 1)
+
+                if c is not None:
+                    c = c.repeat(m, 1, 1, 1, 1)
+
+            if c is not None:
+                x = torch.cat((x, c), dim=1)
+
             self.prob_unet.forward(x)
 
             py = self.prob_unet.sample(testing=True)
@@ -568,7 +638,6 @@ class ProbUNet(pl.LightningModule):
             y = y.squeeze(1)
             y = y.int()
             y = y.to("cpu")
-
 
             # TODO Make this work for multi class
             # Intersection over Union (also known as Jaccard Index)
@@ -632,34 +701,35 @@ class ProbUNet(pl.LightningModule):
         return info
 
     def validation_epoch_end(self, validation_step_outputs):
-
         cases = {}
         for info in validation_step_outputs:
-
             for case, z, observer in zip(info["case"], info["z"], info["observer"]):
                 if not case in cases:
                     cases[case] = {"slices": z.item(), "observers": [observer]}
                 else:
                     if z.item() > cases[case]["slices"]:
-
                         cases[case]["slices"] = z.item()
                     if not observer in cases[case]["observers"]:
                         cases[case]["observers"].append(observer)
 
         metrics = ["DSC", "HD", "ASD"]
         computed_metrics = {
-            **{f"probnet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
+            **{
+                f"probnet_{s}_{m}": [] for m in metrics for s in self.hparams.structures
+            },
             **{f"unet_{s}_{m}": [] for m in metrics for s in self.hparams.structures},
         }
 
-        if len(cases) == 0: return
+        if len(cases) == 0:
+            return
 
         prob_surface_dice = 0
         prob_dice = 0
 
         for case in cases:
-
             img_arrs = []
+            cmap_arrs = []
+            cmap_arr = None
             slices = []
 
             if self.hparams.ndims == 2:
@@ -669,17 +739,44 @@ class ProbUNet(pl.LightningModule):
                         img_arrs.append(np.load(img_file))
                         slices.append(z)
 
+                    cmap_file = self.validation_directory.joinpath(
+                        f"cmap_{case}_{z}.npy"
+                    )
+                    if cmap_file.exists():
+                        cmap_arrs.append(np.load(cmap_file))
+
                 img_arr = np.stack(img_arrs)
+
+                if len(cmap_arrs) > 0:
+                    cmap_arr = np.stack(cmap_arr)
 
             else:
                 img_file = self.validation_directory.joinpath(f"img_{case}_0.npy")
                 img_arr = np.load(img_file)
+
+                cmap_file = self.validation_directory.joinpath(f"cmap_{case}_0.npy")
+                if cmap_file.exists():
+                    cmap_arr = np.load(cmap_file)
+
             img = sitk.GetImageFromArray(img_arr)
             img.SetSpacing(self.hparams.spacing)
+
+            context_map = None
+            if cmap_arr:
+                context_map = sitk.GetImageFromArray(cmap_arr)
+                context_map.SetSpacing(self.hparams.spacing)
+
             try:
-                mean = self.infer(img, num_samples=1, sample_strategy="mean", preprocess=False)
+                mean = self.infer(
+                    img,
+                    context_map=context_map,
+                    num_samples=1,
+                    sample_strategy="mean",
+                    preprocess=False,
+                )
                 samples = self.infer(
                     img,
+                    context_map=context_map,
                     sample_strategy="spaced",
                     num_samples=5,
                     spaced_range=[-2, 2],
@@ -691,7 +788,6 @@ class ProbUNet(pl.LightningModule):
 
             observers = {}
             for _, observer in enumerate(cases[case]["observers"]):
-
                 if self.hparams.ndims == 2:
                     mask_arrs = []
                     for z in slices:
@@ -717,7 +813,9 @@ class ProbUNet(pl.LightningModule):
                     observers[f"manual_{observer}"][structure] = mask
 
             # try:
-            result, fig = self.validate(img, observers, samples, mean, matching_type="best")
+            result, fig = self.validate(
+                img, observers, samples, mean, matching_type="best"
+            )
             # except Exception as e:
             #    print(f"ERROR DURING VALIDATION VALIDATE: {e}")
             #    return
@@ -738,7 +836,6 @@ class ProbUNet(pl.LightningModule):
 
             # Compute the probabilistic (surface) dice
             for idx, structure in enumerate(self.hparams.structures):
-
                 gt_labels = []
                 for _, observer in enumerate(cases[case]["observers"]):
                     gt_labels.append(observers[f"manual_{observer}"][structure])
@@ -747,13 +844,16 @@ class ProbUNet(pl.LightningModule):
                 for rk in samples:
                     sample_labels.append(samples[rk][structure])
 
-                prob_dice += probabilistic_dice(gt_labels, sample_labels, dsc_type="dsc")
+                prob_dice += probabilistic_dice(
+                    gt_labels, sample_labels, dsc_type="dsc"
+                )
                 prob_surface_dice += probabilistic_dice(
                     gt_labels, sample_labels, dsc_type="sdsc", tau=3
                 )
 
         prob_dice = prob_dice / len(cases)
-        if np.isnan(prob_dice): prob_dice = 0
+        if np.isnan(prob_dice):
+            prob_dice = 0
         self.log(
             "probabilisticDice",
             prob_dice,
@@ -764,7 +864,8 @@ class ProbUNet(pl.LightningModule):
         )
 
         prob_surface_dice = prob_surface_dice / len(cases)
-        if np.isnan(prob_surface_dice): prob_surface_dice = 0
+        if np.isnan(prob_surface_dice):
+            prob_surface_dice = 0
         self.log(
             "probabilisticSurfaceDice",
             prob_surface_dice,
@@ -798,7 +899,6 @@ class ProbUNet(pl.LightningModule):
 
 
 def main(args, config_json_path=None):
-
     pl.seed_everything(args.seed, workers=True)
 
     args.working_dir = Path(args.working_dir)
@@ -807,7 +907,7 @@ def main(args, config_json_path=None):
     args.fold_dir = args.working_dir.joinpath(f"fold_{args.fold}")
     args.default_root_dir = str(args.fold_dir)
     args.accumulate_grad_batches = {0: 5, 5: 10, 10: 15}
-#    args.precision = 16
+    #    args.precision = 16
 
     comet_api_key = None
     comet_workspace = None
@@ -860,7 +960,7 @@ def main(args, config_json_path=None):
         checkpoint_callback = ModelCheckpoint(
             monitor=args.checkpoint_var,
             dirpath=args.default_root_dir,
-            filename="probunet-{epoch:02d}-{"+args.checkpoint_var+":.2f}",
+            filename="probunet-{epoch:02d}-{" + args.checkpoint_var + ":.2f}",
             save_top_k=1,
             mode=args.checkpoint_mode,
         )
@@ -868,7 +968,11 @@ def main(args, config_json_path=None):
 
     if args.early_stopping_var:
         early_stop_callback = GECOEarlyStopping(
-            monitor=args.early_stopping_var, min_delta=args.early_stopping_min_delta, patience=args.early_stopping_patience, verbose=True, mode=args.early_stopping_mode
+            monitor=args.early_stopping_var,
+            min_delta=args.early_stopping_min_delta,
+            patience=args.early_stopping_patience,
+            verbose=True,
+            mode=args.early_stopping_mode,
         )
         trainer.callbacks.append(early_stop_callback)
 
@@ -876,7 +980,6 @@ def main(args, config_json_path=None):
 
 
 def parse_config_file(config_json_path, args):
-
     with open(config_json_path, "r") as f:
         params = json.load(f)
         for key in params:
@@ -888,11 +991,10 @@ def parse_config_file(config_json_path, args):
             else:
                 args.append(str(params[key]))
 
-
     return args
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     args = None
     config_json_path = None
     if len(sys.argv) == 2:
@@ -908,8 +1010,12 @@ if __name__ == "__main__":
     arg_parser.add_argument(
         "--config", type=str, default=None, help="JSON file with parameters to load"
     )
-    arg_parser.add_argument("--seed", type=int, default=42, help="an integer to use as seed")
-    arg_parser.add_argument("--experiment", type=str, default="default", help="Name of experiment")
+    arg_parser.add_argument(
+        "--seed", type=int, default=42, help="an integer to use as seed"
+    )
+    arg_parser.add_argument(
+        "--experiment", type=str, default="default", help="Name of experiment"
+    )
     arg_parser.add_argument("--working_dir", type=str, default="./working")
     arg_parser.add_argument("--num_observers", type=int, default=5)
     arg_parser.add_argument("--spacing", nargs="+", type=float, default=[1, 1, 1])

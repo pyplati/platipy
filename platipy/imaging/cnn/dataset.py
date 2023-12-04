@@ -30,16 +30,20 @@ import random
 from scipy.ndimage import affine_transform
 from scipy.ndimage.filters import gaussian_filter, median_filter
 
-from platipy.imaging.cnn.utils import preprocess_image, resample_mask_to_image, get_contour_mask
+from platipy.imaging.cnn.utils import (
+    preprocess_image,
+    resample_mask_to_image,
+    get_contour_mask,
+)
 from platipy.imaging.label.utils import get_union_mask, get_intersection_mask
 from platipy.imaging.cnn.localise_net import LocaliseUNet
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
 logger = logging.getLogger(__name__)
 
+
 class GaussianNoise:
     def __init__(self, mu=0.0, sigma=0.0, probability=1.0):
-
         self.mu = mu
         self.sigma = sigma
         self.probability = probability
@@ -51,7 +55,6 @@ class GaussianNoise:
             self.sigma = (self.sigma,) * 2
 
     def apply(self, img, masks=[]):
-
         if random.random() > self.probability:
             # Don't augment this time
             return img, masks
@@ -65,7 +68,6 @@ class GaussianNoise:
 
 class GaussianBlur:
     def __init__(self, sigma=0.0, probability=1.0):
-
         self.sigma = sigma
         self.probability = probability
 
@@ -73,7 +75,6 @@ class GaussianBlur:
             self.sigma = (self.sigma,) * 2
 
     def apply(self, img, masks=[]):
-
         if random.random() > self.probability:
             # Don't augment this time
             return img, masks
@@ -85,7 +86,6 @@ class GaussianBlur:
 
 class MedianBlur:
     def __init__(self, size=1.0, probability=1.0):
-
         self.size = size
         self.probability = probability
 
@@ -93,7 +93,6 @@ class MedianBlur:
             self.size = (self.size,) * 2
 
     def apply(self, img, masks=[]):
-
         if random.random() > self.probability:
             # Don't augment this time
             return img, masks
@@ -117,7 +116,6 @@ class Affine:
         cval=-1,
         probability=1.0,
     ):
-
         self.scale = scale
         self.translate_percent = translate_percent
         self.rotate = rotate
@@ -176,7 +174,6 @@ class Affine:
             )
 
     def get_shear(self, shear):
-
         mat = np.identity(4)
         mat[0, 1] = shear[1]
         mat[0, 2] = shear[2]
@@ -188,7 +185,6 @@ class Affine:
         return mat
 
     def apply(self, img, masks=[]):
-
         if random.random() > self.probability:
             # Don't augment this time
             return img, masks
@@ -300,7 +296,6 @@ def prepare_3d_transforms():
 
 
 def prepare_transforms():
-
     sometimes = lambda aug: iaa.Sometimes(0.5, aug)
 
     seq = iaa.Sequential(
@@ -351,6 +346,7 @@ class NiftiDataset(torch.utils.data.Dataset):
         combine_observers=None,
         intensity_scaling="window",
         intensity_window=[-500, 500],
+        use_context_map=False,
         ndims=2,
     ):
         """Prepare a dataset from Nifti images/labels
@@ -376,21 +372,26 @@ class NiftiDataset(torch.utils.data.Dataset):
         self.img_dir = working_dir.joinpath("img")
         self.label_dir = working_dir.joinpath("label")
         self.contour_mask_dir = working_dir.joinpath("contour_mask")
+        self.context_map_dir = working_dir.joinpath("context_map")
 
         self.img_dir.mkdir(exist_ok=True, parents=True)
         self.label_dir.mkdir(exist_ok=True, parents=True)
         self.contour_mask_dir.mkdir(exist_ok=True, parents=True)
+        self.context_map_dir.mkdir(exist_ok=True, parents=True)
 
         for case in data:
             case_id = case["id"]
             img_path = str(case["image"])
+
+            if use_context_map:
+                context_map_path = str(case["context_map"])
 
             existing_images = [i for i in self.img_dir.glob(f"{case_id}_*.npy")]
             if len(existing_images) > 0:
                 logger.debug(f"Image for case already exist: {case_id}")
 
                 for img_path in existing_images:
-                    z_matches = re.findall(fr"{case_id}_([0-9]*)\.npy", img_path.name)
+                    z_matches = re.findall(rf"{case_id}_([0-9]*)\.npy", img_path.name)
                     if len(z_matches) == 0:
                         continue
                     z_slice = int(z_matches[0])
@@ -398,8 +399,14 @@ class NiftiDataset(torch.utils.data.Dataset):
                     img_file = self.img_dir.joinpath(f"{case_id}_{z_slice}.npy")
                     assert img_file.exists()
 
-                    for obs in case["observers"]:
+                    cmap_file = None
+                    if use_context_map:
+                        cmap_file = self.context_map_dir.joinpath(
+                            f"{case_id}_{z_slice}.npy"
+                        )
+                        assert cmap_file.exists()
 
+                    for obs in case["observers"]:
                         labels = []
                         contour_mask_files = []
                         for structure in case["observers"][obs]:
@@ -423,6 +430,7 @@ class NiftiDataset(torch.utils.data.Dataset):
                                 "image": img_file,
                                 "labels": labels,
                                 "contour_masks": contour_mask_files,
+                                "context_map": cmap_file,
                                 "case": case_id,
                                 "observer": obs,
                             }
@@ -432,6 +440,9 @@ class NiftiDataset(torch.utils.data.Dataset):
 
             logger.debug(f"Generating images for case: {case_id}")
             img = sitk.ReadImage(img_path)
+
+            if use_context_map:
+                context_map = sitk.ReadImage(context_map_path)
 
             if crop_using_localise_model:
                 img = crop_img_using_localise_model(
@@ -448,6 +459,9 @@ class NiftiDataset(torch.utils.data.Dataset):
                     intensity_scaling=intensity_scaling,
                     intensity_window=intensity_window,
                 )
+
+            if use_context_map:
+                context_map = resample_mask_to_image(img, context_map)
 
             observers = {}
             structure_names = []
@@ -509,15 +523,25 @@ class NiftiDataset(torch.utils.data.Dataset):
             if ndims == 3:
                 z_range = range(1)
             for z_slice in z_range:
-
                 # Save the image slice
                 if ndims == 2:
                     img_slice = img[:, :, z_slice]
+
+                    if use_context_map:
+                        cmap_slice = context_map[:, :, z_slice]
                 else:
                     img_slice = img
+                    if use_context_map:
+                        cmap_slice = context_map
 
                 img_file = self.img_dir.joinpath(f"{case_id}_{z_slice}.npy")
                 np.save(img_file, sitk.GetArrayFromImage(img_slice))
+
+                if use_context_map:
+                    cmap_file = self.context_map_dir.joinpath(
+                        f"{case_id}_{z_slice}.npy"
+                    )
+                    np.save(cmap_file, sitk.GetArrayFromImage(cmap_slice))
 
                 # Save the contour mask slice
                 cmasks = []
@@ -529,14 +553,14 @@ class NiftiDataset(torch.utils.data.Dataset):
                     contour_mask_file = self.contour_mask_dir.joinpath(
                         f"{case_id}_{structure}_{z_slice}.npy"
                     )
-                    np.save(contour_mask_file, sitk.GetArrayFromImage(contour_mask_slice))
+                    np.save(
+                        contour_mask_file, sitk.GetArrayFromImage(contour_mask_slice)
+                    )
                     cmasks.append(contour_mask_file)
 
                 for obs in observers:
-
                     labels = []
                     for structure in structure_names:
-
                         if observers[obs][structure] is None:
                             labels.append(None)
                             continue
@@ -547,7 +571,10 @@ class NiftiDataset(torch.utils.data.Dataset):
                         label_file = self.label_dir.joinpath(
                             f"{case_id}_{structure}_{obs}_{z_slice}.npy"
                         )
-                        np.save(label_file, sitk.GetArrayFromImage(label_slice).astype(np.int8))
+                        np.save(
+                            label_file,
+                            sitk.GetArrayFromImage(label_slice).astype(np.int8),
+                        )
                         labels.append(label_file)
 
                     self.slices.append(
@@ -556,6 +583,7 @@ class NiftiDataset(torch.utils.data.Dataset):
                             "image": img_file,
                             "labels": labels,
                             "contour_masks": cmasks,
+                            "context_map": cmap_file,
                             "case": case_id,
                             "observer": obs,
                         }
@@ -565,15 +593,19 @@ class NiftiDataset(torch.utils.data.Dataset):
         return len(self.slices)
 
     def __getitem__(self, index):
-
         img = np.load(self.slices[index]["image"])
         labels = [
             np.load(label_file) if label_file else np.zeros(img.shape, dtype=np.ushort)
             for label_file in self.slices[index]["labels"]
         ]
         contour_masks = [
-            np.load(contour_mask_file) for contour_mask_file in self.slices[index]["contour_masks"]
+            np.load(contour_mask_file)
+            for contour_mask_file in self.slices[index]["contour_masks"]
         ]
+
+        context_map = None
+        if self.slices[index]["context_map"]:
+            context_map = np.load(self.slices[index]["context_map"])
 
         if self.transforms:
             masks = labels + contour_masks
@@ -583,7 +615,9 @@ class NiftiDataset(torch.utils.data.Dataset):
                 img, seg = self.transforms(image=img, segmentation_maps=segmap)
                 for idx, _ in enumerate(labels):
                     labels[idx] = seg.get_arr()[:, :, idx].squeeze()
-                    contour_masks[idx] = seg.get_arr()[:, :, len(labels) + idx].squeeze()
+                    contour_masks[idx] = seg.get_arr()[
+                        :, :, len(labels) + idx
+                    ].squeeze()
             else:
                 for aug in self.transforms:
                     img, masks = aug.apply(img, masks)
@@ -591,7 +625,15 @@ class NiftiDataset(torch.utils.data.Dataset):
                 contour_masks = masks[len(contour_masks) :]
 
         img = torch.FloatTensor(img)
-        label = torch.FloatTensor(np.concatenate([np.expand_dims(l, 0) for l in labels], 0))
+        img = img.unsqueeze(0)
+
+        if context_map:
+            context_map = torch.FloatTensor(context_map)
+            context_map = context_map.unqsqueeze(0)
+
+        label = torch.FloatTensor(
+            np.concatenate([np.expand_dims(l, 0) for l in labels], 0)
+        )
         contour_mask = torch.FloatTensor(
             np.concatenate([np.expand_dims(l, 0) for l in contour_masks], 0)
         )
@@ -599,7 +641,8 @@ class NiftiDataset(torch.utils.data.Dataset):
         label_present = [label is not None for label in self.slices[index]["labels"]]
 
         return (
-            img.unsqueeze(0),
+            img,
+            context_map,
             label,
             contour_mask,
             {
