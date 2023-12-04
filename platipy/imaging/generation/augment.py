@@ -382,6 +382,7 @@ def augment_data(args):
             )
 
             dvf = None
+            augmented_cmap = None
 
             if len(augmentation) == 0:
                 logger.debug(
@@ -411,13 +412,14 @@ def augment_data(args):
             sitk.WriteImage(ct_image_original, str(augmented_image_path))
 
             # Save off context map if we have one
-            augmented_cmap_path = augmented_case_path.joinpath("context_map.nii.gz")
-            cmap_original[
-                index[0] : index[0] + size[0],
-                index[1] : index[1] + size[1],
-                index[2] : index[2] + size[2],
-            ] = augmented_cmap
-            sitk.WriteImage(cmap_original, str(augmented_cmap_path))
+            if augmented_cmap:
+                augmented_cmap_path = augmented_case_path.joinpath("context_map.nii.gz")
+                cmap_original[
+                    index[0] : index[0] + size[0],
+                    index[1] : index[1] + size[1],
+                    index[2] : index[2] + size[2],
+                ] = augmented_cmap
+                sitk.WriteImage(cmap_original, str(augmented_cmap_path))
 
             vis = ImageVisualiser(image=ct_image, figure_size_in=6)
             vis.add_comparison_overlay(augmented_image)
