@@ -42,6 +42,7 @@ from platipy.imaging.utils.lung import detect_holes
 from platipy.imaging.label.utils import get_union_mask
 from platipy.imaging.utils.crop import label_to_roi, crop_to_roi
 
+logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 logger = logging.getLogger(__name__)
 
 
