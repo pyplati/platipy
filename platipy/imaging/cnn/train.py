@@ -19,6 +19,7 @@ import json
 from argparse import ArgumentParser
 
 from pathlib import Path
+import matplotlib
 import SimpleITK as sitk
 import numpy as np
 from scipy.optimize import linear_sum_assignment
@@ -419,7 +420,9 @@ class ProbUNet(pl.LightningModule):
 
         mean_contours = {}
         for idx, structure in enumerate(structures):
-            color_map = matplotlib.colormaps.get_cmap(contour_cmaps[idx % len(structures)])
+            color_map = matplotlib.colormaps.get_cmap(
+                contour_cmaps[idx % len(structures)]
+            )
             mean_contours[f"mean_{structure}"] = mean["mean"][structure]
 
             vis.add_contour(
