@@ -40,7 +40,12 @@ from platipy.imaging.cnn.prob_unet import ProbabilisticUnet
 from platipy.imaging.cnn.unet import l2_regularisation
 from platipy.imaging.cnn.dataload import UNetDataModule
 from platipy.imaging.cnn.dataset import crop_img_using_localise_model
-from platipy.imaging.cnn.utils import preprocess_image, postprocess_mask, get_metrics
+from platipy.imaging.cnn.utils import (
+    preprocess_image,
+    postprocess_mask,
+    get_metrics,
+    resample_mask_to_image,
+)
 from platipy.imaging.cnn.metrics import probabilistic_dice
 
 from platipy.imaging import ImageVisualiser
