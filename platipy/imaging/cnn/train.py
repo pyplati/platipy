@@ -605,8 +605,10 @@ class ProbUNet(pl.LightningModule):
                 )
                 np.save(mask_file, y[s].cpu().numpy())
 
-            # Image will be same for all in batch
+            # Image (and context map) will be same for all in batch
             x = x[0].unsqueeze(0)
+            if c is not None:
+                c = c[0].unsqueeze(0)
             if self.hparams.ndims == 2:
                 vis = ImageVisualiser(sitk.GetImageFromArray(x.to("cpu")[0]), axis="z")
             else:
