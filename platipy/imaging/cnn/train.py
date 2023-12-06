@@ -764,7 +764,7 @@ class ProbUNet(pl.LightningModule):
             img.SetSpacing(self.hparams.spacing)
 
             context_map = None
-            if cmap_arr:
+            if cmap_arr is not None:
                 context_map = sitk.GetImageFromArray(cmap_arr)
                 context_map.SetSpacing(self.hparams.spacing)
 
