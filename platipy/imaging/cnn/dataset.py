@@ -630,7 +630,7 @@ class NiftiDataset(torch.utils.data.Dataset):
 
         if context_map is not None:
             context_map = torch.FloatTensor(context_map)
-            context_map = context_map.unqsqueeze(0)
+            context_map = context_map.unsqueeze(0)
 
         label = torch.FloatTensor(
             np.concatenate([np.expand_dims(l, 0) for l in labels], 0)
