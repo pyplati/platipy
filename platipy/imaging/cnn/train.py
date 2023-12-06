@@ -419,7 +419,7 @@ class ProbUNet(pl.LightningModule):
 
         mean_contours = {}
         for idx, structure in enumerate(structures):
-            color_map = plt.cm.get_cmap(contour_cmaps[idx % len(structures)])
+            color_map = matplotlib.colormaps.get_cmap(contour_cmaps[idx % len(structures)])
             mean_contours[f"mean_{structure}"] = mean["mean"][structure]
 
             vis.add_contour(
@@ -690,7 +690,7 @@ class ProbUNet(pl.LightningModule):
                     samp_pred = samp_pred.unsqueeze(0)
                 contours[f"sample_{mm}"] = sitk.GetImageFromArray(samp_pred)
 
-            vis.add_contour(contours, colormap=plt.cm.get_cmap("cool"))
+            vis.add_contour(contours, colormap=matplotlib.colormaps.get_cmap("cool"))
             vis.show()
 
             figure_path = f"ged_{info['z'][s]}.png"
