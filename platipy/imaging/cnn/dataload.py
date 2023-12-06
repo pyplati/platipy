@@ -191,7 +191,7 @@ class UNetDataModule(pl.LightningDataModule):
             {
                 "id": case,
                 "image": self.data_dir.joinpath(self.image_glob.format(case=case)),
-                "context_map": self.data_dir.joinpath(
+                "context_map": None if self.context_map_glob is None else self.data_dir.joinpath(
                     self.context_map_glob.format(case=case)
                 ),
                 "observers": {
@@ -229,7 +229,7 @@ class UNetDataModule(pl.LightningDataModule):
                                 case=case, augmented_case=augmented_case
                             )
                         ),
-                        "context_map": case_aug_dir.joinpath(
+                        "context_map": None if self.augmented_context_map_glob is None else case_aug_dir.joinpath(
                             self.augmented_context_map_glob.format(
                                 case=case, augmented_case=augmented_case
                             )
@@ -270,7 +270,7 @@ class UNetDataModule(pl.LightningDataModule):
                 {
                     "id": case,
                     "image": data_add_dir.joinpath(self.image_glob.format(case=case)),
-                    "context_map": data_add_dir.joinpath(
+                    "context_map": None if self.context_map_glob is None else data_add_dir.joinpath(
                         self.context_map_glob.format(case=case)
                     ),
                     "observers": {
@@ -316,7 +316,7 @@ class UNetDataModule(pl.LightningDataModule):
                                 case=case, augmented_case=augmented_case
                             )
                         ),
-                        "context_map": case_aug_dir.joinpath(
+                        "context_map": None if self.augmented_context_map_glob is None else case_aug_dir.joinpath(
                             self.augmented_context_map_glob.format(
                                 case=case, augmented_case=augmented_case
                             )

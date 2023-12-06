@@ -382,6 +382,7 @@ class NiftiDataset(torch.utils.data.Dataset):
         for case in data:
             case_id = case["id"]
             img_path = str(case["image"])
+            cmap_file = None
 
             if use_context_map:
                 context_map_path = str(case["context_map"])
