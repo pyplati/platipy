@@ -628,7 +628,7 @@ class NiftiDataset(torch.utils.data.Dataset):
         img = torch.FloatTensor(img)
         img = img.unsqueeze(0)
 
-        if context_map:
+        if context_map is not None:
             context_map = torch.FloatTensor(context_map)
             context_map = context_map.unqsqueeze(0)
 
