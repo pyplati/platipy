@@ -537,7 +537,7 @@ class ProbUNet(pl.LightningModule):
         y = torch.cat((not_y, y), dim=1).float()
 
         # Concat context map to image if we have one
-        if c is not None:
+        if c.numel() > 0:
             x = torch.cat((x, c), dim=1)
 
         # self.prob_unet.forward(x, y, training=True)
@@ -602,7 +602,7 @@ class ProbUNet(pl.LightningModule):
                 )
                 np.save(img_file, x[s].squeeze(0).cpu().numpy())
 
-                if c is not None:
+                if c.numel() > 0:
                     cmap_file = self.validation_directory.joinpath(
                         f"cmap_{info['case'][s]}_{info['z'][s]}.npy"
                     )
@@ -615,7 +615,7 @@ class ProbUNet(pl.LightningModule):
 
             # Image (and context map) will be same for all in batch
             x = x[0].unsqueeze(0)
-            if c is not None:
+            if c.numel() > 0:
                 c = c[0].unsqueeze(0)
             if self.hparams.ndims == 2:
                 vis = ImageVisualiser(sitk.GetImageFromArray(x.to("cpu")[0]), axis="z")
@@ -625,15 +625,15 @@ class ProbUNet(pl.LightningModule):
             if self.hparams.ndims == 2:
                 x = x.repeat(m, 1, 1, 1)
 
-                if c is not None:
+                if c.numel() > 0:
                     c = c.repeat(m, 1, 1, 1)
             else:
                 x = x.repeat(m, 1, 1, 1, 1)
 
-                if c is not None:
+                if c.numel() > 0:
                     c = c.repeat(m, 1, 1, 1, 1)
 
-            if c is not None:
+            if c.numel() > 0:
                 x = torch.cat((x, c), dim=1)
 
             self.prob_unet.forward(x)

@@ -604,8 +604,8 @@ class NiftiDataset(torch.utils.data.Dataset):
             for contour_mask_file in self.slices[index]["contour_masks"]
         ]
 
-        context_map = None
-        if self.slices[index]["context_map"]:
+        context_map = torch.Tensor()
+        if self.slices[index]["context_map"] is not None:
             context_map = np.load(self.slices[index]["context_map"])
 
         if self.transforms:
