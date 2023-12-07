@@ -224,6 +224,7 @@ class Affine:
             t = t * translation
 
         augmented_image = affine_transform(img, t, mode="mirror")
+        augmented_context_map = None
         if context_map is not None:
             augmented_context_map = affine_transform(context_map, t, mode="mirror")
         augmented_masks = []
