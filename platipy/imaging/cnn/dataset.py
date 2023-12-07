@@ -230,7 +230,7 @@ class Affine:
         for mask in masks:
             augmented_masks.append(affine_transform(mask, t, mode="nearest"))
 
-        return augmented_image, augmented_masks
+        return augmented_image, augmented_context_map, augmented_masks
 
 
 def crop_img_using_localise_model(
