@@ -54,16 +54,16 @@ class GaussianNoise:
         if not hasattr(self.sigma, "__iter__"):
             self.sigma = (self.sigma,) * 2
 
-    def apply(self, img, masks=[]):
+    def apply(self, img, context_map, masks=[]):
         if random.random() > self.probability:
             # Don't augment this time
-            return img, masks
+            return img, context_map, masks
 
         mean = random.uniform(self.mu[0], self.mu[1])
         sigma = random.uniform(self.sigma[0], self.sigma[1])
 
         gaussian = np.random.normal(mean, sigma, img.shape)
-        return img + gaussian, masks
+        return img + gaussian, context_map, masks
 
 
 class GaussianBlur:
@@ -74,14 +74,14 @@ class GaussianBlur:
         if not hasattr(self.sigma, "__iter__"):
             self.sigma = (self.sigma,) * 2
 
-    def apply(self, img, masks=[]):
+    def apply(self, img, context_map, masks=[]):
         if random.random() > self.probability:
             # Don't augment this time
-            return img, masks
+            return img, context_map, masks
 
         sigma = random.uniform(self.sigma[0], self.sigma[1])
 
-        return gaussian_filter(img, sigma=sigma), masks
+        return gaussian_filter(img, sigma=sigma), context_map, masks
 
 
 class MedianBlur:
@@ -92,14 +92,14 @@ class MedianBlur:
         if not hasattr(self.size, "__iter__"):
             self.size = (self.size,) * 2
 
-    def apply(self, img, masks=[]):
+    def apply(self, img, context_map, masks=[]):
         if random.random() > self.probability:
             # Don't augment this time
-            return img, masks
+            return img, context_map, masks
 
         size = random.randint(self.size[0], self.size[1])
 
-        return median_filter(img, size=size), masks
+        return median_filter(img, size=size), context_map, masks
 
 
 DIMS = ["ax", "cor", "sag"]
@@ -184,10 +184,10 @@ class Affine:
 
         return mat
 
-    def apply(self, img, masks=[]):
+    def apply(self, img, context_map, masks=[]):
         if random.random() > self.probability:
             # Don't augment this time
-            return img, masks
+            return img, context_map, masks
 
         deg_to_rad = math.pi / 180
 
@@ -224,6 +224,8 @@ class Affine:
             t = t * translation
 
         augmented_image = affine_transform(img, t, mode="mirror")
+        if context_map is not None:
+            augmented_context_map = affine_transform(context_map, t, mode="mirror")
         augmented_masks = []
         for mask in masks:
             augmented_masks.append(affine_transform(mask, t, mode="nearest"))
@@ -605,7 +607,9 @@ class NiftiDataset(torch.utils.data.Dataset):
         ]
 
         context_map = torch.Tensor()
+        use_context = False
         if self.slices[index]["context_map"] is not None:
+            use_context = True
             context_map = np.load(self.slices[index]["context_map"])
 
         if self.transforms:
@@ -614,6 +618,12 @@ class NiftiDataset(torch.utils.data.Dataset):
                 seg_arr = np.concatenate([np.expand_dims(m, 2) for m in masks], 2)
                 segmap = SegmentationMapsOnImage(seg_arr, shape=labels[0].shape)
                 img, seg = self.transforms(image=img, segmentation_maps=segmap)
+
+                # TODO Implement context map aug for 2D
+                if use_context:
+                    raise NotImplementedError(
+                        "WARNING!!! Augmentation for context map in 2D not yet implemented!"
+                    )
                 for idx, _ in enumerate(labels):
                     labels[idx] = seg.get_arr()[:, :, idx].squeeze()
                     contour_masks[idx] = seg.get_arr()[
@@ -621,7 +631,10 @@ class NiftiDataset(torch.utils.data.Dataset):
                     ].squeeze()
             else:
                 for aug in self.transforms:
-                    img, masks = aug.apply(img, masks)
+                    if use_context:
+                        img, context_map, masks = aug.apply(img, context_map, masks)
+                    else:
+                        img, _, masks = aug.apply(img, None, masks)
                 labels = masks[: len(labels)]
                 contour_masks = masks[len(contour_masks) :]
 
@@ -633,10 +646,12 @@ class NiftiDataset(torch.utils.data.Dataset):
             context_map = context_map.unsqueeze(0)
 
         label = torch.FloatTensor(
-            np.concatenate([np.expand_dims(l, 0) for l in labels], 0)
+            np.concatenate([np.expand_dims(l, 0) for l in labels], 0).astype("int8")
         )
         contour_mask = torch.FloatTensor(
-            np.concatenate([np.expand_dims(l, 0) for l in contour_masks], 0)
+            np.concatenate([np.expand_dims(l, 0) for l in contour_masks], 0).astype(
+                "int8"
+            )
         )
         contour_mask = contour_mask.max(axis=0).values.unsqueeze(0)
         label_present = [label is not None for label in self.slices[index]["labels"]]
