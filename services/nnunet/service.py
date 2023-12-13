@@ -28,6 +28,7 @@ NNUNET_SETTINGS_DEFAULTS = {
     "task": "TaskXXX",
     "config": "2d",
     "trainer": None,
+    "fold": None,
     "clean_sup_slices": False,
 }
 
@@ -98,7 +99,10 @@ def nnunet_service(data_objects, working_dir, settings):
             settings["config"],
         ]
 
-        if settings["trainer"]:
+        if "fold" in settings and settings["fold"]:
+            command += ["-f", settings["fold"]]
+
+        if "trainer" in settings and settings["trainer"]:
             command += ["-tr", settings["trainer"]]
 
         logger.info("Running command: %s", command)
