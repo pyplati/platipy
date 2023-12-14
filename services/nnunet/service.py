@@ -159,10 +159,10 @@ def nnunet_service(data_objects, working_dir, settings):
 
                 sitk.WriteImage(mask, str(mask_file))
 
-            output_data_object = DataObject(
-                type="FILE", path=str(mask_file), parent=data_object
-            )
-            output_objects.append(output_data_object)
+                output_data_object = DataObject(
+                    type="FILE", path=str(mask_file), parent=data_object
+                )
+                output_objects.append(output_data_object)
 
         os.remove(io_path)
 
