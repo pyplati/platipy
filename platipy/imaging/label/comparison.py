@@ -95,8 +95,7 @@ def compute_surface_metrics(label_a, label_b, verbose=False):
     std_sd_list = []
     median_sd_list = []
     num_points = []
-    for (la, lb) in ((label_a, label_b), (label_b, label_a)):
-
+    for la, lb in ((label_a, label_b), (label_b, label_a)):
         label_intensity_stat = sitk.LabelIntensityStatisticsImageFilter()
         reference_distance_map = sitk.Abs(
             sitk.SignedMaurerDistanceMap(
@@ -118,6 +117,7 @@ def compute_surface_metrics(label_a, label_b, verbose=False):
 
     mean_surf_dist = np.dot(mean_sd_list, num_points) / np.sum(num_points)
     max_surf_dist = np.max(max_sd_list)
+    hd_95 = np.percentile(max_sd_list, 95)
     std_surf_dist = np.sqrt(
         np.dot(
             num_points,
@@ -131,6 +131,7 @@ def compute_surface_metrics(label_a, label_b, verbose=False):
 
     result = {}
     result["hausdorffDistance"] = hd
+    result["hausdorffDistance95"] = hd_95
     result["meanSurfaceDistance"] = mean_surf_dist
     result["medianSurfaceDistance"] = median_surf_dist
     result["maximumSurfaceDistance"] = max_surf_dist
@@ -294,8 +295,7 @@ def compute_metric_masd(label_a, label_b, auto_crop=True):
 
     mean_sd_list = []
     num_points = []
-    for (la, lb) in ((label_a, label_b), (label_b, label_a)):
-
+    for la, lb in ((label_a, label_b), (label_b, label_a)):
         label_intensity_stat = sitk.LabelIntensityStatisticsImageFilter()
         reference_distance_map = sitk.Abs(
             sitk.SignedMaurerDistanceMap(
@@ -364,7 +364,6 @@ def compute_apl(label_ref, label_test, distance_threshold_mm=3):
 
     # iterate over each slice
     for i in range(n_slices):
-
         if (
             sitk.GetArrayViewFromImage(label_ref)[i].sum()
             + sitk.GetArrayViewFromImage(label_test)[i].sum()
