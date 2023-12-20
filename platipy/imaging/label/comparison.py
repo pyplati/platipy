@@ -74,8 +74,8 @@ def compute_surface_dsc(label_a, label_b, tau=3.0):
 
 def compute_surface_metrics(label_a, label_b, verbose=False):
     """Compute surface distance metrics between two labels. Surface metrics computed are:
-    hausdorffDistance, meanSurfaceDistance, medianSurfaceDistance, maximumSurfaceDistance,
-    sigmaSurfaceDistance, surfaceDSC
+    hausdorffDistance, hausdorffDistance95, meanSurfaceDistance, medianSurfaceDistance,
+    maximumSurfaceDistance, sigmaSurfaceDistance, surfaceDSC
 
     Args:
         label_a (sitk.Image): A mask to compare
