@@ -15,7 +15,7 @@
 import SimpleITK as sitk
 import numpy as np
 
-from scipy.ndimage.measurements import center_of_mass
+from scipy.ndimage import center_of_mass
 
 from platipy.imaging.utils.math import gen_primes
 

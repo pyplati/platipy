@@ -1200,7 +1200,7 @@ class ImageVisualiser:
                 s_min = nda.min()
 
             colormap_name = scalar.colormap.name
-            colormap = plt.cm.get_cmap(colormap_name)
+            colormap = matplotlib.colormaps[colormap_name]
 
             if scalar.discrete_levels:
                 colormap = colormap.resampled(scalar.discrete_levels)
@@ -1209,7 +1209,7 @@ class ImageVisualiser:
                 if not scalar.discrete_levels:
                     scalar.discrete_levels = 10
 
-                colormap = plt.cm.get_cmap(colormap_name, scalar.discrete_levels)
+                colormap = matplotlib.colormaps[colormap_name]
                 contour_levels = scalar.discrete_levels
 
             if scalar.norm:
