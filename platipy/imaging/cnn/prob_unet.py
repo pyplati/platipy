@@ -289,7 +289,7 @@ class ProbabilisticUnet(torch.nn.Module):
 
         return self.fcomb.forward(self.unet_features, z_prior)
 
-    def reconstruct(self, use_posterior_mean=False, z_posterior=None):
+    def reconstruct(self, use_posterior_mean=False, z_posterior=None, sample_x_stddev_from_mean=None):
         """
         Reconstruct a segmentation from a posterior sample (decoding a posterior sample) and UNet
         feature map
@@ -298,6 +298,15 @@ class ProbabilisticUnet(torch.nn.Module):
         """
         if use_posterior_mean:
             z_posterior = self.posterior_latent_space.mean
+        elif  sample_x_stddev_from_mean is not None:
+            if isinstance(sample_x_stddev_from_mean, list):
+                sample_x_stddev_from_mean = torch.Tensor(sample_x_stddev_from_mean)
+                sample_x_stddev_from_mean = sample_x_stddev_from_mean.to(
+                    self.posterior_latent_space.base_dist.stddev.device
+                )
+            z_posterior = self.posterior_latent_space.base_dist.loc + (
+                self.posterior_latent_space.base_dist.scale * sample_x_stddev_from_mean
+            )
         else:
             if z_posterior is None:
                 z_posterior = self.posterior_latent_space.rsample()

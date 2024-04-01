@@ -242,6 +242,7 @@ class ProbUNet(pl.LightningModule):
         self,
         img,
         context_map=None,
+        seg=None,
         num_samples=1,
         sample_strategy="mean",
         latent_dim=True,
@@ -314,21 +315,33 @@ class ProbUNet(pl.LightningModule):
                         intensity_window=self.hparams.intensity_window,
                     )
 
+
+
             img_arr = sitk.GetArrayFromImage(img)
 
             if context_map is not None:
                 context_map = resample_mask_to_image(img, context_map)
                 cmap_arr = sitk.GetArrayFromImage(img)
 
+            if seg is not None:
+                seg = resample_mask_to_image(img, seg)
+                seg_arr = sitk.GetArrayFromImage(img)
+                
             if self.hparams.ndims == 2:
                 slices = [img_arr[z, :, :] for z in range(img_arr.shape[0])]
 
                 if context_map is not None:
                     cmap_slices = [cmap_arr[z, :, :] for z in range(cmap_arr.shape[0])]
+
+                if seg is not None:
+                    seg_slices = [seg_arr[z, :, :] for z in range(seg_arr.shape[0])]
             else:
                 slices = [img_arr]
                 if context_map is not None:
                     cmap_slices = [cmap_arr]
+
+                if seg is not None:
+                    seg_slices = [seg_arr]
 
             for idx, i in enumerate(slices):
                 x = torch.Tensor(i).to(self.device)
@@ -342,19 +355,37 @@ class ProbUNet(pl.LightningModule):
 
                     x = torch.cat((x, c), dim=1)
 
+                if seg is not None:
+                    s = torch.Tensor(seg_slices[idx]).to(self.device)
+                    s = s.unsqueeze(0)
+                    s = s.unsqueeze(0)
+
                 if self.hparams.prob_type == "prob":
-                    self.prob_unet.forward(x)
+                    if seg is not None:
+                        self.prob_unet.forward(img, seg=seg, training=True)
+                    else:
+                        self.prob_unet.forward(x)
 
                 for sample in samples:
                     if self.hparams.prob_type == "prob":
                         if sample["name"] == "mean":
-                            y = self.prob_unet.sample(testing=True, use_mean=True)
+                            if seg is None:
+                                y = self.prob_unet.sample(testing=True, use_mean=True)
+                            else:
+                                y = self.prob_unet.reconstruct(use_posterior_mean=True)
                         else:
-                            y = self.prob_unet.sample(
-                                testing=True,
-                                use_mean=False,
-                                sample_x_stddev_from_mean=sample["std_dev_from_mean"],
-                            )
+                            if seg is None:
+                                y = self.prob_unet.sample(
+                                    testing=True,
+                                    use_mean=False,
+                                    sample_x_stddev_from_mean=sample["std_dev_from_mean"],
+                                )
+                            else:
+                                y = self.prob_unet.reconstruct(
+                                    use_posterior_mean=False,
+                                    sample_x_stddev_from_mean=sample["std_dev_from_mean"],
+                                )
+
                     # else:
                     #     if sample["name"] == "mean":
                     #         y = self.prob_unet.sample(x, mean=True)
