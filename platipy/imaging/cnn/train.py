@@ -362,7 +362,7 @@ class ProbUNet(pl.LightningModule):
 
                 if self.hparams.prob_type == "prob":
                     if seg is not None:
-                        self.prob_unet.forward(img, seg=seg, training=True)
+                        self.prob_unet.forward(img, seg=s, training=True)
                     else:
                         self.prob_unet.forward(x)
 
