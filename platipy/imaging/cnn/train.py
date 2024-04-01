@@ -361,7 +361,7 @@ class ProbUNet(pl.LightningModule):
                     s = s.unsqueeze(0)
 
                     # Add in background channel
-                    not_s = 1 - sample_strategy.max(axis=1).values
+                    not_s = 1 - s.max(axis=1).values
                     not_s = torch.unsqueeze(not_s, dim=1)
                     s = torch.cat((not_s, s), dim=1).float()
 
