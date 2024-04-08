@@ -7,6 +7,7 @@
   "info-url": "None",
   "image": "tomaroberts/platipy-xnat-rtstruct-to-nifti:latest",
   "type": "docker",
+  "workdir": "/opt",
   "command-line": "python /usr/local/bin/run_convert_rtstruct.py /input-dcm-mount /input-rt-mount/#RT_FILE_NAME# /output-nii-mount nifti-img-filename",
   "override-entrypoint": true,
   "mounts": [
@@ -42,8 +43,7 @@
       "name": "output-nifti",
       "description": "Folder containing output NIfTI files",
       "required": true,
-      "mount": "output-nii-mount",
-      "path": "/opt"
+      "mount": "output-nii-mount"
     }
   ],
   "xnat": [
