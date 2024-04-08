@@ -1,39 +1,45 @@
 {
-  "name": "platipy rtstruct_to_nifti.convert_rtstruct",
-  "label": "platipy rtstruct_to_nifti.convert_rtstruct",
+  "name": "platipy RTSTRUCT to NIfTI",
+  "label": "platipy RTSTRUCT to NIfTI",
   "description": "Convert RTSTRUCT files to NIfTI using platipy",
   "version": "1.0",
   "schema-version": "1.0",
   "info-url": "None",
-  "image": "",  // update
+  "image": "tomaroberts/platipy-xnat-rtstruct-to-nifti:latest",
   "type": "docker",
-  "command-line": "run_convert_rtstruct.py /input",  // update - work out best way to supply args
+  "command-line": "python /usr/local/bin/run_convert_rtstruct.py /input-dcm-mount input-rtstuct-filename /output-nii-mount output-nii-filename",
+  "override-entrypoint": true,
   "mounts": [
     {
       "name": "input-dcm-mount",
       "writable": false,
-      "path": "/input-dcm"
+      "path": "/input-dcm-mount"
     },
     {
-      "name": "input-rtstruct-mount",
-      "writable": false,
-      "path": "/input-rtstruct"
-    },
-    {
-      "name": "output-mount",
+      "name": "output-nii-mount",
       "writable": true,
-      "path": "/output"
+      "path": "/output-nii-mount"
     }
   ],
   "environment-variables": {},
   "ports": {},
-  "inputs": [],
-  "outputs": [  // update - possibly need one for output-nifti-dcm as well
+  "inputs": [
     {
-      "name": "output-nifti-rtstruct",
-      "description": "The input RTSTRUCT has been converted to NIfTI",
+      "name": "nifti-img-filename",
+      "description": "Filename given to output NIFTI image data",
+      "type": "string",
+      "default-value": "image-data.nii.gz",
       "required": true,
-      "mount": "output-mount",
+      "replacement-key": "output-nii-filename",
+      "select-values": []
+    }
+  ],
+  "outputs": [
+    {
+      "name": "output-nifti",
+      "description": "Folder containing output NIfTI files",
+      "required": true,
+      "mount": "output-nii-mount",
       "path": null,
       "glob": null
     }
@@ -41,102 +47,41 @@
   "xnat": [
     {
       "name": "platipy rtstruct_to_nifti.convert_rtstruct",
-      "label": null,
-      "description": "Run RTSRUCT to NIfTI conversion from a Session",
+      "label": "rtstruct_to_nifti",
+      "description": "Run RTSRUCT to NIfTI conversion",
       "contexts": [
-        "xnat:imageSessionData"
+        "xnat:imageScanData"
       ],
       "external-inputs": [
         {
-          "name": "session",
-          "label": null,
-          "description": "Input session",
-          "type": "Session",
-          "matcher": null,
-          "default-value": null,
+          "name": "scan",
+          "label": "Input scan",
+          "type": "Scan",
+          "matcher": "'DICOM' in @.resources[*].label",
           "required": true,
-          "replacement-key": null,
-          "sensitive": null,
-          "provides-value-for-command-input": null,
-          "provides-files-for-command-mount": null,
-          "via-setup-command": null,
-          "user-settable": null,
           "load-children": true
         }
       ],
       "derived-inputs": [
         {
-          "name": "input-dcm",
-          "label": null,
-          "description": "The input DICOM dataset associated with the RTSTRUCT",
-          "type": "Scan",  // update?
-          "matcher": "'DICOM' in @.resources[*].label", // update
-          "default-value": null,
+          "name": "scan-dicoms",
+          "description": "The dicom resource on the scan",
+          "type": "Resource",
+          "matcher": "@.label == 'DICOM'",
           "required": true,
-          "replacement-key": null,
-          "sensitive": null,
-          "provides-value-for-command-input": null,
-          "provides-files-for-command-mount": null,
-          "user-settable": null,
+          "provides-files-for-command-mount": "input-dcm-mount",
           "load-children": true,
-          "derived-from-wrapper-input": "session",  // update?
-          "derived-from-xnat-object-property": null,
-          "via-setup-command": null,
-          "multiple": false,
-          "parser": null
-        },
-        {
-          "name": "input-rtstruct",
-          "label": null,
-          "description": "The input RTSTRUCT",
-          "type": "Resource",  // update?
-          "matcher": "@.label == 'DICOM'",  // update
-          "default-value": null,
-          "required": true,
-          "replacement-key": null,
-          "sensitive": null,
-          "provides-value-for-command-input": null,
-          "provides-files-for-command-mount": "input-scan-mount",
-          "user-settable": null,
-          "load-children": true,
-          "derived-from-wrapper-input": "input-scan",  // update?
-          "derived-from-xnat-object-property": null,
-          "via-setup-command": null,
-          "multiple": false,
-          "parser": null
-        },
-        {
-          "name": "input-scan-id",  // update all of below? require one id for rtstruct and one for dcm img?
-          "label": null,
-          "description": "The input scan's id",
-          "type": "string",
-          "matcher": null,
-          "default-value": null,
-          "required": true,
-          "replacement-key": null,
-          "sensitive": null,
-          "provides-value-for-command-input": null,
-          "provides-files-for-command-mount": null,
-          "user-settable": null,
-          "load-children": true,
-          "derived-from-wrapper-input": "input-scan",
-          "derived-from-xnat-object-property": "id",
-          "via-setup-command": null,
-          "multiple": false,
-          "parser": null
+          "derived-from-wrapper-input": "scan",
+          "multiple": false
         }
       ],
-      "output-handlers": [  // update below - possibly need one each for rtstruct nifti and dcm nifti
+      "output-handlers": [
         {
-          "name": "output-nifti-rtstruct",
-          "accepts-command-output": "output-nifti-rtstruct",
-          "via-wrapup-command": null,
-          "as-a-child-of": "input-rtstruct",
-          "type": "Resource",  // update?
-          "label": "nifti_#input-scan-id#",
-          "format": null,
-          "description": null,
-          "content": null,
+          "name": "nifti-resource",
+          "accepts-command-output": "output-nifti-dir",
+          "as-a-child-of": "scan",
+          "type": "Resource",
+          "label": "NIFTI",
           "tags": []
         }
       ]
