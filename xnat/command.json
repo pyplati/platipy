@@ -7,7 +7,7 @@
   "info-url": "None",
   "image": "tomaroberts/platipy-xnat-rtstruct-to-nifti:latest",
   "type": "docker",
-  "command-line": "python /usr/local/bin/run_convert_rtstruct.py /input-dcm-mount input-rtstuct-filename /output-nii-mount output-nii-filename",
+  "command-line": "python /usr/local/bin/run_convert_rtstruct.py /input-dcm-mount input-rtstuct-filename /output-nii-mount image-data.nii.gz",
   "override-entrypoint": true,
   "mounts": [
     {
