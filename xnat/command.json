@@ -50,7 +50,7 @@
     {
       "name": "platipy-rtstruct_to_nifti.convert_rtstruct",
       "label": "rtstruct_to_nifti",
-      "description": "Run RTSRUCT to NIfTI conversion from a scan",
+      "description": "Run RTSRUCT to NIfTI conversion on a Scan",
       "contexts": [
         "xnat:imageScanData"
       ],
