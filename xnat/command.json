@@ -1,5 +1,5 @@
 {
-  "name": "platipy RTSTRUCT to NIfTI",
+  "name": "platipy-rtstruct-to-nifti",
   "label": "platipy RTSTRUCT to NIfTI",
   "description": "Convert RTSTRUCT files to NIfTI using platipy",
   "version": "1.0",
@@ -46,7 +46,7 @@
   ],
   "xnat": [
     {
-      "name": "platipy rtstruct_to_nifti.convert_rtstruct",
+      "name": "platipy-rtstruct_to_nifti.convert_rtstruct",
       "label": "rtstruct_to_nifti",
       "description": "Run RTSRUCT to NIfTI conversion",
       "contexts": [
