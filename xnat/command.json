@@ -7,13 +7,18 @@
   "info-url": "None",
   "image": "tomaroberts/platipy-xnat-rtstruct-to-nifti:latest",
   "type": "docker",
-  "command-line": "python /usr/local/bin/run_convert_rtstruct.py /input-dcm-mount input-rtstuct-filename /output-nii-mount image-data.nii.gz",
+  "command-line": "python /usr/local/bin/run_convert_rtstruct.py /input-dcm-mount /input-rt-mount/#RT_FILE_NAME# /output-nii-mount nifti-img-filename",
   "override-entrypoint": true,
   "mounts": [
     {
       "name": "input-dcm-mount",
       "writable": false,
       "path": "/input-dcm-mount"
+    },
+    {
+      "name": "input-rt-mount",
+      "writable": false,
+      "path": "/input-rt-mount"
     },
     {
       "name": "output-nii-mount",
@@ -29,9 +34,7 @@
       "description": "Filename given to output NIFTI image data",
       "type": "string",
       "default-value": "image-data.nii.gz",
-      "required": true,
-      "replacement-key": "output-nii-filename",
-      "select-values": []
+      "required": true
     }
   ],
   "outputs": [
@@ -40,15 +43,14 @@
       "description": "Folder containing output NIfTI files",
       "required": true,
       "mount": "output-nii-mount",
-      "path": null,
-      "glob": null
+      "path": "/opt"
     }
   ],
   "xnat": [
     {
       "name": "platipy-rtstruct_to_nifti.convert_rtstruct",
       "label": "rtstruct_to_nifti",
-      "description": "Run RTSRUCT to NIfTI conversion",
+      "description": "Run RTSRUCT to NIfTI conversion from a scan",
       "contexts": [
         "xnat:imageScanData"
       ],
@@ -57,37 +59,49 @@
           "name": "scan",
           "label": "Input scan",
           "type": "Scan",
-          "matcher": "'DICOM' in @.resources[*].label",
-          "required": true,
-          "load-children": true
+          "required": true
         }
       ],
       "derived-inputs": [
         {
           "name": "scan-dicoms",
-          "description": "The dicom resource on the scan",
+          "description": "The DICOM resource on the Scan",
           "type": "Resource",
-          "matcher": "@.label == 'DICOM'",
           "required": true,
-          "provides-files-for-command-mount": "input-dcm-mount",
-          "load-children": true,
           "derived-from-wrapper-input": "scan",
-          "multiple": false
+          "provides-files-for-command-mount": "input-dcm-mount",
+          "matcher": "@.label == 'DICOM'"
+        },
+        {
+          "name": "scan-rtstruct",
+          "description": "The RTSTRUCT resource on the Scan",
+          "type": "Resource",
+          "derived-from-wrapper-input": "scan",
+          "provides-files-for-command-mount": "input-rt-mount",
+          "matcher": "@.label == 'secondary'"
+        },
+        {
+          "name": "scan-rt-struct-file",
+          "type": "File",
+          "derived-from-wrapper-input": "scan-rtstruct"
+        },
+        {
+          "name": "scan-rt-struct-file-name",
+          "type": "string",
+          "derived-from-wrapper-input": "scan-rt-struct-file",
+          "derived-from-xnat-object-property": "name",
+          "provides-value-for-command-input": "RT_FILE_NAME"
         }
       ],
       "output-handlers": [
         {
           "name": "nifti-resource",
-          "accepts-command-output": "output-nifti-dir",
-          "as-a-child-of": "scan",
           "type": "Resource",
-          "label": "NIFTI",
-          "tags": []
+          "accepts-command-output": "output-nifti",
+          "as-a-child-of": "scan",
+          "label": "NIFTI"
         }
       ]
     }
-  ],
-  "container-labels": {},
-  "generic-resources": {},
-  "ulimits": {}
+  ]
 }
