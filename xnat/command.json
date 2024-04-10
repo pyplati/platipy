@@ -68,10 +68,11 @@
       ],
       "derived-inputs": [
         {
-          "name": "input-scan",
+          "name": "input-scan-dicom",
           "label": null,
-          "description": "The input Scans",
+          "description": "The input DICOM Scan",
           "type": "Scan",
+          "matcher": "'DICOM' in @.resources[*].label",
           "default-value": null,
           "required": true,
           "replacement-key": null,
@@ -87,9 +88,29 @@
           "parser": null
         },
         {
-          "name": "input-scan-dicom",
+          "name": "input-scan-rt",
           "label": null,
-          "description": "The input Scan's DICOM resource",
+          "description": "The input RTSTRUCT Scan",
+          "type": "Scan",
+          "matcher": "'secondary' in @.resources[*].label",
+          "default-value": null,
+          "required": true,
+          "replacement-key": null,
+          "sensitive": null,
+          "provides-value-for-command-input": null,
+          "provides-files-for-command-mount": null,
+          "user-settable": null,
+          "load-children": true,
+          "derived-from-wrapper-input": "session",
+          "derived-from-xnat-object-property": null,
+          "via-setup-command": null,
+          "multiple": false,
+          "parser": null
+        },
+        {
+          "name": "input-scan-resource-dicom",
+          "label": null,
+          "description": "The input DICOM Scan Resource",
           "type": "Resource",
           "matcher": "@.label == 'DICOM'",
           "default-value": null,
@@ -100,16 +121,16 @@
           "provides-files-for-command-mount": "input-dcm-mount",
           "user-settable": null,
           "load-children": true,
-          "derived-from-wrapper-input": "input-scan",
+          "derived-from-wrapper-input": "input-scan-dicom",
           "derived-from-xnat-object-property": null,
           "via-setup-command": null,
           "multiple": false,
           "parser": null
         },
         {
-          "name": "input-scan-rt",
+          "name": "input-scan-resource-rt",
           "label": null,
-          "description": "The input Scan's RTSTRUCT resource",
+          "description": "The input RTSTRUCT Scan Resource",
           "type": "Resource",
           "matcher": "@.label == 'secondary'",
           "default-value": null,
@@ -120,7 +141,7 @@
           "provides-files-for-command-mount": "input-rt-mount",
           "user-settable": null,
           "load-children": true,
-          "derived-from-wrapper-input": "input-scan",
+          "derived-from-wrapper-input": "input-scan-rt",
           "derived-from-xnat-object-property": null,
           "via-setup-command": null,
           "multiple": false,
@@ -129,7 +150,7 @@
         {
           "name": "input-scan-rt-file",
           "type": "File",
-          "derived-from-wrapper-input": "input-scan-rt"
+          "derived-from-wrapper-input": "input-scan-resource-rt"
         },
         {
           "name": "input-scan-rt-file-name",
@@ -139,9 +160,9 @@
           "provides-value-for-command-input": "RT_FILE_NAME"
         },
         {
-          "name": "input-scan-id",
+          "name": "input-scan-dicom-id",
           "label": null,
-          "description": "The input scan's id",
+          "description": "The input DICOM Scan id",
           "type": "string",
           "matcher": null,
           "default-value": null,
@@ -152,7 +173,7 @@
           "provides-files-for-command-mount": null,
           "user-settable": null,
           "load-children": true,
-          "derived-from-wrapper-input": "input-scan",
+          "derived-from-wrapper-input": "input-scan-dicom",
           "derived-from-xnat-object-property": "id",
           "via-setup-command": null,
           "multiple": false,
@@ -163,7 +184,7 @@
         {
           "name": "nifti-files",
           "accepts-command-output": "nifti-outputs",
-          "as-a-child-of": "input-scan",
+          "as-a-child-of": "input-scan-dicom",
           "type": "Resource",
           "label": "NIFTI",
           "format": null,
