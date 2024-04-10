@@ -1,29 +1,37 @@
 #!/usr/bin/env python
 
+print("Entered run_convert_rtstruct.py ...")
+
 import sys
 import os
 from platipy.dicom.io.rtstruct_to_nifti import convert_rtstruct
 
-# print(f"Current directory: {os.getcwd()}")
-# print(f"Directory content: {os.listdir()}")
+# Logging for debugging
+print(f"Supplied sys.argv: {sys.argv}")
+print(f"Current directory: {os.getcwd()}")
+print(f"Directory content: {os.listdir()}")
+if os.path.isdir(sys.argv[1]):
+    print(f"{sys.argv[1]} content: {os.listdir(sys.argv[1])}")
+if os.path.isdir(sys.argv[2]):
+    print(f"{sys.argv[2]} content: {os.listdir(sys.argv[2])}")
+if os.path.isdir(sys.argv[3]):
+    print(f"{sys.argv[3]} content: {os.listdir(sys.argv[3])}")
 
-if len(sys.argv) == 3:
-    INPUT_DCM_DIRNAME = sys.argv[1]
-    INPUT_RT_FILENAME = sys.argv[2]
+# Construct arguments
+INPUT_DCM_DIRNAME = sys.argv[1]
 
-    print(f"Executing: run_convert_rtstruct.py {sys.argv[1]} {sys.argv[2]} ...")
+# get RTSTRUCT filename from mount folder
+if len(os.listdir(sys.argv[2])) == 1:
+    INPUT_RT_FILENAME = os.path.join(os.getcwd(), sys.argv[2], os.listdir(sys.argv[2])[0])
+elif len(os.listdir('input-rt-mount')) > 1:
+    raise Exception(f"More than one file found in {sys.argv[2]} directory.")
 
-    convert_rtstruct(
-        dcm_img=INPUT_DCM_DIRNAME,
-        dcm_rt_file=INPUT_RT_FILENAME
-    )
+OUTPUT_NII_DIRNAME = sys.argv[3]
+
+# Run RTSTRUCT to NIFTI conversion
+print("Executing convert_rtstruct ...")
 
 if len(sys.argv) == 4:
-    INPUT_DCM_DIRNAME = sys.argv[1]
-    INPUT_RT_FILENAME = sys.argv[2]
-    OUTPUT_NII_DIRNAME = sys.argv[3]
-
-    print(f"Executing: run_convert_rtstruct.py {sys.argv[1]} {sys.argv[2]} {sys.argv[3]} ...")
 
     convert_rtstruct(
         dcm_img=INPUT_DCM_DIRNAME,
@@ -31,13 +39,9 @@ if len(sys.argv) == 4:
         output_dir=OUTPUT_NII_DIRNAME
     )
 
+# TODO: Extend XNAT Commands to enable customisable output_img arguments (currently hard-coded to image-data.nii.gz)
 if len(sys.argv) == 5:
-    INPUT_DCM_DIRNAME = sys.argv[1]
-    INPUT_RT_FILENAME = sys.argv[2]
-    OUTPUT_NII_DIRNAME = sys.argv[3]
     OUTPUT_NII_IMG_FILENAME = sys.argv[4]
-    
-    print(f"Executing: run_convert_rtstruct.py {sys.argv[1]} {sys.argv[2]} {sys.argv[3]} {sys.argv[4]} ...")
 
     convert_rtstruct(
         dcm_img=INPUT_DCM_DIRNAME,
@@ -46,20 +50,20 @@ if len(sys.argv) == 5:
         output_img=OUTPUT_NII_IMG_FILENAME
     )
 
-
-if len(sys.argv) == 6:
-    INPUT_DCM_DIRNAME = sys.argv[1]
-    INPUT_RT_FILENAME = sys.argv[2]
-    OUTPUT_NII_DIRNAME = sys.argv[3]
-    OUTPUT_NII_IMG_FILENAME = sys.argv[4]
-    OUTPUT_FILE_PREFIX = sys.argv[5]
+# TODO: Extend XNAT Commands to enable customisable NIFTI file prefix
+# if len(sys.argv) == 6:
+#     OUTPUT_NII_IMG_FILENAME = sys.argv[4]
+#     OUTPUT_FILE_PREFIX = sys.argv[5]
     
-    print(f"Executing: run_convert_rtstruct.py {sys.argv[1]} {sys.argv[2]} {sys.argv[3]} {sys.argv[4]} {sys.argv[5]} ...")
+#     convert_rtstruct(
+#         dcm_img=INPUT_DCM_DIRNAME,
+#         dcm_rt_file=INPUT_RT_FILENAME,
+#         output_dir=OUTPUT_NII_DIRNAME,
+#         output_img=OUTPUT_NII_IMG_FILENAME,
+#         prefix=OUTPUT_FILE_PREFIX,  # applies to contour files only, not image file
+#     )
 
-    convert_rtstruct(
-        dcm_img=INPUT_DCM_DIRNAME,
-        dcm_rt_file=INPUT_RT_FILENAME,
-        output_dir=OUTPUT_NII_DIRNAME,
-        output_img=OUTPUT_NII_IMG_FILENAME,
-        prefix=OUTPUT_FILE_PREFIX,  # applies to contour files only, not image file
-    )
+# Log content of output dir
+print(f"{sys.argv[3]} content: {os.listdir(sys.argv[3])}")
+
+print("Exiting run_convert_rtstruct.py ...")
