@@ -1,3 +1,7 @@
+// 10/04/2024 below was my first attempt - not working mainly because uses xnat:imageScanData 
+// which is problematic because I need to access two Scan Resources. Therefore, imageSessionData 
+// probably a better approach
+
 {
   "name": "platipy-rtstruct-to-nifti",
   "label": "platipy RTSTRUCT to NIfTI",
