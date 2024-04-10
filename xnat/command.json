@@ -8,7 +8,7 @@
   "image": "tomaroberts/xnat-rt2nii:latest",
   "type": "docker",
   "workdir": "/opt",
-  "command-line": "run_convert_rtstruct.py /input-dcm-mount /input-rt-mount/#RT_FILE_NAME# /output-mount image-data.nii.gz",
+  "command-line": "run_convert_rtstruct.py /input-dcm-mount /input-rt-mount /output-mount image-data.nii.gz",
   "override-entrypoint": true,
   "mounts": [
     {
