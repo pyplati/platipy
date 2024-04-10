@@ -132,11 +132,11 @@
           "derived-from-wrapper-input": "input-scan-rt"
         },
         {
-            "name": "input-scan-rt-file-name",
-            "type": "string",
-            "derived-from-wrapper-input": "input-scan-rt-file",
-            "derived-from-xnat-object-property": "name",
-            "provides-value-for-command-input": "RT_FILE_NAME"
+          "name": "input-scan-rt-file-name",
+          "type": "string",
+          "derived-from-wrapper-input": "input-scan-rt-file",
+          "derived-from-xnat-object-property": "name",
+          "provides-value-for-command-input": "RT_FILE_NAME"
         },
         {
           "name": "input-scan-id",
