@@ -34,6 +34,10 @@ elif len(rt_files) == 1:
 
 OUTPUT_NII_DIRNAME = sys.argv[3]
 
+print("INPUT_DCM_DIRNAME:", INPUT_DCM_DIRNAME)
+print("INPUT_RT_FILENAME:", INPUT_RT_FILENAME)
+print("OUTPUT_NII_DIRNAME:", OUTPUT_NII_DIRNAME)
+
 # Run RTSTRUCT to NIFTI conversion
 print("Executing convert_rtstruct ...")
 
@@ -48,6 +52,8 @@ if len(sys.argv) == 4:
 # TODO: Extend XNAT Commands to enable customisable output_img arguments (currently hard-coded to image-data.nii.gz)
 if len(sys.argv) == 5:
     OUTPUT_NII_IMG_FILENAME = sys.argv[4]
+
+    print("OUTPUT_NII_IMG_FILENAME:", OUTPUT_NII_IMG_FILENAME)
 
     convert_rtstruct(
         dcm_img=INPUT_DCM_DIRNAME,
@@ -68,6 +74,8 @@ if len(sys.argv) == 5:
 #         output_img=OUTPUT_NII_IMG_FILENAME,
 #         prefix=OUTPUT_FILE_PREFIX,  # applies to contour files only, not image file
 #     )
+
+print("Completed convert_rtstruct ...")
 
 # Log content of output dir
 print(f"{sys.argv[3]} content: {os.listdir(sys.argv[3])}")
