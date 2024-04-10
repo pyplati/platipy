@@ -4,6 +4,7 @@ print("Entered run_convert_rtstruct.py ...")
 
 import sys
 import os
+import glob
 from platipy.dicom.io.rtstruct_to_nifti import convert_rtstruct
 
 # Logging for debugging
@@ -21,10 +22,15 @@ if os.path.isdir(sys.argv[3]):
 INPUT_DCM_DIRNAME = sys.argv[1]
 
 # get RTSTRUCT filename from mount folder
-if len(os.listdir(sys.argv[2])) == 1:
-    INPUT_RT_FILENAME = os.path.join(os.getcwd(), sys.argv[2], os.listdir(sys.argv[2])[0])
-elif len(os.listdir('input-rt-mount')) > 1:
+# print(glob.glob(os.listdir(sys.argv[2]) + '*'))
+rt_files = []
+for file in os.listdir(sys.argv[2]):
+    if file.endswith(".dcm"):
+        rt_files.append(file)
+if len(rt_files) > 1:
     raise Exception(f"More than one file found in {sys.argv[2]} directory.")
+elif len(rt_files) == 1:
+    INPUT_RT_FILENAME = rt_files[0]
 
 OUTPUT_NII_DIRNAME = sys.argv[3]
 
