@@ -30,7 +30,7 @@ for file in os.listdir(sys.argv[2]):
 if len(rt_files) > 1:
     raise Exception(f"More than one file found in {sys.argv[2]} directory.")
 elif len(rt_files) == 1:
-    INPUT_RT_FILENAME = rt_files[0]
+    INPUT_RT_FILENAME = os.path.join(sys.argv[2], rt_files[0])
 
 OUTPUT_NII_DIRNAME = sys.argv[3]
 
