@@ -1,9 +1,22 @@
+#!/usr/bin/env python
+
 import sys
 import os
 from platipy.dicom.io.rtstruct_to_nifti import convert_rtstruct
 
 # print(f"Current directory: {os.getcwd()}")
 # print(f"Directory content: {os.listdir()}")
+
+if len(sys.argv) == 3:
+    INPUT_DCM_DIRNAME = sys.argv[1]
+    INPUT_RT_FILENAME = sys.argv[2]
+
+    print(f"Executing: run_convert_rtstruct.py {sys.argv[1]} {sys.argv[2]} ...")
+
+    convert_rtstruct(
+        dcm_img=INPUT_DCM_DIRNAME,
+        dcm_rt_file=INPUT_RT_FILENAME
+    )
 
 if len(sys.argv) == 4:
     INPUT_DCM_DIRNAME = sys.argv[1]
