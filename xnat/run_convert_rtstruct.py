@@ -31,7 +31,6 @@ if len(sys.argv) == 4:
         output_dir=OUTPUT_NII_DIRNAME
     )
 
-
 if len(sys.argv) == 5:
     INPUT_DCM_DIRNAME = sys.argv[1]
     INPUT_RT_FILENAME = sys.argv[2]

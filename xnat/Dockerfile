@@ -1,0 +1,27 @@
+FROM python:3.11-slim
+
+WORKDIR /opt
+
+# Install system dependencies 
+RUN apt-get -y update && apt-get install -y \
+    git \
+    && apt-get clean
+
+# Install platipy
+RUN pip install --upgrade pip && \
+    pip install git+https://github.com/tomaroberts/platipy.git@xnat-docker-image
+
+# Copy Python script into container
+COPY run_convert_rtstruct.py /usr/local/bin
+RUN chmod 775 /usr/local/bin/run_convert_rtstruct.py
+
+# Entrypoint arguments:
+# 1) INPUT_DCM_DIRNAME
+# 2) INPUT_RT_FILENAME
+# 3) OUTPUT_NII_DIRNAME
+# 4) OUTPUT_NII_FILENAME
+# 5) OUTPUT_FILE_PREFIX
+ENTRYPOINT ["run_convert_rtstruct.py"]
+
+# command.json as LABEL
+LABEL org.nrg.commands="[{\"name\": \"platipy-rtstruct-to-nifti\", \"label\": \"platipy RTSTRUCT to NIfTI\", \"description\": \"Convert RTSTRUCT files to NIfTI using platipy\", \"version\": \"1.0\", \"schema-version\": \"1.0\", \"info-url\": \"None\", \"image\": \"tomaroberts/xnat-rt2nii:latest\", \"type\": \"docker\", \"workdir\": \"/opt\", \"command-line\": \"run_convert_rtstruct.py /input-dcm-mount /input-rt-mount/#RT_FILE_NAME# /output-mount image-data.nii.gz\", \"override-entrypoint\": true, \"mounts\": [{\"name\": \"input-dcm-mount\", \"writable\": false, \"path\": \"/input-dcm-mount\"}, {\"name\": \"input-rt-mount\", \"writable\": false, \"path\": \"/input-rt-mount\"}, {\"name\": \"output-mount\", \"writable\": true, \"path\": \"/output-mount \"}], \"environment-variables\": {}, \"ports\": {}, \"inputs\": [], \"outputs\": [{\"name\": \"nifti-outputs\", \"description\": \"The output NIFTI files\", \"required\": true, \"mount\": \"output-mount\", \"path\": null, \"glob\": null}], \"xnat\": [{\"name\": \"platipy_rtstruct_to_nifti\", \"label\": \"rtstruct_to_nifti\", \"description\": \"Convert DICOM and RTSTRUCT files from a Session\", \"contexts\": [\"xnat:imageSessionData\"], \"external-inputs\": [{\"name\": \"session\", \"label\": null, \"description\": \"Input session\", \"type\": \"Session\", \"matcher\": null, \"default-value\": null, \"required\": true, \"replacement-key\": null, \"sensitive\": null, \"provides-value-for-command-input\": null, \"provides-files-for-command-mount\": null, \"via-setup-command\": null, \"user-settable\": null, \"load-children\": true}], \"derived-inputs\": [{\"name\": \"input-scan\", \"label\": null, \"description\": \"The input Scans\", \"type\": \"Scan\", \"default-value\": null, \"required\": true, \"replacement-key\": null, \"sensitive\": null, \"provides-value-for-command-input\": null, \"provides-files-for-command-mount\": null, \"user-settable\": null, \"load-children\": true, \"derived-from-wrapper-input\": \"session\", \"derived-from-xnat-object-property\": null, \"via-setup-command\": null, \"multiple\": false, \"parser\": null}, {\"name\": \"input-scan-dicom\", \"label\": null, \"description\": \"The input Scan's DICOM resource\", \"type\": \"Resource\", \"matcher\": \"@.label == 'DICOM'\", \"default-value\": null, \"required\": true, \"replacement-key\": null, \"sensitive\": null, \"provides-value-for-command-input\": null, \"provides-files-for-command-mount\": \"input-dcm-mount\", \"user-settable\": null, \"load-children\": true, \"derived-from-wrapper-input\": \"input-scan\", \"derived-from-xnat-object-property\": null, \"via-setup-command\": null, \"multiple\": false, \"parser\": null}, {\"name\": \"input-scan-rt\", \"label\": null, \"description\": \"The input Scan's RTSTRUCT resource\", \"type\": \"Resource\", \"matcher\": \"@.label == 'secondary'\", \"default-value\": null, \"required\": true, \"replacement-key\": null, \"sensitive\": null, \"provides-value-for-command-input\": null, \"provides-files-for-command-mount\": \"input-rt-mount\", \"user-settable\": null, \"load-children\": true, \"derived-from-wrapper-input\": \"input-scan\", \"derived-from-xnat-object-property\": null, \"via-setup-command\": null, \"multiple\": false, \"parser\": null}, {\"name\": \"input-scan-rt-file\", \"type\": \"File\", \"derived-from-wrapper-input\": \"input-scan-rt\"}, {\"name\": \"input-scan-rt-file-name\", \"type\": \"string\", \"derived-from-wrapper-input\": \"input-scan-rt-file\", \"derived-from-xnat-object-property\": \"name\", \"provides-value-for-command-input\": \"RT_FILE_NAME\"}, {\"name\": \"input-scan-id\", \"label\": null, \"description\": \"The input scan's id\", \"type\": \"string\", \"matcher\": null, \"default-value\": null, \"required\": true, \"replacement-key\": null, \"sensitive\": null, \"provides-value-for-command-input\": null, \"provides-files-for-command-mount\": null, \"user-settable\": null, \"load-children\": true, \"derived-from-wrapper-input\": \"input-scan\", \"derived-from-xnat-object-property\": \"id\", \"via-setup-command\": null, \"multiple\": false, \"parser\": null}], \"output-handlers\": [{\"name\": \"nifti-files\", \"accepts-command-output\": \"nifti-outputs\", \"as-a-child-of\": \"input-scan\", \"type\": \"Resource\", \"label\": \"NIFTI\", \"format\": null, \"description\": null, \"content\": null, \"tags\": []}]}]}]"
