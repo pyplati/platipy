@@ -213,6 +213,7 @@ class ProbabilisticUnet(torch.nn.Module):
         loss_params={"beta": 1},
         ndims=2,
         dropout_probability=0.0,
+        use_structure_context=False
     ):
         super(ProbabilisticUnet, self).__init__()
 
@@ -221,18 +222,24 @@ class ProbabilisticUnet(torch.nn.Module):
         self.no_convs_fcomb = no_convs_fcomb
         self.initializers = {"w": "he_normal", "b": "normal"}
         self.z_prior_sample = 0
+        
+        unet_input_channels = input_channels
+        if use_structure_context:
+            unet_input_channels += 1
 
         self.unet = UNet(
-            input_channels,
+            unet_input_channels,
             num_classes,
             filters_per_layer,
             final_layer=False,
             dropout_probability=dropout_probability,
             ndims=ndims,
         )
-        self.prior = AxisAlignedConvGaussian(
-            input_channels, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=0.0
-        )
+        self.prior = None
+        if not use_structure_context:
+            self.prior = AxisAlignedConvGaussian(
+                input_channels, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=0.0
+            )
         self.posterior = AxisAlignedConvGaussian(
             input_channels + num_classes, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=0.0
         )
@@ -257,9 +264,12 @@ class ProbabilisticUnet(torch.nn.Module):
         Construct prior latent space for patch and run patch through UNet,
         in case training is True also construct posterior latent space
         """
-        if training:
+        if training or self.prior is None:
             self.posterior_latent_space = self.posterior.forward(img, seg=seg)
-        self.prior_latent_space = self.prior.forward(img)
+
+        self.prior_latent_space = None
+        if self.prior is not None:
+            self.prior_latent_space = self.prior.forward(img)
         self.unet_features = self.unet.forward(img)
 
     def sample(self, testing=False, use_mean=False, sample_x_stddev_from_mean=None):
@@ -268,23 +278,25 @@ class ProbabilisticUnet(torch.nn.Module):
         and combining this with UNet features
         """
 
+        latent_space = self.prior_latent_space if self.prior is not None else self.posterior_latent_space
+
         if testing:
             if use_mean:
-                z_prior = self.prior_latent_space.base_dist.loc
+                z_prior = latent_space.base_dist.loc
             elif not sample_x_stddev_from_mean is None:
                 if isinstance(sample_x_stddev_from_mean, list):
                     sample_x_stddev_from_mean = torch.Tensor(sample_x_stddev_from_mean)
                     sample_x_stddev_from_mean = sample_x_stddev_from_mean.to(
-                        self.prior_latent_space.base_dist.stddev.device
+                        latent_space.base_dist.stddev.device
                     )
                 z_prior = self.prior_latent_space.base_dist.loc + (
-                    self.prior_latent_space.base_dist.scale * sample_x_stddev_from_mean
+                    latent_space.base_dist.scale * sample_x_stddev_from_mean
                 )
             else:
-                z_prior = self.prior_latent_space.sample()
+                z_prior = latent_space.sample()
             self.z_prior_sample = z_prior
         else:
-            z_prior = self.prior_latent_space.rsample()
+            z_prior = latent_space.rsample()
             self.z_prior_sample = z_prior
 
         return self.fcomb.forward(self.unet_features, z_prior)
@@ -317,7 +329,11 @@ class ProbabilisticUnet(torch.nn.Module):
         Calculate the KL divergence between the posterior and prior KL(Q||P)
         """
 
-        kl_div = kl.kl_divergence(self.posterior_latent_space, self.prior_latent_space)
+        if self.prior_latent_space is None:
+            dist = Independent(Normal(loc=0, scale=1), 1)
+            kl_div = kl.kl_divergence(self.posterior_latent_space, dist)
+        else:
+            kl_div = kl.kl_divergence(self.posterior_latent_space, self.prior_latent_space)
 
         return kl_div
 

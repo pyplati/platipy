@@ -103,6 +103,8 @@ class ProbUNet(pl.LightningModule):
         ] = self.hparams.contour_loss_lambda_threshold
         loss_params["contour_loss_weight"] = self.hparams.contour_loss_weight
 
+        self.use_structure_context = self.hparams.use_structure_context
+
         if self.hparams.prob_type == "prob":
             self.prob_unet = ProbabilisticUnet(
                 self.hparams.input_channels,
@@ -115,6 +117,7 @@ class ProbUNet(pl.LightningModule):
                 loss_params,
                 self.hparams.ndims,
                 dropout_probability=self.hparams.dropout_probability,
+                use_structure_context=self.use_structure_context,
             )
         elif self.hparams.prob_type == "hierarchical":
             raise NotImplementedError("Hierarchical Prob UNet current not working...")
@@ -173,6 +176,7 @@ class ProbUNet(pl.LightningModule):
         )  # no longer used
         parser.add_argument("--epochs_all_rec", type=int, default=0)  # no longer used
         parser.add_argument("--dropout_probability", type=float, default=0.0)
+        parser.add_argument("--use_structure_context", type=bool, default=False)
 
         return parent_parser
 
@@ -575,6 +579,10 @@ class ProbUNet(pl.LightningModule):
         # Concat context map to image if we have one
         if c.numel() > 0:
             x = torch.cat((x, c), dim=1)
+
+        # Concat input mask if we are using the structure as context
+        if self.use_structure_context:
+            x = torch.cat((x, y), dim=1)
 
         # self.prob_unet.forward(x, y, training=True)
         if self.hparams.prob_type == "prob":
