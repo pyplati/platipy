@@ -176,7 +176,7 @@ class ProbUNet(pl.LightningModule):
         )  # no longer used
         parser.add_argument("--epochs_all_rec", type=int, default=0)  # no longer used
         parser.add_argument("--dropout_probability", type=float, default=0.0)
-        parser.add_argument("--use_structure_context", type=bool, default=False)
+        parser.add_argument("--use_structure_context", type=int, default=0)
 
         return parent_parser
 
