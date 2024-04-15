@@ -192,11 +192,19 @@ class ProbUNet(pl.LightningModule):
                 "lr": 1e-4,
             }
         ]
-        for m in [
-            self.prob_unet.prior.parameters(),
-            self.prob_unet.posterior.parameters(),
-            self.prob_unet.fcomb.parameters(),
-        ]:
+
+        if self.prob_unet.prior is not None:
+            param_list =[
+                self.prob_unet.prior.parameters(),
+                self.prob_unet.posterior.parameters(),
+                self.prob_unet.fcomb.parameters(),
+            ]
+        else:
+            param_list =[
+                self.prob_unet.posterior.parameters(),
+                self.prob_unet.fcomb.parameters(),
+            ]
+        for m in:
             params += [
                 {"params": m, "weight_decay": self.hparams.weight_decay, "lr": 1e-5}
             ]
