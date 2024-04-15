@@ -583,21 +583,14 @@ class ProbUNet(pl.LightningModule):
         if self.use_structure_context:
             x = torch.cat((x, y), dim=1)
 
-        print(f"y.shape1 {y.shape}")
         # Add background layer for one-hot encoding
         not_y = 1 - y.max(axis=1).values
         not_y = torch.unsqueeze(not_y, dim=1)
         y = torch.cat((not_y, y), dim=1).float()
-        print(f"y.shape2 {y.shape}")
-
-        print(f"x.shape0 {x.shape}")
-
-        print(f"c.shape {c.shape}")
 
         # Concat context map to image if we have one
         if c.numel() > 0:
             x = torch.cat((x, c), dim=1)
-        print(f"x.shape 1 {x.shape}")
 
         # self.prob_unet.forward(x, y, training=True)
         if self.hparams.prob_type == "prob":

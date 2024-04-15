@@ -222,10 +222,11 @@ class ProbabilisticUnet(torch.nn.Module):
         self.no_convs_fcomb = no_convs_fcomb
         self.initializers = {"w": "he_normal", "b": "normal"}
         self.z_prior_sample = 0
+        self.use_structure_context = use_structure_context
 
         unet_input_channels = input_channels
         if use_structure_context:
-            unet_input_channels += 1
+            unet_input_channels = unet_input_channels + num_classes
 
         self.unet = UNet(
             unet_input_channels,
@@ -270,6 +271,13 @@ class ProbabilisticUnet(torch.nn.Module):
         self.prior_latent_space = None
         if self.prior is not None:
             self.prior_latent_space = self.prior.forward(img)
+
+        if self.use_structure_context:
+            if seg is None:
+                raise ValueError("Structure context is enabled, but no segmentation mask provided")
+            
+            img = torch.cat((img, seg), dim=1)
+
         self.unet_features = self.unet.forward(img)
 
     def sample(self, testing=False, use_mean=False, sample_x_stddev_from_mean=None):
