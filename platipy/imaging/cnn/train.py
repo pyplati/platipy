@@ -204,7 +204,7 @@ class ProbUNet(pl.LightningModule):
                 self.prob_unet.posterior.parameters(),
                 self.prob_unet.fcomb.parameters(),
             ]
-        for m in:
+        for m in param_list:
             params += [
                 {"params": m, "weight_decay": self.hparams.weight_decay, "lr": 1e-5}
             ]
