@@ -222,7 +222,7 @@ class ProbabilisticUnet(torch.nn.Module):
         self.no_convs_fcomb = no_convs_fcomb
         self.initializers = {"w": "he_normal", "b": "normal"}
         self.z_prior_sample = 0
-        
+
         unet_input_channels = input_channels
         if use_structure_context:
             unet_input_channels += 1
