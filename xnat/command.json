@@ -24,7 +24,7 @@
     {
       "name": "output-mount",
       "writable": true,
-      "path": "/output-mount "
+      "path": "/output-mount"
     }
   ],
   "environment-variables": {},
