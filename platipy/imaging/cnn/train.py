@@ -579,10 +579,6 @@ class ProbUNet(pl.LightningModule):
     def training_step(self, batch, _):
         x, c, y, m, _ = batch
 
-        # Concat input mask if we are using the structure as context
-        if self.use_structure_context:
-            x = torch.cat((x, y), dim=1)
-
         # Add background layer for one-hot encoding
         not_y = 1 - y.max(axis=1).values
         not_y = torch.unsqueeze(not_y, dim=1)
