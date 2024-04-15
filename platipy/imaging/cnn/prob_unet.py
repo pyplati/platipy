@@ -222,7 +222,7 @@ class ProbabilisticUnet(torch.nn.Module):
         self.no_convs_fcomb = no_convs_fcomb
         self.initializers = {"w": "he_normal", "b": "normal"}
         self.z_prior_sample = 0
-        self.latent_dim = latent_dim
+        self.dist = Independent(Normal(loc=torch.zeros(latent_dim), scale=torch.ones(latent_dim)), 1)
         self.use_structure_context = use_structure_context
 
         unet_input_channels = input_channels
@@ -339,8 +339,8 @@ class ProbabilisticUnet(torch.nn.Module):
         """
 
         if self.prior_latent_space is None:
-            dist = Independent(Normal(loc=torch.zeros(self.latent_dim), scale=torch.ones(self.latent_dim)), 1)
-            kl_div = kl.kl_divergence(self.posterior_latent_space, dist)
+            self.dist.to(self.posterior_latent_space.loc.device)
+            kl_div = kl.kl_divergence(self.posterior_latent_space, self.dist)
         else:
             kl_div = kl.kl_divergence(self.posterior_latent_space, self.prior_latent_space)
 
