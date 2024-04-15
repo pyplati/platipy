@@ -11,12 +11,20 @@ from platipy.dicom.io.rtstruct_to_nifti import convert_rtstruct
 print(f"Supplied sys.argv: {sys.argv}")
 print(f"Current directory: {os.getcwd()}")
 print(f"Directory content: {os.listdir()}")
+
+# Check mount directories exist
 if os.path.isdir(sys.argv[1]):
     print(f"{sys.argv[1]} content: {os.listdir(sys.argv[1])}")
+else:
+    raise Warning(f"Directory not found for sys.argv: {sys.argv[1]} ")
 if os.path.isdir(sys.argv[2]):
     print(f"{sys.argv[2]} content: {os.listdir(sys.argv[2])}")
+else:
+    raise Warning(f"Directory not found for sys.argv: {sys.argv[2]} ")
 if os.path.isdir(sys.argv[3]):
     print(f"{sys.argv[3]} content: {os.listdir(sys.argv[3])}")
+else:
+    raise Warning(f"Directory not found for sys.argv: {sys.argv[3]} ")
 
 # Construct arguments
 INPUT_DCM_DIRNAME = sys.argv[1]
