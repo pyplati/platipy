@@ -184,7 +184,7 @@
         {
           "name": "nifti-files",
           "accepts-command-output": "nifti-outputs",
-          "as-a-child-of": "input-scan-dicom",
+          "as-a-child-of": "input-scan-rt",
           "type": "Resource",
           "label": "NIFTI",
           "format": null,
