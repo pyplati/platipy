@@ -339,7 +339,7 @@ class ProbabilisticUnet(torch.nn.Module):
         """
 
         if self.prior_latent_space is None:
-            self.dist.to(self.posterior_latent_space.loc.device)
+            self.dist.to(self.posterior_latent_space.base_dist.stddev.device)
             kl_div = kl.kl_divergence(self.posterior_latent_space, self.dist)
         else:
             kl_div = kl.kl_divergence(self.posterior_latent_space, self.prior_latent_space)
