@@ -684,6 +684,11 @@ class ProbUNet(pl.LightningModule):
             if c.numel() > 0:
                 x = torch.cat((x, c), dim=1)
 
+            if self.use_structure_context:
+                not_y = 1 - y.max(axis=1).values
+                not_y = torch.unsqueeze(not_y, dim=1)
+                x = torch.cat((x, not_y, y), dim=1).float()
+
             self.prob_unet.forward(x)
 
             py = self.prob_unet.sample(testing=True)
