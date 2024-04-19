@@ -379,7 +379,7 @@ class ProbUNet(pl.LightningModule):
 
                 if self.hparams.prob_type == "prob":
                     if seg is not None:
-                        self.prob_unet.forward(x, seg=s, training=True)
+                        self.prob_unet.forward(x, seg=s)
                     else:
                         self.prob_unet.forward(x)
 
@@ -825,31 +825,6 @@ class ProbUNet(pl.LightningModule):
             img = sitk.GetImageFromArray(img_arr)
             img.SetSpacing(self.hparams.spacing)
 
-            context_map = None
-            if cmap_arr is not None:
-                context_map = sitk.GetImageFromArray(cmap_arr)
-                context_map.SetSpacing(self.hparams.spacing)
-
-            try:
-                mean = self.infer(
-                    img,
-                    context_map=context_map,
-                    num_samples=1,
-                    sample_strategy="mean",
-                    preprocess=False,
-                )
-                samples = self.infer(
-                    img,
-                    context_map=context_map,
-                    sample_strategy="spaced",
-                    num_samples=5,
-                    spaced_range=[-2, 2],
-                    preprocess=False,
-                )
-            except Exception as e:
-                print(f"ERROR DURING VALIDATION INFERENCE: {e}")
-                return
-
             observers = {}
             for _, observer in enumerate(cases[case]["observers"]):
                 if self.hparams.ndims == 2:
@@ -875,6 +850,39 @@ class ProbUNet(pl.LightningModule):
                     mask = sitk.Cast(mask, sitk.sitkUInt8)
                     mask.CopyInformation(img)
                     observers[f"manual_{observer}"][structure] = mask
+
+            context_map = None
+            if cmap_arr is not None:
+                context_map = sitk.GetImageFromArray(cmap_arr)
+                context_map.SetSpacing(self.hparams.spacing)
+
+            seg = None
+            if self.use_structure_context:
+                # TODO choose the observer to pass properly
+                seg = observers[f"manual_{observer}"][structure]
+
+            try:
+                mean = self.infer(
+                    img,
+                    context_map=context_map,
+                    seg=seg,
+                    num_samples=1,
+                    sample_strategy="mean",
+                    preprocess=False,
+                )
+                samples = self.infer(
+                    img,
+                    context_map=context_map,
+                    seg=seg,
+                    sample_strategy="spaced",
+                    num_samples=5,
+                    spaced_range=[-2, 2],
+                    preprocess=False,
+                )
+            except Exception as e:
+                print(f"ERROR DURING VALIDATION INFERENCE: {e}")
+                return
+
 
             # try:
             result, fig = self.validate(
