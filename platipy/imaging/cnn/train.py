@@ -185,6 +185,15 @@ class ProbUNet(pl.LightningModule):
         return x
 
     def configure_optimizers(self):
+        optimizer = torch.optim.Adam(
+            self.parameters(), lr=self.hparams.learning_rate, weight_decay=0
+        )
+        lr_lambda_unet = lambda epoch: self.hparams.lr_lambda ** (epoch)
+        scheduler = torch.optim.lr_scheduler.LambdaLR(
+           optimizer, lr_lambda=[lr_lambda_unet]
+        )
+
+        return [optimizer], [scheduler]
         params = [
             {
                 "params": self.prob_unet.unet.parameters(),
@@ -337,7 +346,7 @@ class ProbUNet(pl.LightningModule):
 
             if seg is not None:
                 seg = resample_mask_to_image(img, seg)
-                seg_arr = sitk.GetArrayFromImage(img)
+                seg_arr = sitk.GetArrayFromImage(seg)
                 
             if self.hparams.ndims == 2:
                 slices = [img_arr[z, :, :] for z in range(img_arr.shape[0])]
@@ -586,7 +595,7 @@ class ProbUNet(pl.LightningModule):
 
         # Concat context map to image if we have one
         if c.numel() > 0:
-            x = torch.cat((x, c), dim=1)
+            x = torch.cat((x, c), dim=1).float()
 
         # self.prob_unet.forward(x, y, training=True)
         if self.hparams.prob_type == "prob":
@@ -691,6 +700,8 @@ class ProbUNet(pl.LightningModule):
                 seg = torch.cat((not_y, y), dim=1).float()
 
             self.prob_unet.forward(x, seg=seg)
+            loss = self.prob_unet.loss(seg)
+            print(f"VAL LOSS: {loss}")
 
             py = self.prob_unet.sample(testing=True)
             py = py.to("cpu")
