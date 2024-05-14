@@ -869,8 +869,15 @@ class ProbUNet(pl.LightningModule):
 
             seg = None
             if self.use_structure_context:
-                # TODO choose the observer to pass properly
-                seg = observers[f"manual_{observer}"][structure]
+                # Staple the man observers to pass in as context seg
+                masks = []
+                for man_obs in observers:
+                    masks.append(observers[man_obs][structure])
+
+                stapled = sitk.STAPLE(masks)
+                stapled = stapled > 0.5
+                stapled = sitk.Cast(stapled, sitk.sitkUInt8)
+                seg = stapled
 
             try:
                 mean = self.infer(

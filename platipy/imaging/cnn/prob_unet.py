@@ -421,10 +421,10 @@ class ProbabilisticUnet(torch.nn.Module):
 
         reconstruction = self.reconstruct(use_posterior_mean=False, z_posterior=z_posterior)
         
-        criterion = torch.nn.BCEWithLogitsLoss(reduction="mean")
+        #criterion = torch.nn.BCEWithLogitsLoss(reduction="mean")
 
-        loss = criterion(input=reconstruction, target=segm)
-        return loss, None, None
+        # loss = criterion(input=reconstruction, target=segm)
+        # return loss, None, None
         #####
         num_classes = reconstruction.shape[1]
         y_flat = torch.transpose(reconstruction, 1, -1).reshape((-1, num_classes))
