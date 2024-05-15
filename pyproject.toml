@@ -62,7 +62,7 @@ backend = [
 pytest = "^6.2.2"
 pylint = "^2.7.0"
 pylint-flask-sqlalchemy = "^0.2.0"
-black = "^22.3.0"
+black = ">=22.3,<25.0"
 jupyterlab = "^3.0.17"
 nbstripout = "^0.3.9"
 watchdog = "^2.0.2"
