@@ -194,7 +194,7 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
             )
             slice_arr[filled_indices_y, filled_indices_x] = 1
 
-            image_blank[z_index] += slice_arr
+            image_blank[z_index] ^= slice_arr
 
         if not skip_contour:
             struct_image = sitk.GetImageFromArray(1 * (image_blank > 0))
