@@ -343,7 +343,7 @@ def transform_point_set_from_dicom_struct(image, dicom_struct, spacing_override=
                 xVertexArr_image, yVertexArr_image, shape=sliceArr.shape
             )
             sliceArr[filledIndicesX, filledIndicesY] = 1
-            image_blank[zIndex] += sliceArr.T
+            image_blank[zIndex] ^= sliceArr.T
 
         struct_image = sitk.GetImageFromArray(1 * (image_blank > 0))
         struct_image.CopyInformation(image)
