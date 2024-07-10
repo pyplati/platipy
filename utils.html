@@ -538,8 +538,8 @@ Radiotherapy: Deep Learning Algorithm Development and Validation Study J Med Int
 <dt class="sig sig-object py" id="platipy.imaging.label.comparison.compute_surface_metrics">
 <span class="sig-prename descclassname"><span class="pre">platipy.imaging.label.comparison.</span></span><span class="sig-name descname"><span class="pre">compute_surface_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#platipy.imaging.label.comparison.compute_surface_metrics" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute surface distance metrics between two labels. Surface metrics computed are:
-hausdorffDistance, meanSurfaceDistance, medianSurfaceDistance, maximumSurfaceDistance,
-sigmaSurfaceDistance, surfaceDSC</p>
+hausdorffDistance, hausdorffDistance95, meanSurfaceDistance, medianSurfaceDistance,
+maximumSurfaceDistance, sigmaSurfaceDistance, surfaceDSC</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -814,7 +814,7 @@ much compression to use. Should be an integer between 0-9. Defaults to 9.</p></l
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2023, Ingham Institute, University of New South Wales, University of Sydney
+                Copyright &#169; 2024, Ingham Institute, University of New South Wales, University of Sydney
             </div>
             Made with 
             <a href="https://github.com/pradyunsg/furo">Furo</a>
