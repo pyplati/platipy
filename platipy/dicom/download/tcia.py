@@ -27,16 +27,13 @@ from platipy.dicom.io.crawl import (
     process_dicom_directory,
 )
 
-API_URL = "https://services.cancerimagingarchive.net/services/v4/TCIA"
+API_URL = "https://services.cancerimagingarchive.net/nbia-api/services/v1"
 
-collection_endpoint = f"{API_URL}/query/getCollectionValues"
-modalities_endpoint = f"{API_URL}/query/getModalityValues"
-patient_endpoint = f"{API_URL}/query/getPatient"
-series_endpoint = f"{API_URL}/query/getSeries"
-series_size_endpoint = f"{API_URL}/query/getSeriesSize"
-download_series_endpoint = f"{API_URL}/query/getImage"
-sop_uids_endpoint = f"{API_URL}/query/getSOPInstanceUIDs"
-download_image_endpoint = f"{API_URL}/query/getSingleImage"
+collection_endpoint = f"{API_URL}/getCollectionValues"
+modalities_endpoint = f"{API_URL}/getModalityValues"
+patient_endpoint = f"{API_URL}/getPatient"
+series_endpoint = f"{API_URL}/getSeries"
+download_series_endpoint = f"{API_URL}/getImage"
 
 
 def get_collections():
