@@ -494,6 +494,10 @@ def run_hybrid_segmentation(img, settings=HYBRID_SETTINGS_DEFAULTS):
     # Run the whole heart nnUNet segmentation
     mask_wh = run_segmentation(img, settings["nnunet_settings"])
 
+    if "Struct_0" not in mask_wh.keys():
+        logger.warning("Whole Heart segmentation failed. Unable to proceed.")
+        return {}
+
     # Run the 2nd part of the hybrid approach
     return run_cardiac_segmentation(
         img, guide_structure=mask_wh["Struct_0"], settings=settings["cardiac_settings"]
