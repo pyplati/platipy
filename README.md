@@ -23,6 +23,10 @@ information about contributing [here](https://pyplati.github.io/platipy/contribu
 A lot! A good place to start is by looking in the
 [examples directory](https://github.com/pyplati/platipy/tree/master/examples).
 
+Or checkout this presentation by Rob Finnegan at MRI Together 2023 for a great overview of PlatiPy:
+
+[![Unlocking medical imaging with PlatiPy (R. Finnegan)](https://img.youtube.com/vi/nNkjonnK1RI/0.jpg)](https://www.youtube.com/watch?v=nNkjonnK1RI)
+
 Some examples of what PlatiPy can do:
 
 - DICOM organising and converting:
