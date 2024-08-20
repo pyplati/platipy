@@ -354,7 +354,7 @@ def compute_apl(label_ref, label_test, distance_threshold_mm=3):
             added path length
 
     Returns:
-        float: The total (slice-wise) added path length in mm
+        float: The total (slice-wise) added path length in voxels
     """
     added_path_length_list = []
     n_slices = label_ref.GetSize()[2]
