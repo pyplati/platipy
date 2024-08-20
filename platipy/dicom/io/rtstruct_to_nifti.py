@@ -157,6 +157,7 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
 
         # Track in case something goes wrong in here we will skip the contour
         skip_contour = False
+        last_z_loc = None
         for sl in range(len(struct_point_sequence[struct_index].ContourSequence)):
 
             contour_data = fix_missing_data(
@@ -180,6 +181,11 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
                 logger.debug("Slice index: %d", z_index)
                 skip_contour = True
                 break
+
+            if last_z_loc is not None and np.abs((np.abs(vertex_arr_physical[2][0] - last_z_loc)) - dicom_image.GetSpacing()[2]) > 0.01:
+                logger.warning("RTSTRUCT slice increment doesn't match image spacing. Check data and override if necessary.")
+
+            last_z_loc = vertex_arr_physical[2][0]
 
             if z_index >= dicom_image.GetSize()[2]:
                 logger.debug("Warning: Slice index greater than image size. Skipping slice.")
