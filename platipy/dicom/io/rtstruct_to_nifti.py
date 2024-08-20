@@ -193,6 +193,12 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
                 logger.debug("Slice index: %d", z_index)
                 continue
 
+            if z_index < 0:
+                logger.debug("Warning: Slice index less than zero. Skipping slice.")
+                logger.debug("Structure:   %s", struct_name)
+                logger.debug("Slice index: %d", z_index)
+                continue
+
             slice_arr = np.zeros(image_blank.shape[-2:], dtype=np.uint8)
 
             filled_indices_x, filled_indices_y = polygon(
