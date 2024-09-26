@@ -109,6 +109,7 @@ if __name__ == "__main__":
                 params = json.load(f)
                 args = []
                 for key in params:
+                    print(key)
                     args.append(f"--{key}")
 
                     if isinstance(params[key], list):

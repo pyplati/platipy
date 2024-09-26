@@ -237,13 +237,17 @@ class ProbabilisticUnet(torch.nn.Module):
             dropout_probability=dropout_probability,
             ndims=ndims,
         )
-        self.prior = None
-        if not use_structure_context:
-            self.prior = AxisAlignedConvGaussian(
-                input_channels, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=0.0
-            )
+
+        self.prior = AxisAlignedConvGaussian(
+            unet_input_channels, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=0.0
+        )
+
+        post_channels = input_channels + num_classes
+        if use_structure_context:
+            post_channels = input_channels + (num_classes * 2)
+
         self.posterior = AxisAlignedConvGaussian(
-            input_channels + num_classes, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=0.0
+            post_channels, filters_per_layer, latent_dim, ndims=ndims, dropout_probability=0.0
         )
         self.fcomb = Fcomb(filters_per_layer, latent_dim, num_classes, no_convs_fcomb, ndims=ndims)
 
@@ -261,23 +265,22 @@ class ProbabilisticUnet(torch.nn.Module):
 
         self.register_buffer("_pos_weight", torch.ones(num_classes, requires_grad=False))
 
-    def forward(self, img, seg=None, training=False):
+    def forward(self, img, seg=None, cseg=None, training=False):
         """
         Construct prior latent space for patch and run patch through UNet,
         in case training is True also construct posterior latent space
         """
-        if training or self.prior is None:
-            self.posterior_latent_space = self.posterior.forward(img, seg=seg)
-
-        self.prior_latent_space = None
-        if self.prior is not None:
-            self.prior_latent_space = self.prior.forward(img)
 
         if self.use_structure_context:
-            if seg is None:
-                raise ValueError("Structure context is enabled, but no segmentation mask provided")
-            
-            img = torch.cat((img, seg), dim=1)
+            if cseg is None:
+                raise ValueError("Structure context is enabled, but no context segmentation mask provided")
+
+            img = torch.cat((img, cseg), dim=1)
+
+        if training:
+            self.posterior_latent_space = self.posterior.forward(img, seg=seg)
+
+        self.prior_latent_space = self.prior.forward(img)
 
         self.unet_features = self.unet.forward(img)
 
@@ -287,7 +290,7 @@ class ProbabilisticUnet(torch.nn.Module):
         and combining this with UNet features
         """
 
-        latent_space = self.prior_latent_space if self.prior is not None else self.posterior_latent_space
+        latent_space = self.prior_latent_space
 
         if testing:
             if use_mean:
@@ -338,13 +341,14 @@ class ProbabilisticUnet(torch.nn.Module):
         Calculate the KL divergence between the posterior and prior KL(Q||P)
         """
 
-        if self.prior_latent_space is None:
-            
-            device = self.posterior_latent_space.base_dist.stddev.device
-            dist = Independent(Normal(loc=torch.zeros(self.latent_dim).to(device), scale=torch.ones(self.latent_dim).to(device)), 1)
-            kl_div = kl.kl_divergence(self.posterior_latent_space, dist)
-        else:
-            kl_div = kl.kl_divergence(self.posterior_latent_space, self.prior_latent_space)
+        #if self.prior_latent_space is None:
+        #    device = self.posterior_latent_space.base_dist.stddev.device
+        #    dist = Independent(Normal(loc=torch.zeros(self.latent_dim).to(device), scale=torch.ones(self.latent_dim).to(device)), 1)
+        #    kl_div = kl.kl_divergence(self.posterior_latent_space, dist)
+        #else:
+        print(self.posterior_latent_space)
+        print(self.prior_latent_space)
+        kl_div = kl.kl_divergence(self.posterior_latent_space, self.prior_latent_space)
 
         return kl_div
 

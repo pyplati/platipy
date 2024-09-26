@@ -88,6 +88,7 @@ class LocaliseUNet(pl.LightningModule):
             x = torch.Tensor(x)
             x = x.unsqueeze(0)
             x = x.unsqueeze(0)
+            x = x.to(self.device)
             y = self(x)
             y = y.squeeze(0)
             y = np.argmax(y.cpu().detach().numpy(), axis=0)
@@ -104,11 +105,8 @@ class LocaliseUNet(pl.LightningModule):
 
     def training_step(self, batch, _):
 
-        x, y, _, _ = batch
+        x, c, y, m, _ = batch
 
-        pred = self.unet.forward(x)
-
-        criterion = torch.nn.BCEWithLogitsLoss(reduction="mean")
 
         # Take the max of all structure to combine into one big structure to localise
         y = y.max(axis=1).values
@@ -117,6 +115,12 @@ class LocaliseUNet(pl.LightningModule):
         # Add a background for the localise UNet
         not_y = y.logical_not()
         y = torch.cat((not_y, y), dim=1).float()
+
+        x = torch.cat((x, y), dim=1)
+
+        pred = self.unet.forward(x)
+
+        criterion = torch.nn.BCEWithLogitsLoss(reduction="mean")
 
         loss = criterion(input=pred, target=y)
 
@@ -129,15 +133,23 @@ class LocaliseUNet(pl.LightningModule):
             print(self.validation_directory)
 
         with torch.set_grad_enabled(False):
-            x, y, _, info = batch
+            # x, y, _, info = batch
+            x, c, y, m, info = batch
+
             y = y.max(axis=1).values
+            yy = torch.unsqueeze(y, dim=1)
+
+            not_y = yy.logical_not()
+            yy = torch.cat((not_y, yy), dim=1).float()
+
+            x = torch.cat((x, yy), dim=1)
 
             for s in range(y.shape[0]):
 
                 img_file = self.validation_directory.joinpath(
                     f"img_{info['case'][s]}_{info['z'][s]}.npy"
                 )
-                np.save(img_file, x[s].squeeze(0).cpu().numpy())
+                np.save(img_file, x[s].squeeze(0)[0].cpu().numpy())
 
                 mask_file = self.validation_directory.joinpath(
                     f"mask_{info['case'][s]}_{info['z'][s]}_{info['observer'][s]}.npy"

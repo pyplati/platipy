@@ -428,17 +428,21 @@ class NiftiDataset(torch.utils.data.Dataset):
                             assert contour_mask_file.exists()
                             contour_mask_files.append(contour_mask_file)
 
-                        self.slices.append(
-                            {
+                        for oo in case["observers"]:
+                            self.slices.append(
+                                {
                                 "z": z_slice,
                                 "image": img_file,
                                 "labels": labels,
+                                "complabels": [self.label_dir.joinpath(
+                                    f"{case_id}_{structure}_{oo}_{z_slice}.npy"
+                                ) for structure in case["observers"][obs]],
                                 "contour_masks": contour_mask_files,
                                 "context_map": cmap_file,
                                 "case": case_id,
                                 "observer": obs,
-                            }
-                        )
+                                }
+                            )
 
                 continue
 
@@ -581,17 +585,22 @@ class NiftiDataset(torch.utils.data.Dataset):
                         )
                         labels.append(label_file)
 
-                    self.slices.append(
-                        {
+                    # TODO allow enabling this
+                    for oo in observers:
+                        self.slices.append(
+                            {
                             "z": z_slice,
                             "image": img_file,
                             "labels": labels,
+                            "complabels": [self.label_dir.joinpath(
+                                f"{case_id}_{structure}_{oo}_{z_slice}.npy"
+                            ) for structure in structure_names],
                             "contour_masks": cmasks,
                             "context_map": cmap_file,
                             "case": case_id,
                             "observer": obs,
-                        }
-                    )
+                            }
+                        )
 
     def __len__(self):
         return len(self.slices)
@@ -601,6 +610,10 @@ class NiftiDataset(torch.utils.data.Dataset):
         labels = [
             np.load(label_file) if label_file else np.zeros(img.shape, dtype=np.ushort)
             for label_file in self.slices[index]["labels"]
+        ]
+        complabels = [
+            np.load(label_file) if label_file else np.zeros(img.shape, dtype=np.ushort)
+            for label_file in self.slices[index]["complabels"]
         ]
         contour_masks = [
             np.load(contour_mask_file)
@@ -614,7 +627,7 @@ class NiftiDataset(torch.utils.data.Dataset):
             context_map = np.load(self.slices[index]["context_map"])
 
         if self.transforms:
-            masks = labels + contour_masks
+            masks = labels + complabels + contour_masks
             if self.ndims == 2:
                 seg_arr = np.concatenate([np.expand_dims(m, 2) for m in masks], 2)
                 segmap = SegmentationMapsOnImage(seg_arr, shape=labels[0].shape)
@@ -637,7 +650,8 @@ class NiftiDataset(torch.utils.data.Dataset):
                     else:
                         img, _, masks = aug.apply(img, None, masks)
                 labels = masks[: len(labels)]
-                contour_masks = masks[len(contour_masks) :]
+                complabels = masks[len(labels) : len(complabels) + len(labels)]
+                contour_masks = masks[len(labels) + len(complabels) : ]
 
         img = torch.FloatTensor(img)
         img = img.unsqueeze(0)
@@ -648,6 +662,9 @@ class NiftiDataset(torch.utils.data.Dataset):
 
         label = torch.FloatTensor(
             np.concatenate([np.expand_dims(l, 0) for l in labels], 0).astype("int8")
+        )
+        complabel = torch.FloatTensor(
+            np.concatenate([np.expand_dims(l, 0) for l in complabels], 0).astype("int8")
         )
         contour_mask = torch.FloatTensor(
             np.concatenate([np.expand_dims(l, 0) for l in contour_masks], 0).astype(
@@ -661,6 +678,7 @@ class NiftiDataset(torch.utils.data.Dataset):
             img,
             context_map,
             label,
+            complabel,
             contour_mask,
             {
                 "case": str(self.slices[index]["case"]),

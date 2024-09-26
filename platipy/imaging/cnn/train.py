@@ -1,4 +1,4 @@
-# Copyright 2021 University of New South Wales, University of Sydney, Ingham Institute
+# 2021 University of New South Wales, University of Sydney, Ingham Institute
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -137,7 +137,7 @@ class ProbUNet(pl.LightningModule):
         self.validation_directory = None
         self.kl_div = None
 
-        self.stddevs = np.linspace(-3, 3, self.hparams.num_observers)
+        self.stddevs = np.linspace(-2, 2, self.hparams.num_observers)
 
     @staticmethod
     def add_model_specific_args(parent_parser):
@@ -185,20 +185,34 @@ class ProbUNet(pl.LightningModule):
         return x
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(
-            self.parameters(), lr=self.hparams.learning_rate, weight_decay=0
-        )
-        lr_lambda_unet = lambda epoch: self.hparams.lr_lambda ** (epoch)
-        scheduler = torch.optim.lr_scheduler.LambdaLR(
-           optimizer, lr_lambda=[lr_lambda_unet]
-        )
+        #optimizer = torch.optim.Adam(
+        #    self.parameters(), lr=self.hparams.learning_rate, weight_decay=0
+        #)
+        #lr_lambda_unet = lambda epoch: self.hparams.lr_lambda ** (epoch)
+#        scheduler = torch.optim.lr_scheduler.LambdaLR(
+#           optimizer, lr_lambda=[lr_lambda_unet]
+#        )
 
-        return [optimizer], [scheduler]
+        #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        #    optimizer, 50, eta_min=1e-5, verbose=True
+        #)
+
+        #scheduler = torch.optim.lr_scheduler.CyclicLR(
+        #   optimizer,
+        #   base_lr=self.hparams.learning_rate / 10,
+        #   max_lr=self.hparams.learning_rate * 10,
+        #   step_size_up=50,
+        #   mode="exp_range",
+        #   gamma=0.9999,
+        #   cycle_momentum=False
+        #)
+
+        #return [optimizer], [scheduler]
         params = [
             {
                 "params": self.prob_unet.unet.parameters(),
                 "weight_decay": self.hparams.weight_decay,
-                "lr": 1e-4,
+                "lr": 1e-5,
             }
         ]
 
@@ -229,18 +243,18 @@ class ProbUNet(pl.LightningModule):
         # scheduler = torch.optim.lr_scheduler.LambdaLR(
         #    optimizer, lr_lambda=[lr_lambda_unet, lr_lambda_prob, lr_lambda_prob, lr_lambda_prob]
         # )
-        # scheduler = torch.optim.lr_scheduler.CyclicLR(
-        #    optimizer,
-        #    base_lr=self.hparams.learning_rate / 10,
-        #    max_lr=self.hparams.learning_rate,
-        #   step_size_up=20,
-        #   mode="exp_range",
-        #   gamma=0.999,
-        #   cycle_momentum=False
-        # )
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, 50, eta_min=1e-6, verbose=True
+        scheduler = torch.optim.lr_scheduler.CyclicLR(
+           optimizer,
+           base_lr=self.hparams.learning_rate,
+           max_lr=self.hparams.learning_rate * 10,
+           step_size_up=50,
+           mode="exp_range",
+           gamma=0.99,
+          cycle_momentum=False
         )
+        # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        #    optimizer, 50, eta_min=1e-6, verbose=True
+       #  )
 
         return [optimizer], [scheduler]
 
@@ -347,7 +361,7 @@ class ProbUNet(pl.LightningModule):
             if seg is not None:
                 seg = resample_mask_to_image(img, seg)
                 seg_arr = sitk.GetArrayFromImage(seg)
-                
+
             if self.hparams.ndims == 2:
                 slices = [img_arr[z, :, :] for z in range(img_arr.shape[0])]
 
@@ -388,29 +402,29 @@ class ProbUNet(pl.LightningModule):
 
                 if self.hparams.prob_type == "prob":
                     if seg is not None:
-                        self.prob_unet.forward(x, seg=s)
+                        self.prob_unet.forward(x, cseg=s)
                     else:
                         self.prob_unet.forward(x)
 
                 for sample in samples:
                     if self.hparams.prob_type == "prob":
                         if sample["name"] == "mean":
-                            if seg is None:
-                                y = self.prob_unet.sample(testing=True, use_mean=True)
-                            else:
-                                y = self.prob_unet.reconstruct(use_posterior_mean=True)
+#                            if seg is None:
+                            y = self.prob_unet.sample(testing=True, use_mean=True)
+#                            else:
+#                                y = self.prob_unet.reconstruct(use_posterior_mean=True)
                         else:
-                            if seg is None:
-                                y = self.prob_unet.sample(
-                                    testing=True,
-                                    use_mean=False,
-                                    sample_x_stddev_from_mean=sample["std_dev_from_mean"],
-                                )
-                            else:
-                                y = self.prob_unet.reconstruct(
-                                    use_posterior_mean=False,
-                                    sample_x_stddev_from_mean=sample["std_dev_from_mean"],
-                                )
+#                            if seg is None:
+                            y = self.prob_unet.sample(
+                                testing=True,
+                                use_mean=False,
+                                sample_x_stddev_from_mean=sample["std_dev_from_mean"],
+                            )
+ #                           else:
+ #                               y = self.prob_unet.reconstruct(
+ #                                   use_posterior_mean=False,
+ #                                   sample_x_stddev_from_mean=sample["std_dev_from_mean"],
+ #                               )
 
                     # else:
                     #     if sample["name"] == "mean":
@@ -493,12 +507,12 @@ class ProbUNet(pl.LightningModule):
                 for man_struct in manual_observers
             }
 
-            vis.add_contour(
-                manual_observers_struct,
-                color=manual_color,
-                linewidth=0.5,
-                show_legend=False,
-            )
+#            vis.add_contour(
+#                manual_observers_struct,
+#                color=manual_color,
+#                linewidth=0.5,
+#                show_legend=False,
+#            )
 
             intersection_mask = get_intersection_mask(manual_observers_struct)
             union_mask = get_union_mask(manual_observers_struct)
@@ -586,20 +600,26 @@ class ProbUNet(pl.LightningModule):
         return result, fig
 
     def training_step(self, batch, _):
-        x, c, y, m, _ = batch
+        x, c, y, cy, m, _ = batch
 
         # Add background layer for one-hot encoding
         not_y = 1 - y.max(axis=1).values
         not_y = torch.unsqueeze(not_y, dim=1)
         y = torch.cat((not_y, y), dim=1).float()
 
+        not_cy = 1 - cy.max(axis=1).values
+        not_cy = torch.unsqueeze(not_cy, dim=1)
+        cy = torch.cat((not_cy, cy), dim=1).float()
+
         # Concat context map to image if we have one
         if c.numel() > 0:
             x = torch.cat((x, c), dim=1).float()
 
+        print(f"{y.shape} {cy.shape}")
+
         # self.prob_unet.forward(x, y, training=True)
         if self.hparams.prob_type == "prob":
-            self.prob_unet.forward(x, y, training=True)
+            self.prob_unet.forward(x, y, cy, training=True)
         # else:
         #     self.prob_unet.forward(x, y)
 
@@ -650,7 +670,7 @@ class ProbUNet(pl.LightningModule):
         m = self.hparams.num_observers
 
         with torch.set_grad_enabled(False):
-            x, c, y, _, info = batch
+            x, c, y, cy, _, info = batch
 
             # Save off slices/volumes for analysis of entire structure in end of validation step
             for s in range(y.shape[0]):
@@ -699,9 +719,9 @@ class ProbUNet(pl.LightningModule):
                 not_y = torch.unsqueeze(not_y, dim=1)
                 seg = torch.cat((not_y, y), dim=1).float()
 
-            self.prob_unet.forward(x, seg=seg)
-            loss = self.prob_unet.loss(seg)
-            print(f"VAL LOSS: {loss}")
+            self.prob_unet.forward(x, cseg=seg)
+            # loss = self.prob_unet.loss(seg)
+            # print(f"VAL LOSS: {loss}")
 
             py = self.prob_unet.sample(testing=True)
             py = py.to("cpu")
@@ -713,6 +733,11 @@ class ProbUNet(pl.LightningModule):
             y = y.squeeze(1)
             y = y.int()
             y = y.to("cpu")
+
+
+            cy = cy.squeeze(1)
+            cy = cy.int()
+            cy = cy.to("cpu")
 
             # TODO Make this work for multi class
             # Intersection over Union (also known as Jaccard Index)
@@ -747,18 +772,29 @@ class ProbUNet(pl.LightningModule):
             D_ged = term_1 - term_2 - term_3
 
             contours = {}
+            contour_colors = {}
             for o in range(n):
                 obs_y = y[o].float()
                 if self.hparams.ndims == 2:
                     obs_y = obs_y.unsqueeze(0)
                 contours[f"obs_{o}"] = sitk.GetImageFromArray(obs_y)
+                contour_colors[f"obs_{o}"] = (0.3, 0.6, 0.3)
             for mm in range(m):
                 samp_pred = pred_y[mm].float()
                 if self.hparams.ndims == 2:
                     samp_pred = samp_pred.unsqueeze(0)
                 contours[f"sample_{mm}"] = sitk.GetImageFromArray(samp_pred)
+                contour_colors[f"sample_{mm}"] = (0.1, 0.1, 0.8)
 
-            vis.add_contour(contours, colormap=matplotlib.colormaps.get_cmap("cool"))
+            if self.use_structure_context:
+                for o in range(n):
+                    obs_y = cy[o].float()
+                    if self.hparams.ndims == 2:
+                        obs_y = obs_y.unsqueeze(0)
+                    contours[f"compobs_{o}"] = sitk.GetImageFromArray(obs_y)
+                    contour_colors[f"compobs_{o}"] = (0.6, 0.3, 0.3)
+
+            vis.add_contour(contours, color=contour_colors)
             vis.show()
 
             figure_path = f"ged_{info['z'][s]}.png"
@@ -879,27 +915,27 @@ class ProbUNet(pl.LightningModule):
                 stapled = sitk.Cast(stapled, sitk.sitkUInt8)
                 seg = stapled
 
-            try:
-                mean = self.infer(
-                    img,
-                    context_map=context_map,
-                    seg=seg,
-                    num_samples=1,
-                    sample_strategy="mean",
-                    preprocess=False,
-                )
-                samples = self.infer(
-                    img,
-                    context_map=context_map,
-                    seg=seg,
-                    sample_strategy="spaced",
-                    num_samples=5,
-                    spaced_range=[-2, 2],
-                    preprocess=False,
-                )
-            except Exception as e:
-                print(f"ERROR DURING VALIDATION INFERENCE: {e}")
-                return
+#            try:
+            mean = self.infer(
+                img,
+                context_map=context_map,
+                seg=seg,
+                num_samples=1,
+                sample_strategy="mean",
+                preprocess=False,
+            )
+            samples = self.infer(
+                img,
+                context_map=context_map,
+                seg=seg,
+                sample_strategy="spaced",
+                num_samples=11,
+                spaced_range=[-2, 2],
+                preprocess=False,
+            )
+#            except Exception as e:
+#                print(f"ERROR DURING VALIDATION INFERENCE: {e}")
+#                return
 
 
             # try:
