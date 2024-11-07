@@ -222,16 +222,17 @@ def calculate_d_cc_x(dvh, x, label=None):
         x = [x]
 
     metrics = []
-    for idx in range(len(dvh)):
+    # Group by struct_hash, dose_hash, and label to ensure unique values per structure
+    for (struct_hash, dose_hash, label) in dvh.groupby(["struct_hash", "dose_hash", "label"]).groups.keys():
+        group = dvh[(dvh["struct_hash"] == struct_hash) & (dvh["dose_hash"] == dose_hash) & (dvh["label"] == label)]
 
-        d = dvh.iloc[idx]
-        m = {"label": d.label}
+        m = {"label": label, "struct_hash": struct_hash, "dose_hash": dose_hash}
 
         for threshold in x:
-            cc_at = (threshold / dvh[dvh.label == d.label].cc.iloc[0]) * 100
+            # Calculate the dose at the specified cc threshold
+            cc_at = (threshold / group.cc.iloc[0]) * 100
             cc_at = min(cc_at, 100)
-            cc_val = calculate_d_x(dvh[dvh.label == d.label], cc_at)[f"D{cc_at}"].iloc[0]
-
+            cc_val = calculate_d_x(group, cc_at)[f"D{cc_at}"].iloc[0]
             m[f"D{threshold}cc"] = cc_val
 
         metrics.append(m)
