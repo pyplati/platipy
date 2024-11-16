@@ -235,7 +235,7 @@ class Affine:
 
 
 def crop_img_using_localise_model(
-    img, localise_model, spacing=[1, 1, 1], crop_to_grid_size=[100, 100, 100]
+    img, localise_model, spacing=[1, 1, 1], crop_to_grid_size=[100, 100, 100], context_seg=None
 ):
     """Crops an image using a LocaliseUNet
 
@@ -246,6 +246,8 @@ def crop_img_using_localise_model(
         spacing (list, optional): The image spacing (mm) to resample to. Defaults to [1,1,1].
         crop_to_grid_size (list, optional): The size of the grid to crop to. Defaults to
           [100,100,100].
+        context_seg (sitk.Image, optional): Use this segmentation instead of localise model if
+          provided. Defaults to None.
 
     Returns:
         SimpleITK.Image: The cropped image.
@@ -254,15 +256,18 @@ def crop_img_using_localise_model(
     if isinstance(localise_model, str):
         localise_model = Path(localise_model)
 
-    if isinstance(localise_model, Path):
-        if localise_model.is_dir():
-            # Find the first actual model checkpoint in this directory
-            localise_model = next(localise_model.glob("*.ckpt"))
+    if context_seg is not None:
+        localise_pred = context_seg
+    else:
+        if isinstance(localise_model, Path):
+            if localise_model.is_dir():
+                # Find the first actual model checkpoint in this directory
+                localise_model = next(localise_model.glob("*.ckpt"))
 
-        localise_model = LocaliseUNet.load_from_checkpoint(localise_model)
+            localise_model = LocaliseUNet.load_from_checkpoint(localise_model)
 
-    localise_model.eval()
-    localise_pred = localise_model.infer(img)
+        localise_model.eval()
+        localise_pred = localise_model.infer(img)
 
     img = preprocess_image(img, spacing=spacing, crop_to_grid_size_xy=None)
     localise_pred = resample_mask_to_image(img, localise_pred)

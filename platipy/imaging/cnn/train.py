@@ -283,6 +283,7 @@ class ProbUNet(pl.LightningModule):
         latent_dim=True,
         spaced_range=[-1.5, 1.5],
         preprocess=True,
+        return_latent_space=False
     ):
         # sample strategy in "mean", "random", "spaced"
 
@@ -340,6 +341,7 @@ class ProbUNet(pl.LightningModule):
                         localise_path,
                         spacing=self.hparams.spacing,
                         crop_to_grid_size=self.hparams.localise_voxel_grid_size,
+                        context_seg=seg
                     )
                 else:
                     img = preprocess_image(
@@ -405,6 +407,9 @@ class ProbUNet(pl.LightningModule):
                         self.prob_unet.forward(x, cseg=s)
                     else:
                         self.prob_unet.forward(x)
+
+                if return_latent_space:
+                    return self.prob_unet.prior_latent_space
 
                 for sample in samples:
                     if self.hparams.prob_type == "prob":
