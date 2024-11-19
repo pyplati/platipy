@@ -202,7 +202,7 @@ def calculate_v_x(dvh, x, label=None):
     return pd.DataFrame(metrics)
 
 
-def calculate_d_cc_x(dvh, x, label=None):
+def calculate_d_cc_x(dvh, x, label=None, index_cols=None):
     """Compute the dose which is received by cc of the volume
 
     Args:
@@ -210,10 +210,16 @@ def calculate_d_cc_x(dvh, x, label=None):
         x (float|list): The cc (or list of cc's) to compute the dose at.
         label (str, optional): The label to compute the metric for. Computes for all metrics if not
             set. Defaults to None.
+        index_cols (list, optional): List of columns to group by when computing the metric.
+            Defaults to ["label"].
 
     Returns:
         pandas.DataFrame: Data frame with a row for each label containing the metric and value.
     """
+
+    # Default to using only label as index_cols
+    if index_cols is None:
+        index_cols = ["label"]
 
     if label:
         dvh = dvh[dvh.label == label]
@@ -222,16 +228,24 @@ def calculate_d_cc_x(dvh, x, label=None):
         x = [x]
 
     metrics = []
-    for idx in range(len(dvh)):
+    # Group by struct_hash, dose_hash, and label to ensure unique values per structure
+    for idx in dvh.groupby(index_cols).groups.keys():
 
-        d = dvh.iloc[idx]
-        m = {"label": d.label}
+        if isinstance(idx, str):
+            idx = [idx]
+
+        m = {}
+        group = dvh
+        for i, col in enumerate(index_cols):
+            m[col] = idx[i]
+
+            group = group[group[col] == idx[i]]
 
         for threshold in x:
-            cc_at = (threshold / dvh[dvh.label == d.label].cc.iloc[0]) * 100
+            # Calculate the dose at the specified cc threshold
+            cc_at = (threshold / group.cc.iloc[0]) * 100
             cc_at = min(cc_at, 100)
-            cc_val = calculate_d_x(dvh[dvh.label == d.label], cc_at)[f"D{cc_at}"].iloc[0]
-
+            cc_val = calculate_d_x(group, cc_at)[f"D{cc_at}"].iloc[0]
             m[f"D{threshold}cc"] = cc_val
 
         metrics.append(m)
