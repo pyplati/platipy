@@ -87,7 +87,7 @@ class FlaskApp(Flask):
         """
 
         from .models import Dataset, DataObject
-        from . import db
+        from . import db, app
 
         if listen_port is None:
             listen_port = self.dicom_listener_port
@@ -122,18 +122,23 @@ class FlaskApp(Flask):
                 logger.error("Series UID could not be determined... Stopping")
                 return
 
-            # Find the data objects with the given series UID and update them
-            dos = DataObject.query.filter_by(series_instance_uid=series_uid).all()
+            with app.app_context():
 
-            if len(dos) == 0:
-                logger.error("No Data Object found with Series UID: %s ... Stopping", series_uid)
-                return
+                # Find the data objects with the given series UID and update them
+                dos = DataObject.query.filter_by(series_instance_uid=series_uid).all()
 
-            for do in dos:
+                if len(dos) == 0:
+                    logger.error(
+                        "No Data Object found with Series UID: %s ... Stopping",
+                        series_uid,
+                    )
+                    return
 
-                do.is_fetched = True
-                do.path = str(dicom_path)
-                db.session.commit()
+                for do in dos:
+
+                    do.is_fetched = True
+                    do.path = str(dicom_path)
+                    db.session.commit()
 
         try:
             dicom_listener = DicomListener(
