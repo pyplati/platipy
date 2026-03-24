@@ -392,8 +392,13 @@ def generate_left_ventricle_segments(
     lv_com_apical_list = []
     rv_com_apical_list = []
     for n in range(inf_limit_lv, apical_extent):
-        lv_com_apical_list.append(get_com(working_contours[label_left_ventricle][:, :, n]))
-        rv_com_apical_list.append(get_com(working_contours[label_right_ventricle][:, :, n]))
+        lv_com = get_com(working_contours[label_left_ventricle][:, :, n])
+        if (not np.any(np.isnan(lv_com))):
+            lv_com_apical_list.append(lv_com)
+
+        rv_com = get_com(working_contours[label_right_ventricle][:, :, n])
+        if (not np.any(np.isnan(rv_com))):
+            rv_com_apical_list.append(get_com(working_contours[label_right_ventricle][:, :, n]))
 
     lv_com_apical = np.mean(lv_com_apical_list, axis=0)
     rv_com_apical = np.mean(rv_com_apical_list, axis=0)
