@@ -1274,9 +1274,9 @@ class ImageVisualiser:
                     sag_img = sitk.GetArrayFromImage(sag_img_proj)
 
                 # mask images to enforce transparency
-                ax_img = np.ma.masked_less_equal(ax_img, s_min)
-                cor_img = np.ma.masked_less_equal(cor_img, s_min)
-                sag_img = np.ma.masked_less_equal(sag_img, s_min)
+                # ax_img = np.ma.masked_less_equal(ax_img, s_min)
+                # cor_img = np.ma.masked_less_equal(cor_img, s_min)
+                # sag_img = np.ma.masked_less_equal(sag_img, s_min)
 
                 if scalar.show_as_contours:
 
