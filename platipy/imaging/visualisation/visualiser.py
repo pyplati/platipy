@@ -1394,7 +1394,7 @@ class ImageVisualiser:
                     disp_img = sitk.GetArrayFromImage(disp_img_proj)
                     # disp_img = (disp_img - disp_img.min()) / (disp_img.max() - disp_img.min())
 
-                disp_img = np.ma.masked_less_equal(disp_img, s_min)
+                #disp_img = np.ma.masked_less_equal(disp_img, s_min)
 
                 asp = {"x": asp, "y": asp, "z": 1}[self.__axis]
 
