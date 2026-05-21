@@ -25,17 +25,87 @@ from skimage.draw import polygon
 logger = logging.getLogger(__name__)
 
 
-def read_dicom_image(dicom_path):
+def read_dicom_image(dicom_path, return_slice_z_positions=False):
     """Read a DICOM image series
 
     Args:
         dicom_path (str|pathlib.Path): Path to the DICOM series to read
+        return_slice_z_positions (bool, optional): When True, also return a
+            ``numpy.ndarray`` of per-slice ``ImagePositionPatient[2]``
+            values in the same order ITK used to stack the series. This
+            array is consumed by
+            :func:`transform_point_set_from_dicom_struct` to resolve each
+            contour plane's Z to the nearest actual slice -- correct on
+            non-uniform-Z series, where SimpleITK's ``ImageSeriesReader``
+            otherwise collapses ``spacing[2]`` to an averaged value and
+            breaks ``TransformPhysicalPointToIndex``. Defaults to False
+            for backward compatibility.
 
     Returns:
-        sitk.Image: The image as a SimpleITK Image
+        sitk.Image: The image as a SimpleITK Image. When
+        ``return_slice_z_positions=True``, returns
+        ``(image, slice_z_positions)``; ``slice_z_positions`` is
+        ``None`` if any DICOM file is missing the IPP tag (anonymized
+        series, corrupt input) so the rasterizer cleanly falls back to
+        the legacy path.
     """
     dicom_images = sitk.ImageSeriesReader().GetGDCMSeriesFileNames(str(dicom_path))
-    return sitk.ReadImage(dicom_images)
+    image = sitk.ReadImage(dicom_images)
+    if not return_slice_z_positions:
+        return image
+    return image, _read_slice_z_positions(dicom_images)
+
+
+def _read_slice_z_positions(dicom_file_names):
+    """Read per-slice ``ImagePositionPatient[2]`` in the order ITK stacked
+    them.
+
+    ``GetGDCMSeriesFileNames`` returns files in the order
+    ``ImageSeriesReader`` uses to build the volume. Reading each file's
+    IPP[2] in that order gives us a per-z-index Z position that the
+    rasterizer can use as ground truth when mapping contour Z's to
+    slice indices -- bypassing SimpleITK's averaged ``spacing[2]`` for
+    non-uniform-Z series.
+
+    Returns ``None`` if any file is missing the IPP tag.
+    """
+    try:
+        zs = []
+        for path in dicom_file_names:
+            ds = pydicom.dcmread(
+                path, force=True, stop_before_pixels=True,
+                specific_tags=["ImagePositionPatient"],
+            )
+            ipp = getattr(ds, "ImagePositionPatient", None)
+            if ipp is None or len(ipp) < 3:
+                return None
+            zs.append(float(ipp[2]))
+    except Exception:  # pragma: no cover - defensive; falls back to legacy
+        return None
+    if not zs:
+        return None
+    return np.asarray(zs, dtype=np.float64)
+
+
+def _resolve_slice_index(contour_z_mm, fallback_index, slice_z_positions):
+    """Map a contour's physical Z to a slice index.
+
+    When ``slice_z_positions`` (per-DICOM IPP[2] in the order ITK
+    stacked the series) is provided, return the index of the nearest
+    cached slice. This is robust against non-uniform-Z series where
+    SimpleITK's ``ImageSeriesReader`` compresses per-slice positions
+    into a single averaged ``spacing[2]`` and
+    ``TransformPhysicalPointToIndex`` then rounds against that average
+    -- causing contours on the irregular side of the gap to land on
+    the wrong slice.
+
+    When ``slice_z_positions`` is ``None`` (e.g. IPP tag missing from
+    an anonymized series) the existing ``fallback_index`` is returned
+    so behaviour matches the legacy path.
+    """
+    if slice_z_positions is None:
+        return int(fallback_index)
+    return int(np.argmin(np.abs(np.asarray(slice_z_positions) - float(contour_z_mm))))
 
 
 def read_dicom_struct_file(filename):
@@ -47,7 +117,13 @@ def read_dicom_struct_file(filename):
     Returns:
         pydicom.Dataset: The RTSTRUCT as a DICOM Dataset
     """
-    dicom_struct_file = pydicom.read_file(filename, force=True)
+    # ``pydicom.read_file`` was deprecated in pydicom 2.x and removed in
+    # pydicom 3.x; ``pydicom.dcmread`` is the cross-version name and
+    # accepts the same arguments. This keeps the loader working under
+    # both supported pydicom majors (``pyproject.toml`` declares
+    # ``pydicom ^2.1.2`` which resolves to 2.x or 3.x depending on
+    # the resolver).
+    dicom_struct_file = pydicom.dcmread(filename, force=True)
     return dicom_struct_file
 
 
@@ -102,13 +178,25 @@ def fix_missing_data(contour_data):
     return contour_data
 
 
-def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_override=None):
+def transform_point_set_from_dicom_struct(
+    dicom_image, dicom_struct, spacing_override=None, slice_z_positions=None,
+):
     """Converts a set of points from a DICOM RTSTRUCT into a mask array
 
     Args:
         dicom_image (sitk.Image): The reference image
         dicom_struct (pydicom.Dataset): The DICOM RTSTRUCT
         spacing_override (list): The spacing to override. Defaults to None
+        slice_z_positions (numpy.ndarray, optional): Per-DICOM
+            ``ImagePositionPatient[2]`` array (one entry per slice, in
+            the order ITK stacked the series). When supplied, each
+            contour plane's Z is resolved to the nearest cached slice
+            instead of going through SimpleITK's
+            ``TransformPhysicalPointToIndex``. This is the only path
+            that handles non-uniform-Z series (mixed 3/6 mm gaps etc.)
+            correctly; on uniform-Z series both paths agree. When
+            ``None`` (the default), the legacy
+            ``TransformPhysicalPointToIndex`` rounding is used.
 
     Returns:
         tuple: Returns a list of masks and a list of structure names
@@ -174,16 +262,51 @@ def transform_point_set_from_dicom_struct(dicom_image, dicom_struct, spacing_ove
             ).T
 
             [x_vertex_arr_image, y_vertex_arr_image] = point_arr[[0, 1]]
-            z_index = point_arr[2][0]
-            if np.any(point_arr[2] != z_index):
+
+            # CLOSED_PLANAR contours have every vertex on a single
+            # physical Z plane by construction, so we resolve the slice
+            # index from that physical Z. When ``slice_z_positions`` is
+            # available we use nearest-IPP lookup (correct on
+            # non-uniform-Z series); otherwise we fall back to the
+            # legacy rounded continuous index produced by
+            # ``TransformPhysicalPointToIndex``.
+            contour_z_mm = float(vertex_arr_physical[0, 2])
+            z_index = _resolve_slice_index(
+                contour_z_mm=contour_z_mm,
+                fallback_index=point_arr[2][0],
+                slice_z_positions=slice_z_positions,
+            )
+
+            # The all-vertices-share-Z sanity check operates on the
+            # physical contour data so it isn't fooled by rounding
+            # behaviour of the index transform on non-uniform-Z series
+            # (a contour with all points at the same physical Z could
+            # otherwise round to different indices and be incorrectly
+            # rejected).
+            if np.any(vertex_arr_physical[:, 2] != contour_z_mm):
                 logger.debug("Error: axial slice index varies in contour. Skipping Contour.")
                 logger.debug("Structure:   %s", struct_name)
                 logger.debug("Slice index: %d", z_index)
                 skip_contour = True
                 break
 
-            if last_z_loc is not None and np.abs((np.abs(vertex_arr_physical[2][0] - last_z_loc)) - dicom_image.GetSpacing()[2]) > 0.01:
-                logger.warning("RTSTRUCT slice increment doesn't match image spacing. Check data and override if necessary.")
+            # Spacing-mismatch warning: only meaningful on the legacy
+            # fallback path. With ``slice_z_positions`` cached, the
+            # mismatch is by construction (and handled correctly by the
+            # nearest-IPP lookup above), so the warning would be noise.
+            if (
+                slice_z_positions is None
+                and last_z_loc is not None
+                and np.abs(
+                    np.abs(vertex_arr_physical[2][0] - last_z_loc)
+                    - dicom_image.GetSpacing()[2]
+                )
+                > 0.01
+            ):
+                logger.warning(
+                    "RTSTRUCT slice increment doesn't match image spacing. "
+                    "Check data and override if necessary."
+                )
 
             last_z_loc = vertex_arr_physical[2][0]
 
@@ -247,7 +370,15 @@ def convert_rtstruct(
     logger.debug("Output file prefix: %s", prefix)
     logger.debug("Output directory: %s", output_dir)
 
-    dicom_image = read_dicom_image(dcm_img)
+    # ``slice_z_positions`` is the per-DICOM ImagePositionPatient[2]
+    # array in the order ITK stacked the series. Threaded through to
+    # the rasterizer so contour Z's get resolved to slice indices via
+    # nearest-IPP rather than SimpleITK's averaged ``spacing[2]``, which
+    # on non-uniform-Z series mis-routes contours on the irregular
+    # side of the gap.
+    dicom_image, slice_z_positions = read_dicom_image(
+        dcm_img, return_slice_z_positions=True,
+    )
     dicom_struct = read_dicom_struct_file(dcm_rt_file)
 
     if not isinstance(output_dir, Path):
@@ -276,7 +407,7 @@ def convert_rtstruct(
         logger.debug("Overriding image spacing with: %s", spacing)
 
     struct_list, struct_name_sequence = transform_point_set_from_dicom_struct(
-        dicom_image, dicom_struct, spacing
+        dicom_image, dicom_struct, spacing, slice_z_positions=slice_z_positions,
     )
     logger.debug("Converted all structures. Writing output.")
     for struct_index, struct_image in enumerate(struct_list):
