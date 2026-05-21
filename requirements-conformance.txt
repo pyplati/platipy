@@ -1,0 +1,5 @@
+# Conformance-suite-only dependency. Kept out of pyproject.toml because
+# PyPI rejects metadata containing direct URL references (PEP 508
+# `name @ url`). Install with:
+#   poetry install --with dev && pip install -r requirements-conformance.txt
+rtmask-conformance @ git+https://github.com/brianmanderson/RTMaskConformanceTest
