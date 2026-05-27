@@ -79,7 +79,7 @@ def get_com(label, as_int=True, real_coords=False):
 
     else:
         if as_int:
-            com = [int(i) for i in com]
+            com = [int(i) if not np.isnan(i) else i for i in com]
 
     return com
 
