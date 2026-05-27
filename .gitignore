@@ -140,9 +140,17 @@ platipy/*/tests/data
 testing/
 converted/
 **/data
+**/working
 **/tcia
 **/nifti_output
 services/*/*.db
 
 # Don't include html docs in repo
 docs/site/
+
+*.npy
+*.nii.gz
+valid*.png
+ged*.png
+
+test_prob*/
