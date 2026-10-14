@@ -441,6 +441,7 @@ class PlatiPyClient:
                     headers={"API_KEY": self.api_key},
                     verify=self.verify,
                 )
+                res.raise_for_status()
                 logger.debug(res.status_code)
                 filename = res.headers["Content-Disposition"].split("filename=")[1]
 
