@@ -80,7 +80,7 @@ class DicomConnector:
             # Release the association
             assoc.release()
 
-        return not result is None
+        return result == 0x0000
 
     def do_find(self, dataset, query_model=PatientRootQueryRetrieveInformationModelFind):
 
