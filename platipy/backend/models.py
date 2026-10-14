@@ -28,7 +28,7 @@ class AlchemyEncoder(json.JSONEncoder):
             # an SQLAlchemy class
             fields = {}
             for field in [
-                x for x in dir(obj) if not x.startswith("_") and x != "metadata"
+                x for x in dir(obj) if not x.startswith("_") and x not in ("metadata", "owner_key")
             ]:
                 data = obj.__getattribute__(field)
 
