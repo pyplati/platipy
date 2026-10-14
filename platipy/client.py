@@ -23,6 +23,18 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+class _APIKeySession(requests.Session):
+    def rebuild_auth(self, prepared_request, response):
+        super().rebuild_auth(prepared_request, response)
+        if self.should_strip_auth(response.request.url, prepared_request.url):
+            prepared_request.headers.pop("API_KEY", None)
+
+
+def _request(method, url, **kwargs):
+    with _APIKeySession() as session:
+        return session.request(method, url, **kwargs)
+
+
 API_DICOM_LOCATION = "{0}/api/dicomlocation"
 API_DATASET = "{0}/api/dataset"
 API_DATASET_READY = "{0}/api/dataset/ready"
@@ -63,7 +75,7 @@ class PlatiPyClient:
         self.api_key = api_key
         self.algorithm_name = algorithm_name
 
-        res = requests.get(
+        res = _request("GET",
             API_ALGORITHM.format(self.base_url),
             headers={"API_KEY": self.api_key},
             verify=self.verify,
@@ -80,7 +92,7 @@ class PlatiPyClient:
             dict -- The dicom location dictionary object, or None if it doesn't exist
         """
 
-        res = requests.get(
+        res = _request("GET",
             API_DICOM_LOCATION.format(self.base_url),
             headers={"API_KEY": self.api_key},
             verify=self.verify,
@@ -119,7 +131,7 @@ class PlatiPyClient:
         if ae_title:
             params["ae_title"] = ae_title
 
-        res = requests.post(
+        res = _request("POST",
             API_DICOM_LOCATION.format(self.base_url),
             headers={"API_KEY": self.api_key},
             data=params,
@@ -151,7 +163,7 @@ class PlatiPyClient:
         if isinstance(dataset, dict):
             params["dataset"] = dataset["id"]
 
-        res = requests.get(
+        res = _request("GET",
             "{0}/{1}".format(API_DATASET.format(self.base_url), params["dataset"]),
             headers={"API_KEY": self.api_key},
             verify=self.verify,
@@ -181,7 +193,7 @@ class PlatiPyClient:
         if isinstance(dataset, dict):
             params["dataset"] = dataset["id"]
 
-        res = requests.get(
+        res = _request("GET",
             "{0}/{1}".format(API_DATASET_READY.format(self.base_url), params["dataset"]),
             headers={"API_KEY": self.api_key},
             verify=self.verify,
@@ -230,7 +242,7 @@ class PlatiPyClient:
         if timeout:
             params["timeout"] = timeout
 
-        res = requests.post(
+        res = _request("POST",
             API_DATASET.format(self.base_url),
             headers={"API_KEY": self.api_key},
             data=params,
@@ -299,7 +311,7 @@ class PlatiPyClient:
             params["seriesUID"] = series_uid
             params["dicom_retrieve"] = dicom_retrieve
 
-            res = requests.post(
+            res = _request("POST",
                 API_DATA_OBJECT.format(self.base_url),
                 headers={"API_KEY": self.api_key},
                 data=params,
@@ -320,7 +332,7 @@ class PlatiPyClient:
 
             with open(file_path, "rb") as file_handle:
 
-                res = requests.post(
+                res = _request("POST",
                     API_DATA_OBJECT.format(self.base_url),
                     headers={"API_KEY": self.api_key},
                     data=params,
@@ -343,7 +355,7 @@ class PlatiPyClient:
         """
 
         algorithm = None
-        res = requests.get(
+        res = _request("GET",
             API_ALGORITHM.format(self.base_url),
             headers={"API_KEY": self.api_key},
             verify=self.verify,
@@ -386,7 +398,7 @@ class PlatiPyClient:
 
             params["config"] = json.dumps(config)
 
-        res = requests.post(
+        res = _request("POST",
             API_TRIGGER.format(self.base_url),
             headers={"API_KEY": self.api_key},
             data=params,
@@ -399,7 +411,7 @@ class PlatiPyClient:
             poll_url = "{0}{1}".format(self.base_url, res.json()["poll"])
 
             while True:
-                res = requests.get(poll_url, headers={"API_KEY": self.api_key}, verify=self.verify)
+                res = _request("GET", poll_url, headers={"API_KEY": self.api_key}, verify=self.verify)
                 status = res.json()
 
                 if (
@@ -436,7 +448,7 @@ class PlatiPyClient:
         if dataset:
             for data_obj in dataset["output_data_objects"]:
                 url = API_DOWNLOAD_OBJECT.format(self.base_url)
-                res = requests.get(
+                res = _request("GET",
                     "{0}/{1}".format(url, data_obj["id"]),
                     headers={"API_KEY": self.api_key},
                     verify=self.verify,
