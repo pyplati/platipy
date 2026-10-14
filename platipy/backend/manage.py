@@ -167,10 +167,9 @@ def run(ctx, port):
     ]
 
     process = subprocess.Popen(
-        f"gunicorn -b :{port} service:app",
+        ["gunicorn", "-b", f":{port}", "service:app"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        shell=True,
     )
     click.echo("Running Service (with gunicorn)")
     process.communicate()
