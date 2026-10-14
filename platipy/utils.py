@@ -1,6 +1,7 @@
 import zipfile
 import tempfile
 import urllib.request
+import shutil
 from pathlib import Path
 
 def download_and_extract_zip_file(zip_url, output_directory):
@@ -10,7 +11,7 @@ def download_and_extract_zip_file(zip_url, output_directory):
 
         with urllib.request.urlopen(zip_url) as dl_file:
             with open(temp_file, "wb") as out_file:
-                out_file.write(dl_file.read())
+                shutil.copyfileobj(dl_file, out_file)
 
         with zipfile.ZipFile(temp_file, "r") as zip_ref:
             zip_ref.extractall(output_directory)
