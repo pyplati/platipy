@@ -358,6 +358,12 @@ class DataObjectEndpoint(Resource):
             if not args["file_name"]:
                 return {"message": {"file_name": "Provide the file name"}}, 400
 
+            if (
+                args["file_name"] in (".", "..")
+                or os.path.basename(args["file_name"]) != args["file_name"]
+            ):
+                return {"message": {"file_name": "Provide a file name without directory components"}}, 400
+
             if not args["file_data"]:
                 return {"message": {"file_data": "Provide the file data"}}, 400
 
