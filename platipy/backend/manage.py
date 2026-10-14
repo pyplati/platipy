@@ -120,6 +120,8 @@ def ssl(ctx, ip):
     click.echo(stdout)
     click.echo(stderr)
 
+    if process.returncode != 0:
+        raise click.ClickException(f"SSL certificate generation failed (exit {process.returncode})")
     click.echo("SSL Certificates Created. Service restart required.")
 
 
