@@ -44,6 +44,7 @@ def get_collections():
     """
 
     res = requests.get(collection_endpoint)
+    res.raise_for_status()
     collections = [collection["Collection"] for collection in res.json()]
     collections.sort()
 
@@ -61,6 +62,7 @@ def get_patients_in_collection(collection):
     """
 
     res = requests.get(patient_endpoint, params={"Collection": collection})
+    res.raise_for_status()
     patient_ids = [pat["PatientID"] for pat in res.json()]
     patient_ids.sort()
 
@@ -78,6 +80,7 @@ def get_modalities_in_collection(collection):
     """
 
     res = requests.get(modalities_endpoint, params={"Collection": collection})
+    res.raise_for_status()
     modalities = [mod["Modality"] for mod in res.json()]
 
     return modalities
@@ -179,6 +182,7 @@ def fetch_data(
                 series_endpoint,
                 params={"Collection": collection, "PatientID": pid, "Modality": modality},
             )
+            res.raise_for_status()
             series = json.loads(res.text)
 
             if not modality in result[pid]:
@@ -207,6 +211,7 @@ def fetch_data(
                     stream=True,
                     params={"SeriesInstanceUID": obj["SeriesInstanceUID"]},
                 )
+                response.raise_for_status()
                 with open(save_path, "wb") as file_obj:
                     for chunk in response.iter_content():
                         file_obj.write(chunk)
