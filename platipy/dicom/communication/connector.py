@@ -225,6 +225,8 @@ class DicomConnector:
     def on_c_store(self, event):
 
         dataset = event.dataset
+        if not dataset.SeriesInstanceUID.is_valid or not dataset.SOPInstanceUID.is_valid:
+            return 0xC000
 
         mode_prefix = "UN"
         mode_prefixes = {
