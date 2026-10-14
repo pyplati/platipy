@@ -32,6 +32,9 @@ def add_endpoint():
 @app.route("/log", methods=["GET"])
 def fetch_log():
 
+    if not APIKey.query.filter_by(key=request.headers.get("API_KEY"), is_admin=True).first():
+        return jsonify({"error": "Admin API key required"}), 403
+
     log = []
     with open(log_file_path) as f:
 
