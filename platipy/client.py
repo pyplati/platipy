@@ -432,6 +432,7 @@ class PlatiPyClient:
             logger.info("Creating directory")
             os.makedirs(output_path)
 
+        output_root = os.path.realpath(output_path)
         dataset = self.get_dataset(dataset)
         if dataset:
             for data_obj in dataset["output_data_objects"]:
@@ -444,6 +445,8 @@ class PlatiPyClient:
                 logger.debug(res.status_code)
                 filename = res.headers["Content-Disposition"].split("filename=")[1]
 
-                output_file = os.path.join(output_path, filename)
+                output_file = os.path.realpath(os.path.join(output_root, filename))
+                if os.path.commonpath([output_root, output_file]) != output_root:
+                    raise ValueError("Download destination resolves outside output directory")
                 logger.info("Downloading to: %s", output_file)
                 open(output_file, "wb").write(res.content)
