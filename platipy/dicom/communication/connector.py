@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 class DicomConnector:
-    def __init__(self, host="127.0.0.1", port=0, ae_title="", output_directory=tempfile.mkdtemp()):
+    def __init__(self, host="127.0.0.1", port=0, ae_title="", output_directory=None):
         self.host = host
         self.port = port
         self.ae_title = ae_title if ae_title else ""
@@ -252,6 +252,8 @@ class DicomConnector:
         except KeyError:
             mode_prefix = "UN"
 
+        if self.output_directory is None:
+            self.output_directory = tempfile.mkdtemp()
         suid = dataset.SeriesInstanceUID
         series_dir = suid
         if self.output_directory is not None:
