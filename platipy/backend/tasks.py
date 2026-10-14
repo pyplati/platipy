@@ -144,7 +144,7 @@ def move_task(task, endpoint, seriesUIDs, host, port, ae_title):
 
     dicom_verify = dicom_connector.verify()
 
-    if dicom_verify is None:
+    if not dicom_verify:
         return {
             "current": 100,
             "total": 100,
